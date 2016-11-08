@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{54b8857c-969a-4683-aa41-9931daffefb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external">
+      <UniqueIdentifier>{6b975d4a-e7db-4750-875a-ccaedf220e1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imgui-1.49">
+      <UniqueIdentifier>{5765e865-b95d-4b22-9c36-b319c27660f7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\code\main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\helpers\SampleAppWin.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\external\imgui-1.49\imgui.cpp">
+      <Filter>external\imgui-1.49</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\external\imgui-1.49\imgui_draw.cpp">
+      <Filter>external\imgui-1.49</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\gui.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\helpers\SampleTarga.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\helpers\SampleUtil.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\code\helpers\SampleApp.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\external\imgui-1.49\imconfig.h">
+      <Filter>external\imgui-1.49</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\external\imgui-1.49\imgui.h">
+      <Filter>external\imgui-1.49</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\external\imgui-1.49\imgui_internal.h">
+      <Filter>external\imgui-1.49</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\gui.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\helpers\SampleMath.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\helpers\SampleTarga.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\helpers\SampleUtil.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

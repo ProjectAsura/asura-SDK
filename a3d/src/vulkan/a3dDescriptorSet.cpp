@@ -1,0 +1,334 @@
+﻿//-------------------------------------------------------------------------------------------------
+// File : a3dDescriptorSet.cpp
+// Desc : DescriptorSet Implementation.
+// Copyright(c) Project Asura. All right reserved.
+//-------------------------------------------------------------------------------------------------
+
+
+namespace a3d {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// DescriptorSet class
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+//-------------------------------------------------------------------------------------------------
+//      コンストラクタです.
+//-------------------------------------------------------------------------------------------------
+DescriptorSet::DescriptorSet()
+: m_RefCount        (1)
+, m_pDevice         (nullptr)
+, m_pLayout         (nullptr)
+, m_DescriptorSet   (null_handle)
+, m_pWrites         (nullptr)
+, m_pInfos          (nullptr)
+{ /* DO_NOTHING */ }
+
+//-------------------------------------------------------------------------------------------------
+//      デストラクタです.
+//-------------------------------------------------------------------------------------------------
+DescriptorSet::~DescriptorSet()
+{ Term(); }
+
+//-------------------------------------------------------------------------------------------------
+//      初期化処理を行います.
+//-------------------------------------------------------------------------------------------------
+bool DescriptorSet::Init
+(
+    IDevice*                pDevice,
+    DescriptorSetLayout*    pLayout
+)
+{
+    if (pDevice == nullptr || pLayout == nullptr)
+    { return false; }
+
+    m_pDevice = pDevice;
+    m_pDevice->AddRef();
+
+    m_pLayout = pLayout;
+    m_pLayout->AddRef();
+
+    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
+    A3D_ASSERT(pWrapDevice != nullptr);
+
+    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+    // ディスクリプタセットを生成します.
+    {
+        auto pNativeDescriptorPool = pLayout->GetVulkanDescriptorPool();
+        auto pNativeDescriptorLayout = pLayout->GetVulkanDescriptorSetLayout();
+
+        VkDescriptorSetAllocateInfo info = {};
+        info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        info.pNext              = nullptr;
+        info.descriptorPool     = pNativeDescriptorPool;
+        info.descriptorSetCount = 1;
+        info.pSetLayouts        = &pNativeDescriptorLayout;
+
+        auto ret = vkAllocateDescriptorSets( pNativeDevice, &info, &m_DescriptorSet );
+        if (ret != VK_SUCCESS)
+        { return false; }
+    }
+
+    {
+        auto& desc       = pLayout->GetDesc();
+        auto count       = desc.EntryCount;
+        auto bufferCount = pLayout->GetBufferCount();
+        auto imageCount  = pLayout->GetImageCount();
+
+        m_pWrites = new (std::nothrow) VkWriteDescriptorSet [count];
+        if (m_pWrites == nullptr)
+        { return false; }
+
+        memset( m_pWrites, 0, sizeof(VkWriteDescriptorSet) * count );
+
+        m_pInfos = new (std::nothrow) DescriptorInfo [count];
+        if (m_pInfos == nullptr)
+        { return false; }
+
+        memset( m_pInfos, 0, sizeof(DescriptorInfo) * count );
+
+        auto bufferIndex = 0;
+        auto imageIndex  = 0;
+        for(auto i=0u; i<count; ++i)
+        {
+            m_pWrites[i].sType              = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            m_pWrites[i].pNext              = nullptr;
+            m_pWrites[i].dstSet             = m_DescriptorSet;
+            m_pWrites[i].dstBinding         = desc.Entries[i].BindLocation;
+            m_pWrites[i].dstArrayElement    = 0;
+            m_pWrites[i].descriptorCount    = 1;
+            m_pWrites[i].descriptorType     = ToNativeDescriptorType(desc.Entries[i].Type);
+            m_pWrites[i].pImageInfo         = nullptr;
+            m_pWrites[i].pBufferInfo        = nullptr;
+            m_pWrites[i].pTexelBufferView   = nullptr;
+
+            if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV ||
+                desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+            {
+                m_pWrites[i].pBufferInfo = &m_pInfos[bufferIndex].Buffer;
+                bufferIndex++;
+            }
+            else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV ||
+                     desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
+            {
+                m_pWrites[i].pImageInfo = &m_pInfos[imageIndex].Image;
+                imageIndex++;
+            }
+        }
+    }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      終了処理を行います.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::Term()
+{
+    if (m_pDevice == nullptr)
+    { return; }
+
+    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
+    A3D_ASSERT(pWrapDevice != nullptr);
+
+    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+    auto pNativeDescriptorPool = m_pLayout->GetVulkanDescriptorPool();
+    A3D_ASSERT(pNativeDescriptorPool != null_handle);
+
+    if (m_pWrites != nullptr)
+    {
+        delete[] m_pWrites;
+        m_pWrites = nullptr;
+    }
+
+    if (m_pInfos != nullptr)
+    {
+        delete[] m_pInfos;
+        m_pInfos = nullptr;
+    }
+
+    if (m_DescriptorSet != null_handle)
+    {
+        vkFreeDescriptorSets(pNativeDevice, pNativeDescriptorPool, 1, &m_DescriptorSet);
+        m_DescriptorSet = null_handle;
+    }
+
+    SafeRelease(m_pLayout);
+    SafeRelease(m_pDevice);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      参照カウントを増やします.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::AddRef()
+{ m_RefCount++; }
+
+//-------------------------------------------------------------------------------------------------
+//      解放処理を行います.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::Release()
+{
+    m_RefCount--;
+    if (m_RefCount == 0)
+    { delete this; }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      参照カウントを返却します.
+//-------------------------------------------------------------------------------------------------
+uint32_t DescriptorSet::GetCount() const
+{ return m_RefCount; }
+
+//-------------------------------------------------------------------------------------------------
+//      デバイスを取得します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::GetDevice(IDevice** ppDevice)
+{
+    *ppDevice = m_pDevice;
+    if (m_pDevice != nullptr)
+    { m_pDevice->AddRef(); }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      テクスチャを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetTexture(uint32_t index, ITexture* pResource)
+{
+    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
+
+    auto pWrapResource = reinterpret_cast<Texture*>(pResource);
+    A3D_ASSERT(pWrapResource != nullptr);
+
+    m_pInfos[index].Image.imageLayout = ToNativeImageLayout(pWrapResource->GetState());
+    m_pInfos[index].Image.imageView   = pWrapResource->GetVulkanImageView();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      バッファを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetBuffer(uint32_t index, IBuffer* pResource)
+{
+    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
+
+    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
+    A3D_ASSERT(pWrapResource != nullptr);
+
+    m_pInfos[index].Buffer.buffer = pWrapResource->GetVulkanBuffer();
+    m_pInfos[index].Buffer.offset = 0;
+    m_pInfos[index].Buffer.range  = pWrapResource->GetDesc().Size;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      バッファを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetBuffer(uint32_t index, IBuffer* pResource, uint64_t size, uint64_t offset)
+{
+    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
+
+    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
+    A3D_ASSERT(pWrapResource != nullptr);
+
+    m_pInfos[index].Buffer.buffer = pWrapResource->GetVulkanBuffer();
+    m_pInfos[index].Buffer.offset = offset;
+    m_pInfos[index].Buffer.range  = size;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      サンプラーを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
+{
+    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
+
+    auto pWrapSampler = reinterpret_cast<Sampler*>(pSampler);
+    A3D_ASSERT(pWrapSampler != nullptr);
+
+    m_pInfos[index].Image.sampler = pWrapSampler->GetVulkanSampler();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      更新処理を行います.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::Update()
+{
+    auto& desc = m_pLayout->GetDesc();
+    auto count = desc.EntryCount;
+
+    for(auto i=0u; i<count; ++i)
+    {
+        if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV ||
+            desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+        {
+            m_pWrites[i].pBufferInfo = &m_pInfos[i].Buffer;
+        }
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV ||
+                 desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
+        {
+            m_pWrites[i].pImageInfo = &m_pInfos[i].Image;
+        }
+    }
+
+    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
+    A3D_ASSERT(pWrapDevice != nullptr);
+
+    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+    vkUpdateDescriptorSets(pNativeDevice, count, m_pWrites, 0, nullptr);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      描画コマンドを生成します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::Issue(ICommandList* pCommandList)
+{
+    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    A3D_ASSERT(pWrapCommandList != nullptr);
+
+    auto pNativeCommandBuffer = pWrapCommandList->GetVulkanCommandBuffer();
+    A3D_ASSERT(pNativeCommandBuffer != null_handle);
+
+    vkCmdBindDescriptorSets(
+        pNativeCommandBuffer,
+        m_pLayout->GetVulkanPipelineBindPoint(),
+        m_pLayout->GetVulkanPipelineLayout(),
+        0,
+        1,
+        &m_DescriptorSet,
+        0,
+        nullptr);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      生成処理を行います.
+//-------------------------------------------------------------------------------------------------
+bool DescriptorSet::Create
+(
+    IDevice*                pDevice,
+    DescriptorSetLayout*    pLayout,
+    IDescriptorSet**        ppDescriptorSet
+)
+{
+    if (pDevice         == nullptr 
+     || pLayout         == nullptr 
+     || ppDescriptorSet == nullptr)
+    { return false; }
+
+    auto instance = new(std::nothrow) DescriptorSet;
+    if (instance == nullptr)
+    { return false; }
+
+    if (!instance->Init(pDevice, pLayout))
+    {
+        SafeRelease(instance);
+        return false;
+    }
+
+    *ppDescriptorSet = instance;
+    return true;
+}
+
+} // namespace a3d
