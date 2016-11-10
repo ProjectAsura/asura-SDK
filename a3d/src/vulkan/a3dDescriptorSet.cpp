@@ -195,11 +195,11 @@ void DescriptorSet::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      テクスチャを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetTexture(uint32_t index, ITexture* pResource)
+void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
-    auto pWrapResource = reinterpret_cast<Texture*>(pResource);
+    auto pWrapResource = reinterpret_cast<TextureView*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
     m_pInfos[index].Image.imageLayout = ToNativeImageLayout(pWrapResource->GetState());
@@ -209,31 +209,18 @@ void DescriptorSet::SetTexture(uint32_t index, ITexture* pResource)
 //-------------------------------------------------------------------------------------------------
 //      バッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetBuffer(uint32_t index, IBuffer* pResource)
+void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
-    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
+    auto pWrapResource = reinterpret_cast<BufferView*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
-    m_pInfos[index].Buffer.buffer = pWrapResource->GetVulkanBuffer();
-    m_pInfos[index].Buffer.offset = 0;
-    m_pInfos[index].Buffer.range  = pWrapResource->GetDesc().Size;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      バッファを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetBuffer(uint32_t index, IBuffer* pResource, uint64_t size, uint64_t offset)
-{
-    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
-
-    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
-    A3D_ASSERT(pWrapResource != nullptr);
+    auto& desc = pWrapResource->GetDesc();
 
     m_pInfos[index].Buffer.buffer = pWrapResource->GetVulkanBuffer();
-    m_pInfos[index].Buffer.offset = offset;
-    m_pInfos[index].Buffer.range  = size;
+    m_pInfos[index].Buffer.offset = desc.Offset;
+    m_pInfos[index].Buffer.range  = desc.Range;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -263,11 +250,13 @@ void DescriptorSet::Update()
             desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
         {
             m_pWrites[i].pBufferInfo = &m_pInfos[i].Buffer;
+            m_pWrites[i].pImageInfo  = nullptr;
         }
         else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV ||
                  desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
         {
-            m_pWrites[i].pImageInfo = &m_pInfos[i].Image;
+            m_pWrites[i].pImageInfo  = &m_pInfos[i].Image;
+            m_pWrites[i].pBufferInfo = nullptr;
         }
     }
 

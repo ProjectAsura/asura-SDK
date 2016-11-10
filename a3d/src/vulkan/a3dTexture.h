@@ -133,13 +133,6 @@ public:
     VkImage A3D_APIENTRY GetVulkanImage() const;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      イメージビューを取得します.
-    //!
-    //! @return     イメージビューを返却します.
-    //---------------------------------------------------------------------------------------------
-    VkImageView A3D_APIENTRY GetVulkanImageView() const;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      デバイスメモリを取得します.
     //!
     //! @return     デバイスメモリを返却します.
@@ -176,7 +169,6 @@ private:
     TextureDesc             m_Desc;                 //!< 構成設定です.
     RESOURCE_STATE          m_State;                //!< リソースステートです.
     VkImage                 m_Image;                //!< イメージです.
-    VkImageView             m_ImageView;            //!< イメージビューです.
     VkDeviceMemory          m_DeviceMemory;         //!< デバイスメモリです.
     VkMemoryRequirements    m_MemoryRequirements;   //!< メモリ要件です.
     VkImageAspectFlags      m_ImageAspectFlags;     //!< イメージアスペクトフラグです.

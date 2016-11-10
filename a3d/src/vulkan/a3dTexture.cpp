@@ -100,22 +100,6 @@ VkImageViewType ToNativeImageViewType(const a3d::TextureDesc* pDesc)
     return result;
 }
 
-//-------------------------------------------------------------------------------------------------
-//      コンポーネントスウィズルに変換します.
-//-------------------------------------------------------------------------------------------------
-VkComponentSwizzle ToNativeComponentSwizzle(a3d::TEXTURE_SWIZZLE value)
-{
-    VkComponentSwizzle table[] = {
-        VK_COMPONENT_SWIZZLE_R,     // SWIZZLE_R
-        VK_COMPONENT_SWIZZLE_G,     // SWIZZLE_G
-        VK_COMPONENT_SWIZZLE_B,     // SWIZZLE_B
-        VK_COMPONENT_SWIZZLE_A,     // SWIZZLE_A
-        VK_COMPONENT_SWIZZLE_ZERO,  // SWIZZLE_ZERO
-        VK_COMPONENT_SWIZZLE_ONE    // SWIZZLE_ONE
-    };
-
-    return table[value];
-}
 
 //-------------------------------------------------------------------------------------------------
 //      フォーマットがサポートされているかどうかチェックします.
@@ -215,7 +199,6 @@ Texture::Texture()
 , m_pDevice         (nullptr)
 , m_State           (RESOURCE_STATE_UNKNOWN)
 , m_Image           (null_handle)
-, m_ImageView       (null_handle)
 , m_DeviceMemory    (null_handle)
 , m_ImageAspectFlags(VK_IMAGE_ASPECT_COLOR_BIT)
 { memset( &m_MemoryRequirements, 0, sizeof(m_MemoryRequirements) ); }
@@ -250,6 +233,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
     auto imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    m_State = a3d::RESOURCE_STATE_UNKNOWN;
 
     // イメージを生成します.
     {
@@ -275,8 +259,6 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         auto ret = vkCreateImage(pNativeDevice, &info, nullptr, &m_Image);
         if ( ret != VK_SUCCESS )
         { return false; }
-
-        m_State = a3d::RESOURCE_STATE_UNKNOWN;
     }
 
     // デバイスメモリを生成します.
@@ -304,33 +286,16 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         { return false; }
     }
 
-    // イメージビューを生成します.
+    // イメージアスペクトフラグの設定.
     {
-        if (pDesc->Usage == RESOURCE_USAGE_DEPTH_TARGET)
-        { m_ImageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT; }
-        else 
-        { m_ImageAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT; }
-
-        VkImageViewCreateInfo info = {};
-        info.sType        = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        info.pNext        = nullptr;
-        info.flags        = 0;
-        info.image        = m_Image;
-        info.viewType     = ToNativeImageViewType(pDesc);
-        info.format       = ToNativeFormat(pDesc->Format);
-        info.components.r = ToNativeComponentSwizzle(pDesc->ComponentMapping.R);
-        info.components.g = ToNativeComponentSwizzle(pDesc->ComponentMapping.G);
-        info.components.b = ToNativeComponentSwizzle(pDesc->ComponentMapping.B);
-        info.components.a = ToNativeComponentSwizzle(pDesc->ComponentMapping.A);
-        info.subresourceRange.aspectMask     = m_ImageAspectFlags;
-        info.subresourceRange.baseMipLevel   = 0;
-        info.subresourceRange.levelCount     = pDesc->MipLevels;
-        info.subresourceRange.baseArrayLayer = 0;
-        info.subresourceRange.layerCount     = pDesc->DepthOrArraySize;
-
-        auto ret = vkCreateImageView(pNativeDevice, &info, nullptr, &m_ImageView);
-        if ( ret != VK_SUCCESS )
-        { return false; }
+       
+            if (pDesc->Format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
+            { m_ImageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT; }
+            else if (pDesc->Format == RESOURCE_FORMAT_D16_UNORM
+                  || pDesc->Format == RESOURCE_FORMAT_D32_FLOAT )
+            { m_ImageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT; }
+            else
+            { m_ImageAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT; }
     }
 
     // イメージレイアウトを変更
@@ -372,12 +337,6 @@ void Texture::Term()
         auto pNativeDevice = pWrapDevice->GetVulkanDevice();
         A3D_ASSERT(pNativeDevice != null_handle);
 
-        if (m_ImageView != null_handle)
-        {
-            vkDestroyImageView(pNativeDevice, m_ImageView, nullptr);
-            m_ImageView = null_handle;
-        }
-
         if (m_Image != null_handle)
         {
             vkDestroyImage(pNativeDevice, m_Image, nullptr);
@@ -393,7 +352,6 @@ void Texture::Term()
     else
     {
         m_Image        = null_handle;
-        m_ImageView    = null_handle;
         m_DeviceMemory = null_handle;
     }
 
@@ -545,12 +503,6 @@ VkImage Texture::GetVulkanImage() const
 { return m_Image; }
 
 //-------------------------------------------------------------------------------------------------
-//      イメージビューを取得します.
-//-------------------------------------------------------------------------------------------------
-VkImageView Texture::GetVulkanImageView() const
-{ return m_ImageView; }
-
-//-------------------------------------------------------------------------------------------------
 //      デバイスメモリを取得します.
 //-------------------------------------------------------------------------------------------------
 VkDeviceMemory Texture::GetVulkanDeviceMemory() const
@@ -632,7 +584,6 @@ bool Texture::Create
     instance->m_pDevice->AddRef();
 
     instance->m_Image                               = image;
-    instance->m_ImageView                           = view;
     instance->m_ImageAspectFlags                    = (isDepth) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     instance->m_DeviceMemory                        = null_handle;
     instance->m_State                               = RESOURCE_STATE_UNKNOWN;
@@ -647,10 +598,6 @@ bool Texture::Create
     instance->m_Desc.InitState                      = RESOURCE_STATE_UNKNOWN;
     instance->m_Desc.HeapProperty.Type              = HEAP_TYPE_DEFAULT;
     instance->m_Desc.HeapProperty.CpuPageProperty   = CPU_PAGE_PROPERTY_NOT_AVAILABLE;
-    instance->m_Desc.ComponentMapping.R             = TEXTURE_SWIZZLE_R;
-    instance->m_Desc.ComponentMapping.G             = TEXTURE_SWIZZLE_G;
-    instance->m_Desc.ComponentMapping.B             = TEXTURE_SWIZZLE_G;
-    instance->m_Desc.ComponentMapping.A             = TEXTURE_SWIZZLE_A;
 
     vkGetImageMemoryRequirements(pNativeDevice, image, &instance->m_MemoryRequirements);
 

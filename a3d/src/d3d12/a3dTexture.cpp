@@ -295,7 +295,6 @@ bool Texture::CreateFromNative
     instance->m_Desc.SampleCount        = nativeDesc.SampleDesc.Count;
     instance->m_Desc.InitState          = RESOURCE_STATE_UNKNOWN;
     instance->m_Desc.Usage              = usage;
-    instance->m_Desc.ComponentMapping   = componentMapping;
 
     instance->m_Desc.HeapProperty.Type            = static_cast<HEAP_TYPE>(prop.Type);
     instance->m_Desc.HeapProperty.CpuPageProperty = static_cast<CPU_PAGE_PROPERTY>(prop.CPUPageProperty);

@@ -153,6 +153,7 @@
     <ClInclude Include="..\..\include\a3d.h" />
     <ClInclude Include="..\..\src\a3dBlob.h" />
     <ClInclude Include="..\..\src\vulkan\a3dBuffer.h" />
+    <ClInclude Include="..\..\src\vulkan\a3dBufferView.h" />
     <ClInclude Include="..\..\src\vulkan\a3dCommandList.h" />
     <ClInclude Include="..\..\src\vulkan\a3dCommandSet.h" />
     <ClInclude Include="..\..\src\vulkan\a3dDescriptorSet.h" />
@@ -167,11 +168,13 @@
     <ClInclude Include="..\..\src\vulkan\a3dTexture.h" />
     <ClInclude Include="..\..\src\vulkan\a3dSampler.h" />
     <ClInclude Include="..\..\src\vulkan\a3dSwapChain.h" />
+    <ClInclude Include="..\..\src\vulkan\a3dTextureView.h" />
     <ClInclude Include="..\..\src\vulkan\a3dUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\a3dBlob.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dBuffer.cpp" />
+    <ClCompile Include="..\..\src\vulkan\a3dBufferView.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dCommandList.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dCommandSet.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dDescriptorSet.cpp" />
@@ -191,6 +194,7 @@
     <ClCompile Include="..\..\src\vulkan\a3dTexture.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dSampler.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dSwapChain.cpp" />
+    <ClCompile Include="..\..\src\vulkan\a3dTextureView.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dUtil.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

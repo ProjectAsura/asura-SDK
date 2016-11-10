@@ -60,15 +60,19 @@ a3d::IPipelineState*        g_pPipelineState        = nullptr;  //!< ƒpƒCƒvƒ‰ƒCƒ
 a3d::IBuffer*               g_pVertexBuffer         = nullptr;  //!< ’¸“_ƒoƒbƒtƒ@‚Å‚·.
 a3d::IBuffer*               g_pIndexBuffer          = nullptr;  //!< ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚Å‚·.
 a3d::ITexture*              g_pDepthBuffer          = nullptr;  //!< [“xƒoƒbƒtƒ@‚Å‚·.
+a3d::ITextureView*          g_pDepthView            = nullptr;  //!< [“xƒXƒeƒ“ƒVƒ‹ƒ^[ƒQƒbƒgƒrƒ…[‚Å‚·.
 a3d::ITexture*              g_pTexture              = nullptr;  //!< ƒeƒNƒXƒ`ƒƒ‚Å‚·.
+a3d::ITextureView*          g_pTextureView          = nullptr;  //!< ƒeƒNƒXƒ`ƒƒƒrƒ…[‚Å‚·.
 a3d::ISampler*              g_pSampler              = nullptr;  //!< ƒTƒ“ƒvƒ‰[‚Å‚·.
 a3d::ITexture*              g_pColorBuffer[2]       = {};       //!< ƒJƒ‰[ƒoƒbƒtƒ@‚Å‚·.
+a3d::ITextureView*          g_pColorView[2]         = {};       //!< ƒJƒ‰[ƒrƒ…[‚Å‚·.
 a3d::ICommandList*          g_pCommandList[2]       = {};       //!< ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Å‚·.
 a3d::IFrameBuffer*          g_pFrameBuffer[2]       = {};       //!< ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Å‚·.
 a3d::IBuffer*               g_pConstantBuffer[2]    = {};       //!< ’è”ƒoƒbƒtƒ@‚Å‚·.
+a3d::IBufferView*           g_pConstantView[2]      = {};       //!< ’è”ƒoƒbƒtƒ@ƒrƒ…[‚Å‚·.
+a3d::IDescriptorSet*        g_pDescriptorSet[2]     = {};       //!< ƒfƒBƒXƒNƒŠƒvƒ^ƒZƒbƒg‚Å‚·.
 a3d::Viewport               g_Viewport              = {};       //!< ƒrƒ…[ƒ|[ƒg‚Å‚·.
 a3d::Rect                   g_Scissor               = {};       //!< ƒVƒU[‹éŒ`‚Å‚·.
-a3d::IDescriptorSet*        g_pDescriptorSet[2]     = {};       //!< ƒfƒBƒXƒNƒŠƒvƒ^ƒZƒbƒg‚Å‚·.
 Transform                   g_Transform             = {};       //!< •ÏŠ·s—ñ‚Å‚·.
 float                       g_RotateAngle           = 0.0f;     //!< ‰ñ“]Šp‚Å‚·.
 void*                       g_pCbHead[2]            = {};       //!< ’è”ƒoƒbƒtƒ@‚Ìæ“ªƒ|ƒCƒ“ƒ^‚Å‚·.
@@ -156,6 +160,29 @@ bool InitA3D()
 
         if (!g_pDevice->CreateSwapChain(&desc, &g_pSwapChain))
         { return false; }
+
+        // ƒXƒƒbƒvƒ`ƒFƒCƒ“‚©‚çƒoƒbƒtƒ@‚ğæ“¾.
+        g_pSwapChain->GetBuffer(0, &g_pColorBuffer[0]);
+        g_pSwapChain->GetBuffer(1, &g_pColorBuffer[1]);
+
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_COLOR;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = 1;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        for(auto i=0; i<2; ++i)
+        {
+            if (!g_pDevice->CreateTextureView(g_pColorBuffer[i], &viewDesc, &g_pColorView[i]))
+            { return false; }
+        }
     }
 
     // [“xƒoƒbƒtƒ@‚Ì¶¬.
@@ -173,33 +200,41 @@ bool InitA3D()
         desc.InitState                      = a3d::RESOURCE_STATE_DEPTH_WRITE;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.ComponentMapping.R             = a3d::TEXTURE_SWIZZLE_R;
-        desc.ComponentMapping.G             = a3d::TEXTURE_SWIZZLE_G;
-        desc.ComponentMapping.B             = a3d::TEXTURE_SWIZZLE_B;
-        desc.ComponentMapping.A             = a3d::TEXTURE_SWIZZLE_A;
 
         if (!g_pDevice->CreateTexture(&desc, &g_pDepthBuffer))
+        { return false; }
+
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = desc.Format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_DEPTH;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = desc.DepthOrArraySize;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        if (!g_pDevice->CreateTextureView(g_pDepthBuffer, &viewDesc, &g_pDepthView))
         { return false; }
     }
 
     // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ì¶¬
     {
-        // ƒXƒƒbƒvƒ`ƒFƒCƒ“‚©‚çƒoƒbƒtƒ@‚ğæ“¾.
-        g_pSwapChain->GetBuffer(0, &g_pColorBuffer[0]);
-        g_pSwapChain->GetBuffer(1, &g_pColorBuffer[1]);
-
         // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ìİ’è.
         a3d::FrameBufferDesc desc = {};
         desc.ColorCount         = 1;
-        desc.pColorTargets[0]   = g_pColorBuffer[0];
-        desc.pDepthTarget       = g_pDepthBuffer;
+        desc.pColorTargets[0]   = g_pColorView[0];
+        desc.pDepthTarget       = g_pDepthView;
 
         // 1–‡–Ú‚ÌƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ğ¶¬.
         if (!g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[0]))
         { return false; }
 
         // 2–‡–Ú‚ÌƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ğ¶¬.
-        desc.pColorTargets[0] = g_pColorBuffer[1];
+        desc.pColorTargets[0] = g_pColorView[1];
         if (!g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[1]))
         { return false; }
     }
@@ -235,7 +270,6 @@ bool InitA3D()
         desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pVertexBuffer) )
         { return false; }
@@ -263,7 +297,6 @@ bool InitA3D()
         desc.Usage                          = a3d::RESOURCE_USAGE_INDEX_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pIndexBuffer) )
         { return false; }
@@ -279,18 +312,26 @@ bool InitA3D()
 
     // ’è”ƒoƒbƒtƒ@‚ğ¶¬.
     {
+        auto stride =  a3d::RoundUp<uint32_t>( sizeof(Transform), info.ConstantBufferMemoryAlignment );
+
         a3d::BufferDesc desc = {};
-        desc.Size                           = a3d::RoundUp<uint64_t>( sizeof(Transform), info.ConstantBufferMemoryAlignment );
-        desc.Stride                         = a3d::RoundUp<uint32_t>( sizeof(Transform), info.ConstantBufferMemoryAlignment );
+        desc.Size                           = stride;
+        desc.Stride                         = stride;
         desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
         desc.Usage                          = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
+
+        a3d::BufferViewDesc viewDesc = {};
+        viewDesc.Offset = 0;
+        viewDesc.Range  = stride;
 
         for(auto i=0; i<2; ++i)
         {
             if (!g_pDevice->CreateBuffer(&desc, &g_pConstantBuffer[i]))
+            { return false; }
+
+            if (!g_pDevice->CreateBufferView(g_pConstantBuffer[i], &viewDesc, &g_pConstantView[i]))
             { return false; }
 
             g_pCbHead[i] = g_pConstantBuffer[i]->Map();
@@ -474,6 +515,7 @@ bool InitA3D()
         auto rowPitch = targa.GetWidth() * targa.GetBytePerPixel();
         auto size     = rowPitch * targa.GetHeight() ;
 
+        // ƒeƒ“ƒ|ƒ‰ƒŠƒoƒbƒtƒ@‚Ì—pˆÓ.
         a3d::BufferDesc bufDesc = {};
         bufDesc.Size                            = size;
         bufDesc.InitState                       = a3d::RESOURCE_STATE_GENERAL;
@@ -481,10 +523,12 @@ bool InitA3D()
         bufDesc.HeapProperty.Type               = a3d::HEAP_TYPE_UPLOAD;
         bufDesc.HeapProperty.CpuPageProperty    = a3d::CPU_PAGE_PROPERTY_DEFAULT;
 
+        // ƒeƒ“ƒ|ƒ‰ƒŠƒoƒbƒtƒ@‚ğ¶¬.
         a3d::IBuffer* pImmediate = nullptr;
         if (!g_pDevice->CreateBuffer(&bufDesc, &pImmediate))
         { return false; }
 
+        // ƒeƒNƒXƒ`ƒƒ‚Ìİ’è.
         a3d::TextureDesc desc = {};
         desc.Dimension                      = a3d::RESOURCE_DIMENSION_TEXTURE2D;
         desc.Width                          = targa.GetWidth();
@@ -498,17 +542,36 @@ bool InitA3D()
         desc.Usage                          = a3d::RESOURCE_USAGE_SHADER_RESOURCE | a3d::RESOURCE_USAGE_COPY_DST;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.ComponentMapping.R             = a3d::TEXTURE_SWIZZLE_R;
-        desc.ComponentMapping.G             = a3d::TEXTURE_SWIZZLE_G;
-        desc.ComponentMapping.B             = a3d::TEXTURE_SWIZZLE_B;
-        desc.ComponentMapping.A             = a3d::TEXTURE_SWIZZLE_A;
 
+        // ƒeƒNƒXƒ`ƒƒ‚ğ¶¬.
         if (!g_pDevice->CreateTexture(&desc, &g_pTexture))
         {
             a3d::SafeRelease(pImmediate);
             return false;
         }
 
+        // ƒeƒNƒXƒ`ƒƒƒrƒ…[‚Ìİ’è.
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_COLOR;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = desc.DepthOrArraySize;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        // ƒeƒNƒXƒ`ƒƒƒrƒ…[‚Ì¶¬.
+        if (!g_pDevice->CreateTextureView(g_pTexture, &viewDesc, &g_pTextureView))
+        {
+            a3d::SafeRelease(pImmediate);
+            return false;
+        }
+
+        // ƒTƒuƒŠƒ\[ƒXƒŒƒCƒAƒEƒg‚ğæ“¾.
         auto layout = g_pTexture->GetSubresourceLayout(0);
 
         auto dstPtr = static_cast<uint8_t*>(pImmediate->Map());
@@ -517,6 +580,7 @@ bool InitA3D()
         auto srcPtr = targa.GetPixels();
         assert( srcPtr != nullptr );
 
+        // ƒeƒ“ƒ|ƒ‰ƒŠƒoƒbƒtƒ@‚ÉƒeƒNƒZƒ‹ƒf[ƒ^‚ğ‘‚«‚Ş.
         for(auto i=0; i<layout.RowCount; ++i)
         {
             memcpy(dstPtr, srcPtr, rowPitch);
@@ -527,6 +591,7 @@ bool InitA3D()
 
         a3d::Offset3D offset = {0, 0, 0};
 
+        // ƒeƒNƒXƒ`ƒƒ‚ÉƒRƒs[‚·‚é.
         g_pCommandList[0]->Begin();
         g_pCommandList[0]->TextureBarrier(g_pTexture, a3d::RESOURCE_STATE_COPY_DST);
         g_pCommandList[0]->CopyBufferToTexture(g_pTexture, 0, offset, pImmediate, 0);
@@ -536,6 +601,7 @@ bool InitA3D()
         g_pGraphicsQueue->Execute(nullptr);
         g_pGraphicsQueue->WaitIdle();
 
+        // •s—v‚É‚È‚Á‚½‚Ì‚Å”jŠü‚·‚é.
         a3d::SafeRelease(pImmediate);
     }
 
@@ -578,11 +644,9 @@ bool InitA3D()
     // ƒfƒBƒXƒNƒŠƒvƒ^ƒZƒbƒg‚ÌXV.
     for(auto i=0; i<2; ++i)
     {
-        auto stride = g_pConstantBuffer[i]->GetDesc().Stride;
-
-        g_pDescriptorSet[i]->SetBuffer(0, g_pConstantBuffer[i], stride, 0);
+        g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(2, g_pTexture);
+        g_pDescriptorSet[i]->SetTexture(2, g_pTextureView);
         g_pDescriptorSet[i]->Update();
     }
 
@@ -616,8 +680,14 @@ void TermA3D()
         // ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Ì”jŠü.
         a3d::SafeRelease(g_pCommandList[i]);
 
+        // ƒJƒ‰[ƒ^[ƒQƒbƒgƒrƒ…[‚Ì”jŠü.
+        a3d::SafeRelease(g_pColorView[i]);
+
         // ƒJƒ‰[ƒoƒbƒtƒ@‚Ì”jŠü.
         a3d::SafeRelease(g_pColorBuffer[i]);
+
+        // ’è”ƒoƒbƒtƒ@ƒrƒ…[‚Ì”jŠü.
+        a3d::SafeRelease(g_pConstantView[i]);
 
         // ’è”ƒoƒbƒtƒ@‚Ì”jŠü.
         a3d::SafeRelease(g_pConstantBuffer[i]);
@@ -628,6 +698,9 @@ void TermA3D()
 
     // ƒTƒ“ƒvƒ‰[‚Ì”jŠü.
     a3d::SafeRelease(g_pSampler);
+
+    // ƒeƒNƒXƒ`ƒƒƒrƒ…[‚Ì”jŠü.
+    a3d::SafeRelease(g_pTextureView);
 
     // ƒeƒNƒXƒ`ƒƒ‚Ì”jŠü.
     a3d::SafeRelease(g_pTexture);
@@ -646,6 +719,9 @@ void TermA3D()
 
     // ƒtƒFƒ“ƒX‚Ì”jŠü.
     a3d::SafeRelease(g_pFence);
+
+    // [“xƒXƒeƒ“ƒVƒ‹ƒ^[ƒQƒbƒgƒrƒ…[‚Ì”jŠü.
+    a3d::SafeRelease(g_pDepthView);
 
     // [“xƒoƒbƒtƒ@‚Ì”jŠü.
     a3d::SafeRelease(g_pDepthBuffer);

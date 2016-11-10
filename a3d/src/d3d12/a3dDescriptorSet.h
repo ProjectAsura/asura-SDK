@@ -42,7 +42,6 @@ public:
     static bool A3D_APIENTRY Create(
         IDevice*                    pDevice,
         DescriptorSetLayoutDesc*    pDesc,
-        Descriptor**                ppDescriptors,
         bool                        isGraphicsPipeline,
         IDescriptorSet**            ppDescriptorSet);
 
@@ -76,7 +75,7 @@ public:
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetTexture(uint32_t index, ITexture* pResource) override;
+    void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -84,21 +83,7 @@ public:
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetBuffer(uint32_t index, IBuffer* pResource) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを設定します.
-    //!
-    //! @param[in]      index       レイアウト番号です.
-    //! @param[in]      pResource   設定するリソースです.
-    //! @param[in]      size        設定するサイズです.
-    //! @param[in]      offset      設定するオフセットです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetBuffer(
-        uint32_t    index,
-        IBuffer*    pResource,
-        uint64_t    size,
-        uint64_t    offset) override;
+    void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
@@ -121,26 +106,14 @@ public:
     void A3D_APIENTRY Bind(ICommandList* pCommandList);
 
 private:
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // DescriptorInfo structure
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    struct DescriptorInfo
-    {
-        uint64_t    Size;       //!< バッファサイズです.
-        uint64_t    Offset;     //!< ディスクリプタオセットです.
-        IResource*  pResource;  //!< リソースです.
-        ISampler*   pSampler;   //!< サンプラーです.
-    };
-
     //=============================================================================================
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;                         //!< 参照カウントです.
     IDevice*                    m_pDevice;                          //!< デバイスです.
     DescriptorSetLayoutDesc*    m_pLayoutDesc;                      //!< レイアウト設定です.
-    Descriptor**                m_pDescriptors;                     //!< ディスクリプタです.
-    DescriptorInfo*             m_pDescriptorInfos;                 //!< ディスクリプタ情報です.
     bool                        m_IsGraphicsPipeline;               //!< グラフィックスパイプラインかどうか?
+    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> m_Handles;             //!< ディスクリプタハンドルです.
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コンストラクタです.
@@ -163,20 +136,12 @@ private:
     bool A3D_APIENTRY Init(
         IDevice*                    pDevice,
         DescriptorSetLayoutDesc*    pDesc,
-        Descriptor**                ppDescriptors,
         bool                        isGraphicsPipeline);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Term();
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタ情報をリセットします.
-    //!
-    //! @param[in]      info        リセットするディスクリプタ情報です.
-    //---------------------------------------------------------------------------------------------
-    void ResetDescriptorInfo(DescriptorInfo& info);
 
     DescriptorSet   (const DescriptorSet&) = delete;
     void operator = (const DescriptorSet&) = delete;

@@ -72,7 +72,7 @@ public:
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetTexture(uint32_t index, ITexture* pResource) override;
+    void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -80,21 +80,7 @@ public:
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetBuffer(uint32_t index, IBuffer* pResource) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを設定します.
-    //!
-    //! @param[in]      index       レイアウト番号です.
-    //! @param[in]      pResource   設定するリソースです.
-    //! @param[in]      size        設定するサイズです.
-    //! @param[in]      offset      設定するオフセットです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetBuffer(
-        uint32_t    index,
-        IBuffer*    pResource,
-        uint64_t    size,
-        uint64_t    offset) override;
+    void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.

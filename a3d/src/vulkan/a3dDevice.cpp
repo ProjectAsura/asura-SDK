@@ -596,10 +596,32 @@ bool Device::CreateBuffer(const BufferDesc* pDesc, IBuffer** ppResource)
 { return Buffer::Create(this, pDesc, ppResource); }
 
 //-------------------------------------------------------------------------------------------------
+//      バッファビューを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateBufferView
+(
+    IBuffer*                pBuffer,
+    const BufferViewDesc*   pDesc,
+    IBufferView**           ppBufferView
+)
+{ return BufferView::Create(this, pBuffer, pDesc, ppBufferView); }
+
+//-------------------------------------------------------------------------------------------------
 //      テクスチャを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateTexture(const TextureDesc* pDesc, ITexture** ppResource)
 { return Texture::Create(this, pDesc, ppResource); }
+
+//-------------------------------------------------------------------------------------------------
+//      テクスチャビューを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateTextureView
+(
+    ITexture*               pTexture,
+    const TextureViewDesc*  pDesc,
+    ITextureView**          ppTextureView
+)
+{ return TextureView::Create(this, pTexture, pDesc, ppTextureView); }
 
 //-------------------------------------------------------------------------------------------------
 //      サンプラーを生成します.

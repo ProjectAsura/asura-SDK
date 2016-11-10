@@ -14,6 +14,7 @@
 #include <cassert>
 #include <atomic>
 #include <mutex>
+#include <vector>
 
 #include <d3d12.h>
 #include <dxgi1_5.h>
@@ -30,10 +31,11 @@
 #include "a3dQueue.h"
 #include "a3dSwapChain.h"
 #include "a3dBuffer.h"
+#include "a3dBufferView.h"
 #include "a3dTexture.h"
+#include "a3dTextureView.h"
 #include "a3dSampler.h"
 #include "a3dFrameBuffer.h"
-#include "a3dDescriptor.h"
 #include "a3dDescriptorSetLayout.h"
 #include "a3dDescriptorSet.h"
 #include "a3dPipelineState.h"

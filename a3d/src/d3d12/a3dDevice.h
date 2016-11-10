@@ -129,6 +129,20 @@ public:
         IBuffer**             ppResource) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      バッファビューを生成します.
+    //!
+    //! @param[in]      pBuffer         バッファです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppBufferView    バッファビューの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateBufferView(
+        IBuffer*                pBuffer,
+        const BufferViewDesc*   pDesc,
+        IBufferView**           ppBufferView) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      テクスチャを生成します.
     //!
     //! @param[in]      pDesc           構成設定です.
@@ -139,6 +153,20 @@ public:
     bool A3D_APIENTRY CreateTexture(
         const TextureDesc*     pDesc,
         ITexture**             ppResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      テクスチャビューを生成します.
+    //!
+    //! @param[in]      pTexture        テクスチャです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppTextureView   テクスチャビューの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateTextureView(
+        ITexture*               pTexture,
+        const TextureViewDesc*  pDesc,
+        ITextureView**          ppTextureView) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを生成します.

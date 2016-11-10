@@ -155,6 +155,12 @@ void Buffer::Unmap()
 { m_pResource->Unmap(0, nullptr); }
 
 //-------------------------------------------------------------------------------------------------
+//      プライベートデータを取得します.
+//-------------------------------------------------------------------------------------------------
+uint32_t Buffer::GetPrivateData() const
+{ return RESOURCE_OBJECT_TYPE_BUFFER; }
+
+//-------------------------------------------------------------------------------------------------
 //      リソースステートを設定します.
 //-------------------------------------------------------------------------------------------------
 void Buffer::SetState(RESOURCE_STATE state)
@@ -165,12 +171,6 @@ void Buffer::SetState(RESOURCE_STATE state)
 //-------------------------------------------------------------------------------------------------
 ID3D12Resource* Buffer::GetD3D12Resource() const
 { return m_pResource; }
-
-//-------------------------------------------------------------------------------------------------
-//      プライベートデータを取得します.
-//-------------------------------------------------------------------------------------------------
-uint32_t Buffer::GetPrivateData() const
-{ return RESOURCE_OBJECT_TYPE_BUFFER; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
@@ -189,51 +189,6 @@ bool Buffer::Create(IDevice* pDevice, const BufferDesc* pDesc, IBuffer** ppResou
         SafeRelease(instance);
         return false;
     }
-
-    *ppResource = instance;
-    return true;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      ネイティブリソースから生成処理を行います.
-//-------------------------------------------------------------------------------------------------
-bool Buffer::CreateFromNative
-(
-    IDevice*        pDevice,
-    ID3D12Resource* pNativeResource,
-    RESOURCE_USAGE  usage,
-    uint32_t        stride,
-    bool            enableRow,
-    IBuffer**       ppResource
-)
-{
-    if (pDevice == nullptr || pNativeResource == nullptr || ppResource == nullptr)
-    { return false; }
-
-    auto instance = new (std::nothrow) Buffer;
-    if (instance == nullptr)
-    { return false; }
-
-    instance->m_pDevice = pDevice;
-    instance->m_pDevice->AddRef();
-
-    instance->m_pResource = pNativeResource;
-    instance->m_pResource->AddRef();
-
-    D3D12_HEAP_PROPERTIES prop = {};
-    D3D12_HEAP_FLAGS flag;
-    pNativeResource->GetHeapProperties(&prop, &flag);
-    auto nativeDesc = pNativeResource->GetDesc();
- 
-    instance->m_Desc.Size                         = static_cast<uint32_t>(nativeDesc.Width);
-    instance->m_Desc.Usage                        = usage;
-    instance->m_Desc.Stride                       = stride;
-    instance->m_Desc.EnableRow                    = enableRow;
-    instance->m_Desc.InitState                    = RESOURCE_STATE_UNKNOWN;
-    instance->m_Desc.HeapProperty.Type            = static_cast<HEAP_TYPE>(prop.Type);
-    instance->m_Desc.HeapProperty.CpuPageProperty = static_cast<CPU_PAGE_PROPERTY>(prop.CPUPageProperty);
-
-    instance->m_State = RESOURCE_STATE_UNKNOWN;
 
     *ppResource = instance;
     return true;

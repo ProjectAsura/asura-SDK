@@ -33,9 +33,11 @@ GuiMgr GuiMgr::s_Instance;
 //-------------------------------------------------------------------------------------------------
 GuiMgr::GuiMgr()
 : m_pDevice             (nullptr)
-, m_pCB                 (nullptr)
-, m_pSmp                (nullptr)
-, m_pSRV                (nullptr)
+, m_pConstantBuffer     (nullptr)
+, m_pConstantView       (nullptr)
+, m_pSampler            (nullptr)
+, m_pTexture            (nullptr)
+, m_pTextureView        (nullptr)
 , m_pDescriptorSetLayout(nullptr)
 , m_pDescriptorSet      (nullptr)
 , m_pPipelineState      (nullptr)
@@ -83,7 +85,6 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
 
         for(auto i=0; i<2; ++i)
         {
@@ -101,7 +102,6 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.Usage                          = a3d::RESOURCE_USAGE_INDEX_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
 
         for(auto i=0; i<2; ++i)
         {
@@ -121,12 +121,18 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.Usage                          = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
 
-        if ( !m_pDevice->CreateBuffer(&desc, &m_pCB) )
+        if ( !m_pDevice->CreateBuffer(&desc, &m_pConstantBuffer) )
         { return false; }
 
-        m_pProjection = static_cast<Mat4*>(m_pCB->Map());
+        a3d::BufferViewDesc viewDesc = {};
+        viewDesc.Offset = 0;
+        viewDesc.Range  = desc.Stride;
+
+        if ( !m_pDevice->CreateBufferView(m_pConstantBuffer, &viewDesc, &m_pConstantView) )
+        { return false; }
+
+        m_pProjection = static_cast<Mat4*>(m_pConstantBuffer->Map());
     }
 
     // フォントテクスチャを生成.
@@ -166,18 +172,33 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.Usage                          = a3d::RESOURCE_USAGE_SHADER_RESOURCE | a3d::RESOURCE_USAGE_COPY_DST;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.ComponentMapping.R             = a3d::TEXTURE_SWIZZLE_R;
-        desc.ComponentMapping.G             = a3d::TEXTURE_SWIZZLE_G;
-        desc.ComponentMapping.B             = a3d::TEXTURE_SWIZZLE_B;
-        desc.ComponentMapping.A             = a3d::TEXTURE_SWIZZLE_A;
 
-        if (!m_pDevice->CreateTexture(&desc, &m_pSRV))
+        if (!m_pDevice->CreateTexture(&desc, &m_pTexture))
         {
             a3d::SafeRelease(pImmediate);
             return false;
         }
 
-        auto layout = m_pSRV->GetSubresourceLayout(0);
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = desc.Format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_COLOR;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = desc.DepthOrArraySize;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        if (!m_pDevice->CreateTextureView(m_pTexture, &viewDesc, &m_pTextureView))
+        {
+            a3d::SafeRelease(pImmediate);
+            return false;
+        }
+
+        auto layout = m_pTexture->GetSubresourceLayout(0);
 
         auto dstPtr = static_cast<uint8_t*>(pImmediate->Map());
         assert( dstPtr != nullptr );
@@ -203,9 +224,9 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         m_pDevice->GetGraphicsQueue(&pGraphicsQueue);
 
         pCommandList->Begin();
-        pCommandList->TextureBarrier(m_pSRV, a3d::RESOURCE_STATE_COPY_DST);
-        pCommandList->CopyBufferToTexture(m_pSRV, 0, offset, pImmediate, 0);
-        pCommandList->TextureBarrier(m_pSRV, a3d::RESOURCE_STATE_SHADER_READ);
+        pCommandList->TextureBarrier(m_pTexture, a3d::RESOURCE_STATE_COPY_DST);
+        pCommandList->CopyBufferToTexture(m_pTexture, 0, offset, pImmediate, 0);
+        pCommandList->TextureBarrier(m_pTexture, a3d::RESOURCE_STATE_SHADER_READ);
         pCommandList->End();
         pGraphicsQueue->Submit(pCommandList);
         pGraphicsQueue->Execute(nullptr);
@@ -234,7 +255,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.MaxLod             = FLT_MAX;
         desc.BorderColor        = a3d::BORDER_COLOR_TRANSPARENT_BLACK;
 
-        if (!m_pDevice->CreateSampler(&desc, &m_pSmp))
+        if (!m_pDevice->CreateSampler(&desc, &m_pSampler))
         { return false; }
 
     }
@@ -266,9 +287,9 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet))
         { return false; }
 
-        m_pDescriptorSet->SetBuffer (0, m_pCB);
-        m_pDescriptorSet->SetSampler(1, m_pSmp);
-        m_pDescriptorSet->SetTexture(2, m_pSRV);
+        m_pDescriptorSet->SetBuffer (0, m_pConstantView);
+        m_pDescriptorSet->SetSampler(1, m_pSampler);
+        m_pDescriptorSet->SetTexture(2, m_pTextureView);
         m_pDescriptorSet->Update();
     }
 
@@ -475,7 +496,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         io.DisplaySize.x      = float(pApp->GetWidth());
         io.DisplaySize.y      = float(pApp->GetHeight());
 
-        io.Fonts->TexID = reinterpret_cast<void*>(m_pSRV);
+        io.Fonts->TexID = reinterpret_cast<void*>(m_pTextureView);
 
         ImGui::NewFrame();
     }
@@ -498,8 +519,11 @@ void GuiMgr::Term()
         m_SizeIB[i] = 0;
     }
 
-    a3d::SafeRelease(m_pSmp);
-    a3d::SafeRelease(m_pSRV);
+    a3d::SafeRelease(m_pConstantView);
+    a3d::SafeRelease(m_pConstantBuffer);
+    a3d::SafeRelease(m_pSampler);
+    a3d::SafeRelease(m_pTextureView);
+    a3d::SafeRelease(m_pTexture);
     a3d::SafeRelease(m_pDescriptorSet);
     a3d::SafeRelease(m_pDescriptorSetLayout);
     a3d::SafeRelease(m_pPipelineState);

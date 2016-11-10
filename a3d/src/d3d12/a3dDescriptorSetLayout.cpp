@@ -253,46 +253,11 @@ bool DescriptorSetLayout::CreateDescriptorSet(IDescriptorSet** ppDesctiproSet)
     if (ppDesctiproSet == nullptr)
     { return false; }
 
-    Descriptor** ppDescriptors = new (std::nothrow) Descriptor* [m_Desc.EntryCount];
-    if (ppDescriptors == nullptr)
-    { return false; }
-
     auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);
 
-    for(auto i=0u; i<m_Desc.EntryCount; ++i)
-    {
-        switch(m_Desc.Entries[i].Type)
-        {
-        case DESCRIPTOR_TYPE_CBV:
-        case DESCRIPTOR_TYPE_SRV:
-        case DESCRIPTOR_TYPE_UAV:
-            {
-                ppDescriptors[i] = pWrapDevice
-                    ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
-                    ->CreateDescriptor();
-            }
-            break;
-
-        case DESCRIPTOR_TYPE_SMP:
-            {
-                ppDescriptors[i] = pWrapDevice
-                    ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
-                    ->CreateDescriptor();
-            }
-            break;
-        }
-    }
-
-    if (!DescriptorSet::Create(m_pDevice, &m_Desc, ppDescriptors, m_IsGraphicsPipeline, ppDesctiproSet))
-    {
-        for(auto i=0u; i<m_Desc.EntryCount; ++i)
-        { ppDescriptors[i]->Release(); }
-
-        delete [] ppDescriptors;
-
-        return false;
-    }
+    if (!DescriptorSet::Create(m_pDevice, &m_Desc, m_IsGraphicsPipeline, ppDesctiproSet))
+    { return false; }
 
     return true;
 }

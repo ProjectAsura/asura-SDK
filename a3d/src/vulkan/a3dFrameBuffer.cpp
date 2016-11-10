@@ -49,25 +49,19 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
     VkAttachmentDescription attachmentDesc[9] = {};
     VkAttachmentReference   attachmentRefs[9] = {};
     VkImageView             imageViews    [9] = {};
+    VkAttachmentReference*  pDepthAttachmentRef = nullptr;
 
     uint32_t attachmentCount = pDesc->ColorCount;
-    uint32_t width  = (pDesc->ColorCount != 0)
-                      ? pDesc->pColorTargets[0]->GetDesc().Width
-                      : pDesc->pDepthTarget->GetDesc().Width;
-    uint32_t height = (pDesc->ColorCount != 0) 
-                      ? pDesc->pColorTargets[0]->GetDesc().Height
-                      : pDesc->pDepthTarget->GetDesc().Height;
-    uint32_t layers = (pDesc->ColorCount != 0)
-                      ? pDesc->pColorTargets[0]->GetDesc().DepthOrArraySize
-                      : pDesc->pDepthTarget->GetDesc().DepthOrArraySize;
-
+    uint32_t width  = 0;
+    uint32_t height = 0;
+    uint32_t layers = 0;
     {
         for(auto i=0u; i<pDesc->ColorCount; ++i)
         {
-            auto pWrapTexture = reinterpret_cast<Texture*>(pDesc->pColorTargets[i]);
+            auto pWrapTexture = reinterpret_cast<TextureView*>(pDesc->pColorTargets[i]);
             A3D_ASSERT(pWrapTexture != nullptr);
 
-            auto& desc = pWrapTexture->GetDesc();
+            auto& desc = pWrapTexture->GetTextureDesc();
             attachmentDesc[i].format            = ToNativeFormat(desc.Format);
             attachmentDesc[i].samples           = ToNativeSampleCountFlags(desc.SampleCount);
             attachmentDesc[i].loadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -82,17 +76,24 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
             attachmentRefs[i].layout        = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
             imageViews[i] = pWrapTexture->GetVulkanImageView();
+
+            if (width == 0 && height == 0 && layers == 0)
+            {
+                width  = desc.Width;
+                height = desc.Height;
+                layers = desc.DepthOrArraySize;
+            }
         }
 
         if (pDesc->pDepthTarget != nullptr)
         {
             attachmentCount++;
 
-            auto pWrapTexture = reinterpret_cast<Texture*>(pDesc->pDepthTarget);
+            auto pWrapTexture = reinterpret_cast<TextureView*>(pDesc->pDepthTarget);
             A3D_ASSERT(pWrapTexture != nullptr);
 
             auto idx   = pDesc->ColorCount;
-            auto& desc = pWrapTexture->GetDesc();
+            auto& desc = pWrapTexture->GetTextureDesc();
             attachmentDesc[idx].format          = ToNativeFormat(desc.Format);
             attachmentDesc[idx].samples         = ToNativeSampleCountFlags(desc.SampleCount);
             attachmentDesc[idx].loadOp          = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -106,6 +107,15 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
             attachmentRefs[idx].layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
             imageViews[idx] = pWrapTexture->GetVulkanImageView();
+
+            pDepthAttachmentRef = &attachmentRefs[idx];
+
+            if (width == 0 && height == 0 && layers == 0)
+            {
+                width  = desc.Width;
+                height = desc.Height;
+                layers = desc.DepthOrArraySize;
+            }
         }
     }
 
@@ -118,7 +128,7 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
         subpass.colorAttachmentCount    = pDesc->ColorCount;
         subpass.pColorAttachments       = attachmentRefs;
         subpass.pResolveAttachments     = nullptr;
-        subpass.pDepthStencilAttachment = (pDesc->pDepthTarget != nullptr) ? &attachmentRefs[pDesc->ColorCount] : nullptr;
+        subpass.pDepthStencilAttachment = pDepthAttachmentRef;
         subpass.preserveAttachmentCount = 0;
         subpass.pPreserveAttachments    = nullptr;
 
@@ -266,24 +276,25 @@ void FrameBuffer::Clear
     A3D_ASSERT( pNativeCommandBuffer != null_handle );
 
     VkClearAttachment clearAttachment[9] = {};
-    VkClearRect clearRect[9] = {};
+    VkClearRect       clearRect[9] = {};
 
     if ( m_Desc.ColorCount > 0 && pClearColors != nullptr)
     {
         for(auto i=0u; i<clearColorCount; ++i)
         {
-            auto pWrapResources = reinterpret_cast<Texture*>(m_Desc.pColorTargets[i]);
+            auto pWrapResources = reinterpret_cast<TextureView*>(m_Desc.pColorTargets[i]);
             clearAttachment[i].clearValue.color.float32[0] = pClearColors[i].Float[0];
             clearAttachment[i].clearValue.color.float32[1] = pClearColors[i].Float[1];
             clearAttachment[i].clearValue.color.float32[2] = pClearColors[i].Float[2];
             clearAttachment[i].clearValue.color.float32[3] = pClearColors[i].Float[3];
 
-            clearAttachment[i].aspectMask      = VK_IMAGE_ASPECT_COLOR_BIT;
+            clearAttachment[i].aspectMask      = pWrapResources->GetVulkanImageAspectFlags();
             clearAttachment[i].colorAttachment = i;
 
-            auto& desc = pWrapResources->GetDesc();
-            clearRect[i].baseArrayLayer     = 0;
-            clearRect[i].layerCount         = desc.DepthOrArraySize;
+            auto& desc     = pWrapResources->GetTextureDesc();
+            auto& viewDesc = pWrapResources->GetDesc();
+            clearRect[i].baseArrayLayer     = viewDesc.FirstArraySlice;
+            clearRect[i].layerCount         = viewDesc.ArraySize;
             clearRect[i].rect.offset.x      = 0;
             clearRect[i].rect.offset.y      = 0;
             clearRect[i].rect.extent.width  = desc.Width;
@@ -293,7 +304,7 @@ void FrameBuffer::Clear
 
     if (m_Desc.pDepthTarget != nullptr && pClearDepthStencil != nullptr)
     {
-        auto pWrapResources = reinterpret_cast<Texture*>(m_Desc.pDepthTarget);
+        auto pWrapResources = reinterpret_cast<TextureView*>(m_Desc.pDepthTarget);
 
         VkImageAspectFlags mask = 0;
         if (pClearDepthStencil->EnableClearDepth)
@@ -311,9 +322,10 @@ void FrameBuffer::Clear
             clearAttachment[idx].aspectMask      = mask;
             clearAttachment[idx].colorAttachment = m_Desc.ColorCount;
 
-            auto& desc = pWrapResources->GetDesc();
-            clearRect[idx].baseArrayLayer       = 0;
-            clearRect[idx].layerCount           = desc.DepthOrArraySize;
+            auto& desc     = pWrapResources->GetTextureDesc();
+            auto& viewDesc = pWrapResources->GetDesc();
+            clearRect[idx].baseArrayLayer       = viewDesc.FirstArraySlice;
+            clearRect[idx].layerCount           = viewDesc.ArraySize;
             clearRect[idx].rect.offset.x        = 0;
             clearRect[idx].rect.offset.y        = 0;
             clearRect[idx].rect.extent.width    = desc.Width;

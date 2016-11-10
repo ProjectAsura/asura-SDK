@@ -12,7 +12,7 @@ namespace a3d {
 //-------------------------------------------------------------------------------------------------
 VkFormat ToNativeFormat(RESOURCE_FORMAT value)
 {
-    VkFormat table[] = {
+    static VkFormat table[] = {
         VK_FORMAT_UNDEFINED,
         VK_FORMAT_R32G32B32A32_SFLOAT,
         VK_FORMAT_R32G32B32A32_UINT,
@@ -97,7 +97,7 @@ VkFormat ToNativeFormat(RESOURCE_FORMAT value)
 //-------------------------------------------------------------------------------------------------
 VkFormat ToNativeViewFormat(RESOURCE_FORMAT value)
 {
-    VkFormat table[] = {
+    static VkFormat table[] = {
         VK_FORMAT_UNDEFINED,
         VK_FORMAT_R32G32B32A32_SFLOAT,
         VK_FORMAT_R32G32B32A32_UINT,
@@ -181,7 +181,7 @@ VkFormat ToNativeViewFormat(RESOURCE_FORMAT value)
 //-------------------------------------------------------------------------------------------------
 VkCompareOp ToNativeCompareOp(COMPARE_OP value)
 {
-    VkCompareOp table[] = {
+    static VkCompareOp table[] = {
         VK_COMPARE_OP_NEVER,
         VK_COMPARE_OP_LESS,
         VK_COMPARE_OP_EQUAL,
@@ -199,7 +199,7 @@ VkCompareOp ToNativeCompareOp(COMPARE_OP value)
 //-------------------------------------------------------------------------------------------------
 VkImageLayout ToNativeImageLayout(RESOURCE_STATE value)
 {
-    VkImageLayout table[] = {
+    static VkImageLayout table[] = {
         VK_IMAGE_LAYOUT_UNDEFINED,                                  // UNKNOWN
         VK_IMAGE_LAYOUT_GENERAL,                                    // GENERAL
         VK_IMAGE_LAYOUT_GENERAL,                                    // VERTEX_BUFFER
@@ -229,7 +229,7 @@ VkImageLayout ToNativeImageLayout(RESOURCE_STATE value)
 //-------------------------------------------------------------------------------------------------
 VkDescriptorType ToNativeDescriptorType(DESCRIPTOR_TYPE type)
 {
-    VkDescriptorType table[] = {
+    static VkDescriptorType table[] = {
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,

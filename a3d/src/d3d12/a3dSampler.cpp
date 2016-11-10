@@ -93,8 +93,9 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 Sampler::Sampler()
-: m_RefCount(1)
-, m_pDevice (nullptr)
+: m_RefCount    (1)
+, m_pDevice     (nullptr)
+, m_pDescriptor (nullptr)
 { memset( &m_Desc, 0, sizeof(m_Desc) ); }
 
 //-------------------------------------------------------------------------------------------------
@@ -114,6 +115,9 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
     m_pDevice = pDevice;
     m_pDevice->AddRef();
 
+    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
+    A3D_ASSERT( pWrapDevice != nullptr );
+
     m_Desc.Filter         = ToNativeFilter(
                                 pDesc->MinFilter,
                                 pDesc->MagFilter,
@@ -130,6 +134,17 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
     m_Desc.MaxLOD         = pDesc->MaxLod;
     ToNativeBorderColor( pDesc->BorderColor, m_Desc.BorderColor );
 
+    m_pDescriptor = pWrapDevice
+                        ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
+                        ->CreateDescriptor();
+    if (m_pDescriptor == nullptr)
+    { return false; }
+
+    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    A3D_ASSERT( pNativeDevice != nullptr );
+
+    pNativeDevice->CreateSampler( &m_Desc, m_pDescriptor->GetHandleCPU() );
+
     return true;
 }
 
@@ -138,6 +153,7 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
 //-------------------------------------------------------------------------------------------------
 void Sampler::Term()
 {
+    SafeRelease(m_pDescriptor);
     SafeRelease(m_pDevice);
     memset( &m_Desc, 0, sizeof(m_Desc) );
 }
@@ -179,6 +195,12 @@ void Sampler::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 D3D12_SAMPLER_DESC Sampler::GetD3D12SamplerDesc() const
 { return m_Desc; }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタを取得します.
+//-------------------------------------------------------------------------------------------------
+const Descriptor* Sampler::GetDescriptor() const
+{ return m_pDescriptor; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

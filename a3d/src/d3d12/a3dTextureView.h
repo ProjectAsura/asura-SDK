@@ -1,6 +1,6 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : a3dFrameBuffer.h
-// Desc : Frame Buffer Implmentation.
+// File : a3dTextureView.h
+// Desc : Texture View Module.
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 #pragma once
@@ -9,14 +9,14 @@
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// FrameBuffer class
+// TextureView class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API FrameBuffer : IFrameBuffer
+class A3D_API TextureView : ITextureView
 {
     //=============================================================================================
     // list of friend classes and methods.
     //=============================================================================================
-    /* NOTHING */
+    /* NONTHING */
 
 public:
     //=============================================================================================
@@ -32,15 +32,17 @@ public:
     //! @brief      生成処理を行います.
     //!
     //! @param[in]      pDevice         デバイスです.
+    //! @param[in]      pTexture        テクスチャです.
     //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppFrameBuffer   フレームバッファの格納先です.
+    //! @param[out]     ppTextureView   テクスチャビューの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
-        IDevice*                pDevice,
-        const FrameBufferDesc*  pDesc, 
-        IFrameBuffer**          ppFrameBuffer);
+        IDevice*                pDevice, 
+        ITexture*               pTexture,
+        const TextureViewDesc*  pDesc,
+        ITextureView**          ppTextureView);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウントを増やします.
@@ -67,75 +69,36 @@ public:
     void A3D_APIENTRY GetDevice(IDevice** ppDevice) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      フレームバッファを設定する描画コマンドを発行します.
+    //! @brief      構成設定を取得します.
     //!
-    //! @param[in]      pCommandList        コマンドリストです.
+    //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY Bind(ICommandList* pCommandList);
+    TextureViewDesc A3D_APIENTRY GetDesc() const override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      フレームバッファをクリアする描画コマンドを発行します.
+    //! @brief      ターゲット用ディスクリプタを取得します.
     //!
-    //! @param[in]      pCommandList        コマンドリストです.
-    //! @param[in]      clearColorCount     クリアカラー数です.
-    //! @param[in]      pClearColors        クリアカラーの配列です.
-    //! @param[in]      pClearDepthStencil  クリア深度ステンシルです.
+    //! @return     ターゲット用ディスクリプタを返却します.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY Clear(
-        ICommandList*                   pCommand,
-        uint32_t                        clearColorCount,
-        const ClearColorValue*          pClearColors,
-        const ClearDepthStencilValue*   pClearDepthStencil);
+    const Descriptor* A3D_APIENTRY GetTargetDescriptor() const;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      カラーターゲット数を取得します.
+    //! @brief      シェーダリソース用ディスクリプタを取得します.
     //!
-    //! @return     カラーターゲット数を返却します.
+    //! @return     シェーダリソース用ディスクリプタを取得します.
     //---------------------------------------------------------------------------------------------
-    uint32_t A3D_APIENTRY GetColorCount() const;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      カラーターゲットを持つかどうかチェックします.
-    //!
-    //! @retval true    カラーターゲットを持ちます.
-    //! @retval false   カラーターゲットはありません.
-    //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY HasColorTarget() const;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      深度ターゲットを持つかどうかチェックします.
-    //!
-    //! @retval true    深度ターゲットを持ちます.
-    //! @retval false   深度ターゲットはありません.
-    //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY HasDepthTarget() const;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      レンダーターゲットビューのフォーマットの配列を取得します.
-    //!
-    //! @return     レンダーターゲットビューのフォーマットの配列を返却します.
-    //---------------------------------------------------------------------------------------------
-    const DXGI_FORMAT* A3D_APIENTRY GetD3D12RenderTargetViewFormats() const;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      深度ステンシルビューのフォーマットを取得します.
-    //!
-    //! @return     深度ステンシルビューのフォーマットを返却します.
-    //---------------------------------------------------------------------------------------------
-    DXGI_FORMAT A3D_APIENTRY GetD3D12DepthStencilViewFormat() const;
+    const Descriptor* A3D_APIENTRY GetShaderDescriptor() const;
 
 private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>       m_RefCount;             //!< 参照カウンタです.
-    IDevice*                    m_pDevice;              //!< デバイスです.
-    FrameBufferDesc             m_Desc;                 //!< 構成設定です.
-    DXGI_FORMAT                 m_RTVFormats[8];        //!< レンダーターゲットビューのフォーマットです.
-    DXGI_FORMAT                 m_DSVFormat;            //!< 深度ステンシルビューのフォーマットです.
-    D3D12_CPU_DESCRIPTOR_HANDLE m_RTVHandles[8];        //!< レンダーターゲットビューハンドルです.
-    D3D12_CPU_DESCRIPTOR_HANDLE m_DSVHandle;            //!< 深度ステンシルターゲットビューハンドルです.
-    bool                        m_HasDepth;
+    std::atomic<uint32_t>   m_RefCount;             //!< 参照カウンタです.
+    IDevice*                m_pDevice;              //!< デバイスです.
+    TextureViewDesc         m_Desc;                 //!< 構成設定です.
+    Texture*                m_pTexture;             //!< テクスチャです.
+    Descriptor*             m_pTargetDescriptor;    //!< カラーターゲット・深度ターゲット用ディスクリプタです.
+    Descriptor*             m_pShaderDescriptor;    //!< シェーダリソース用ディスクリプタです.
 
     //=============================================================================================
     // private methods.
@@ -144,30 +107,34 @@ private:
     //---------------------------------------------------------------------------------------------
     //! @brief      コンストラクタです.
     //---------------------------------------------------------------------------------------------
-    A3D_APIENTRY FrameBuffer();
+    A3D_APIENTRY TextureView();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    A3D_APIENTRY ~FrameBuffer();
+    A3D_APIENTRY ~TextureView();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      初期化処理を行います.
     //!
     //! @param[in]      pDevice     デバイスです.
-    //! @parma[in]      pDesc       構成設定です.
+    //! @param[in]      pTexture    テクスチャです.
+    //! @param[in]      pDesc       構成設定です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(IDevice* pDevice, const FrameBufferDesc* pDesc);
+    bool A3D_APIENTRY Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Term();
 
-    FrameBuffer     (const FrameBuffer&) = delete;
-    void operator = (const FrameBuffer&) = delete;
+    TextureView     (const TextureView&) = delete;
+    void operator = (const TextureView&) = delete;
 };
 
+
+
 } // namespace a3d
+

@@ -149,6 +149,7 @@
     <ClInclude Include="..\..\src\a3dBlob.h" />
     <ClInclude Include="..\..\src\a3dResourceType.h" />
     <ClInclude Include="..\..\src\d3d12\a3dBuffer.h" />
+    <ClInclude Include="..\..\src\d3d12\a3dBufferView.h" />
     <ClInclude Include="..\..\src\d3d12\a3dCommandList.h" />
     <ClInclude Include="..\..\src\d3d12\a3dCommandSet.h" />
     <ClInclude Include="..\..\src\d3d12\a3dDescriptor.h" />
@@ -165,11 +166,13 @@
     <ClInclude Include="..\..\src\d3d12\a3dTexture.h" />
     <ClInclude Include="..\..\src\d3d12\a3dSampler.h" />
     <ClInclude Include="..\..\src\d3d12\a3dSwapChain.h" />
+    <ClInclude Include="..\..\src\d3d12\a3dTextureView.h" />
     <ClInclude Include="..\..\src\d3d12\a3dUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\a3dBlob.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dBuffer.cpp" />
+    <ClCompile Include="..\..\src\d3d12\a3dBufferView.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dCommandList.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dCommandSet.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dDescriptor.cpp" />
@@ -191,6 +194,7 @@
     <ClCompile Include="..\..\src\d3d12\a3dTexture.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dSampler.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dSwapChain.cpp" />
+    <ClCompile Include="..\..\src\d3d12\a3dTextureView.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dUtil.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

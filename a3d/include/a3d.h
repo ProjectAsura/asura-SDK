@@ -82,6 +82,7 @@ struct IDescriptorSetLayout;
 struct IFrameBuffer;
 struct IBuffer;
 struct ITexture;
+struct ITextureView;
 struct IBlob;
 
 
@@ -108,6 +109,22 @@ enum RESOURCE_DIMENSION
     RESOURCE_DIMENSION_TEXTURE2D    = 3,    //!< 2次元テクスチャです.
     RESOURCE_DIMENSION_TEXTURE3D    = 4,    //!< 3次元テクスチャです.
     RESOURCE_DIMENSION_CUBEMAP      = 5,    //!< キューブマップです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   VIEW_DIMENSION
+//! @brief  ビューの次元です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum VIEW_DIMENSION
+{
+    VIEW_DIMENSION_BUFFER               = 0,    //!< バッファです.
+    VIEW_DIMENSION_TEXTURE1D            = 1,    //!< 1次元テクスチャです.
+    VIEW_DIMENSION_TEXTURE1D_ARRAY      = 2,    //!< 1次元テクスチャ配列です.
+    VIEW_DIMENSION_TEXTURE2D            = 3,    //!< 2次元テクスチャです.
+    VIEW_DIMENSION_TEXTURE2D_ARRAY      = 4,    //!< 2次元テクスチャ配列です.
+    VIEW_DIMENSION_CUBEMAP              = 5,    //!< キューブマップです.
+    VIEW_DIMENSION_CUBEMAP_ARRAY        = 6,    //!< キューブマップ配列です.
+    VIEW_DIMENSION_TEXTURE3D            = 7,    //!< 3次元テクスチャです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -519,6 +536,17 @@ enum INPUT_CLASSIFICATION
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   TEXTURE_ASPECT
+//! @brief  テクスチャアスペクトです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum TEXTURE_ASPECT
+{
+    TEXTURE_ASPECT_COLOR    = 0,    //!< カラーです.
+    TEXTURE_ASPECT_DEPTH    = 1,    //!< 深度です.
+    TEXTURE_ASPECT_STENCIL  = 2,    //!< ステンシルです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // Offset2D structure
 //! @brief  2次元のオフセットです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -687,7 +715,16 @@ struct BufferDesc
     uint32_t            Usage;              //!< 使用用途です.
     RESOURCE_STATE      InitState;          //!< 初期状態です.
     HeapProperty        HeapProperty;       //!< ヒーププロパティです.
-    bool                EnableRow;          //!< ローバッファ有効フラグ.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// BufferViewDesc structure
+//! @brief  バッファビューの構成設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct BufferViewDesc
+{
+    uint64_t            Offset;             //!< オフセットです.
+    uint64_t            Range;              //!< 使用サイズです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -707,7 +744,22 @@ struct TextureDesc
     uint32_t                Usage;              //!< 使用用途です.
     RESOURCE_STATE          InitState;          //!< 初期状態です.
     HeapProperty            HeapProperty;       //!< ヒーププロパティです.
-    ComponentMapping        ComponentMapping;   //!< コンポーネントマッピングです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// TextureViewDesc structure
+//! @brief  テクスチャビューの構成設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct TextureViewDesc
+{
+    VIEW_DIMENSION          Dimension;
+    RESOURCE_FORMAT         Format;
+    TEXTURE_ASPECT          TextureAspect;
+    uint32_t                MipSlice;
+    uint32_t                MipLevels;
+    uint32_t                FirstArraySlice;
+    uint32_t                ArraySize;
+    ComponentMapping        ComponentMapping;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -717,8 +769,8 @@ struct TextureDesc
 struct FrameBufferDesc
 {
     uint32_t                ColorCount;         //!< カラーターゲット数です.
-    ITexture*               pColorTargets[8];   //!< カラーターゲットです.
-    ITexture*               pDepthTarget;       //!< 深度ステンシルターゲットです.
+    ITextureView*           pColorTargets[8];   //!< カラーターゲットです.
+    ITextureView*           pDepthTarget;       //!< 深度ステンシルターゲットです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1219,6 +1271,26 @@ struct A3D_API IBuffer : IResource
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// IBufferView interface
+//! @brief      バッファビューインタフェースです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct A3D_API IBufferView : IDeviceChild
+{
+    //---------------------------------------------------------------------------------------------
+    //! @brief      デストラクタです.
+    //---------------------------------------------------------------------------------------------
+    virtual A3D_APIENTRY ~IBufferView()
+    { /* DO_NOTHING */ }
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      構成設定を取得します.
+    //!
+    //! @return     構成設定を返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual BufferViewDesc A3D_APIENTRY GetDesc() const = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // ITexture interface 
 //! @brief      テクスチャインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1244,6 +1316,26 @@ struct A3D_API ITexture : IResource
     //! @return     サブリソースレイアウトを返却します.
     //---------------------------------------------------------------------------------------------
     virtual SubresourceLayout A3D_APIENTRY GetSubresourceLayout(uint32_t subresource) const = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ITextureView interface
+//! @brief      テクスチャビューインタフェースです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct A3D_API ITextureView : IDeviceChild
+{
+    //---------------------------------------------------------------------------------------------
+    //! @brief      デストラクタです.
+    //---------------------------------------------------------------------------------------------
+    virtual A3D_APIENTRY ~ITextureView()
+    { /* DO_NOTHING */ }
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      構成設定を取得します.
+    //!
+    //! @return     構成設定を返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual TextureViewDesc A3D_APIENTRY GetDesc() const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1277,7 +1369,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetTexture(uint32_t index, ITexture* pResource) = 0;
+    virtual void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -1285,21 +1377,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetBuffer(uint32_t index, IBuffer* pResource) = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを設定します.
-    //!
-    //! @param[in]      index       レイアウト番号です.
-    //! @param[in]      pResource   設定するリソースです.
-    //! @param[in]      size        バッファサイズです.
-    //! @param[in]      offset      オフセットです.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetBuffer(
-        uint32_t    index,
-        IBuffer*    pResource,
-        uint64_t    size,
-        uint64_t    offset) = 0;
+    virtual void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
@@ -1889,14 +1967,44 @@ struct A3D_API IDevice : IReference
         IBuffer**           ppBuffer) = 0;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      バッファビューを生成します.
+    //!
+    //! @param[in]      pBuffer         バッファです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppBufferView    バッファビューの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CreateBufferView(
+        IBuffer*                pBuffer,
+        const BufferViewDesc*   pDesc,
+        IBufferView**           ppBufferView) = 0;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      テクスチャを生成します.
     //!
     //! @param[in]      pDesc           構成設定です.
     //! @param[out]     ppTexture       テクスチャの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY CreateTexture(
         const TextureDesc*  pDesc,
         ITexture**          ppTexture) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      テクスチャビューを生成します.
+    //!
+    //! @param[in]      pTexture        テクスチャです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppTextureView   テクスチャビューの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CreateTextureView(
+        ITexture*               pTexture,
+        const TextureViewDesc*  pDesc,
+        ITextureView**          ppTextureView) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを生成します.

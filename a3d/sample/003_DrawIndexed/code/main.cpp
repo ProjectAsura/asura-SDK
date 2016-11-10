@@ -46,6 +46,7 @@ a3d::IPipelineState*        g_pPipelineState        = nullptr;  //!< ƒpƒCƒvƒ‰ƒCƒ
 a3d::IBuffer*               g_pVertexBuffer         = nullptr;  //!< ’¸“_ƒoƒbƒtƒ@‚Å‚·.
 a3d::IBuffer*               g_pIndexBuffer          = nullptr;  //!< ƒCƒ“ƒfƒbƒNƒXƒoƒbƒtƒ@‚Å‚·.
 a3d::ITexture*              g_pColorBuffer[2]       = {};       //!< ƒJƒ‰[ƒoƒbƒtƒ@‚Å‚·.
+a3d::ITextureView*          g_pColorView[2]         = {};       //!< ƒJƒ‰[ƒrƒ…[‚Å‚·.
 a3d::ICommandList*          g_pCommandList[2]       = {};       //!< ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Å‚·.
 a3d::IFrameBuffer*          g_pFrameBuffer[2]       = {};       //!< ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Å‚·.
 a3d::Viewport               g_Viewport              = {};       //!< ƒrƒ…[ƒ|[ƒg‚Å‚·.
@@ -130,18 +131,37 @@ bool InitA3D()
 
         if (!g_pDevice->CreateSwapChain(&desc, &g_pSwapChain))
         { return false; }
-    }
 
-    // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ì¶¬
-    {
         // ƒXƒƒbƒvƒ`ƒFƒCƒ“‚©‚çƒoƒbƒtƒ@‚ğæ“¾.
         g_pSwapChain->GetBuffer(0, &g_pColorBuffer[0]);
         g_pSwapChain->GetBuffer(1, &g_pColorBuffer[1]);
 
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_COLOR;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = 1;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        for(auto i=0; i<2; ++i)
+        {
+            if (!g_pDevice->CreateTextureView(g_pColorBuffer[i], &viewDesc, &g_pColorView[i]))
+            { return false; }
+        }
+    }
+
+    // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ì¶¬
+    {
         // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ìİ’è.
         a3d::FrameBufferDesc desc = {};
         desc.ColorCount         = 1;
-        desc.pColorTargets[0]   = g_pColorBuffer[0];
+        desc.pColorTargets[0]   = g_pColorView[0];
         desc.pDepthTarget       = nullptr;
 
         // 1–‡–Ú‚ÌƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ğ¶¬.
@@ -149,7 +169,7 @@ bool InitA3D()
         { return false; }
 
         // 2–‡–Ú‚ÌƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ğ¶¬.
-        desc.pColorTargets[0] = g_pColorBuffer[1];
+        desc.pColorTargets[0] = g_pColorView[1];
         if (!g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[1]))
         { return false; }
     }
@@ -185,7 +205,6 @@ bool InitA3D()
         desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pVertexBuffer) )
         { return false; }
@@ -213,7 +232,6 @@ bool InitA3D()
         desc.Usage                          = a3d::RESOURCE_USAGE_INDEX_BUFFER;
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
-        desc.EnableRow                      = false;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pIndexBuffer) )
         { return false; }
@@ -330,7 +348,7 @@ bool InitA3D()
 
         // [“xƒXƒeƒ“ƒVƒ‹ƒXƒe[ƒg‚Ìİ’è.
         desc.DepthStencilState.DepthTestEnable      = false;
-        desc.DepthStencilState.DepthTestEnable      = false;
+        desc.DepthStencilState.DepthWriteEnable     = false;
         desc.DepthStencilState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
         desc.DepthStencilState.StencilTestEnable    = false;
         desc.DepthStencilState.StencllReadMask      = 0;
@@ -393,11 +411,14 @@ void TermA3D()
         // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚Ì”jŠü.
         a3d::SafeRelease(g_pFrameBuffer[i]);
 
-        // ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Ì”jŠü.
-        a3d::SafeRelease(g_pCommandList[i]);
+        // ƒJƒ‰[ƒrƒ…[‚Ì”jŠü.
+        a3d::SafeRelease(g_pColorView[i]);
 
         // ƒJƒ‰[ƒoƒbƒtƒ@‚Ì”jŠü.
         a3d::SafeRelease(g_pColorBuffer[i]);
+
+        // ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Ì”jŠü.
+        a3d::SafeRelease(g_pCommandList[i]);
     }
 
     // ƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì”jŠü.

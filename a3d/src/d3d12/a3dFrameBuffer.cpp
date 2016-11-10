@@ -5,166 +5,6 @@
 //-------------------------------------------------------------------------------------------------
 
 
-namespace /* anonymous */ {
-
-//-------------------------------------------------------------------------------------------------
-//      ネイティブ形式に変換します.
-//-------------------------------------------------------------------------------------------------
-void ToNativeRenderTargetView( a3d::ITexture* pResource, D3D12_RENDER_TARGET_VIEW_DESC& result )
-{
-    auto desc = pResource->GetDesc();
-
-    result.Format = a3d::ToNativeFormat( desc.Format );
-
-    switch(desc.Dimension)
-    {
-    case a3d::RESOURCE_DIMENSION_BUFFER:
-        {
-            result.ViewDimension = D3D12_RTV_DIMENSION_BUFFER;
-            result.Buffer.FirstElement = 0;
-            result.Buffer.NumElements  = desc.Width;
-        }
-        break;
-
-    case a3d::RESOURCE_DIMENSION_TEXTURE1D:
-        {
-            if (desc.DepthOrArraySize > 1)
-            {
-                result.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE1DARRAY;
-                result.Texture1DArray.ArraySize         = desc.DepthOrArraySize;
-                result.Texture1DArray.FirstArraySlice   = 0;
-                result.Texture1DArray.MipSlice          = 0;
-            }
-            else
-            {
-                result.Texture1D.MipSlice = 0;
-            }
-        }
-        break;
-
-    case a3d::RESOURCE_DIMENSION_TEXTURE2D:
-    case a3d::RESOURCE_DIMENSION_CUBEMAP:
-        {
-            if (desc.DepthOrArraySize > 1)
-            {
-                if (desc.SampleCount > 1)
-                {
-                    result.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
-                    result.Texture2DMSArray.ArraySize       = desc.DepthOrArraySize;
-                    result.Texture2DMSArray.FirstArraySlice = 0;
-                }
-                else
-                {
-                    result.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
-                    result.Texture2DArray.ArraySize         = desc.DepthOrArraySize;
-                    result.Texture2DArray.FirstArraySlice   = 0;
-                    result.Texture2DArray.MipSlice          = 0;
-                    result.Texture2DArray.PlaneSlice        = 0;
-                }
-            }
-            else
-            {
-                if (desc.SampleCount > 1)
-                {
-                    result.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
-                }
-                else
-                {
-                    result.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-                    result.Texture2D.MipSlice   = 0;
-                    result.Texture2D.PlaneSlice = 0;
-                }
-            }
-        }
-        break;
-
-    case a3d::RESOURCE_DIMENSION_TEXTURE3D:
-        {
-            result.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
-            result.Texture3D.FirstWSlice = 0;
-            result.Texture3D.MipSlice    = 0;
-            result.Texture3D.WSize       = desc.DepthOrArraySize;
-        }
-        break;
-    }
-}
-
-//-------------------------------------------------------------------------------------------------
-//      ネイティブ形式に変換します.
-//-------------------------------------------------------------------------------------------------
-void ToNativeDepthStencilView( a3d::ITexture* pResource, D3D12_DEPTH_STENCIL_VIEW_DESC& result )
-{
-    auto desc = pResource->GetDesc();
-
-    result.Format = a3d::ToNativeFormat( desc.Format );
-    result.Flags  = D3D12_DSV_FLAG_NONE;
-
-    switch( desc.Dimension )
-    {
-    case a3d::RESOURCE_DIMENSION_BUFFER:
-        { A3D_ASSERT(false); }
-        break;
-
-    case a3d::RESOURCE_DIMENSION_TEXTURE1D:
-        {
-            if ( desc.DepthOrArraySize > 1 )
-            {
-                result.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE1DARRAY;
-                result.Texture1DArray.ArraySize         = desc.DepthOrArraySize;
-                result.Texture1DArray.FirstArraySlice   = 0;
-                result.Texture1DArray.MipSlice          = 0;
-            }
-            else
-            {
-                result.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE1D;
-                result.Texture1D.MipSlice = 0;
-            }
-        }
-        break;
-
-    case a3d::RESOURCE_DIMENSION_TEXTURE2D:
-    case a3d::RESOURCE_DIMENSION_CUBEMAP:
-        {
-            if ( desc.DepthOrArraySize > 1 )
-            {
-                if ( desc.SampleCount > 1 )
-                {
-                    result.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMSARRAY;
-                    result.Texture2DMSArray.ArraySize       = desc.DepthOrArraySize;
-                    result.Texture2DMSArray.FirstArraySlice = 0;
-                }
-                else
-                {
-                    result.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-                    result.Texture2DArray.ArraySize         = desc.DepthOrArraySize;
-                    result.Texture2DArray.FirstArraySlice   = 0;
-                    result.Texture2DArray.MipSlice          = 0;
-                }
-            }
-            else
-            {
-                if ( desc.SampleCount > 1 )
-                {
-                    result.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
-                }
-                else
-                {
-                    result.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-                    result.Texture2D.MipSlice = 0;
-                }
-            }
-        }
-        break;
-
-    case a3d::RESOURCE_DIMENSION_TEXTURE3D:
-        { A3D_ASSERT(false); }
-        break;
-    }
-}
-
-} // namespace /* anonymous */
-
-
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,15 +17,16 @@ namespace a3d {
 FrameBuffer::FrameBuffer()
 : m_RefCount            (1)
 , m_pDevice             (nullptr)
-, m_pDSV                (nullptr)
 , m_DSVFormat           (DXGI_FORMAT_UNKNOWN)
+, m_HasDepth            (false)
 {
     for(auto i=0; i<8; ++i)
     {
-        m_pRTV[i]       = nullptr;
         m_RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
         m_RTVHandles[i].ptr = 0;
     }
+
+    m_DSVHandle.ptr = 0;
 
     memset(&m_Desc, 0, sizeof(m_Desc));
 }
@@ -219,39 +60,22 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
 
     for(auto i=0u; i<pDesc->ColorCount; ++i)
     {
-        m_pRTV[i] = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV)->CreateDescriptor();
-
-        D3D12_RENDER_TARGET_VIEW_DESC view = {};
-        ToNativeRenderTargetView( pDesc->pColorTargets[i], view );
-
-        auto pWrapResource = reinterpret_cast<Texture*>(pDesc->pColorTargets[i]);
+        auto pWrapResource = reinterpret_cast<TextureView*>(pDesc->pColorTargets[i]);
         A3D_ASSERT(pWrapResource != nullptr);
 
-        auto pNativeResource = pWrapResource->GetD3D12Resource();
-        A3D_ASSERT(pNativeResource != nullptr);
-
         m_RTVFormats[i] = ToNativeFormat( pWrapResource->GetDesc().Format );
-        m_RTVHandles[i] = m_pRTV[i]->GetHandleCPU();
-
-        pNativeDevice->CreateRenderTargetView( pNativeResource, &view, m_RTVHandles[i] );
+        m_RTVHandles[i] = pWrapResource->GetTargetDescriptor()->GetHandleCPU();
     }
 
     if (pDesc->pDepthTarget != nullptr)
     {
-        m_pDSV = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV)->CreateDescriptor();
-
-        D3D12_DEPTH_STENCIL_VIEW_DESC view = {};
-        ToNativeDepthStencilView( pDesc->pDepthTarget, view );
-
-        auto pWrapResource = reinterpret_cast<Texture*>(pDesc->pDepthTarget);
+        auto pWrapResource = reinterpret_cast<TextureView*>(pDesc->pDepthTarget);
         A3D_ASSERT(pWrapResource != nullptr);
 
-        auto pNativeResource = pWrapResource->GetD3D12Resource();
-        A3D_ASSERT(pNativeResource != nullptr);
-
         m_DSVFormat = ToNativeFormat( pWrapResource->GetDesc().Format );
+        m_DSVHandle  = pWrapResource->GetTargetDescriptor()->GetHandleCPU();
 
-        pNativeDevice->CreateDepthStencilView( pNativeResource, &view, m_pDSV->GetHandleCPU() );
+        m_HasDepth = true;
     }
 
     return true;
@@ -264,12 +88,14 @@ void FrameBuffer::Term()
 {
     for(auto i=0; i<8; ++i)
     { 
-        SafeRelease(m_pRTV[i]);
         m_RTVFormats[i] = DXGI_FORMAT_UNKNOWN;
         m_RTVHandles[i].ptr = 0;
     }
 
-    SafeRelease(m_pDSV);
+    m_DSVFormat     = DXGI_FORMAT_UNKNOWN;
+    m_DSVHandle.ptr = 0;
+    m_HasDepth      = false;
+
     SafeRelease(m_pDevice);
 
     memset(&m_Desc, 0, sizeof(m_Desc));
@@ -326,15 +152,15 @@ void FrameBuffer::Bind(ICommandList* pCommandList)
             m_Desc.ColorCount,
             m_RTVHandles,
             FALSE,
-            HasDepthTarget() ? &m_pDSV->GetHandleCPU() : nullptr );
+            m_HasDepth ? &m_DSVHandle : nullptr );
     }
-    else
+    else if ( m_HasDepth )
     {
         pNativeCommandList->OMSetRenderTargets(
             0,
             nullptr,
             FALSE,
-            HasDepthTarget() ? &m_pDSV->GetHandleCPU() : nullptr );
+            m_HasDepth ? &m_DSVHandle : nullptr );
     }
 }
 
@@ -378,7 +204,7 @@ void FrameBuffer::Clear
         if (flags != 0)
         {
             pNativeCommandList->ClearDepthStencilView(
-               m_pDSV->GetHandleCPU(),
+                m_DSVHandle,
                 flags,
                 pClearDepthStencil->Depth,
                 pClearDepthStencil->Stencil,
@@ -404,7 +230,7 @@ bool FrameBuffer::HasColorTarget() const
 //      深度ターゲットをもつかどうかチェックします.
 //-------------------------------------------------------------------------------------------------
 bool FrameBuffer::HasDepthTarget() const
-{ return m_pDSV != nullptr; }
+{ return m_HasDepth; }
 
 //-------------------------------------------------------------------------------------------------
 //      レンダーターゲットビューのフォーマットの配列を取得します.
