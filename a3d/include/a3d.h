@@ -1156,9 +1156,10 @@ struct IAllocator
     //!
     //! @param[in]      ptr         確保済みメモリの先頭ポインタです.
     //! @param[in]      size        再確保サイズです.
+    //! @param[in]      alignment   メモリアライメントです.
     //! @return     確保したメモリへのポインタを返却します. メモリ確保に失敗した場合は nullptr が返却されます.
     //---------------------------------------------------------------------------------------------
-    virtual void* Realloc(void* ptr, size_t size) noexcept = 0;
+    virtual void* Realloc(void* ptr, size_t size, size_t alignment) noexcept = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      メモリを解放します.

@@ -24,7 +24,7 @@ constexpr size_t DefaultAlignment = 4;
 // Functions
 //-------------------------------------------------------------------------------------------------
 void* a3d_alloc  (uint64_t size, uint64_t alignment);
-void* a3d_realloc(void* ptr, uint64_t size);
+void* a3d_realloc(void* ptr, uint64_t size, uint64_t alignment);
 void  a3d_free   (void* ptr);
 
 void  a3d_disable_counter();

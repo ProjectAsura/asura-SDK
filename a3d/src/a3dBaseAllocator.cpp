@@ -41,7 +41,7 @@ void* a3d_alloc(uint64_t size, uint64_t alignment )
 //-------------------------------------------------------------------------------------------------
 //      メモリを再確保します.
 //-------------------------------------------------------------------------------------------------
-void* a3d_realloc(void* ptr, uint64_t size)
+void* a3d_realloc(void* ptr, uint64_t size, uint64_t alignment)
 {
     if (g_pAllocator == nullptr)
     { return nullptr; }
@@ -52,7 +52,7 @@ void* a3d_realloc(void* ptr, uint64_t size)
         { g_AllocCounter++; }
     }
 
-    return g_pAllocator->Realloc(ptr, size_t(size));
+    return g_pAllocator->Realloc(ptr, size_t(size), size_t(alignment));
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -109,8 +109,11 @@ public:
     //---------------------------------------------------------------------------------------------
     //      ƒƒ‚ƒŠ‚ğÄŠm•Û‚µ‚Ü‚·.
     //---------------------------------------------------------------------------------------------
-    void* Realloc(void* ptr, size_t size) noexcept override
-    { return realloc(ptr, size); }
+    void* Realloc(void* ptr, size_t size, size_t alignment) noexcept override
+    {
+        auto allocSize = a3d::RoundUp(size, alignment);
+        return realloc(ptr, allocSize);
+    }
 
     //---------------------------------------------------------------------------------------------
     //      ƒƒ‚ƒŠ‚ğ‰ğ•ú‚µ‚Ü‚·.

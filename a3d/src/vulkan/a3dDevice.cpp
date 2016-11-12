@@ -57,8 +57,6 @@ void* VKAPI_CALL Alloc
 )
 {
     A3D_UNUSED(pUserData);
-    A3D_UNUSED(scope);
-
     g_AllocationSize[scope] += size;
     return a3d::a3d_alloc(size, alignment);
 }
@@ -77,9 +75,8 @@ void* VKAPI_CALL Realloc
 )
 {
     A3D_UNUSED(pUserData);
-    A3D_UNUSED(alignment);
     A3D_UNUSED(scope);
-    return a3d::a3d_realloc(pUserData, size);
+    return a3d::a3d_realloc(pUserData, size, alignment);
 }
 
 //-------------------------------------------------------------------------------------------------
