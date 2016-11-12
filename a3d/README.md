@@ -10,11 +10,14 @@ a3d はDirect3D12とVulkanをラップするための抽象化3Dグラフィッ�
 
 ## Build  
 ビルドするには予め以下のものをインストールしておく必要があります。
+* MSBuild 14.0
 * Visual Studio 2015 Update 3  
 * Windows SDK  
 * Vulkan SDK  
 
-ビルド方法についてですが，project/build.batを実行することで，binフォルダにスタティックライブラリが生成されます。  
+ビルド方法についてですが，バッチビルドと個別にソシューションファイルを開いてビルドする方法の2通りがあります。
+バッチビルドでは，MSBuild 14.0を使用します。project/build.batを実行することで，binフォルダにスタティックライブラリが生成されます。  
+ソリューションファイルからビルドするには，project/d3d12フォルダと，project/vulkanフォルダにあるa3d.slnファイルをVisual Studioで読み込みビルドを実行してください。  
 
 
 ## Integration  
