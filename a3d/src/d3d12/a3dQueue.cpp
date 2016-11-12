@@ -80,7 +80,7 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
     m_MaxSubmitCount = maxSubmitCount;
 
     {
-        m_pSubmitList = new (std::nothrow) ID3D12CommandList* [maxSubmitCount];
+        m_pSubmitList = new ID3D12CommandList* [maxSubmitCount];
         if (m_pSubmitList == nullptr)
         { return false; }
 
@@ -233,7 +233,7 @@ bool Queue::Create
     IQueue**            ppQueue
 )
 {
-    auto instance = new (std::nothrow) Queue();
+    auto instance = new Queue();
     if (instance == nullptr)
     { return false; }
 

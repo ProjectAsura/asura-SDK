@@ -534,7 +534,7 @@ bool Texture::Create(IDevice* pDevice, const TextureDesc* pDesc, ITexture** ppRe
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Texture;
+    auto instance = new Texture;
     if ( instance == nullptr )
     { return false; }
 
@@ -563,7 +563,7 @@ bool Texture::Create
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Texture;
+    auto instance = new Texture;
     if ( instance == nullptr )
     { return false; }
 

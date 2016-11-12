@@ -96,7 +96,7 @@ bool CommandSet::Create(IDevice* pDevice, const CommandSetDesc* pDesc, ICommandS
     if (pDevice == nullptr || pDesc == nullptr || ppCommandSet == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) CommandSet;
+    auto instance = new CommandSet;
     if (instance == nullptr)
     { return false; }
 

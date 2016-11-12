@@ -76,13 +76,13 @@ bool DescriptorSet::Init
         auto bufferCount = pLayout->GetBufferCount();
         auto imageCount  = pLayout->GetImageCount();
 
-        m_pWrites = new (std::nothrow) VkWriteDescriptorSet [count];
+        m_pWrites = new VkWriteDescriptorSet [count];
         if (m_pWrites == nullptr)
         { return false; }
 
         memset( m_pWrites, 0, sizeof(VkWriteDescriptorSet) * count );
 
-        m_pInfos = new (std::nothrow) DescriptorInfo [count];
+        m_pInfos = new DescriptorInfo [count];
         if (m_pInfos == nullptr)
         { return false; }
 
@@ -306,7 +306,7 @@ bool DescriptorSet::Create
      || ppDescriptorSet == nullptr)
     { return false; }
 
-    auto instance = new(std::nothrow) DescriptorSet;
+    auto instance = new DescriptorSet;
     if (instance == nullptr)
     { return false; }
 

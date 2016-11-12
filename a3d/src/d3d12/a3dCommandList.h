@@ -17,7 +17,7 @@ class FrameBuffer;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandList class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API CommandList : ICommandList
+class A3D_API CommandList : ICommandList, BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.

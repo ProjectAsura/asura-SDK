@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescriptorSet class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API DescriptorSet : IDescriptorSet
+class A3D_API DescriptorSet : IDescriptorSet, BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and mehtods.

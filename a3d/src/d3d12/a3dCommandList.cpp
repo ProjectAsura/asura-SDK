@@ -812,7 +812,7 @@ bool CommandList::Create
     if (pDevice == nullptr || ppComandList == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) CommandList;
+    auto instance = new CommandList;
     if (instance == nullptr)
     { return false; }
 

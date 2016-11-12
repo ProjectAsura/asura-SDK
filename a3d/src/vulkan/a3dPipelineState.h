@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PipelineState class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API PipelineState : IPipelineState
+class A3D_API PipelineState : IPipelineState, BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.

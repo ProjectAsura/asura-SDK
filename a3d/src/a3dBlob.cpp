@@ -35,7 +35,7 @@ bool Blob::Init(size_t size)
     Term();
 
     // メモリ確保.
-    m_pBuffer = malloc(size);
+    m_pBuffer = a3d_alloc(size, DefaultAlignment);
 
     // nullptrじゃなければ成功.
     return m_pBuffer != nullptr;
@@ -48,7 +48,7 @@ void Blob::Term()
 {
     if (m_pBuffer != nullptr)
     {
-        free(m_pBuffer);
+        a3d_free(m_pBuffer);
         m_pBuffer = nullptr;
     }
 }
@@ -92,7 +92,7 @@ size_t Blob::GetBufferSize() const
 //-------------------------------------------------------------------------------------------------
 bool Blob::Create(size_t size, IBlob** ppBlob)
 {
-    auto instance = new(std::nothrow) Blob;
+    auto instance = new Blob();
     if (instance == nullptr)
     { return false; }
 

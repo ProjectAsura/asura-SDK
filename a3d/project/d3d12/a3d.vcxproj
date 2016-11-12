@@ -146,6 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\a3d.h" />
+    <ClInclude Include="..\..\src\a3dBaseAllocator.h" />
     <ClInclude Include="..\..\src\a3dBlob.h" />
     <ClInclude Include="..\..\src\a3dResourceType.h" />
     <ClInclude Include="..\..\src\d3d12\a3dBuffer.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="..\..\src\d3d12\a3dUtil.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\src\a3dBlob.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dBuffer.cpp" />
     <ClCompile Include="..\..\src\d3d12\a3dBufferView.cpp" />

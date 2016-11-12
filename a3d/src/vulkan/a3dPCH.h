@@ -10,7 +10,7 @@
 // Includes
 //-------------------------------------------------------------------------------------------------
 #include <a3d.h>
-#include <new>
+#include <a3dBaseAllocator.h>
 #include <cassert>
 #include <atomic>
 #include <mutex>

@@ -120,7 +120,7 @@ bool BufferView::Create
     if (pDevice == nullptr || pBuffer == nullptr || pDesc == nullptr || ppBufferView == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) BufferView;
+    auto instance = new BufferView;
     if ( instance == nullptr )
     { return false; }
 

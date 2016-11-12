@@ -4,6 +4,7 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,7 +242,7 @@ bool Texture::Create(IDevice* pDevice, const TextureDesc* pDesc, ITexture** ppRe
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Texture;
+    auto instance = new Texture;
     if (instance == nullptr)
     { return false; }
 
@@ -270,7 +271,7 @@ bool Texture::CreateFromNative
     if (pDevice == nullptr || pNativeResource == nullptr || ppResource == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Texture;
+    auto instance = new Texture;
     if (instance == nullptr)
     { return false; }
 

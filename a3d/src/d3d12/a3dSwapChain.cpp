@@ -85,7 +85,7 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
     {
-        m_pBuffers = new(std::nothrow) ITexture* [m_Desc.BufferCount];
+        m_pBuffers = new ITexture* [m_Desc.BufferCount];
         if (m_pBuffers == nullptr)
         { return false; }
 
@@ -230,7 +230,7 @@ bool SwapChain::Create
     if (pDevice == nullptr || pQueue == nullptr || pDesc == nullptr || ppSwapChain == nullptr)
     { return false; }
 
-    auto instance = new(std::nothrow) SwapChain();
+    auto instance = new SwapChain();
     if (instance == nullptr)
     { return false; }
 

@@ -20,9 +20,26 @@ a3d はDirect3D12とVulkanをラップするための抽象化3Dグラフィッ�
 * ヘッダファイルをインクルードする  
 * スタティックライブラリをリンクする  
 
-ヘッダファイルは includeフォルダにあります。  
+ヘッダファイルは includeフォルダにあります。プログラムで，次のようにa3d.hファイルをインクルードします。  
+```
+#include <a3d.h>
+```
+
 スタティックライブラリは，binフォルダ下にDirect3D12版とVulkan版がそれぞれ別に存在します。  
 ご使用したい環境に合わせてリンクするファイルを選択してください。  
+Direct3D12版を使用する場合は次のファイルをリンクする必要があります。  
+
+* a3d_d3d12d.lib (デバッグ版)
+* a3d_d3d12.lib  (リリース版)
+* d3d12.lib
+* dxgi.lib
+
+Vulkan版を使用する場合は次のファイルをリンクする必要があります。  
+
+* a3d_vkd.lib (デバッグ版)
+* a3d_vk.lib  (リリース版)
+* vulkan-1.lib 
+
 sampleフォルダ下に組み込み例があるので，組み込み方法が分からない場合は参考にしてください。  
 
 
@@ -32,7 +49,7 @@ docフォルダ下にAPIリファレンスがあります。
 
 
 ## Samples
-sampleフォルダ下にa3dライブラリを使ったサンプルがあり，以下のようなものがあります。  
+sampleフォルダ下にa3dライブラリを使ったサンプルがあります。  
 
 * [ClearColor](./sample/001_ClearColor/code "ClearColor")  
 画面をクリアするサンプルです。  
@@ -62,6 +79,9 @@ sampleフォルダ下にa3dライブラリを使ったサンプルがあり，�
 ImGuiを用いたサンプルです。  
 ![ImGuiSample](./doc/images/007_ImGuiSample.png)  
 
+* [RenderingTexture](./sample/008_RenderingTexture.png)  
+レンダリングテクスチャを表示するサンプルです。  
+![RenderingTexture](./doc/images/008_RenderingTexture.png)  
 
 ## License
 This software is licensed under the MIT License, see LICENSE for more information.

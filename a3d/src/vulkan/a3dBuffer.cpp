@@ -298,7 +298,7 @@ bool Buffer::Create(IDevice* pDevice, const BufferDesc* pDesc, IBuffer** ppResou
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Buffer;
+    auto instance = new Buffer;
     if (instance == nullptr)
     { return false; }
 

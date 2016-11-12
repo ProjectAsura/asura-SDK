@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescriptorSetLayout class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API DescriptorSetLayout : IDescriptorSetLayout
+class A3D_API DescriptorSetLayout : IDescriptorSetLayout, BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.

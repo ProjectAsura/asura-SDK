@@ -76,7 +76,7 @@ bool Queue::Init
     m_MaxSubmitCount = maxSubmitCount;
     m_FamilyIndex    = familyIndex;
 
-    m_pSubmitList = new (std::nothrow) VkCommandBuffer[maxSubmitCount];
+    m_pSubmitList = new VkCommandBuffer[maxSubmitCount];
     if (m_pSubmitList == nullptr)
     { return false; }
 
@@ -280,7 +280,7 @@ bool Queue::Create
     if (pDevice == nullptr || maxSubmitCount == 0)
     { return false; }
 
-    auto instance = new(std::nothrow) Queue;
+    auto instance = new Queue;
     if (instance == nullptr)
     { return false; }
 

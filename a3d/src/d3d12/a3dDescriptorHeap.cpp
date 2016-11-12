@@ -50,7 +50,7 @@ bool DescriptorHeap::Init(ID3D12Device* pDevice, const D3D12_DESCRIPTOR_HEAP_DES
     auto allocCount = desc.NumDescriptors;
     auto blockSize  = sizeof(Descriptor);
 
-    m_pBuffer = static_cast<uint8_t*>(malloc( blockSize * allocCount ));
+    m_pBuffer = static_cast<uint8_t*>( a3d_alloc( blockSize * allocCount, alignof(Descriptor) ) );
     if ( m_pBuffer == nullptr )
     { return false; }
 
@@ -123,7 +123,7 @@ void DescriptorHeap::Term()
         Sleep( 16 );
     }
 
-    free(m_pBuffer);
+    a3d_free(m_pBuffer);
     m_pBuffer = nullptr;
 
     m_HandleCount  = 0;

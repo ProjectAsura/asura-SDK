@@ -172,7 +172,7 @@ bool Fence::Create(IDevice* pDevice, IFence** ppFence)
     if (pDevice == nullptr || ppFence == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Fence;
+    auto instance = new Fence;
     if (instance == nullptr)
     { return false; }
 

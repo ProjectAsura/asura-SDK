@@ -97,10 +97,10 @@ void ToNativeVertexInputState
     for(auto i=0u; i<desc.StreamCount; ++i)
     { attributeCount += desc.pStreams[i].ElementCount; }
 
-    pOutBind = new (std::nothrow) VkVertexInputBindingDescription[desc.StreamCount];
+    pOutBind = new VkVertexInputBindingDescription[desc.StreamCount];
     A3D_ASSERT(pOutBind != nullptr);
 
-    pOutAttr = new (std::nothrow) VkVertexInputAttributeDescription[attributeCount];
+    pOutAttr = new VkVertexInputAttributeDescription[attributeCount];
     A3D_ASSERT(pOutAttr != nullptr);
 
     auto index = 0;
@@ -870,7 +870,7 @@ bool PipelineState::CreateAsGraphics
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
     { return false; }
 
-    auto instance = new(std::nothrow) PipelineState;
+    auto instance = new PipelineState;
     if (instance == nullptr)
     { return false; }
 
@@ -897,7 +897,7 @@ bool PipelineState::CreateAsCompute
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
     { return false; }
 
-    auto instance = new(std::nothrow) PipelineState;
+    auto instance = new PipelineState;
     if (instance == nullptr)
     { return false; }
 

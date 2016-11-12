@@ -19,6 +19,7 @@ VkDebugReportCallbackEXT            vkDebugReportCallback           = null_handl
 PFN_vkCreateDebugReportCallbackEXT  vkCreateDebugReportCallback     = nullptr;
 PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallback    = nullptr;
 PFN_vkDebugReportMessageEXT         vkDebugReportMessage            = nullptr;
+size_t g_AllocationSize[VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE];
 
 
 //-------------------------------------------------------------------------------------------------
@@ -57,11 +58,9 @@ void* VKAPI_CALL Alloc
 {
     A3D_UNUSED(pUserData);
     A3D_UNUSED(scope);
-    #if A3D_IS_WIN
-        return _aligned_malloc(size, alignment);
-    #else
-        return alignd_alloc(size, alignment);
-    #endif
+
+    g_AllocationSize[scope] += size;
+    return a3d::a3d_alloc(size, alignment);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -78,12 +77,9 @@ void* VKAPI_CALL Realloc
 )
 {
     A3D_UNUSED(pUserData);
+    A3D_UNUSED(alignment);
     A3D_UNUSED(scope);
-    #if A3D_IS_WIN
-        return _aligned_realloc(pOriginal, size, alignment);
-    #else
-        return realloc(pUserData, size);
-    #endif
+    return a3d::a3d_realloc(pUserData, size);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -93,11 +89,7 @@ VKAPI_ATTR
 void VKAPI_CALL Free(void* pUserData, void* pMemory)
 {
     A3D_UNUSED(pUserData);
-    #if A3D_IS_WIN
-        _aligned_free( pMemory );
-    #else
-        free( pMemory );
-    #endif
+    a3d::a3d_free(pMemory);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -163,6 +155,7 @@ inline T GetProc(VkDevice device, const char* name)
 { return reinterpret_cast<T>(vkGetDeviceProcAddr(device, name)); }
 
 } // namespace /* anonymous */
+
 
 namespace a3d {
 
@@ -283,11 +276,18 @@ bool Device::Init(const DeviceDesc* pDesc)
             info.pUserData      = nullptr;
             info.flags          = flags;
 
+            // vkCreateDebugReportCallback()で何故か2回メモリ確保がされてリークするので，カウンターを無効化.
+            a3d_disable_counter();
+
             auto ret = vkCreateDebugReportCallback( 
                 m_Instance,
                 &info,
                 nullptr,
                 &vkDebugReportCallback );
+
+            // 無効にしたカウンターを元に戻す.
+            a3d_enable_counter();
+
             if ( ret != VK_SUCCESS )
             { return false; }
         }
@@ -302,11 +302,11 @@ bool Device::Init(const DeviceDesc* pDesc)
 
         m_PhysicalDeviceCount = count;
 
-        m_pPhysicalDeviceInfos = new (std::nothrow) PhysicalDeviceInfo [count];
+        m_pPhysicalDeviceInfos = new PhysicalDeviceInfo [count];
         if (m_pPhysicalDeviceInfos == nullptr)
         { return false; }
 
-        VkPhysicalDevice* gpus = new (std::nothrow) VkPhysicalDevice[count];
+        VkPhysicalDevice* gpus = new VkPhysicalDevice[count];
         if (gpus == nullptr)
         { return false; }
 
@@ -334,7 +334,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         uint32_t propCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties( physicalDevice, &propCount, nullptr );
 
-        VkQueueFamilyProperties* pProps = new (std::nothrow) VkQueueFamilyProperties[propCount];
+        VkQueueFamilyProperties* pProps = new VkQueueFamilyProperties[propCount];
         if (pProps == nullptr)
         { return false; }
 
@@ -344,7 +344,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         auto computeIndex  = UINT32_MAX;
         auto transferIndex = UINT32_MAX;
 
-        VkDeviceQueueCreateInfo* pQueueInfos = new (std::nothrow) VkDeviceQueueCreateInfo[propCount];
+        VkDeviceQueueCreateInfo* pQueueInfos = new VkDeviceQueueCreateInfo[propCount];
         if (pQueueInfos == nullptr)
         {
             delete [] pProps;
@@ -398,7 +398,7 @@ bool Device::Init(const DeviceDesc* pDesc)
             }
         }
 
-        auto pPriorities = new (std::nothrow) float [totalQueueCount];
+        auto pPriorities = new float [totalQueueCount];
         if (pPriorities == nullptr)
         {
             delete [] pProps;
@@ -472,32 +472,45 @@ void Device::Term()
     SafeRelease(m_pComputeQueue);
     SafeRelease(m_pCopyQueue);
 
-    // アイドル状態になるまで待機.
     if (m_Device != null_handle)
-    { vkDeviceWaitIdle(m_Device); }
+    {
+        vkDeviceWaitIdle(m_Device);
+        vkDestroyDevice(m_Device, nullptr);
+        m_Device = null_handle;
+    }
+
+    if (m_pPhysicalDeviceInfos != nullptr)
+    {
+        delete [] m_pPhysicalDeviceInfos;
+        m_pPhysicalDeviceInfos = nullptr;
+    }
 
     if (m_Desc.EnableDebug)
     {
-        if (vkCreateDebugReportCallback  != nullptr &&
-            vkDestroyDebugReportCallback != nullptr &&
-            vkDebugReportMessage         != nullptr &&
-            vkDebugReportCallback        != null_handle)
+        if (vkDebugReportCallback != null_handle)
         {
+            // vkDestroyDebugReportCallback()では，
+            // 2回確保されたメモリーが1つしか解放されずリークするのでカウンターを無効化.
+            a3d_disable_counter();
+
             vkDestroyDebugReportCallback(
                 m_Instance,
                 vkDebugReportCallback,
                 nullptr);
+            vkDebugReportCallback = null_handle;
+
+            // 無効にしたカウンターを戻す.
+            a3d_enable_counter();
+        }
+
+        if (vkCreateDebugReportCallback  != nullptr &&
+            vkDestroyDebugReportCallback != nullptr &&
+            vkDebugReportMessage         != nullptr)
+        {
             vkCreateDebugReportCallback     = nullptr;
             vkDestroyDebugReportCallback    = nullptr;
             vkDebugReportMessage            = nullptr;
-            vkDebugReportCallback           = null_handle;
         }
-    }
-
-    if (m_Device != null_handle)
-    {
-        vkDestroyDevice(m_Device, nullptr);
-        m_Device = null_handle;
     }
 
     if (m_Instance != null_handle)
@@ -506,11 +519,15 @@ void Device::Term()
         m_Instance = null_handle;
     }
 
-    if (m_pPhysicalDeviceInfos != nullptr)
-    {
-        delete [] m_pPhysicalDeviceInfos;
-        m_pPhysicalDeviceInfos = nullptr;
-    }
+    #if 0
+    //if (m_Desc.EnableDebug)
+    //{
+    //    OutputLog("----------------------------------------------------\n");
+    //    for(auto i=0; i<VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE; ++i)
+    //    { OutputLog("Info : scope = %d, Total Allocated Size = %zu\n", i, g_AllocationSize[i]); }
+    //    OutputLog("----------------------------------------------------\n");
+    //}
+    #endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -775,7 +792,7 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Device;
+    auto instance = new Device;
     if (instance == nullptr)
     { return false; }
 
@@ -793,6 +810,14 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 //      デバイスを生成します.
 //-------------------------------------------------------------------------------------------------
 bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
-{ return Device::Create(pDesc, ppDevice); }
+{
+    if (pDesc == nullptr || ppDevice == nullptr)
+    { return false; }
+
+    for(auto i=0; i<VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE; ++i)
+    { g_AllocationSize[i] = 0; }
+
+    return Device::Create(pDesc, ppDevice);
+}
 
 } // namespace a3d

@@ -44,7 +44,7 @@ bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
     A3D_ASSERT(pNativeDevice != nullptr);
 
     {
-        auto pArguments = new(std::nothrow) D3D12_INDIRECT_ARGUMENT_DESC[pDesc->ArgumentCount];
+        auto pArguments = new D3D12_INDIRECT_ARGUMENT_DESC[pDesc->ArgumentCount];
         if (pArguments == nullptr)
         { return false; }
 
@@ -131,7 +131,7 @@ bool CommandSet::Create(IDevice* pDevice, const CommandSetDesc* pDesc, ICommandS
     if (pDevice == nullptr || pDesc == nullptr || ppCommandSet == nullptr)
     { return false; }
 
-    auto instance = new(std::nothrow) CommandSet;
+    auto instance = new CommandSet;
     if (instance == nullptr)
     { return false; }
 

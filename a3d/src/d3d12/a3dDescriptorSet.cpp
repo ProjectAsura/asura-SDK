@@ -182,7 +182,7 @@ bool DescriptorSet::Create
     || ppDescriptorSet  == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) DescriptorSet;
+    auto instance = new DescriptorSet;
     if ( instance == nullptr )
     { return false; }
 

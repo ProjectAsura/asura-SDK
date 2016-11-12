@@ -119,10 +119,10 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     m_IsGraphicsPipeline = (!isCompute);
 
     {
-        auto pEntries = new (std::nothrow) D3D12_DESCRIPTOR_RANGE [pDesc->EntryCount];
+        auto pEntries = new D3D12_DESCRIPTOR_RANGE [pDesc->EntryCount];
         A3D_ASSERT(pEntries);
 
-        auto pParams = new (std::nothrow) D3D12_ROOT_PARAMETER [pDesc->EntryCount];
+        auto pParams = new D3D12_ROOT_PARAMETER [pDesc->EntryCount];
         A3D_ASSERT(pParams);
 
         auto mask = 0;
@@ -287,7 +287,7 @@ bool DescriptorSetLayout::Create
     if (pDevice == nullptr || pDesc == nullptr || ppLayout == nullptr)
     { return false; }
 
-    auto instance = new(std::nothrow) DescriptorSetLayout;
+    auto instance = new DescriptorSetLayout;
     if (instance == nullptr)
     { return false; }
 

@@ -21,12 +21,12 @@
     <ClCompile Include="..\code\main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\code\helpers\SampleAppWin.cpp">
+    <ClCompile Include="..\..\common\helpers\SampleAppWin.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\code\helpers\SampleApp.h">
+    <ClInclude Include="..\..\common\helpers\SampleApp.h">
       <Filter>helpers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,8 +9,8 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
+#include <a3dBaseAllocator.h>
 #include <a3d.h>
-#include <new>
 #include <cassert>
 #include <atomic>
 #include <mutex>
@@ -48,3 +48,4 @@
         #define     A3D_ASSERT(expression)
     #endif
 #endif
+

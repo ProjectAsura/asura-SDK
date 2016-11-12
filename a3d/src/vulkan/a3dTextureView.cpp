@@ -259,7 +259,7 @@ bool TextureView::Create
     if (pDevice == nullptr || pTexture == nullptr || pDesc == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) TextureView;
+    auto instance = new TextureView;
     if ( instance == nullptr )
     { return false; }
 

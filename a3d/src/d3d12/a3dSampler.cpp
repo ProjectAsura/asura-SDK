@@ -210,7 +210,7 @@ bool Sampler::Create(IDevice* pDevice, const SamplerDesc* pDesc, ISampler** ppSa
     if (pDevice == nullptr || pDesc == nullptr || ppSampler == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) Sampler();
+    auto instance = new Sampler();
     if (instance == nullptr)
     { return false; }
 

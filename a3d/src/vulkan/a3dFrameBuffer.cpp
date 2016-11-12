@@ -368,7 +368,7 @@ bool FrameBuffer::Create(IDevice* pDevice, const FrameBufferDesc* pDesc, IFrameB
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) FrameBuffer;
+    auto instance = new FrameBuffer;
     if ( instance == nullptr )
     { return false; }
 

@@ -533,7 +533,7 @@ bool SwapChain::Create
     if (pDevice == nullptr || pDesc == nullptr || ppSwapChain == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) SwapChain;
+    auto instance = new SwapChain;
     if (instance == nullptr)
     { return false; }
 

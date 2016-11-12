@@ -16,10 +16,10 @@
     <Filter Include="helpers">
       <UniqueIdentifier>{54b8857c-969a-4683-aa41-9931daffefb1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="external">
+    <Filter Include="externals">
       <UniqueIdentifier>{6b975d4a-e7db-4750-875a-ccaedf220e1c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="external\imgui-1.49">
+    <Filter Include="externals\imgui-1.49">
       <UniqueIdentifier>{5765e865-b95d-4b22-9c36-b319c27660f7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -27,49 +27,49 @@
     <ClCompile Include="..\code\main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\code\helpers\SampleAppWin.cpp">
-      <Filter>helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\external\imgui-1.49\imgui.cpp">
-      <Filter>external\imgui-1.49</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\external\imgui-1.49\imgui_draw.cpp">
-      <Filter>external\imgui-1.49</Filter>
-    </ClCompile>
     <ClCompile Include="..\code\gui.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\code\helpers\SampleTarga.cpp">
+    <ClCompile Include="..\..\common\helpers\SampleAppWin.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\code\helpers\SampleUtil.cpp">
+    <ClCompile Include="..\..\common\helpers\SampleTarga.cpp">
       <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\helpers\SampleUtil.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui.cpp">
+      <Filter>externals\imgui-1.49</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui_draw.cpp">
+      <Filter>externals\imgui-1.49</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\code\helpers\SampleApp.h">
-      <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\external\imgui-1.49\imconfig.h">
-      <Filter>external\imgui-1.49</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\external\imgui-1.49\imgui.h">
-      <Filter>external\imgui-1.49</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\external\imgui-1.49\imgui_internal.h">
-      <Filter>external\imgui-1.49</Filter>
-    </ClInclude>
     <ClInclude Include="..\code\gui.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\code\helpers\SampleMath.h">
+    <ClInclude Include="..\..\common\helpers\SampleApp.h">
       <Filter>helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\code\helpers\SampleTarga.h">
+    <ClInclude Include="..\..\common\helpers\SampleMath.h">
       <Filter>helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\code\helpers\SampleUtil.h">
+    <ClInclude Include="..\..\common\helpers\SampleTarga.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\helpers\SampleUtil.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\externals\imgui-1.49\imconfig.h">
+      <Filter>externals\imgui-1.49</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\externals\imgui-1.49\imgui.h">
+      <Filter>externals\imgui-1.49</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\externals\imgui-1.49\imgui_internal.h">
+      <Filter>externals\imgui-1.49</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

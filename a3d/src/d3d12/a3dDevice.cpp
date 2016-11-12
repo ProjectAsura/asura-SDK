@@ -319,7 +319,7 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
 
-    auto instance = new(std::nothrow) Device;
+    auto instance = new Device;
     if (instance == nullptr)
     { return false; }
 
@@ -337,6 +337,11 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 //      デバイスを生成します.
 //-------------------------------------------------------------------------------------------------
 bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
-{ return Device::Create(pDesc, ppDevice); }
+{
+    if (pDesc == nullptr || ppDevice == nullptr)
+    { return false; }
+
+    return Device::Create(pDesc, ppDevice);
+}
 
 } // namespace a3d

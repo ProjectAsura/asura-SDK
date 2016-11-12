@@ -151,7 +151,7 @@ bool QueryPool::Create(IDevice* pDevice, const QueryPoolDesc* pDesc, IQueryPool*
     if (pDevice == nullptr || pDesc == nullptr || ppQueryPool == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) QueryPool;
+    auto instance = new QueryPool;
     if (instance == nullptr)
     { return false; }
 

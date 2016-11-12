@@ -297,7 +297,7 @@ bool DescriptorSetLayout::Create
     if (pDevice == nullptr || pDesc == nullptr || ppLayout == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) DescriptorSetLayout;
+    auto instance = new DescriptorSetLayout;
     if ( instance == nullptr )
     { return false; }
 

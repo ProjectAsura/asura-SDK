@@ -496,7 +496,7 @@ bool PipelineState::CreateAsGraphics
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) PipelineState;
+    auto instance = new PipelineState;
     if (instance == nullptr)
     { return false; }
 
@@ -523,7 +523,7 @@ bool PipelineState::CreateAsCompute
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
     { return false; }
 
-    auto instance = new (std::nothrow) PipelineState;
+    auto instance = new PipelineState;
     if (instance == nullptr)
     { return false; }
 

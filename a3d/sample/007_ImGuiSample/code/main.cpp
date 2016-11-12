@@ -11,10 +11,10 @@
 #include <cassert>
 #include <cfloat>
 #include <cstring>
-#include "helpers/SampleApp.h"
-#include "helpers/SampleUtil.h"
-#include "helpers/SampleMath.h"
-#include "helpers/SampleTarga.h"
+#include <SampleApp.h>
+#include <SampleUtil.h>
+#include <SampleMath.h>
+#include <SampleTarga.h>
 #include "gui.h"
 
 
@@ -24,7 +24,7 @@
 struct Vertex
 {
     Vec3 Position;  //!< ˆÊ’uÀ•W‚Å‚·.
-    Vec2 TexCoord;  //!< ’¸“_ƒJƒ‰[‚Å‚·.
+    Vec2 TexCoord;  //!< ƒeƒNƒXƒ`ƒƒÀ•W‚Å‚·.
 };
 
 
@@ -79,6 +79,50 @@ void*                       g_pCbHead[2]            = {};       //!< ’è”ƒoƒbƒtƒ
 float                       g_ClearColor[4]         = {};       //!< ƒNƒŠƒAƒJƒ‰[‚Å‚·.
 float                       g_RotateSpeed           = 1.0f;
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Allocator class
+///////////////////////////////////////////////////////////////////////////////////////////////////
+class Allocator : a3d::IAllocator
+{
+    //=============================================================================================
+    // list of friend classes and methods.
+    //=============================================================================================
+    /* NONTHING */
+
+public:
+    //=============================================================================================
+    // public variables.
+    //=============================================================================================
+    /* NOHTING */
+
+    //=============================================================================================
+    // public methods.
+    //=============================================================================================
+
+    //---------------------------------------------------------------------------------------------
+    //      ƒƒ‚ƒŠ‚ğŠm•Û‚µ‚Ü‚·.
+    //---------------------------------------------------------------------------------------------
+    void* Alloc(size_t size, size_t alignment) noexcept override
+    {
+        auto allocSize = a3d::RoundUp(size, alignment);
+        return malloc(size);
+    }
+
+    //---------------------------------------------------------------------------------------------
+    //      ƒƒ‚ƒŠ‚ğÄŠm•Û‚µ‚Ü‚·.
+    //---------------------------------------------------------------------------------------------
+    void* Realloc(void* ptr, size_t size) noexcept override
+    { return realloc(ptr, size); }
+
+    //---------------------------------------------------------------------------------------------
+    //      ƒƒ‚ƒŠ‚ğ‰ğ•ú‚µ‚Ü‚·.
+    //---------------------------------------------------------------------------------------------
+    void Free(void* ptr) noexcept override
+    { free(ptr); }
+} g_Allocator;
+
+
 //-------------------------------------------------------------------------------------------------
 //      ƒƒCƒ“ƒGƒ“ƒgƒŠ[ƒ|ƒCƒ“ƒg‚Å‚·.
 //-------------------------------------------------------------------------------------------------
@@ -112,6 +156,10 @@ void main()
 //-------------------------------------------------------------------------------------------------
 bool InitA3D()
 {
+    // ƒOƒ‰ƒtƒBƒbƒNƒXƒVƒXƒeƒ€‚Ì‰Šú‰».
+    if (!a3d::InitSystem(reinterpret_cast<a3d::IAllocator*>(&g_Allocator)))
+    { return false; }
+
     // ƒfƒoƒCƒX‚Ì¶¬.
     {
         a3d::DeviceDesc desc = {};
@@ -312,7 +360,7 @@ bool InitA3D()
 
     // ’è”ƒoƒbƒtƒ@‚ğ¶¬.
     {
-        auto stride =  a3d::RoundUp<uint32_t>( sizeof(Transform), info.ConstantBufferMemoryAlignment );
+        auto stride = a3d::RoundUp<uint32_t>( sizeof(Transform), info.ConstantBufferMemoryAlignment );
 
         a3d::BufferDesc desc = {};
         desc.Size                           = stride;
@@ -500,7 +548,11 @@ bool InitA3D()
 
         // ƒOƒ‰ƒtƒBƒbƒNƒXƒpƒCƒvƒ‰ƒCƒ“ƒXƒe[ƒg‚Ì¶¬.
         if (!g_pDevice->CreateGraphicsPipeline(&desc, &g_pPipelineState))
-        { return false; }
+        {
+            DisposeShaderBinary(vs);
+            DisposeShaderBinary(ps);
+            return false;
+        }
     }
      // •s—v‚É‚È‚Á‚½‚Ì‚Å”jŠü‚µ‚Ü‚·.
     DisposeShaderBinary(vs);
@@ -734,6 +786,9 @@ void TermA3D()
 
     // ƒfƒoƒCƒX‚Ì”jŠü.
     a3d::SafeRelease(g_pDevice);
+
+    // ƒOƒ‰ƒtƒBƒbƒNƒXƒVƒXƒeƒ€‚ÌI—¹ˆ—.
+    a3d::TermSystem();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -763,7 +818,6 @@ void DrawA3D()
     // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ğİ’è‚µ‚Ü‚·.
     pCmd->SetFrameBuffer(g_pFrameBuffer[idx]);
 
-    // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ğƒNƒŠƒA‚µ‚Ü‚·.
     a3d::ClearColorValue clearColor = {};
     clearColor.Float[0] = g_ClearColor[0];
     clearColor.Float[1] = g_ClearColor[1];
@@ -776,6 +830,7 @@ void DrawA3D()
     clearDepth.EnableClearDepth     = true;
     clearDepth.EnableClearStencil   = false;
 
+    // ƒtƒŒ[ƒ€ƒoƒbƒtƒ@‚ğƒNƒŠƒA‚µ‚Ü‚·.
     pCmd->ClearFrameBuffer(1, &clearColor, &clearDepth);
 
     // 3D•`‰æ.
