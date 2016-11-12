@@ -4,11 +4,6 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------------------------------
-// Includes
-//-------------------------------------------------------------------------------------------------
-#include <cstdio>
-
 
 namespace /* anonymous */ {
 
@@ -27,12 +22,12 @@ namespace a3d {
 //-------------------------------------------------------------------------------------------------
 //      メモリを確保します.
 //-------------------------------------------------------------------------------------------------
-void* a3d_alloc(size_t size, size_t alignment )
+void* a3d_alloc(uint64_t size, uint64_t alignment )
 {
     if (g_pAllocator == nullptr)
     { return nullptr; }
 
-    auto ret = g_pAllocator->Alloc(size, alignment);
+    auto ret = g_pAllocator->Alloc(size_t(size), size_t(alignment));
 
     if (g_CounterEnable)
     {
@@ -46,7 +41,7 @@ void* a3d_alloc(size_t size, size_t alignment )
 //-------------------------------------------------------------------------------------------------
 //      メモリを再確保します.
 //-------------------------------------------------------------------------------------------------
-void* a3d_realloc(void* ptr, size_t size)
+void* a3d_realloc(void* ptr, uint64_t size)
 {
     if (g_pAllocator == nullptr)
     { return nullptr; }
@@ -57,7 +52,7 @@ void* a3d_realloc(void* ptr, size_t size)
         { g_AllocCounter++; }
     }
 
-    return g_pAllocator->Realloc(ptr, size);
+    return g_pAllocator->Realloc(ptr, size_t(size));
 }
 
 //-------------------------------------------------------------------------------------------------

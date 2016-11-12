@@ -257,7 +257,7 @@ void ToNativeSampleDesc( const a3d::MultiSampleState& state, DXGI_SAMPLE_DESC& r
 //-------------------------------------------------------------------------------------------------
 void ToNativePipelieStateCache( const a3d::IBlob* pBlob, D3D12_CACHED_PIPELINE_STATE& state )
 {
-    state.CachedBlobSizeInBytes = (pBlob != nullptr) ? pBlob->GetBufferSize() : 0;
+    state.CachedBlobSizeInBytes = (pBlob != nullptr) ? SIZE_T(pBlob->GetBufferSize()) : 0;
     state.pCachedBlob           = (pBlob != nullptr) ? pBlob->GetBufferPointer() : nullptr;
 }
 

@@ -537,7 +537,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         info.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
         info.pNext           = nullptr;
         info.flags           = 0;
-        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferSize() : 0;
+        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? size_t(pDesc->pCachedPSO->GetBufferSize()) : 0;
         info.pInitialData    = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferPointer() : nullptr;
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
@@ -728,7 +728,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
         info.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
         info.pNext           = nullptr;
         info.flags           = 0;
-        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferSize() : 0;
+        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? size_t(pDesc->pCachedPSO->GetBufferSize()) : 0;
         info.pInitialData    = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferPointer() : nullptr;
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
