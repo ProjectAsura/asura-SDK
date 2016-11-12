@@ -79,7 +79,7 @@ sampleフォルダ下にa3dライブラリを使ったサンプルがありま�
 ImGuiを用いたサンプルです。  
 ![ImGuiSample](./doc/images/007_ImGuiSample.png)  
 
-* [RenderingTexture](./sample/008_RenderingTexture.png)  
+* [RenderingTexture](./sample/008_RenderingTexture/code "RenderingTexture")  
 レンダリングテクスチャを表示するサンプルです。  
 ![RenderingTexture](./doc/images/008_RenderingTexture.png)  
 
