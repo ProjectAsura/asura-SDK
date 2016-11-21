@@ -100,7 +100,6 @@ sampleフォルダ下に組み込み例があるので，組み込み方法が�
 ### Initialization
 First of all, you need to pass a memory allocator to the library. The memory allocator inherits the a3d::IAllocator interface and needs to be implemented by the user. A simple implementation example is as follows.  
 
-
 まずは，ライブラリにメモリアロケータを渡す必要があります。メモリアロケータはa3d::IAllocatorインタフェースを継承してユーザーが実装する必要があります。単純な実装例は次のようになります。  
 
 ```cpp
@@ -126,12 +125,12 @@ public:
 
 ```
 
+
 The memory allocator is passed to the library using the a3d :: InitSystem () method. Implementation examples are as follows.  
 
 メモリアロケータはa3d::InitSystem()メソッドを使って，ライブラリに渡します。実装例は次の通りです。
 
 ```cpp
-// グラフィックスシステムの初期化.
 if (!a3d::InitSystem(reinterpret_cast<a3d::IAllocator*>(&g_Allocator)))
 { return false; }
 ```
@@ -142,6 +141,7 @@ With all objects destroyed, call the a3d::TermSystem() method. By calling this m
 
 a3dライブラリを終了させる前に，全てのオブジェクトを破棄しておく必要があります。オブジェクトの破棄はa3d::IReference::Release()メソッドを呼び出すことにより解放処理が実行されます。  
 全てのオブジェクトが破棄されている状態で，a3d::TermSystem()メソッドを呼び出しを行います。このメソッドを呼び出すことで，a3d::InitSystem()メソッドで登録したメモリアロケータがnullptrに設定されます。  
+
 ```cpp
 a3d::TermSystem();
 ```
