@@ -3,12 +3,20 @@ Asura Rendering Hardware Interface Library
 This project is WIP.  
 
 ## About
-a3d is an abstraction 3D graphics library for wrapping Direct3D12 and Vulkan.
-We are promoting development aiming mainly to use as a foundation for game engines and tools.
+a3d is an abstraction 3D graphics library for wrapping Direct3D12 and Vulkan.  
+We are promoting development aiming mainly to use as a foundation for game engines and tools.  
+Now supported following graphics APIs.
+* Direct3D 11
+* Direct3D 12
+* Vulkan
 
 
 a3d はDirect3D12とVulkanをラップするための抽象化3Dグラフィックスライブラリです。  
 主にゲームエンジンやツールの基盤としての利用を目指して開発を進めています。  
+現在以下のグラフィックスAPIに対応しています。
+* Direct3D 11
+* Direct3D 12
+* Vulkan
 
 
 ## License
@@ -77,7 +85,7 @@ To use Vulkan version, you need to link the following files.
 * a3d_vk.lib  (For Release version)
 * vulkan-1.lib 
 
-There is a example to integration under the sampler folder, so please see it.
+There is a example to integration under the "sample" folder, please see it.  
 
 
 スタティックライブラリは，binフォルダ下にDirect3D12版とVulkan版がそれぞれ別に存在します。  
@@ -199,7 +207,6 @@ Sample to display rendering texture.
 
 ## Documents
 docフォルダ下にAPIリファレンスがあります。  
-* [API Document](./doc/a3d_api.chm)  
-
+* [API Document](./doc/a3d_api.chm)  (JP Only)
 
 
