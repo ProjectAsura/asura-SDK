@@ -548,6 +548,16 @@ enum TEXTURE_ASPECT
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   META_DATA_TYPE
+//! @brief  メタデータタイプです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum META_DATA_TYPE
+{
+    META_DATA_NONE          = 0,
+    META_DATA_HDR10         = 1,
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // Offset2D structure
 //! @brief  2次元のオフセットです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1017,8 +1027,26 @@ struct SwapChainDesc
     uint32_t        SampleCount;    //!< マルチサンプル数です.
     uint32_t        BufferCount;    //!< バックバッファ数です.
     uint32_t        SyncInterval;   //!< 垂直同期間隔です.
+    META_DATA_TYPE  MetaDataType;   //!< メタデータタイプです.
+    void*           pMetaData;      //!< メタデータです.
     void*           InstanceHandle; //!< インスタンスハンドルです.
     void*           WindowHandle;   //!< ウィンドウハンドルです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// MetaDataHDR10 structure
+//! @brief  HDR10メタデータです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct MetaDataHDR10
+{
+    float       PrimaryR[2];
+    float       PrimaryG[2];
+    float       PrimaryB[2];
+    float       WhitePoint[2];
+    float       MaxMasteringLuminance;
+    float       MinMasteringLuminance;
+    float       MaxContentLightLevel;
+    float       MaxFrameAverageLightLevel;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1123,11 +1151,15 @@ A3D_API void A3D_APIENTRY TermSystem();
 //! @brief      デバイスを生成します.
 //!
 //! @param[in]      pDesc       デバイス設定です.
+//! @param[in]      pOption     オプション情報です.
 //! @param[out]     ppDevice    デバイスの格納先です.
 //! @retval true    生成に成功.
 //! @retval false   生成に失敗.
 //-------------------------------------------------------------------------------------------------
-A3D_API bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice);
+A3D_API bool A3D_APIENTRY CreateDevice(
+    const DeviceDesc*   pDesc,
+    const void*         pOption,
+    IDevice**           ppDevice);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2000,7 +2032,7 @@ struct A3D_API IDevice : IReference
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY CreateCommandList(
         COMMANDLIST_TYPE    commandListType,
-        void*               pOption,
+        const void*         pOption,
         ICommandList**      ppCommandList) = 0;
 
     //---------------------------------------------------------------------------------------------

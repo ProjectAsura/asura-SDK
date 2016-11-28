@@ -257,7 +257,6 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
 
         if (!m_pDevice->CreateSampler(&desc, &m_pSampler))
         { return false; }
-
     }
 
     // ディスクリプタセットレイアウトを生成.

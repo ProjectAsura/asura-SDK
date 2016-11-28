@@ -109,11 +109,11 @@ private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>       m_RefCount;                         //!< 参照カウントです.
-    IDevice*                    m_pDevice;                          //!< デバイスです.
-    DescriptorSetLayoutDesc*    m_pLayoutDesc;                      //!< レイアウト設定です.
-    bool                        m_IsGraphicsPipeline;               //!< グラフィックスパイプラインかどうか?
-    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> m_Handles;             //!< ディスクリプタハンドルです.
+    std::atomic<uint32_t>                       m_RefCount;             //!< 参照カウントです.
+    IDevice*                                    m_pDevice;              //!< デバイスです.
+    DescriptorSetLayoutDesc*                    m_pLayoutDesc;          //!< レイアウト設定です.
+    bool                                        m_IsGraphicsPipeline;   //!< グラフィックスパイプラインかどうか?
+    dynamic_array<D3D12_GPU_DESCRIPTOR_HANDLE>  m_Handles;              //!< ディスクリプタハンドルです.
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コンストラクタです.

@@ -31,7 +31,7 @@ CommandList::~CommandList()
 //-------------------------------------------------------------------------------------------------
 //      初期化処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType, void* pOption)
+bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType, const void* pOption)
 {
     A3D_UNUSED(pOption);
     if ( pDevice == nullptr )
@@ -1102,7 +1102,7 @@ bool CommandList::Create
 (
     IDevice*            pDevice,
     COMMANDLIST_TYPE    listType,
-    void*               pOption,
+    const void*         pOption,
     ICommandList**      ppCommandList
 )
 {

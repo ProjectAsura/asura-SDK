@@ -47,7 +47,7 @@ public:
     static bool A3D_APIENTRY Create(
         IDevice*         pDevice,
         COMMANDLIST_TYPE listType,
-        void*            pOption,
+        const void*      pOption,
         ICommandList**   ppCommandList);
 
     //---------------------------------------------------------------------------------------------
@@ -425,7 +425,7 @@ private:
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(IDevice* pDevice, COMMANDLIST_TYPE listType, void* pOption);
+    bool A3D_APIENTRY Init(IDevice* pDevice, COMMANDLIST_TYPE listType, const void* pOption);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

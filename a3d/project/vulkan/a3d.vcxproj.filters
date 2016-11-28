@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ソース ファイル\allocator">
+      <UniqueIdentifier>{d2b50505-3c8a-42dd-8854-fac8b14fb7a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\a3dBlob.h">
@@ -75,8 +78,11 @@
     <ClInclude Include="..\..\src\vulkan\a3dBufferView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\a3dBaseAllocator.h">
-      <Filter>ソース ファイル</Filter>
+    <ClInclude Include="..\..\src\allocator\a3dBaseAllocator.h">
+      <Filter>ソース ファイル\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\allocator\a3dStdAllocator.h">
+      <Filter>ソース ファイル\allocator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -137,8 +143,8 @@
     <ClCompile Include="..\..\src\vulkan\a3dBufferView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\a3dBaseAllocator.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="..\..\src\allocator\a3dBaseAllocator.cpp">
+      <Filter>ソース ファイル\allocator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

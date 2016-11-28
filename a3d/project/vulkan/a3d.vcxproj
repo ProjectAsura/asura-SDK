@@ -151,8 +151,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\a3d.h" />
-    <ClInclude Include="..\..\src\a3dBaseAllocator.h" />
     <ClInclude Include="..\..\src\a3dBlob.h" />
+    <ClInclude Include="..\..\src\allocator\a3dBaseAllocator.h" />
+    <ClInclude Include="..\..\src\allocator\a3dStdAllocator.h" />
     <ClInclude Include="..\..\src\vulkan\a3dBuffer.h" />
     <ClInclude Include="..\..\src\vulkan\a3dBufferView.h" />
     <ClInclude Include="..\..\src\vulkan\a3dCommandList.h" />
@@ -173,8 +174,8 @@
     <ClInclude Include="..\..\src\vulkan\a3dUtil.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\src\a3dBlob.cpp" />
+    <ClCompile Include="..\..\src\allocator\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dBuffer.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dBufferView.cpp" />
     <ClCompile Include="..\..\src\vulkan\a3dCommandList.cpp" />

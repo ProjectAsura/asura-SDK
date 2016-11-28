@@ -32,11 +32,15 @@ public:
     //! @brief      生成処理を行います.
     //!
     //! @param[in]      pDesc       構成設定です.
+    //! @param[in]      pOption     オプション情報です.
     //! @param[out]     ppDevice    デバイスの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    static bool A3D_APIENTRY Create(const DeviceDesc* pDesc, IDevice** ppDevice);
+    static bool A3D_APIENTRY Create(
+        const DeviceDesc*   pDesc,
+        const void*         pOption,
+        IDevice**           ppDevice);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -101,7 +105,7 @@ public:
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateCommandList(
         COMMANDLIST_TYPE    commandListType,
-        void*               pPlatformData,
+        const void*         pOption,
         ICommandList**      ppCommandList) override;
 
     //---------------------------------------------------------------------------------------------
@@ -361,10 +365,11 @@ private:
     //! @brief      初期化処理を行います.
     //!
     //! @parma[in]      pDesc       構成設定です.
+    //! @param[in]      pOption     オプション情報です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(const DeviceDesc* pDesc);
+    bool A3D_APIENTRY Init(const DeviceDesc* pDesc, const void* pOption);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

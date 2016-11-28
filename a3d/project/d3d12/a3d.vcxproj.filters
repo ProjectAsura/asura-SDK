@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ソース ファイル\allocator">
+      <UniqueIdentifier>{0e64809e-fd1f-4f2f-a9d8-214cc7320f63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\d3d12\a3dCommandList.h">
@@ -84,8 +87,14 @@
     <ClInclude Include="..\..\src\d3d12\a3dBufferView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\a3dBaseAllocator.h">
+    <ClInclude Include="..\..\src\a3dDynamicArray.h">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\allocator\a3dBaseAllocator.h">
+      <Filter>ソース ファイル\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\allocator\a3dStdAllocator.h">
+      <Filter>ソース ファイル\allocator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -152,8 +161,8 @@
     <ClCompile Include="..\..\src\d3d12\a3dBufferView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\a3dBaseAllocator.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="..\..\src\allocator\a3dBaseAllocator.cpp">
+      <Filter>ソース ファイル\allocator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -199,7 +199,7 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout = {};
     pNativeDevice->GetCopyableFootprints(
         &nativeDesc,
-        0,
+        subresource,
         1,
         0,
         &layout,

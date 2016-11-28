@@ -58,7 +58,7 @@ void* VKAPI_CALL Alloc
 {
     A3D_UNUSED(pUserData);
     g_AllocationSize[scope] += size;
-    return a3d::a3d_alloc(size, alignment);
+    return a3d_alloc(size, alignment);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ void* VKAPI_CALL Realloc
 {
     A3D_UNUSED(pUserData);
     A3D_UNUSED(scope);
-    return a3d::a3d_realloc(pUserData, size, alignment);
+    return a3d_realloc(pUserData, size, alignment);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ VKAPI_ATTR
 void VKAPI_CALL Free(void* pUserData, void* pMemory)
 {
     A3D_UNUSED(pUserData);
-    a3d::a3d_free(pMemory);
+    a3d_free(pMemory);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -183,8 +183,10 @@ Device::~Device()
 //-------------------------------------------------------------------------------------------------
 //      初期化処理です.
 //-------------------------------------------------------------------------------------------------
-bool Device::Init(const DeviceDesc* pDesc)
+bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
 {
+    A3D_UNUSED(pOption);
+
     if (pDesc == nullptr)
     { return false; }
 
@@ -274,7 +276,7 @@ bool Device::Init(const DeviceDesc* pDesc)
             info.flags          = flags;
 
             // vkCreateDebugReportCallback()で何故か2回メモリ確保がされてリークするので，カウンターを無効化.
-            a3d_disable_counter();
+            a3d_enable_counter(false);
 
             auto ret = vkCreateDebugReportCallback( 
                 m_Instance,
@@ -283,7 +285,7 @@ bool Device::Init(const DeviceDesc* pDesc)
                 &vkDebugReportCallback );
 
             // 無効にしたカウンターを元に戻す.
-            a3d_enable_counter();
+            a3d_enable_counter(true);
 
             if ( ret != VK_SUCCESS )
             { return false; }
@@ -488,7 +490,7 @@ void Device::Term()
         {
             // vkDestroyDebugReportCallback()では，
             // 2回確保されたメモリーが1つしか解放されずリークするのでカウンターを無効化.
-            a3d_disable_counter();
+            a3d_enable_counter(false);
 
             vkDestroyDebugReportCallback(
                 m_Instance,
@@ -497,7 +499,7 @@ void Device::Term()
             vkDebugReportCallback = null_handle;
 
             // 無効にしたカウンターを戻す.
-            a3d_enable_counter();
+            a3d_enable_counter(true);
         }
 
         if (vkCreateDebugReportCallback  != nullptr &&
@@ -594,7 +596,7 @@ void Device::GetCopyQueue(IQueue** ppQueue)
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandList(COMMANDLIST_TYPE type, void* pOption, ICommandList** ppCommandList)
+bool Device::CreateCommandList(COMMANDLIST_TYPE type, const void* pOption, ICommandList** ppCommandList)
 { return CommandList::Create(this, type, pOption, ppCommandList); }
 
 //-------------------------------------------------------------------------------------------------
@@ -784,7 +786,7 @@ bool Device::CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
+bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
@@ -793,7 +795,7 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDesc))
+    if (!instance->Init(pDesc, pOption))
     {
         SafeRelease(instance);
         return false;
@@ -806,7 +808,7 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      デバイスを生成します.
 //-------------------------------------------------------------------------------------------------
-bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
+bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
@@ -814,7 +816,7 @@ bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
     for(auto i=0; i<VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE; ++i)
     { g_AllocationSize[i] = 0; }
 
-    return Device::Create(pDesc, ppDevice);
+    return Device::Create(pDesc, pOption, ppDevice);
 }
 
 } // namespace a3d

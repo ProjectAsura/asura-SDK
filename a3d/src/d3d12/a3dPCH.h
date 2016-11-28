@@ -9,12 +9,13 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
-#include <a3dBaseAllocator.h>
+#include <allocator/a3dBaseAllocator.h>
+#include <allocator/a3dStdAllocator.h>
 #include <a3d.h>
 #include <cassert>
 #include <atomic>
 #include <mutex>
-#include <vector>
+#include <a3dDynamicArray.h>
 
 #include <d3d12.h>
 #include <dxgi1_5.h>

@@ -29,8 +29,10 @@ Device::~Device()
 //-------------------------------------------------------------------------------------------------
 //      初期化処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Device::Init(const DeviceDesc* pDesc)
+bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
 {
+    A3D_UNUSED(pOption);
+
     if (pDesc == nullptr)
     { return false; }
 
@@ -195,7 +197,7 @@ void Device::GetCopyQueue(IQueue** ppQueue)
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandList(COMMANDLIST_TYPE type, void* pOption, ICommandList** ppCommandList)
+bool Device::CreateCommandList(COMMANDLIST_TYPE type, const void* pOption, ICommandList** ppCommandList)
 { return CommandList::Create(this, type, pOption, ppCommandList); }
 
 //-------------------------------------------------------------------------------------------------
@@ -314,7 +316,7 @@ DescriptorHeap* Device::GetDescriptorHeap(uint32_t index)
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
+bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
@@ -323,7 +325,7 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDesc))
+    if (!instance->Init(pDesc, pOption))
     {
         SafeRelease(instance);
         return false;
@@ -336,12 +338,12 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      デバイスを生成します.
 //-------------------------------------------------------------------------------------------------
-bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
+bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
 
-    return Device::Create(pDesc, ppDevice);
+    return Device::Create(pDesc, pOption, ppDevice);
 }
 
 } // namespace a3d

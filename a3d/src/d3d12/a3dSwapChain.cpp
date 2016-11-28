@@ -5,6 +5,22 @@
 //-------------------------------------------------------------------------------------------------
 
 
+namespace /* anonymous */ {
+
+template<typename T>
+inline T Clamp(T value, T mini, T maxi)
+{ return (value < mini) ? mini : ((value > maxi) ? maxi : value); }
+
+UINT16 GetCoord(float value)
+{
+    // 正規化値を求めるためには 50000で割る必要があるが，A3Dでは正規化値を保持する設計なので,
+    // DXGI側に渡すためには，50000倍する. 
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/mt732700(v=vs.85).aspx を参照
+    return static_cast<UINT16>(Clamp(value, 0.0f, 1.0f) * 50000);
+}
+
+} // namespace /* anonymous */
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,8 +93,41 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         SafeRelease(pSwapChain);
 
         if (FAILED(hr))
+        { return false; }
+
+        // メタデータがある場合は設定する.
+        if (pDesc->pMetaData != nullptr)
         {
-            return false;
+            switch(pDesc->MetaDataType)
+            {
+            case META_DATA_HDR10:
+                {
+                    auto pData = static_cast<MetaDataHDR10*>(pDesc->pMetaData);
+                    A3D_ASSERT(pData != nullptr);
+
+                    DXGI_HDR_METADATA_HDR10 meta = {};
+                    meta.RedPrimary[0]              = GetCoord(pData->PrimaryR[0]);
+                    meta.RedPrimary[1]              = GetCoord(pData->PrimaryR[1]);
+                    meta.BluePrimary[0]             = GetCoord(pData->PrimaryB[0]);
+                    meta.BluePrimary[1]             = GetCoord(pData->PrimaryB[1]);
+                    meta.GreenPrimary[0]            = GetCoord(pData->PrimaryG[0]);
+                    meta.GreenPrimary[1]            = GetCoord(pData->PrimaryG[1]);
+                    meta.WhitePoint[0]              = GetCoord(pData->WhitePoint[0]);
+                    meta.WhitePoint[1]              = GetCoord(pData->WhitePoint[1]);
+                    meta.MaxMasteringLuminance      = static_cast<UINT>(pData->MaxMasteringLuminance / 10000.0);
+                    meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 100000.0);
+                    meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
+                    meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
+
+                    hr = m_pSwapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
+                    if (FAILED(hr))
+                    { return false; }
+                }
+                break;
+
+            default:
+                break;
+            }
         }
     }
 
@@ -213,7 +262,7 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 //-------------------------------------------------------------------------------------------------
 //      スワップチェインを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGISwapChain3* SwapChain::GetDXGISwapChain() const
+IDXGISwapChain4* SwapChain::GetDXGISwapChain() const
 { return m_pSwapChain; }
 
 //-------------------------------------------------------------------------------------------------

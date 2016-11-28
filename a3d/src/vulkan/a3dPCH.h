@@ -9,8 +9,9 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
+#include <allocator/a3dBaseAllocator.h>
+#include <allocator/a3dStdAllocator.h>
 #include <a3d.h>
-#include <a3dBaseAllocator.h>
 #include <cassert>
 #include <atomic>
 #include <mutex>

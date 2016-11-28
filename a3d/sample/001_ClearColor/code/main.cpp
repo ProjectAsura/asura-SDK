@@ -134,7 +134,7 @@ bool InitA3D()
         desc.MaxComputeQueueSubmitCount     = 256;
 
         // デバイスを生成.
-        if (!a3d::CreateDevice(&desc, &g_pDevice))
+        if (!a3d::CreateDevice(&desc, nullptr, &g_pDevice))
         { return false; }
 
         // コマンドキューを取得.

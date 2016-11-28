@@ -102,7 +102,7 @@ public:
     //!
     //! @return     スワップチェインを返却します.
     //---------------------------------------------------------------------------------------------
-    IDXGISwapChain3* A3D_APIENTRY GetDXGISwapChain() const;
+    IDXGISwapChain4* A3D_APIENTRY GetDXGISwapChain() const;
 
 private:
     //=============================================================================================
@@ -111,7 +111,7 @@ private:
     std::atomic<uint32_t>   m_RefCount;     //!< 参照カウンタです.
     IDevice*                m_pDevice;      //!< デバイスです.
     SwapChainDesc           m_Desc;         //!< 構成設定です.
-    IDXGISwapChain3*        m_pSwapChain;   //!< スワップチェインです.
+    IDXGISwapChain4*        m_pSwapChain;   //!< スワップチェインです.
     ITexture**              m_pBuffers;     //!< バッファです.
 
     //=============================================================================================

@@ -17,17 +17,15 @@ std::atomic<bool>       g_CounterEnable = true;
 } // namespace /* anonymous */
 
 
-namespace a3d {
-
 //-------------------------------------------------------------------------------------------------
 //      メモリを確保します.
 //-------------------------------------------------------------------------------------------------
-void* a3d_alloc(uint64_t size, uint64_t alignment )
+void* a3d_alloc(size_t size, size_t alignment )
 {
     if (g_pAllocator == nullptr)
     { return nullptr; }
 
-    auto ret = g_pAllocator->Alloc(size_t(size), size_t(alignment));
+    auto ret = g_pAllocator->Alloc(size, alignment);
 
     if (g_CounterEnable)
     {
@@ -41,7 +39,7 @@ void* a3d_alloc(uint64_t size, uint64_t alignment )
 //-------------------------------------------------------------------------------------------------
 //      メモリを再確保します.
 //-------------------------------------------------------------------------------------------------
-void* a3d_realloc(void* ptr, uint64_t size, uint64_t alignment)
+void* a3d_realloc(void* ptr, size_t size, size_t alignment)
 {
     if (g_pAllocator == nullptr)
     { return nullptr; }
@@ -52,7 +50,7 @@ void* a3d_realloc(void* ptr, uint64_t size, uint64_t alignment)
         { g_AllocCounter++; }
     }
 
-    return g_pAllocator->Realloc(ptr, size_t(size), size_t(alignment));
+    return g_pAllocator->Realloc(ptr, size, alignment);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -73,16 +71,13 @@ void a3d_free(void* ptr)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      カウンターを無効化します.
-//-------------------------------------------------------------------------------------------------
-void a3d_disable_counter()
-{ g_CounterEnable = false; }
-
-//-------------------------------------------------------------------------------------------------
 //      カウンターを有効化します.
 //-------------------------------------------------------------------------------------------------
-void a3d_enable_counter()
-{ g_CounterEnable = true; }
+void a3d_enable_counter(bool value)
+{ g_CounterEnable = value; }
+
+
+namespace a3d {
 
 //-------------------------------------------------------------------------------------------------
 //      グラフィックスシステムを初期化します.

@@ -12,23 +12,21 @@
 #include <cstdint>
 
 
+//-------------------------------------------------------------------------------------------------
+// Functions
+//-------------------------------------------------------------------------------------------------
+void* a3d_alloc(size_t size, size_t alignment);
+void* a3d_realloc(void* ptr, size_t size, size_t alignment);
+void  a3d_free(void* ptr);
+void  a3d_enable_counter(bool enable);
+
+
 namespace a3d {
 
 //-------------------------------------------------------------------------------------------------
 // Constant Values.
 //-------------------------------------------------------------------------------------------------
 constexpr size_t DefaultAlignment = 4;
-
-
-//-------------------------------------------------------------------------------------------------
-// Functions
-//-------------------------------------------------------------------------------------------------
-void* a3d_alloc  (uint64_t size, uint64_t alignment);
-void* a3d_realloc(void* ptr, uint64_t size, uint64_t alignment);
-void  a3d_free   (void* ptr);
-
-void  a3d_disable_counter();
-void  a3d_enable_counter ();
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,17 +41,11 @@ public:
     static void* operator new[] (size_t size) noexcept
     { return a3d_alloc(size, DefaultAlignment); }
 
-    static void* operator new (size_t size, void* memory) noexcept
-    {
-        (void)size;
-        return memory;
-    }
+    static void* operator new (size_t, void* memory) noexcept
+    { return memory; }
 
-    static void* operator new[] (size_t size, void* memory) noexcept
-    {
-        (void)size;
-        return memory;
-    }
+    static void* operator new[] (size_t, void* memory) noexcept
+    { return memory; }
 
     static void operator delete (void* ptr) noexcept
     { a3d_free(ptr); }
