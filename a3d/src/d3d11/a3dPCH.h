@@ -15,7 +15,7 @@
 #include <cassert>
 #include <atomic>
 #include <mutex>
-#include <a3dDynamicArray.h>
+#include <container/a3dDynamicArray.h>
 
 #include <d3d11_1.h>
 #include <dxgi1_3.h>
@@ -25,7 +25,6 @@
 #include "emu/a3dCommandList.h"
 
 #include "a3dUtil.h"
-#include "a3dResourceType.h"
 #include "a3dBlob.h"
 #include "a3dDevice.h"
 #include "a3dFence.h"

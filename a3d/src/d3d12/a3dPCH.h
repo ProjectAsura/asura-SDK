@@ -15,12 +15,11 @@
 #include <cassert>
 #include <atomic>
 #include <mutex>
-#include <a3dDynamicArray.h>
+#include <container/a3dDynamicArray.h>
 
 #include <d3d12.h>
 #include <dxgi1_5.h>
 
-#include "a3dResourceType.h"
 #include "a3dUtil.h"
 #include "a3dBlob.h"
 #include "a3dDescriptor.h"

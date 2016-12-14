@@ -333,6 +333,7 @@ void Queue::ParseCmd()
                     A3D_ASSERT(cmd != nullptr);
                     pActiveDescriptorSet = reinterpret_cast<DescriptorSet*>(cmd->pDescriptorSet);
                     pActiveDescriptorSet->Bind(pDeviceContext);
+                    pActiveDescriptorSet->UpdateSubreosurce(pDeviceContext);
                     pCmd += sizeof(ImCmdSetDescriptorSet);
                 }
                 break;
@@ -419,9 +420,6 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdDrawInstanced*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    if (pActiveDescriptorSet != nullptr)
-                    { pActiveDescriptorSet->UpdateSubreosurce(pDeviceContext); }
-
                     pDeviceContext->DrawInstanced(
                         cmd->VertexCount,
                         cmd->InstanceCount,
@@ -436,9 +434,6 @@ void Queue::ParseCmd()
                 {
                     auto cmd = reinterpret_cast<ImCmdDrawIndexedInstanced*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
-
-                    if (pActiveDescriptorSet != nullptr)
-                    { pActiveDescriptorSet->UpdateSubreosurce(pDeviceContext); }
 
                     pDeviceContext->DrawIndexedInstanced(
                         cmd->IndexCount,
@@ -455,9 +450,6 @@ void Queue::ParseCmd()
                 {
                     auto cmd = reinterpret_cast<ImCmdDispatch*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
-
-                    if (pActiveDescriptorSet != nullptr)
-                    { pActiveDescriptorSet->UpdateSubreosurce(pDeviceContext); }
 
                     pDeviceContext->Dispatch(
                         cmd->X,
@@ -582,7 +574,7 @@ void Queue::ParseCmd()
 
                         case QUERY_TYPE_PIPELINE_STATISTICS:
                             {
-                                // TODO : ネイティブ型を使わないように修正..
+                                // TODO : ネイティブ型を使わずA3D形式の構造体を用意して，そちらに設定して返すように実装を変える.
                                 D3D11_QUERY_DATA_PIPELINE_STATISTICS data = {};
                                 pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0);
                                 memcpy(pDstPtr, &data, sizeof(data));

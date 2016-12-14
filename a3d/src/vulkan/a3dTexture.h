@@ -154,11 +154,11 @@ public:
     VkImageAspectFlags A3D_APIENTRY GetVulkanImageAspectFlags() const;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      プライベートデータを取得します.
+    //! @brief      リソースタイプを取得します.
     //!
-    //! @return     プライベートデータを返却します.
+    //! @return     リソースタイプを返却します.
     //---------------------------------------------------------------------------------------------
-    uint32_t A3D_APIENTRY GetPrivateData() const override;
+    RESOURCE_KIND A3D_APIENTRY GetKind() const override;
 
 private:
     //=============================================================================================

@@ -18,7 +18,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include "a3dResourceType.h"
 #include "a3dBlob.h"
 #include "a3dDevice.h"
 #include "a3dFence.h"

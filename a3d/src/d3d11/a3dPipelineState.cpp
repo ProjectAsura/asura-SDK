@@ -106,8 +106,10 @@ void ToNativeBlendDesc( const a3d::BlendState& state, D3D11_BLEND_DESC& result )
     result.IndependentBlendEnable = (state.IndependentBlendEnable) ? TRUE : FALSE;
     for(auto i=0; i<8; ++i)
     {
+    #if 0 // 低スペックPCでも動くようにしたいので非サポート.
         //result.RenderTarget[i].LogicOpEnable = (state.LogicOpEnable) ? TRUE : FALSE;
         //result.RenderTarget[i].LogicOp       = ToNativeLogicOp(state.LogicOp);
+    #endif
         ToNativeRanderTargetBlendDesc( state.ColorTarget[i], result.RenderTarget[i] );
     }
 }
@@ -151,10 +153,10 @@ void ToNativeRasterizerDesc( const a3d::RasterizerState& state, D3D11_RASTERIZER
     result.DepthBiasClamp           = state.DepthBiasClamp;
     result.SlopeScaledDepthBias     = state.SlopeScaledDepthBais;
     result.DepthClipEnable          = ( state.DepthClipEnable ) ? TRUE : FALSE;
-#if 0
+#if 0 // 低スペックPCでも動くようにしたいので非サポート.
     //result.ConservativeRaster       = ( state.EnableConservativeRaster ) 
-    //                                  ? D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON
-    //                                  : D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+    //                                  ? D3D11_CONSERVATIVE_RASTERIZATION_MODE_ON
+    //                                  : D3D11_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 #endif
 }
 

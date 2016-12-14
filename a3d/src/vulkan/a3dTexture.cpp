@@ -521,10 +521,10 @@ VkImageAspectFlags Texture::GetVulkanImageAspectFlags() const
 { return m_ImageAspectFlags; }
 
 //-------------------------------------------------------------------------------------------------
-//      プライベートデータを取得します.
+//      リソースタイプを取得します.
 //-------------------------------------------------------------------------------------------------
-uint32_t Texture::GetPrivateData() const
-{ return RESOURCE_OBJECT_TYPE_TEXTURE; }
+RESOURCE_KIND Texture::GetKind() const
+{ return RESOURCE_KIND_TEXTURE; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
