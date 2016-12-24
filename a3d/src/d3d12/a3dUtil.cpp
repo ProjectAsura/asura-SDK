@@ -184,7 +184,7 @@ D3D12_RESOURCE_STATES ToNativeState(RESOURCE_STATE state)
 //-------------------------------------------------------------------------------------------------
 D3D12_RESOURCE_DIMENSION ToNativeResorceDimension(RESOURCE_DIMENSION dimension)
 {
-    static D3D12_RESOURCE_DIMENSION table[] = {
+    static const D3D12_RESOURCE_DIMENSION table[] = {
         D3D12_RESOURCE_DIMENSION_UNKNOWN,
         D3D12_RESOURCE_DIMENSION_BUFFER,
         D3D12_RESOURCE_DIMENSION_TEXTURE1D,
@@ -201,7 +201,7 @@ D3D12_RESOURCE_DIMENSION ToNativeResorceDimension(RESOURCE_DIMENSION dimension)
 //-------------------------------------------------------------------------------------------------
 RESOURCE_DIMENSION ToWrapDimension(D3D12_RESOURCE_DIMENSION dimension)
 {
-    static RESOURCE_DIMENSION table[] = {
+    static const RESOURCE_DIMENSION table[] = {
         RESOURCE_DIMENSION_UNKNOWN,
         RESOURCE_DIMENSION_BUFFER,
         RESOURCE_DIMENSION_TEXTURE1D,
@@ -236,7 +236,7 @@ D3D12_RESOURCE_FLAGS ToNativeResourceFlags(uint32_t usage)
 //-------------------------------------------------------------------------------------------------
 D3D12_COMPARISON_FUNC ToNativeComparisonFunc(COMPARE_OP operaton)
 {
-    static D3D12_COMPARISON_FUNC table[] = {
+    static const D3D12_COMPARISON_FUNC table[] = {
         D3D12_COMPARISON_FUNC_NEVER,
         D3D12_COMPARISON_FUNC_LESS,
         D3D12_COMPARISON_FUNC_EQUAL,
@@ -254,7 +254,7 @@ D3D12_COMPARISON_FUNC ToNativeComparisonFunc(COMPARE_OP operaton)
 //-------------------------------------------------------------------------------------------------
 D3D12_PRIMITIVE_TOPOLOGY_TYPE ToNativePrimitiveTopology(PRIMITIVE_TOPOLOGY topology)
 {
-    static D3D12_PRIMITIVE_TOPOLOGY_TYPE table[] = {
+    static const D3D12_PRIMITIVE_TOPOLOGY_TYPE table[] = {
         D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
         D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,
         D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,
@@ -277,7 +277,7 @@ D3D_PRIMITIVE_TOPOLOGY ToNativePrimitive(PRIMITIVE_TOPOLOGY topology, uint32_t c
 {
     if ( topology != PRIMITIVE_TOPOLOGY_PATCHLIST )
     {
-        static D3D_PRIMITIVE_TOPOLOGY table[] = {
+        static const D3D_PRIMITIVE_TOPOLOGY table[] = {
             D3D_PRIMITIVE_TOPOLOGY_POINTLIST,
             D3D_PRIMITIVE_TOPOLOGY_LINELIST,
             D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,
@@ -293,7 +293,7 @@ D3D_PRIMITIVE_TOPOLOGY ToNativePrimitive(PRIMITIVE_TOPOLOGY topology, uint32_t c
     }
     else
     {
-        static D3D_PRIMITIVE_TOPOLOGY table[] = {
+        static const D3D_PRIMITIVE_TOPOLOGY table[] = {
             D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
             D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST,
             D3D_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST,
@@ -338,7 +338,7 @@ D3D_PRIMITIVE_TOPOLOGY ToNativePrimitive(PRIMITIVE_TOPOLOGY topology, uint32_t c
 //-------------------------------------------------------------------------------------------------
 D3D12_HEAP_TYPE ToNativeHeapType(HEAP_TYPE type)
 {
-    static D3D12_HEAP_TYPE table[] = {
+    static const D3D12_HEAP_TYPE table[] = {
         D3D12_HEAP_TYPE_DEFAULT,
         D3D12_HEAP_TYPE_UPLOAD,
         D3D12_HEAP_TYPE_READBACK
@@ -352,7 +352,7 @@ D3D12_HEAP_TYPE ToNativeHeapType(HEAP_TYPE type)
 //-------------------------------------------------------------------------------------------------
 D3D12_CPU_PAGE_PROPERTY ToNativeCpuPageProperty(CPU_PAGE_PROPERTY prop)
 {
-    static D3D12_CPU_PAGE_PROPERTY table[] = {
+    static const D3D12_CPU_PAGE_PROPERTY table[] = {
         D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
         D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE,
         D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE,
@@ -367,7 +367,7 @@ D3D12_CPU_PAGE_PROPERTY ToNativeCpuPageProperty(CPU_PAGE_PROPERTY prop)
 //-------------------------------------------------------------------------------------------------
 D3D12_RTV_DIMENSION ToNativeRTVDimension(VIEW_DIMENSION value)
 {
-    static D3D12_RTV_DIMENSION table[] = {
+    static const D3D12_RTV_DIMENSION table[] = {
         D3D12_RTV_DIMENSION_BUFFER,
         D3D12_RTV_DIMENSION_TEXTURE1D,
         D3D12_RTV_DIMENSION_TEXTURE1DARRAY,
@@ -386,7 +386,7 @@ D3D12_RTV_DIMENSION ToNativeRTVDimension(VIEW_DIMENSION value)
 //-------------------------------------------------------------------------------------------------
 D3D12_DSV_DIMENSION ToNativeDSVDimension(VIEW_DIMENSION value)
 {
-    static D3D12_DSV_DIMENSION table[] = {
+    static const D3D12_DSV_DIMENSION table[] = {
         D3D12_DSV_DIMENSION_UNKNOWN,
         D3D12_DSV_DIMENSION_TEXTURE1D,
         D3D12_DSV_DIMENSION_TEXTURE1DARRAY,
@@ -405,7 +405,7 @@ D3D12_DSV_DIMENSION ToNativeDSVDimension(VIEW_DIMENSION value)
 //-------------------------------------------------------------------------------------------------
 D3D12_SRV_DIMENSION ToNativeSRVDimension(VIEW_DIMENSION value)
 {
-    static D3D12_SRV_DIMENSION table[] = {
+    static const D3D12_SRV_DIMENSION table[] = {
         D3D12_SRV_DIMENSION_BUFFER,
         D3D12_SRV_DIMENSION_TEXTURE1D,
         D3D12_SRV_DIMENSION_TEXTURE1DARRAY,
@@ -424,7 +424,7 @@ D3D12_SRV_DIMENSION ToNativeSRVDimension(VIEW_DIMENSION value)
 //-------------------------------------------------------------------------------------------------
 D3D12_UAV_DIMENSION ToNativeUAVDimension(VIEW_DIMENSION value)
 {
-    static D3D12_UAV_DIMENSION table[] = {
+    static const D3D12_UAV_DIMENSION table[] = {
         D3D12_UAV_DIMENSION_BUFFER,
         D3D12_UAV_DIMENSION_TEXTURE1D,
         D3D12_UAV_DIMENSION_TEXTURE1DARRAY,
@@ -433,6 +433,34 @@ D3D12_UAV_DIMENSION ToNativeUAVDimension(VIEW_DIMENSION value)
         D3D12_UAV_DIMENSION_TEXTURE2DARRAY,
         D3D12_UAV_DIMENSION_TEXTURE2DARRAY,
         D3D12_UAV_DIMENSION_TEXTURE3D
+    };
+
+    return table[value];
+}
+
+//-------------------------------------------------------------------------------------------------
+//      カラースペースを変換します.
+//-------------------------------------------------------------------------------------------------
+DXGI_COLOR_SPACE_TYPE ToNativeColorSpace(COLOR_SPACE_TYPE value)
+{
+    static const DXGI_COLOR_SPACE_TYPE table[] = {
+        DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709,
+        DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P709,
+        DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020,
+        DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020,
+        DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_TOPLEFT_P2020,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020,
+        DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020,
+        DXGI_COLOR_SPACE_CUSTOM
     };
 
     return table[value];

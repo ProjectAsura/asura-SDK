@@ -521,6 +521,49 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      メタデータを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
+{
+    /* NOT SUPPORT */
+    A3D_UNUSED(type);
+    A3D_UNUSED(pData);
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      色空間がサポートされているかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags)
+{
+    /* NOT SUPPROT */
+    A3D_UNUSED(type);
+    A3D_UNUSED(pFlags);
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フルスクリーンモードかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::IsFullScreenMode() const
+{
+    /* TODO : Implement */
+    // VulkanではOpenGL同様APIがサポートされないらしいので，OS依存になる 
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フルスクリーンモードを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetFullScreenMode(bool enable)
+{
+    A3D_UNUSED(enable);
+    /* TODO : Implement */
+    // VulkanではOpenGL同様APIがサポートされないらしいので，OS依存になる 
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::Create
@@ -533,7 +576,7 @@ bool SwapChain::Create
     if (pDevice == nullptr || pDesc == nullptr || ppSwapChain == nullptr)
     { return false; }
 
-    auto instance = new SwapChain;
+    auto instance = new SwapChain();
     if (instance == nullptr)
     { return false; }
 

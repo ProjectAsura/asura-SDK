@@ -17,7 +17,7 @@
 #include <mutex>
 #include <container/a3dDynamicArray.h>
 
-#include <d3d11_1.h>
+#include <d3d11_2.h>
 #include <dxgi1_3.h>
 
 #include "emu/a3dImCmd.h"

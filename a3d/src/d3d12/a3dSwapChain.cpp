@@ -71,6 +71,8 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
     auto pNativeQueue = pWrapQueue->GetD3D12Queue();
     A3D_ASSERT(pNativeQueue != nullptr);
 
+    m_hWnd = static_cast<HWND>(pDesc->WindowHandle);
+
     {
         DXGI_SWAP_CHAIN_DESC desc = {};
         desc.BufferDesc.Width   = pDesc->Extent.Width;
@@ -80,9 +82,9 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         desc.SampleDesc.Quality = 0;
         desc.BufferUsage        = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
         desc.BufferCount        = pDesc->BufferCount;
-        desc.Windowed           = TRUE;
+        desc.Windowed           = (pDesc->EnableFullScreen) ? FALSE : TRUE;
         desc.SwapEffect         = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        desc.OutputWindow       = static_cast<HWND>(pDesc->WindowHandle);
+        desc.OutputWindow       = m_hWnd;
 
         IDXGISwapChain* pSwapChain = nullptr;
         auto hr = pNativeFactory->CreateSwapChain(pNativeQueue, &desc, &pSwapChain);
@@ -94,41 +96,6 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
 
         if (FAILED(hr))
         { return false; }
-
-        // メタデータがある場合は設定する.
-        if (pDesc->pMetaData != nullptr)
-        {
-            switch(pDesc->MetaDataType)
-            {
-            case META_DATA_HDR10:
-                {
-                    auto pData = static_cast<MetaDataHDR10*>(pDesc->pMetaData);
-                    A3D_ASSERT(pData != nullptr);
-
-                    DXGI_HDR_METADATA_HDR10 meta = {};
-                    meta.RedPrimary[0]              = GetCoord(pData->PrimaryR[0]);
-                    meta.RedPrimary[1]              = GetCoord(pData->PrimaryR[1]);
-                    meta.BluePrimary[0]             = GetCoord(pData->PrimaryB[0]);
-                    meta.BluePrimary[1]             = GetCoord(pData->PrimaryB[1]);
-                    meta.GreenPrimary[0]            = GetCoord(pData->PrimaryG[0]);
-                    meta.GreenPrimary[1]            = GetCoord(pData->PrimaryG[1]);
-                    meta.WhitePoint[0]              = GetCoord(pData->WhitePoint[0]);
-                    meta.WhitePoint[1]              = GetCoord(pData->WhitePoint[1]);
-                    meta.MaxMasteringLuminance      = static_cast<UINT>(pData->MaxMasteringLuminance / 10000.0);
-                    meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 100000.0);
-                    meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
-                    meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
-
-                    hr = m_pSwapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
-                    if (FAILED(hr))
-                    { return false; }
-                }
-                break;
-
-            default:
-                break;
-            }
-        }
     }
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -185,6 +152,14 @@ void SwapChain::Term()
 
     if (m_pBuffers)
     { delete[] m_pBuffers; }
+
+    // フルスクリーンモードのままだと例外が発生するので，ウィンドウモードに変更する.
+    if (m_pSwapChain != nullptr)
+    {
+        auto isFullScreen = IsFullScreenMode();
+        if (isFullScreen)
+        { SetFullScreenMode(false); }
+    }
 
     SafeRelease(m_pSwapChain);
     SafeRelease(m_pDevice);
@@ -255,6 +230,86 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 
     *ppResource = m_pBuffers[index];
     m_pBuffers[index]->AddRef();
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      メタデータを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
+{
+    if (pMetaData == nullptr)
+    { return false; }
+
+    switch(type)
+    {
+    case META_DATA_HDR10:
+        {
+            auto pData = static_cast<MetaDataHDR10*>(pMetaData);
+            A3D_ASSERT(pData != nullptr);
+
+            DXGI_HDR_METADATA_HDR10 meta = {};
+            meta.RedPrimary[0]              = GetCoord(pData->PrimaryR[0]);
+            meta.RedPrimary[1]              = GetCoord(pData->PrimaryR[1]);
+            meta.BluePrimary[0]             = GetCoord(pData->PrimaryB[0]);
+            meta.BluePrimary[1]             = GetCoord(pData->PrimaryB[1]);
+            meta.GreenPrimary[0]            = GetCoord(pData->PrimaryG[0]);
+            meta.GreenPrimary[1]            = GetCoord(pData->PrimaryG[1]);
+            meta.WhitePoint[0]              = GetCoord(pData->WhitePoint[0]);
+            meta.WhitePoint[1]              = GetCoord(pData->WhitePoint[1]);
+            meta.MaxMasteringLuminance      = static_cast<UINT>(pData->MaxMasteringLuminance / 10000.0);
+            meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 100000.0);
+            meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
+            meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
+
+            auto hr = m_pSwapChain->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
+            if (FAILED(hr))
+            { return false; }
+        }
+        break;
+
+    default:
+        { /* DO_NOTHING */}
+        break;
+    }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      色空間がサポートされているかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags)
+{
+    auto hr = m_pSwapChain->CheckColorSpaceSupport(ToNativeColorSpace(type), pFlags);
+    if (FAILED(hr))
+    { return false; }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フルスクリーンモードかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::IsFullScreenMode() const
+{
+    BOOL isFullScreen;
+    auto hr = m_pSwapChain->GetFullscreenState(&isFullScreen, nullptr);
+    A3D_ASSERT(hr == S_OK);
+    A3D_UNUSED(hr);
+
+    return isFullScreen == TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フルスクリーンモードを設定します。
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetFullScreenMode(bool enable)
+{
+    auto hr = m_pSwapChain->SetFullscreenState(enable, nullptr);
+    if (FAILED(hr))
+    { return false; }
 
     return true;
 }

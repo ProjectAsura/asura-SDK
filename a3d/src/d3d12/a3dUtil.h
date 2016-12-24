@@ -156,6 +156,14 @@ D3D12_SRV_DIMENSION ToNativeSRVDimension(VIEW_DIMENSION value);
 D3D12_UAV_DIMENSION ToNativeUAVDimension(VIEW_DIMENSION value);
 
 //-------------------------------------------------------------------------------------------------
+//! @brief      カラースペースタイプを変換します.
+//!
+//! @param[in]      value       A3D形式です.
+//! @return     変換したカラースペースタイプを返却します.
+//-------------------------------------------------------------------------------------------------
+DXGI_COLOR_SPACE_TYPE ToNativeColorSpace(COLOR_SPACE_TYPE value);
+
+//-------------------------------------------------------------------------------------------------
 //! @brief      サブリソース番号を計算します.
 //!
 //! @param[in]      mipSlice        ミップ番号.

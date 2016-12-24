@@ -563,8 +563,45 @@ enum TEXTURE_ASPECT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum META_DATA_TYPE
 {
-    META_DATA_NONE          = 0,
-    META_DATA_HDR10         = 1,
+    META_DATA_NONE          = 0,    //!< メタデータ無しです.
+    META_DATA_HDR10         = 1,    //!< HDR10メタデータタイプです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   COLOR_SPACE_TYPE
+//! @brief  カラースペースタイプです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum COLOR_SPACE_TYPE
+{
+    COLOR_SPACE_RGB_FULL_G22_NONE_P709 = 0,
+    COLOR_SPACE_RGB_FULL_G10_NONE_P709,
+    COLOR_SPACE_RGB_STUDIO_G22_NONE_P709,
+    COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020,
+    COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601,
+    COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601,
+    COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601,
+    COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
+    COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709,
+    COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020,
+    COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020,
+    COLOR_SPACE_RGB_FULL_G2084_NONE_P2020,
+    COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020,
+    COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020,
+    COLOR_SPACE_YCBCR_STUDIO_G22_TOPLEFT_P2020,
+    COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020,
+    COLOR_SPACE_RGB_FULL_G22_NONE_P2020,
+    COLOR_SPACE_CUSTOM
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   COLOR_SPACE_SUPPORT_FLAG
+//! @brief  カラースペースサポートフラグです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum COLOR_SPACE_SUPPROT_FLAG
+{
+    COLOR_SPACE_SUPPORT_FLAG_NONE               = 0x0,  //!< 非サポートです.
+    COLOR_SPACE_SUPPORT_FLAG_PRESENT            = 0x1,  //!< 表示用にカラースペースがサポートされます.
+    COLOR_SPACE_SUPPORT_FLAG_OVERLAY_PRESENT    = 0x2   //!< 表示用にオーバーレイカラースペースがサポートされます.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1031,16 +1068,15 @@ struct QueryPoolDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct SwapChainDesc
 {
-    Extent2D        Extent;         //!< サイズです.
-    RESOURCE_FORMAT Format;         //!< フォーマットです.
-    uint32_t        MipLevels;      //!< ミップレベルです.
-    uint32_t        SampleCount;    //!< マルチサンプル数です.
-    uint32_t        BufferCount;    //!< バックバッファ数です.
-    uint32_t        SyncInterval;   //!< 垂直同期間隔です.
-    META_DATA_TYPE  MetaDataType;   //!< メタデータタイプです.
-    void*           pMetaData;      //!< メタデータです.
-    void*           InstanceHandle; //!< インスタンスハンドルです.
-    void*           WindowHandle;   //!< ウィンドウハンドルです.
+    Extent2D        Extent;             //!< サイズです.
+    RESOURCE_FORMAT Format;             //!< フォーマットです.
+    uint32_t        MipLevels;          //!< ミップレベルです.
+    uint32_t        SampleCount;        //!< マルチサンプル数です.
+    uint32_t        BufferCount;        //!< バックバッファ数です.
+    uint32_t        SyncInterval;       //!< 垂直同期間隔です.
+    void*           InstanceHandle;     //!< インスタンスハンドルです.
+    void*           WindowHandle;       //!< ウィンドウハンドルです.
+    bool            EnableFullScreen;   //!< フルスクリーン化する場合は true を指定.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1049,14 +1085,14 @@ struct SwapChainDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct MetaDataHDR10
 {
-    float       PrimaryR[2];
-    float       PrimaryG[2];
-    float       PrimaryB[2];
-    float       WhitePoint[2];
-    float       MaxMasteringLuminance;
-    float       MinMasteringLuminance;
-    float       MaxContentLightLevel;
-    float       MaxFrameAverageLightLevel;
+    float       PrimaryR[2];                    //!< 色座標の赤値です(配列番号0がX座標, 1がY座標となります).
+    float       PrimaryG[2];                    //!< 色座標の緑値です(配列番号0がX座標, 1がY座標となります).
+    float       PrimaryB[2];                    //!< 色座標の青値です(配列番号0がX座標, 1がY座標となります).
+    float       WhitePoint[2];                  //!< 色座標の白色点です(配列番号0がX座標, 1がY座標となります).
+    float       MaxMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最大ニト[nit]数です(数値の単位は1nitです).
+    float       MinMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最小ニト[nit]数です(数値の単位は1nitです).
+    float       MaxContentLightLevel;           //!< コンテンツ内で使用される最大ニト値です.
+    float       MaxFrameAverageLightLevel;      //!< 1フレーム当たりの最大ニト値の平均値です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1078,17 +1114,17 @@ struct SubresourceLayout
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct PipelineStatistics
 {
-    uint64_t IAVertices;
-    uint64_t IAPrimitives;
-    uint64_t VSInvocations;
-    uint64_t GSInvocations;
-    uint64_t GSPrimitives;
-    uint64_t ClippingInvocations;
-    uint64_t ClippingPrimitives;
-    uint64_t PSInvocations;
-    uint64_t HSInvocations;
-    uint64_t DSInvocations;
-    uint64_t CSInvocations;
+    uint64_t IAVertices;            //!< 入力アセンブラによって読み込まれた頂点数です.
+    uint64_t IAPrimitives;          //!< 入力アセンブラによって読み込まれたプリミティブ数です.
+    uint64_t VSInvocations;         //!< 頂点シェーダが呼び出された回数です.
+    uint64_t GSInvocations;         //!< ジオメトリシェーダが呼び出された回数です.
+    uint64_t GSPrimitives;          //!< ジオメトリシェーダによって出力されたプリミティブ数です.
+    uint64_t CInvocations;          //!< ラスタライザに送信されたプリミティブ数です.
+    uint64_t CPrimitives;           //!< レンダリングされたプリミティブ数です.
+    uint64_t PSInvocations;         //!< ピクセルシェーダが呼び出された回数です.
+    uint64_t HSInvocations;         //!< ハルシェーダが呼び出された回数です.
+    uint64_t DSInvocations;         //!< ドメインシェーダが呼び出された回数です.
+    uint64_t CSInvocations;         //!< コンピュートシェーダが呼び出された回数です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2001,6 +2037,43 @@ struct A3D_API ISwapChain : IDeviceChild
     //! @retval false   バッファの取得に失敗.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY GetBuffer(uint32_t index, ITexture** ppResource) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      メタデータを設定します.
+    //!
+    //! @param[in]      type        メタデータタイプです.
+    //! @param[in]      pData       メタデータです.
+    //! @retval true    メタデータの設定に成功.
+    //! @retval false   メタデータの設定に失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY SetMetaData(META_DATA_TYPE type, void* pData) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      色空間がサポートされているかチェックします.
+    //!
+    //! @param[in]      type        色空間タイプです.
+    //! @param[out]     pFlags      サポートフラグ(マスクビット)の格納先です(COLOR_SPACE_SUPPROT_FLAG参照).
+    //! @retval true    チェックに成功.
+    //! @retval false   チェックに失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      フルスクリーンモードかどうかチェックします.
+    //!
+    //! @retval true    フルスクリーンモードです.
+    //! @retval false   ウィンドウモードです.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY IsFullScreenMode() const = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      フルスクリーンモードを設定します.
+    //!
+    //! @param[in]      enable      フルスクリーンにする場合は true を，ウィンドウモードにする場合は falseを指定します.
+    //! @retval true    設定に成功.
+    //! @retval false   設定に失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY SetFullScreenMode(bool enable) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

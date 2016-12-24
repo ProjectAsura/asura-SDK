@@ -40,8 +40,50 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
     if (pDesc->EnableDebug)
     { createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG; }
 
+    // BGRAサポートを有効化.
+    createDeviceFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
     {
-        auto hr = CreateDXGIFactory1( IID_PPV_ARGS(&m_pFactory) );
+        uint32_t flags = 0;
+        if (pDesc->EnableDebug)
+        { flags |= DXGI_CREATE_FACTORY_DEBUG; }
+ 
+        auto hr = CreateDXGIFactory2( flags, IID_PPV_ARGS(&m_pFactory) );
+        if ( FAILED(hr) )
+        { return false; }
+    }
+
+    // デフォルトアダプターを取得.
+    IDXGIAdapter1* pAdapter = nullptr;
+    {
+        auto hr = m_pFactory->EnumAdapters1( 0, &pAdapter );
+        if ( FAILED(hr) )
+        {
+            SafeRelease(pAdapter);
+            return false;
+        }
+    }
+
+    // IDXGIAdapter2に変換
+    {
+        auto hr = pAdapter->QueryInterface( IID_PPV_ARGS(&m_pAdapter));
+        SafeRelease(pAdapter);
+        if ( FAILED(hr) )
+        { return false; }
+    }
+
+    // デフォルトディスプレイを取得.
+    IDXGIOutput* pOutput;
+    {
+        auto hr = m_pAdapter->EnumOutputs(0, &pOutput);
+        if ( FAILED(hr) )
+        { return false; }
+    }
+
+    // IDXGOutput3に変換.
+    {
+        auto hr = pOutput->QueryInterface( IID_PPV_ARGS(&m_pOutput) );
+        SafeRelease(pOutput);
         if ( FAILED(hr) )
         { return false; }
     }
@@ -293,6 +335,18 @@ ID3D11DeviceContext* Device::GetD3D11DeviceContext() const
 //-------------------------------------------------------------------------------------------------
 IDXGIFactory3* Device::GetDXGIFactory() const
 { return m_pFactory; }
+
+//-------------------------------------------------------------------------------------------------
+//      デフォルトアダプターを取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGIAdapter2* Device::GetDXGIAdapter() const
+{ return m_pAdapter; }
+
+//-------------------------------------------------------------------------------------------------
+//      デフォルトディスプレイを取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGIOutput3* Device::GetDXGIOutput() const
+{ return m_pOutput; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

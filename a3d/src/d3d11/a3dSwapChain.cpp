@@ -50,6 +50,8 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
     auto pNativeFactory = pWrapDevice->GetDXGIFactory();
     A3D_ASSERT(pNativeFactory != nullptr);
 
+    m_hWnd = static_cast<HWND>(pDesc->WindowHandle);
+
     {
         DXGI_SWAP_CHAIN_DESC desc = {};
         desc.BufferDesc.Width   = pDesc->Extent.Width;
@@ -59,8 +61,8 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         desc.SampleDesc.Quality = 0;
         desc.BufferUsage        = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
         desc.BufferCount        = pDesc->BufferCount;
-        desc.Windowed           = TRUE;
-        desc.OutputWindow       = static_cast<HWND>(pDesc->WindowHandle);
+        desc.Windowed           = (pDesc->EnableFullScreen) ? FALSE : TRUE;
+        desc.OutputWindow       = m_hWnd;
 
         IDXGISwapChain* pSwapChain = nullptr;
         auto hr = pNativeFactory->CreateSwapChain(pNativeDevice, &desc, &pSwapChain);
@@ -127,6 +129,14 @@ void SwapChain::Term()
 
     if (m_pBuffers)
     { delete[] m_pBuffers; }
+
+    // フルスクリーンモードのままだと例外が発生するので，ウィンドウモードに変更する.
+    if (m_pSwapChain != nullptr)
+    {
+        auto isFullScreen = IsFullScreenMode();
+        if (isFullScreen)
+        { SetFullScreenMode(false); }
+    }
 
     SafeRelease(m_pSwapChain);
     SafeRelease(m_pDevice);
@@ -200,6 +210,59 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 
     *ppResource = m_pBuffers[index];
     m_pBuffers[index]->AddRef();
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      メタデータを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
+{
+    /* NOT SUPPORT */
+    A3D_UNUSED(type);
+    A3D_UNUSED(pData);
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      色空間がサポートされているかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags)
+{
+    /* NOT SUPPORT */
+    A3D_UNUSED(type);
+    A3D_UNUSED(pFlags);
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フルスクリーンモードかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::IsFullScreenMode() const
+{
+    BOOL isFullScreen;
+    auto hr = m_pSwapChain->GetFullscreenState(&isFullScreen, nullptr);
+    A3D_ASSERT(hr == S_OK);
+    A3D_UNUSED(hr);
+
+    return isFullScreen == TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フルスクリーンモードを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetFullScreenMode(bool enable)
+{
+    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
+    A3D_ASSERT(pWrapDevice != nullptr);
+
+    auto pDisplay = pWrapDevice->GetDXGIOutput();
+    A3D_ASSERT(pDisplay != nullptr);
+
+    auto hr = m_pSwapChain->SetFullscreenState(enable, pDisplay);
+    if (FAILED(hr))
+    { return false; }
 
     return true;
 }

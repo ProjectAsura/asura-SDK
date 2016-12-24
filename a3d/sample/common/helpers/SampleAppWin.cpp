@@ -257,6 +257,13 @@ private:
             msg == WM_KEYUP      ||
             msg == WM_SYSKEYUP)
         {
+            // ESCƒL[‚ª‰Ÿ‚³‚ê‚½‚çI—¹‚·‚é.
+            if ( wp == 0x1b )
+            {
+                PostQuitMessage(0);
+                return 0;
+            }
+
             if ( instance->m_OnKeyborad == nullptr)
             { return 0; }
 
