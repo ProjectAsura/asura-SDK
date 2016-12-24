@@ -63,6 +63,7 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         desc.BufferCount        = pDesc->BufferCount;
         desc.Windowed           = (pDesc->EnableFullScreen) ? FALSE : TRUE;
         desc.OutputWindow       = m_hWnd;
+        desc.Flags              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
         IDXGISwapChain* pSwapChain = nullptr;
         auto hr = pNativeFactory->CreateSwapChain(pNativeDevice, &desc, &pSwapChain);
@@ -254,15 +255,31 @@ bool SwapChain::IsFullScreenMode() const
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::SetFullScreenMode(bool enable)
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDisplay = pWrapDevice->GetDXGIOutput();
-    A3D_ASSERT(pDisplay != nullptr);
-
-    auto hr = m_pSwapChain->SetFullscreenState(enable, pDisplay);
+    auto hr = m_pSwapChain->SetFullscreenState(enable, nullptr);
     if (FAILED(hr))
     { return false; }
+
+    {
+        DXGI_MODE_DESC desc = {};
+        desc.Width                      = m_Desc.Extent.Width;
+        desc.Height                     = m_Desc.Extent.Height;
+        desc.RefreshRate.Numerator      = 60;
+        desc.RefreshRate.Denominator    = 1;
+        desc.Format                     = ToNativeFormat(m_Desc.Format);
+
+        hr = m_pSwapChain->ResizeTarget(&desc);
+        if ( FAILED(hr) )
+        { return false; }
+
+        hr = m_pSwapChain->ResizeBuffers(
+            m_Desc.BufferCount,
+            m_Desc.Extent.Width,
+            m_Desc.Extent.Height,
+            desc.Format,
+            DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+        if (FAILED(hr))
+        { return false; }
+    }
 
     return true;
 }

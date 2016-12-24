@@ -85,6 +85,7 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         desc.Windowed           = (pDesc->EnableFullScreen) ? FALSE : TRUE;
         desc.SwapEffect         = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         desc.OutputWindow       = m_hWnd;
+        desc.Flags              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
         IDXGISwapChain* pSwapChain = nullptr;
         auto hr = pNativeFactory->CreateSwapChain(pNativeQueue, &desc, &pSwapChain);
@@ -310,6 +311,28 @@ bool SwapChain::SetFullScreenMode(bool enable)
     auto hr = m_pSwapChain->SetFullscreenState(enable, nullptr);
     if (FAILED(hr))
     { return false; }
+
+    {
+        DXGI_MODE_DESC desc = {};
+        desc.Width                      = m_Desc.Extent.Width;
+        desc.Height                     = m_Desc.Extent.Height;
+        desc.Format                     = ToNativeFormat(m_Desc.Format);
+        desc.RefreshRate.Numerator      = 60;
+        desc.RefreshRate.Denominator    = 1;
+
+        hr = m_pSwapChain->ResizeTarget(&desc);
+        if (FAILED(hr))
+        { return false; }
+
+        hr = m_pSwapChain->ResizeBuffers(
+            m_Desc.BufferCount,
+            m_Desc.Extent.Width,
+            m_Desc.Extent.Height,
+            desc.Format,
+            DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+        if (FAILED(hr))
+        { return false; }
+    }
 
     return true;
 }
