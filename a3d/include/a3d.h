@@ -245,6 +245,9 @@ enum RESOURCE_FORMAT
     RESOURCE_FORMAT_ASTC_12X10_UNORM        = 70,
     RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB   = 71,
     RESOURCE_FORMAT_ASTC_12X12_UNORM        = 72,
+    RESOURCE_FORMAT_R10G10B10A2_UNORM       = 73,
+    RESOURCE_FORMAT_R10G10B10A2_UINT        = 74,
+    RESOURCE_FORMAT_R11G11B10_FLOAT         = 75,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

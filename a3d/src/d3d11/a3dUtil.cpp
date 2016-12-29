@@ -90,6 +90,9 @@ FormatConvertTable g_FormatTable[] = {
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 1.07f    , a3d::RESOURCE_FORMAT_ASTC_12X10_UNORM      },
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 0.89f    , a3d::RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB },
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 0.89f    , a3d::RESOURCE_FORMAT_ASTC_12X12_UNORM      },
+    { DXGI_FORMAT_R10G10B10A2_UNORM         , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 32.0f    , a3d::RESOURCE_FORMAT_R10G10B10A2_UNORM     },
+    { DXGI_FORMAT_R10G10B10A2_UINT          , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 32.0f    , a3d::RESOURCE_FORMAT_R10G10B10A2_UINT      },
+    { DXGI_FORMAT_R11G11B10_FLOAT           , DXGI_FORMAT_R11G11B10_FLOAT           , 32.0f    , a3d::RESOURCE_FORMAT_R11G11B10_FLOAT       },
 };
 
 } // namespace /* anonymous */

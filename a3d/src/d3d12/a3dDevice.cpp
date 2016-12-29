@@ -17,7 +17,12 @@ namespace a3d {
 Device::Device()
 : m_RefCount        (1)
 , m_pFactory        (nullptr)
+, m_pAdapter        (nullptr)
+, m_pOutput         (nullptr)
 , m_pDevice         (nullptr)
+, m_pGraphicsQueue  (nullptr)
+, m_pComputeQueue   (nullptr)
+, m_pCopyQueue      (nullptr)
 , m_TearingSupport  (false)
 { /* DO_NOTHING */ }
 
