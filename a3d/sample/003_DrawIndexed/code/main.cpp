@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <cassert>
 #include <SampleApp.h>
 #include <SampleUtil.h>
 
@@ -31,7 +32,7 @@ struct Vertex
 bool InitA3D();
 void TermA3D();
 void DrawA3D();
-
+void Resize(uint32_t w, uint32_t h, void* ptr);
 
 //-------------------------------------------------------------------------------------------------
 // Global Varaibles.
@@ -51,6 +52,7 @@ a3d::ICommandList*          g_pCommandList[2]       = {};       //!< ÉRÉ}ÉìÉhÉäÉ
 a3d::IFrameBuffer*          g_pFrameBuffer[2]       = {};       //!< ÉtÉåÅ[ÉÄÉoÉbÉtÉ@Ç≈Ç∑.
 a3d::Viewport               g_Viewport              = {};       //!< ÉrÉÖÅ[É|Å[ÉgÇ≈Ç∑.
 a3d::Rect                   g_Scissor               = {};       //!< ÉVÉUÅ[ãÈå`Ç≈Ç∑.
+bool                        g_Prepare               = false;    //!< èÄîıÇ™äÆóπÇµÇΩÇÁtrue.
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -108,6 +110,8 @@ void main()
     if (!CreateApp(960, 540, &g_pApp))
     { return; }
 
+    g_pApp->SetResizeCallback(Resize, nullptr);
+
     // A3Dèâä˙âª.
     if (!InitA3D())
     {
@@ -132,6 +136,8 @@ void main()
 //-------------------------------------------------------------------------------------------------
 bool InitA3D()
 {
+    g_Prepare = false;
+
     // ÉOÉâÉtÉBÉbÉNÉXÉVÉXÉeÉÄÇÃèâä˙âª.
     if (!a3d::InitSystem(reinterpret_cast<a3d::IAllocator*>(&g_Allocator)))
     { return false; }
@@ -451,6 +457,7 @@ bool InitA3D()
     g_Scissor.Extent.Width  = g_pApp->GetWidth();
     g_Scissor.Extent.Height = g_pApp->GetHeight();
 
+    g_Prepare = true;
     return true;
 }
 
@@ -459,6 +466,8 @@ bool InitA3D()
 //-------------------------------------------------------------------------------------------------
 void TermA3D()
 {
+    g_Prepare = false;
+
     // É_ÉuÉãÉoÉbÉtÉ@ÉäÉ\Å[ÉXÇÃîjä¸.
     for(auto i=0; i<2; ++i)
     {
@@ -508,6 +517,9 @@ void TermA3D()
 //-------------------------------------------------------------------------------------------------
 void DrawA3D()
 {
+    if (!g_Prepare)
+    { return; }
+
     // ÉoÉbÉtÉ@î‘çÜÇéÊìæÇµÇ‹Ç∑.
     auto idx = g_pSwapChain->GetCurrentBufferIndex();
 
@@ -570,4 +582,104 @@ void DrawA3D()
 
     // âÊñ Ç…ï\é¶ÇµÇ‹Ç∑.
     g_pSwapChain->Present();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ÉäÉTÉCÉYèàóùÇ≈Ç∑.
+//-------------------------------------------------------------------------------------------------
+void Resize( uint32_t w, uint32_t h, void* pUser )
+{
+    A3D_UNUSED( pUser );
+
+    // èÄîıÇ™äÆóπÇµÇƒÇ»Ç¢èÛë‘ÇæÇ¡ÇΩÇÁÅCèàóùÇ≈Ç´Ç»Ç¢ÇÃÇ≈ë¶èIóπ.
+    if (!g_Prepare || g_pSwapChain == nullptr)
+    { return; }
+
+    // ÉTÉìÉvÉãêîà»â∫ÇÃèÍçáÇÕÉNÉâÉbÉVÉÖÇ∑ÇÈå¥àˆÇ∆Ç»ÇÈÇÃÇ≈èàóùÇ≥ÇπÇ»Ç¢.
+    {
+        auto desc = g_pSwapChain->GetDesc();
+        if ( w < desc.SampleCount || h < desc.SampleCount )
+        { return; }
+    }
+
+    g_Prepare = false;
+
+    // ÉAÉCÉhÉãèÛë‘Ç…Ç»ÇÈÇ‹Ç≈ë“Ç¬.
+    g_pGraphicsQueue->WaitIdle();
+    g_pDevice->WaitIdle();
+
+    for(auto i=0; i<2; ++i)
+    {
+        // ÉtÉåÅ[ÉÄÉoÉbÉtÉ@ÇÃîjä¸.
+        a3d::SafeRelease(g_pFrameBuffer[i]);
+
+        // ÉJÉâÅ[ÉrÉÖÅ[ÇÃîjä¸.
+        a3d::SafeRelease(g_pColorView[i]);
+
+        // ÉJÉâÅ[ÉoÉbÉtÉ@ÇÃîjä¸.
+        a3d::SafeRelease(g_pColorBuffer[i]);
+    }
+
+    // ÉXÉèÉbÉvÉ`ÉFÉCÉìÇÃÉäÉTÉCÉYèàóùÇ≈Ç∑.
+    g_pSwapChain->ResizeBuffers( w, h );
+
+    // ÉeÉNÉXÉ`ÉÉÉrÉÖÅ[Çê∂ê¨.
+    {
+        auto desc = g_pSwapChain->GetDesc();
+
+        // ÉXÉèÉbÉvÉ`ÉFÉCÉìÇ©ÇÁÉoÉbÉtÉ@ÇéÊìæ.
+        g_pSwapChain->GetBuffer(0, &g_pColorBuffer[0]);
+        g_pSwapChain->GetBuffer(1, &g_pColorBuffer[1]);
+
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = desc.Format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_COLOR;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = 1;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        for(auto i=0; i<2; ++i)
+        {
+            auto ret = g_pDevice->CreateTextureView(g_pColorBuffer[i], &viewDesc, &g_pColorView[i]);
+            assert(ret == true);
+        }
+    }
+
+    // ÉtÉåÅ[ÉÄÉoÉbÉtÉ@ÇÃê∂ê¨
+    {
+        // ÉtÉåÅ[ÉÄÉoÉbÉtÉ@ÇÃê›íË.
+        a3d::FrameBufferDesc desc = {};
+        desc.ColorCount         = 1;
+        desc.pColorTargets[0]   = g_pColorView[0];
+        desc.pDepthTarget       = nullptr;
+
+        // 1ñáñ⁄ÇÃÉtÉåÅ[ÉÄÉoÉbÉtÉ@Çê∂ê¨.
+        auto ret = g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[0]);
+        assert(ret == true);
+
+        // 2ñáñ⁄ÇÃÉtÉåÅ[ÉÄÉoÉbÉtÉ@Çê∂ê¨.
+        desc.pColorTargets[0] = g_pColorView[1];
+        ret = g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[1]);
+        assert(ret == true);
+    }
+
+    // ÉrÉÖÅ[É|Å[ÉgÇÃê›íË.
+    g_Viewport.X        = 0;
+    g_Viewport.Y        = 0;
+    g_Viewport.Width    = float(w);
+    g_Viewport.Height   = float(h);
+
+    // ÉVÉUÅ[ãÈå`ÇÃê›íË.
+    g_Scissor.Offset.X      = 0;
+    g_Scissor.Offset.Y      = 0;
+    g_Scissor.Extent.Width  = w;
+    g_Scissor.Extent.Height = h;
+
+    g_Prepare = true;
 }

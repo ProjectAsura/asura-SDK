@@ -42,7 +42,7 @@ struct Transform
 bool InitA3D();
 void TermA3D();
 void DrawA3D();
-
+void Resize(uint32_t w, uint32_t h, void* ptr);
 
 //-------------------------------------------------------------------------------------------------
 // Global Varaibles.
@@ -69,7 +69,8 @@ a3d::Rect                   g_Scissor               = {};       //!< ÉVÉUÅ[ãÈå`Ç
 a3d::IDescriptorSet*        g_pDescriptorSet[4]     = {};       //!< ÉfÉBÉXÉNÉäÉvÉ^ÉZÉbÉgÇ≈Ç∑.
 Transform                   g_Transform             = {};       //!< ïœä∑çsóÒÇ≈Ç∑.
 float                       g_RotateAngle           = 0.0f;     //!< âÒì]äpÇ≈Ç∑.
-void*                       g_pCbHead[2]            = {};
+void*                       g_pCbHead[2]            = {};       //!< íËêîÉoÉbÉtÉ@ÇÃêÊì™É|ÉCÉìÉ^Ç≈Ç∑.
+bool                        g_Prepare               = false;    //!< èÄîıÇ™Ç≈Ç´ÇΩÇÁtrue.
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,6 +128,8 @@ void main()
     if (!CreateApp(960, 540, &g_pApp))
     { return; }
 
+    g_pApp->SetResizeCallback(Resize, nullptr);
+
     // A3Dèâä˙âª.
     if (!InitA3D())
     {
@@ -151,6 +154,8 @@ void main()
 //-------------------------------------------------------------------------------------------------
 bool InitA3D()
 {
+    g_Prepare = false;
+
     // ÉOÉâÉtÉBÉbÉNÉXÉVÉXÉeÉÄÇÃèâä˙âª.
     if (!a3d::InitSystem(reinterpret_cast<a3d::IAllocator*>(&g_Allocator)))
     { return false; }
@@ -562,6 +567,8 @@ bool InitA3D()
     g_Scissor.Extent.Width  = g_pApp->GetWidth();
     g_Scissor.Extent.Height = g_pApp->GetHeight();
 
+    g_Prepare = true;
+
     return true;
 }
 
@@ -570,6 +577,8 @@ bool InitA3D()
 //-------------------------------------------------------------------------------------------------
 void TermA3D()
 {
+    g_Prepare = false;
+
     // É_ÉuÉãÉoÉbÉtÉ@ÉäÉ\Å[ÉXÇÃîjä¸.
     for(auto i=0; i<2; ++i)
     {
@@ -637,20 +646,23 @@ void TermA3D()
 //-------------------------------------------------------------------------------------------------
 void DrawA3D()
 {
+    if (!g_Prepare)
+    { return; }
+
     // ÉoÉbÉtÉ@î‘çÜÇéÊìæÇµÇ‹Ç∑.
     auto idx = g_pSwapChain->GetCurrentBufferIndex();
 
     // íËêîÉoÉbÉtÉ@ÇçXêV.
     {
         g_RotateAngle += 0.025f;
-        g_Transform.World = Mat4::RotateY(g_RotateAngle);
+        g_Transform.World = Mat4::Translation(0.0f, 0.0, 0.25f) * Mat4::RotateY(g_RotateAngle);
 
         auto stride = g_pConstantBuffer[idx]->GetDesc().Stride;
 
         auto ptr = static_cast<uint8_t*>(g_pCbHead[idx]);
         memcpy(ptr, &g_Transform, sizeof(g_Transform));
 
-        g_Transform.World = Mat4::Translation(0.0f, 0.0f, 2.0f) * Mat4::RotateX(g_RotateAngle * 2.0f);
+        g_Transform.World = Mat4::Scale(1.0f, 0.5f, 1.0f) * Mat4::RotateX(g_RotateAngle * 2.0f);
         ptr += stride;
         memcpy(ptr, &g_Transform, sizeof(g_Transform));
     }
@@ -726,4 +738,149 @@ void DrawA3D()
 
     // âÊñ Ç…ï\é¶ÇµÇ‹Ç∑.
     g_pSwapChain->Present();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ÉäÉTÉCÉYèàóùÇ≈Ç∑.
+//-------------------------------------------------------------------------------------------------
+void Resize( uint32_t w, uint32_t h, void* pUser )
+{
+    A3D_UNUSED( pUser );
+
+    // èÄîıÇ™äÆóπÇµÇƒÇ»Ç¢èÛë‘ÇæÇ¡ÇΩÇÁÅCèàóùÇ≈Ç´Ç»Ç¢ÇÃÇ≈ë¶èIóπ.
+    if (!g_Prepare || g_pSwapChain == nullptr)
+    { return; }
+
+    // ÉTÉìÉvÉãêîà»â∫ÇÃèÍçáÇÕÉNÉâÉbÉVÉÖÇ∑ÇÈå¥àˆÇ∆Ç»ÇÈÇÃÇ≈èàóùÇ≥ÇπÇ»Ç¢.
+    {
+        auto desc = g_pSwapChain->GetDesc();
+        if ( w < desc.SampleCount || h < desc.SampleCount )
+        { return; }
+    }
+
+    g_Prepare = false;
+
+    // ÉAÉCÉhÉãèÛë‘Ç…Ç»ÇÈÇ‹Ç≈ë“Ç¬.
+    g_pGraphicsQueue->WaitIdle();
+    g_pDevice->WaitIdle();
+
+    for(auto i=0; i<2; ++i)
+    {
+        // ÉtÉåÅ[ÉÄÉoÉbÉtÉ@ÇÃîjä¸.
+        a3d::SafeRelease(g_pFrameBuffer[i]);
+
+        // ÉJÉâÅ[ÉrÉÖÅ[ÇÃîjä¸.
+        a3d::SafeRelease(g_pColorView[i]);
+
+        // ÉJÉâÅ[ÉoÉbÉtÉ@ÇÃîjä¸.
+        a3d::SafeRelease(g_pColorBuffer[i]);
+    }
+
+    // ê[ìxÉXÉeÉìÉVÉãÉ^Å[ÉQÉbÉgÉrÉÖÅ[ÇÃîjä¸.
+    a3d::SafeRelease(g_pDepthView);
+
+    // ê[ìxÉoÉbÉtÉ@ÇÃîjä¸.
+    a3d::SafeRelease(g_pDepthBuffer);
+
+    // ÉXÉèÉbÉvÉ`ÉFÉCÉìÇÃÉäÉTÉCÉYèàóùÇ≈Ç∑.
+    g_pSwapChain->ResizeBuffers( w, h );
+
+    // ÉeÉNÉXÉ`ÉÉÉrÉÖÅ[Çê∂ê¨.
+    {
+        auto desc = g_pSwapChain->GetDesc();
+
+        // ÉXÉèÉbÉvÉ`ÉFÉCÉìÇ©ÇÁÉoÉbÉtÉ@ÇéÊìæ.
+        g_pSwapChain->GetBuffer(0, &g_pColorBuffer[0]);
+        g_pSwapChain->GetBuffer(1, &g_pColorBuffer[1]);
+
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = desc.Format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_COLOR;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = 1;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        for(auto i=0; i<2; ++i)
+        {
+            auto ret = g_pDevice->CreateTextureView(g_pColorBuffer[i], &viewDesc, &g_pColorView[i]);
+            assert(ret == true);
+            A3D_UNUSED(ret);
+        }
+    }
+
+    // ê[ìxÉoÉbÉtÉ@ÇÃê∂ê¨.
+    {
+        a3d::TextureDesc desc = {};
+        desc.Dimension                      = a3d::RESOURCE_DIMENSION_TEXTURE2D;
+        desc.Width                          = g_pApp->GetWidth();
+        desc.Height                         = g_pApp->GetHeight();
+        desc.DepthOrArraySize               = 1;
+        desc.Format                         = a3d::RESOURCE_FORMAT_D32_FLOAT;
+        desc.MipLevels                      = 1;
+        desc.SampleCount                    = 1;
+        desc.Layout                         = a3d::RESOURCE_LAYOUT_OPTIMAL;
+        desc.Usage                          = a3d::RESOURCE_USAGE_DEPTH_TARGET;
+        desc.InitState                      = a3d::RESOURCE_STATE_DEPTH_WRITE;
+        desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
+        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+
+        auto ret = g_pDevice->CreateTexture(&desc, &g_pDepthBuffer);
+        assert(ret == true);
+        A3D_UNUSED(ret);
+
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = desc.Format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_DEPTH;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = desc.DepthOrArraySize;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        ret = g_pDevice->CreateTextureView(g_pDepthBuffer, &viewDesc, &g_pDepthView);
+        assert(ret == true);
+    }
+
+    // ÉtÉåÅ[ÉÄÉoÉbÉtÉ@ÇÃê∂ê¨
+    {
+        // ÉtÉåÅ[ÉÄÉoÉbÉtÉ@ÇÃê›íË.
+        a3d::FrameBufferDesc desc = {};
+        desc.ColorCount         = 1;
+        desc.pColorTargets[0]   = g_pColorView[0];
+        desc.pDepthTarget       = g_pDepthView;
+
+        // 1ñáñ⁄ÇÃÉtÉåÅ[ÉÄÉoÉbÉtÉ@Çê∂ê¨.
+        auto ret = g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[0]);
+        assert(ret == true);
+        A3D_UNUSED(ret);
+
+        // 2ñáñ⁄ÇÃÉtÉåÅ[ÉÄÉoÉbÉtÉ@Çê∂ê¨.
+        desc.pColorTargets[0] = g_pColorView[1];
+        ret = g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[1]);
+        assert(ret == true);
+    }
+
+    // ÉrÉÖÅ[É|Å[ÉgÇÃê›íË.
+    g_Viewport.X        = 0;
+    g_Viewport.Y        = 0;
+    g_Viewport.Width    = float(w);
+    g_Viewport.Height   = float(h);
+
+    // ÉVÉUÅ[ãÈå`ÇÃê›íË.
+    g_Scissor.Offset.X      = 0;
+    g_Scissor.Offset.Y      = 0;
+    g_Scissor.Extent.Width  = w;
+    g_Scissor.Extent.Height = h;
+
+    g_Prepare = true;
 }

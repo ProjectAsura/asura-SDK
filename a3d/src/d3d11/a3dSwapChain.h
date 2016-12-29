@@ -98,11 +98,14 @@ public:
     bool A3D_APIENTRY GetBuffer(uint32_t index, ITexture** ppResource) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      スワップチェインを取得します.
+    //! @brief      バッファをリサイズします.
     //!
-    //! @return     スワップチェインを返却します.
+    //! @param[in]      width       リサイズする横幅.
+    //! @param[in]      height      リサイズする縦幅.
+    //! @retval true    リサイズに成功.
+    //! @retval false   リサイズに失敗.
     //---------------------------------------------------------------------------------------------
-    IDXGISwapChain2* A3D_APIENTRY GetDXGISwapChain() const;
+    bool A3D_APIENTRY ResizeBuffers(uint32_t width, uint32_t height) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      メタデータを設定します.
@@ -141,17 +144,38 @@ public:
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY SetFullScreenMode(bool enable) override;
 
+    //---------------------------------------------------------------------------------------------
+    //! @brief      スワップチェインを取得します.
+    //!
+    //! @return     スワップチェインを返却します.
+    //---------------------------------------------------------------------------------------------
+    IDXGISwapChain* A3D_APIENTRY GetDXGISwapChain() const;
+
+#if defined(A3D_FOR_WINDOWS10)
+    //---------------------------------------------------------------------------------------------
+    //! @brief      スワップチェイン4を取得します.
+    //!
+    //! @return     スワップチェイン4を返却します.
+    //---------------------------------------------------------------------------------------------
+    IDXGISwapChain4* A3D_APIENTRY GetDXGISwapChain4() const;
+#endif
+
 private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>   m_RefCount;     //!< 参照カウンタです.
-    IDevice*                m_pDevice;      //!< デバイスです.
-    SwapChainDesc           m_Desc;         //!< 構成設定です.
-    ITexture**              m_pBuffers;     //!< バッファです.
-    IDXGISwapChain2*        m_pSwapChain;   //!< スワップチェインです.
-    uint32_t                m_BufferIndex;  //!< バッファ番号です.
-    HWND                    m_hWnd;         //!< ウィンドウハンドルです.
+    std::atomic<uint32_t>   m_RefCount;         //!< 参照カウンタです.
+    IDevice*                m_pDevice;          //!< デバイスです.
+    SwapChainDesc           m_Desc;             //!< 構成設定です.
+    ITexture**              m_pBuffers;         //!< バッファです.
+    uint32_t                m_BufferIndex;      //!< バッファ番号です.
+    HWND                    m_hWnd;             //!< ウィンドウハンドルです.
+    IDXGISwapChain*         m_pSwapChain;       //!< DXGIスワップチェインです.
+    bool                    m_EnableFullScren;  //!< フルスクリーンモードかどうか?
+    RECT                    m_Rect;             //!< 矩形です.
+#if defined(A3D_FOR_WINDOWS10)
+    IDXGISwapChain4*        m_pSwapChain4;      //!< DXGIスワップチェイン4です.
+#endif
 
     //=============================================================================================
     // private methods.

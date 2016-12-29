@@ -5,6 +5,25 @@
 //-------------------------------------------------------------------------------------------------
 
 
+#if defined(A3D_FOR_WINDOWS10)
+namespace /* anonymous */ {
+
+template<typename T>
+inline T Clamp(T value, T mini, T maxi)
+{ return (value < mini) ? mini : ((value > maxi) ? maxi : value); }
+
+UINT16 GetCoord(float value)
+{
+    // 正規化値を求めるためには 50000で割る必要があるが，A3Dでは正規化値を保持する設計なので,
+    // DXGI側に渡すためには，50000倍する. 
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/mt732700(v=vs.85).aspx を参照
+    return static_cast<UINT16>(Clamp(value, 0.0f, 1.0f) * 50000);
+}
+
+} // namespace /* anonymous */
+#endif//defined(A3D_FOR_WINDOWS10)
+
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,6 +37,10 @@ SwapChain::SwapChain()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
 , m_pBuffers    (nullptr)
+, m_pSwapChain  (nullptr)
+#if defined(A3D_FOR_WINDOWS10)
+, m_pSwapChain4 (nullptr)
+#endif
 { memset(&m_Desc, 0, sizeof(m_Desc)); }
 
 //-------------------------------------------------------------------------------------------------
@@ -52,10 +75,24 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
 
     m_hWnd = static_cast<HWND>(pDesc->WindowHandle);
 
+    auto w = pDesc->Extent.Width;
+    auto h = pDesc->Extent.Height;
+
+    if (pDesc->EnableFullScreen)
+    {
+        // スクリーンサイズを取得.
+        w = GetSystemMetrics(SM_CXSCREEN);
+        h = GetSystemMetrics(SM_CYSCREEN);
+
+        m_Desc.Extent.Width  = w;
+        m_Desc.Extent.Height = h;
+    }
+
+    // スワップチェイン生成.
     {
         DXGI_SWAP_CHAIN_DESC desc = {};
-        desc.BufferDesc.Width   = pDesc->Extent.Width;
-        desc.BufferDesc.Height  = pDesc->Extent.Height;
+        desc.BufferDesc.Width   = w;
+        desc.BufferDesc.Height  = h;
         desc.BufferDesc.Format  = ToNativeFormat(pDesc->Format);
         desc.SampleDesc.Count   = pDesc->SampleCount;
         desc.SampleDesc.Quality = 0;
@@ -66,15 +103,15 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         desc.Flags              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
         IDXGISwapChain* pSwapChain = nullptr;
-        auto hr = pNativeFactory->CreateSwapChain(pNativeDevice, &desc, &pSwapChain);
+        auto hr = pNativeFactory->CreateSwapChain(pNativeDevice, &desc, &m_pSwapChain);
         if (FAILED(hr))
         { return false; }
 
-        hr = pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain));
-        SafeRelease(pSwapChain);
-
+    #if defined(A3D_FOR_WINDOWS10)
+        hr = m_pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain4));
         if (FAILED(hr))
-        { return false; }
+        { SafeRelease(m_pSwapChain4); }
+    #endif
     }
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -125,11 +162,14 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
 //-------------------------------------------------------------------------------------------------
 void SwapChain::Term()
 {
-    for(auto i=0u; i<m_Desc.BufferCount; ++i)
-    { SafeRelease(m_pBuffers[i]); }
+    if (m_pBuffers != nullptr)
+    {
+        for(auto i=0u; i<m_Desc.BufferCount; ++i)
+        { SafeRelease(m_pBuffers[i]); }
 
-    if (m_pBuffers)
-    { delete[] m_pBuffers; }
+        delete[] m_pBuffers;
+        m_pBuffers = nullptr;
+    }
 
     // フルスクリーンモードのままだと例外が発生するので，ウィンドウモードに変更する.
     if (m_pSwapChain != nullptr)
@@ -139,6 +179,9 @@ void SwapChain::Term()
         { SetFullScreenMode(false); }
     }
 
+#if defined(A3D_FOR_WINDOWS10)
+    SafeRelease(m_pSwapChain4);
+#endif//defiend(A3D_FOW_WINDOWS10)
     SafeRelease(m_pSwapChain);
     SafeRelease(m_pDevice);
 
@@ -203,6 +246,9 @@ uint32_t SwapChain::GetCurrentBufferIndex()
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 {
+    if (m_pSwapChain == nullptr || m_pBuffers == nullptr)
+    { return false; }
+
     if (index >= m_Desc.BufferCount )
     { return false; }
 
@@ -216,14 +262,135 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      バッファをリサイズします.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
+{
+    if (m_pSwapChain == nullptr)
+    { return false; }
+
+    // 一旦テクスチャを破棄する.
+    for(auto i=0u; i<m_Desc.BufferCount; ++i)
+    { SafeRelease(m_pBuffers[i]); }
+
+    {
+        DXGI_MODE_DESC desc = {};
+        desc.Width                      = width;
+        desc.Height                     = height;
+        desc.RefreshRate.Numerator      = 60;
+        desc.RefreshRate.Denominator    = 1;
+        desc.Format                     = ToNativeFormat(m_Desc.Format);
+
+        auto hr = m_pSwapChain->ResizeTarget(&desc);
+        if ( FAILED(hr) )
+        { return false; }
+
+        hr = m_pSwapChain->ResizeBuffers(
+            m_Desc.BufferCount,
+            width,
+            height,
+            desc.Format,
+            DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+        if (FAILED(hr))
+        { return false; }
+    }
+
+    m_Desc.Extent.Width  = width;
+    m_Desc.Extent.Height = height;
+
+    // 作成し直す.
+    {
+        ComponentMapping componentMapping;
+        componentMapping.R = TEXTURE_SWIZZLE_R;
+        componentMapping.G = TEXTURE_SWIZZLE_G;
+        componentMapping.B = TEXTURE_SWIZZLE_B;
+        componentMapping.A = TEXTURE_SWIZZLE_A;
+
+        ID3D11Texture2D* pBuffer;
+        auto hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
+        if ( FAILED(hr) )
+        { return false; }
+
+        for(auto i=0u; i<m_Desc.BufferCount; ++i)
+        {
+            if (!Texture::CreateFromNative(
+                m_pDevice,
+                pBuffer,
+                RESOURCE_USAGE_COLOR_TARGET,
+                componentMapping,
+                &m_pBuffers[i]))
+            {
+                SafeRelease(pBuffer);
+                return false;
+            }
+
+            auto pWrapResource = reinterpret_cast<Texture*>(m_pBuffers[i]);
+            A3D_ASSERT(pWrapResource != nullptr);
+
+            pWrapResource->SetState(a3d::RESOURCE_STATE_PRESENT);
+        }
+
+        SafeRelease(pBuffer);
+    }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      メタデータを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
+bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
 {
-    /* NOT SUPPORT */
-    A3D_UNUSED(type);
-    A3D_UNUSED(pData);
-    return false;
+    #if defined(A3D_FOR_WINDOWS10)
+    {
+        if (m_pSwapChain4 == nullptr)
+        { return false; }
+
+        if (pMetaData == nullptr)
+        { return false; }
+
+        switch(type)
+        {
+        case META_DATA_HDR10:
+            {
+                auto pData = static_cast<MetaDataHDR10*>(pMetaData);
+                A3D_ASSERT(pData != nullptr);
+
+                DXGI_HDR_METADATA_HDR10 meta = {};
+                meta.RedPrimary[0]              = GetCoord(pData->PrimaryR[0]);
+                meta.RedPrimary[1]              = GetCoord(pData->PrimaryR[1]);
+                meta.BluePrimary[0]             = GetCoord(pData->PrimaryB[0]);
+                meta.BluePrimary[1]             = GetCoord(pData->PrimaryB[1]);
+                meta.GreenPrimary[0]            = GetCoord(pData->PrimaryG[0]);
+                meta.GreenPrimary[1]            = GetCoord(pData->PrimaryG[1]);
+                meta.WhitePoint[0]              = GetCoord(pData->WhitePoint[0]);
+                meta.WhitePoint[1]              = GetCoord(pData->WhitePoint[1]);
+                meta.MaxMasteringLuminance      = static_cast<UINT>(pData->MaxMasteringLuminance / 10000.0);
+                meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 100000.0);
+                meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
+                meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
+
+                auto hr = m_pSwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
+                if (FAILED(hr))
+                { return false; }
+            }
+            break;
+
+        default:
+            { /* DO_NOTHING */}
+            break;
+        }
+
+        return true;
+    }
+    #else
+    {
+        /* NOT SUPPORT */
+        A3D_UNUSED(type);
+        A3D_UNUSED(pMetaData);
+        return false;
+    }
+    #endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -231,10 +398,25 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags)
 {
-    /* NOT SUPPORT */
-    A3D_UNUSED(type);
-    A3D_UNUSED(pFlags);
-    return false;
+    #if defined(A3D_FOR_WINDOWS10)
+    {
+        if (m_pSwapChain4 == nullptr)
+        { return false; }
+
+        auto hr = m_pSwapChain4->CheckColorSpaceSupport(ToNativeColorSpace(type), pFlags);
+        if (FAILED(hr))
+        { return false; }
+
+        return true;
+    }
+    #else
+    {
+        /* NOT SUPPORT */
+        A3D_UNUSED(type);
+        A3D_UNUSED(pFlags);
+        return false;
+    }
+    #endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -259,30 +441,29 @@ bool SwapChain::SetFullScreenMode(bool enable)
     if (FAILED(hr))
     { return false; }
 
+    if (enable)
     {
-        DXGI_MODE_DESC desc = {};
-        desc.Width                      = m_Desc.Extent.Width;
-        desc.Height                     = m_Desc.Extent.Height;
-        desc.RefreshRate.Numerator      = 60;
-        desc.RefreshRate.Denominator    = 1;
-        desc.Format                     = ToNativeFormat(m_Desc.Format);
-
-        hr = m_pSwapChain->ResizeTarget(&desc);
-        if ( FAILED(hr) )
-        { return false; }
-
-        hr = m_pSwapChain->ResizeBuffers(
-            m_Desc.BufferCount,
-            m_Desc.Extent.Width,
-            m_Desc.Extent.Height,
-            desc.Format,
-            DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
-        if (FAILED(hr))
-        { return false; }
+        // 最適な値を自動選択させる.
+        ResizeBuffers(0, 0);
     }
 
     return true;
 }
+
+//-------------------------------------------------------------------------------------------------
+//      スワップチェインを取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGISwapChain* SwapChain::GetDXGISwapChain() const
+{ return m_pSwapChain; }
+
+#if defined(A3D_FOR_WINDOWS10)
+//-------------------------------------------------------------------------------------------------
+//      スワップチェイン4を取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGISwapChain4* SwapChain::GetDXGISwapChain4() const
+{ return m_pSwapChain4; }
+
+#endif // defined(A3D_FOR_WINDOWS10)
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

@@ -83,6 +83,7 @@ void Queue::Term()
         m_pCommandLists = nullptr;
     }
 
+    SafeRelease(m_pQuery);
     SafeRelease(m_pDevice);
 
     m_SubmitIndex    = 0;
@@ -574,11 +575,24 @@ void Queue::ParseCmd()
 
                         case QUERY_TYPE_PIPELINE_STATISTICS:
                             {
-                                // TODO : ネイティブ型を使わずA3D形式の構造体を用意して，そちらに設定して返すように実装を変える.
                                 D3D11_QUERY_DATA_PIPELINE_STATISTICS data = {};
                                 pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0);
-                                memcpy(pDstPtr, &data, sizeof(data));
-                                pDstPtr += sizeof(data);
+
+                                PipelineStatistics convert = {};
+                                convert.IAVertices      = data.IAVertices;
+                                convert.IAPrimitives    = data.IAPrimitives;
+                                convert.VSInvocations   = data.VSInvocations;
+                                convert.GSInvocations   = data.GSInvocations;
+                                convert.GSPrimitives    = data.GSPrimitives;
+                                convert.CInvocations    = data.CInvocations;
+                                convert.CPrimitives     = data.CPrimitives;
+                                convert.PSInvocations   = data.PSInvocations;
+                                convert.HSInvocations   = data.HSInvocations;
+                                convert.DSInvocations   = data.DSInvocations;
+                                convert.CSInvocations   = data.CSInvocations;
+
+                                memcpy(pDstPtr, &convert, sizeof(convert));
+                                pDstPtr += sizeof(convert);
                             }
                             break;
                         }
@@ -795,6 +809,7 @@ void Queue::ParseCmd()
                     A3D_ASSERT(cmd != nullptr);
                     end = true;
                     pCmd += sizeof(ImCmdEnd);
+                    pDeviceContext->Flush();
                 }
                 break;
             }

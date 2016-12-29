@@ -133,17 +133,34 @@ void CommandList::Begin()
 {
     m_pCommandAllocator->Reset();
     m_pCommandList->Reset(m_pCommandAllocator, nullptr);
+    m_pFrameBuffer = nullptr;
 
     auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);
 
+    auto heapBuf = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    auto heapSmp = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+   
+    uint32_t count = 0;
     ID3D12DescriptorHeap* pHeaps[2] = {};
-    pHeaps[0] = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)->GetD3D12DescriptorHeap();
-    pHeaps[1] = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)->GetD3D12DescriptorHeap();
+    if (heapBuf->GetHandleCount() > 0)
+    {
+        pHeaps[count] = heapBuf->GetD3D12DescriptorHeap();
+        count++;
+    }
 
-    m_pCommandList->SetDescriptorHeaps(2, pHeaps);
+    if (heapSmp->GetHandleCount() > 0)
+    {
+        pHeaps[count] = heapSmp->GetD3D12DescriptorHeap();
+        count++;
+    }
 
-    m_pFrameBuffer = nullptr;
+    if (count == 0)
+    {
+        return;
+    }
+
+    m_pCommandList->SetDescriptorHeaps(count, pHeaps);
 }
 
 //-------------------------------------------------------------------------------------------------

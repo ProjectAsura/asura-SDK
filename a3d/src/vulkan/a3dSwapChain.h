@@ -96,6 +96,16 @@ public:
     bool A3D_APIENTRY GetBuffer(uint32_t index, ITexture** ppResource) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      バッファをリサイズします.
+    //!
+    //! @param[in]      width       リサイズする横幅.
+    //! @param[in]      height      リサイズする縦幅.
+    //! @retval true    リサイズに成功.
+    //! @retval false   リサイズに失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY ResizeBuffers(uint32_t width, uint32_t height) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      メタデータを設定します.
     //!
     //! @param[in]      type        メタデータタイプです.
@@ -136,16 +146,32 @@ private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>   m_RefCount;             //!< 参照カウンタです.
-    IDevice*                m_pDevice;              //!< デバイスです.
-    IQueue*                 m_pQueue;               //!< コマンドキューです.
-    SwapChainDesc           m_Desc;                 //!< 構成設定です.
-    VkSurfaceKHR            m_Surface;              //!< サーフェイスです.
-    VkSwapchainKHR          m_SwapChain;            //!< スワップチェインです.
-    ITexture**              m_pBuffers;             //!< バッファです.
-    VkImage*                m_pImages;              //!< イメージです.
-    VkImageView*            m_pImageViews;          //!< イメージビューです.
-    uint32_t                m_CurrentBufferIndex;   //!< 現在のバッファ番号です.
+    std::atomic<uint32_t>           m_RefCount;             //!< 参照カウンタです.
+    IDevice*                        m_pDevice;              //!< デバイスです.
+    IQueue*                         m_pQueue;               //!< コマンドキューです.
+    SwapChainDesc                   m_Desc;                 //!< 構成設定です.
+    VkSurfaceKHR                    m_Surface;              //!< サーフェイスです.
+    VkSwapchainKHR                  m_SwapChain;            //!< スワップチェインです.
+    ITexture**                      m_pBuffers;             //!< バッファです.
+    VkImage*                        m_pImages;              //!< イメージです.
+    VkImageView*                    m_pImageViews;          //!< イメージビューです.
+    uint32_t                        m_CurrentBufferIndex;   //!< 現在のバッファ番号です.
+    VkPresentModeKHR                m_PresentMode;          //!< 表示モード.
+    VkFormat                        m_ImageFormat;          //!< イメージフォーマット.
+    VkColorSpaceKHR                 m_ColorSpace;           //!< カラースペース.
+    bool                            m_IsFullScreen;         //!< フルスクリーンかどうか?
+    VkSurfaceTransformFlagBitsKHR   m_PreTransform;         //!< サーフェイス変換フラグ.
+
+    #if A3D_IS_WIN
+        HWND                m_hWnd;
+        HINSTANCE           m_hInstance;
+        RECT                m_Rect;
+        LONG                m_WindowStyle;
+    #elif A3D_IS_LINUX
+        // NOTHING
+    #elif A3D_IS_ANDROID
+        // NOTHING
+    #endif
 
     //=============================================================================================
     // private methods.
@@ -179,10 +205,11 @@ private:
     //---------------------------------------------------------------------------------------------
     //! @brief      サーフェイスの初期化を行います.
     //!
+    //! @param[in]      pSurface        初期化するサーフェイス.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY InitSurface();
+    bool A3D_APIENTRY InitSurface(VkSurfaceKHR* pSurface);
 
     SwapChain       (const SwapChain&) = delete;
     void operator = (const SwapChain&) = delete;

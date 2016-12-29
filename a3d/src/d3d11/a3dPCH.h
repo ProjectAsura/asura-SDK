@@ -5,6 +5,7 @@
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
+//#define A3D_FOR_WINDOWS10
 
 //-------------------------------------------------------------------------------------------------
 // Includes
@@ -17,8 +18,13 @@
 #include <mutex>
 #include <container/a3dDynamicArray.h>
 
+#if defined(A3D_FOR_WINDOWS10)
+#include <d3d11_4.h>
+#include <dxgi1_5.h>
+#else
 #include <d3d11_2.h>
 #include <dxgi1_3.h>
+#endif
 
 #include "emu/a3dImCmd.h"
 #include "emu/a3dCommandBuffer.h"

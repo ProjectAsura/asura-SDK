@@ -17,6 +17,7 @@
 typedef void (*MouseCallback)(int x, int y, int wheelDelta, bool leftDown, bool middleDown, bool rightDown, void* pUser);
 typedef void (*KeyboardCallback)(bool keyDown, bool altDown, uint32_t keyCode, void* pUser);
 typedef void (*CharCallback)(uint32_t keyCode, void* pUser);
+typedef void (*ResizeCallback)(uint32_t w, uint32_t h, void* pUser);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,6 +100,14 @@ struct IApp
     //! @param[in]      pUser       ユーザーポインタです.
     //---------------------------------------------------------------------------------------------
     virtual void SetCharCallback(CharCallback pFunc, void* pUser) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      リサイズコールバック関数を設定します.
+    //!
+    //! @param[in]      pFunc       設定するコールバック関数です.
+    //! @param[in]      pUser       ユーザーポインタです.
+    //---------------------------------------------------------------------------------------------
+    virtual void SetResizeCallback(ResizeCallback pFunc, void* pUser) = 0;
 };
 
 //-------------------------------------------------------------------------------------------------

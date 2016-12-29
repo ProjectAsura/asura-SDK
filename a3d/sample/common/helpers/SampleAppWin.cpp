@@ -101,7 +101,7 @@ public:
         RECT rc = { 0, 0, static_cast<LONG>(m_Width), static_cast<LONG>(m_Height) };
 
         // 指定されたクライアント領域を確保するために必要なウィンドウ座標を計算します.
-        DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+        DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_THICKFRAME;
         AdjustWindowRect( &rc, style, FALSE );
 
         // ウィンドウを生成します.
@@ -222,6 +222,15 @@ public:
         m_pUserChar = pUser;
     }
 
+    //---------------------------------------------------------------------------------------------
+    //      リサイズコールバック関数を設定します.
+    //---------------------------------------------------------------------------------------------
+    void SetResizeCallback(ResizeCallback pFunc, void* pUser) override
+    {
+        m_OnResize    = pFunc;
+        m_pUserResize = pUser;
+    }
+
 private:
     //=============================================================================================
     // private variables.
@@ -238,6 +247,8 @@ private:
     void*               m_pUserKeyboard;    //!< キーボードコールバックのユーザーデータです.
     CharCallback        m_OnChar;           //!< 文字入力コールバック関数です.
     void*               m_pUserChar;        //!< 文字入力コールバックのユーザーデータです.
+    ResizeCallback      m_OnResize;         //!< リサイズコールバック関数です.
+    void*               m_pUserResize;      //!< リサイズコールバックのユーザーデータです.
 
     //=============================================================================================
     // private methods.
@@ -335,7 +346,22 @@ private:
 
                 instance->m_OnChar( uint32_t(wp), instance->m_pUserChar );
             }
-            break;;
+            break;
+
+        case WM_SIZE:
+            {
+                auto w = static_cast<uint32_t>(LOWORD(lp));
+                auto h = static_cast<uint32_t>(HIWORD(lp));
+
+                instance->m_Width  = w;
+                instance->m_Height = h;
+                
+                if ( instance->m_OnResize == nullptr )
+                { return 0; }
+
+                instance->m_OnResize( LOWORD(lp), HIWORD(lp), instance->m_pUserResize );
+            }
+            break;
 
         default:
             break;

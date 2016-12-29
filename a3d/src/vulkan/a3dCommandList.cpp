@@ -698,35 +698,61 @@ void CommandList::ResolveQuery
     if (pQuery == nullptr || queryCount == 0)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
+    #if 0
+        auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
+        A3D_ASSERT(pWrapDevice != nullptr);
 
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
-    A3D_ASSERT(pNativeDevice != null_handle);
+        auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+        A3D_ASSERT(pNativeDevice != null_handle);
 
-    auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
-    A3D_ASSERT(pWrapQueryPool != nullptr);
+        auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+        A3D_ASSERT(pWrapQueryPool != nullptr);
 
-    auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
-    A3D_ASSERT(pNativeQueryPool != null_handle);
+        auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+        A3D_ASSERT(pNativeQueryPool != null_handle);
 
-    void* ptr = pDstBuffer->Map();
-    if (ptr == nullptr)
-    { return; }
+        void* ptr = pDstBuffer->Map();
+        if (ptr == nullptr)
+        { return; }
 
-    VkQueryResultFlags flags = 0; // TODO : 実装チェック.
+        VkQueryResultFlags flags = 0; // TODO : 実装チェック.
 
-    vkGetQueryPoolResults(
-        pNativeDevice,
-        pNativeQueryPool,
-        startIndex,
-        queryCount,
-        size_t(pDstBuffer->GetDesc().Size),
-        ptr,
-        pDstBuffer->GetDesc().Stride,
-        flags );
+        vkGetQueryPoolResults(
+            pNativeDevice,
+            pNativeQueryPool,
+            startIndex,
+            queryCount,
+            size_t(pDstBuffer->GetDesc().Size),
+            ptr,
+            pDstBuffer->GetDesc().Stride,
+            flags );
 
-    pDstBuffer->Unmap();
+        pDstBuffer->Unmap();
+    #else
+        auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+        A3D_ASSERT(pWrapQueryPool != nullptr);
+
+        auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+        A3D_ASSERT(pNativeQueryPool != null_handle);
+
+        auto pWrapBuffer = reinterpret_cast<Buffer*>(pDstBuffer);
+        A3D_ASSERT(pWrapBuffer != nullptr);
+
+        auto pNativeBuffer = pWrapBuffer->GetVulkanBuffer();
+        A3D_ASSERT(pNativeBuffer != null_handle);
+
+        VkQueryResultFlags flags = 0; // TODO : 実装チェック.
+
+        vkCmdCopyQueryPoolResults(
+            m_CommandBuffer,
+            pNativeQueryPool,
+            startIndex,
+            queryCount,
+            pNativeBuffer,
+            dstOffset,
+            pDstBuffer->GetDesc().Size,
+            flags );
+    #endif
 }
 
 //-------------------------------------------------------------------------------------------------

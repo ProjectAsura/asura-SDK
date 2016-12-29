@@ -76,6 +76,8 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
     m_pDevice = pDevice;
     m_pDevice->AddRef();
 
+    m_pApp = pApp;
+
     // 頂点バッファを生成.
     {
         a3d::BufferDesc desc = {};
@@ -542,6 +544,8 @@ void GuiMgr::SwapBuffers()
 
     auto& io = ImGui::GetIO();
     io.DeltaTime = elapsedSec;
+    io.DisplaySize.x = float(m_pApp->GetWidth());
+    io.DisplaySize.y = float(m_pApp->GetHeight());
     
     m_BufferIndex = (m_BufferIndex + 1) % 2;
     ImGui::NewFrame();

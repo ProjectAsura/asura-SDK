@@ -15,7 +15,20 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 Device::Device()
-: m_RefCount(1)
+: m_RefCount        (1)
+, m_pGraphicsQueue  (nullptr)
+, m_pComputeQueue   (nullptr)
+, m_pCopyQueue      (nullptr)
+, m_pFactory        (nullptr)
+, m_pAdapter        (nullptr)
+, m_pOutput         (nullptr)
+, m_pDevice         (nullptr)
+, m_pDeviceContext  (nullptr)
+#if defined(A3D_FOR_WINDOWS10)
+, m_pFactory5       (nullptr)
+, m_pAdapter3       (nullptr)
+, m_pOutput4        (nullptr)
+#endif
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -43,50 +56,44 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
     // BGRAサポートを有効化.
     createDeviceFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
+    // ファクトリーを生成.
     {
-        uint32_t flags = 0;
-        if (pDesc->EnableDebug)
-        { flags |= DXGI_CREATE_FACTORY_DEBUG; }
- 
-        auto hr = CreateDXGIFactory2( flags, IID_PPV_ARGS(&m_pFactory) );
+        auto hr = CreateDXGIFactory( IID_PPV_ARGS(&m_pFactory) );
         if ( FAILED(hr) )
         { return false; }
     }
 
     // デフォルトアダプターを取得.
-    IDXGIAdapter1* pAdapter = nullptr;
     {
-        auto hr = m_pFactory->EnumAdapters1( 0, &pAdapter );
-        if ( FAILED(hr) )
-        {
-            SafeRelease(pAdapter);
-            return false;
-        }
-    }
-
-    // IDXGIAdapter2に変換
-    {
-        auto hr = pAdapter->QueryInterface( IID_PPV_ARGS(&m_pAdapter));
-        SafeRelease(pAdapter);
+        auto hr = m_pFactory->EnumAdapters( 0, &m_pAdapter );
         if ( FAILED(hr) )
         { return false; }
     }
 
     // デフォルトディスプレイを取得.
-    IDXGIOutput* pOutput;
     {
-        auto hr = m_pAdapter->EnumOutputs(0, &pOutput);
+        auto hr = m_pAdapter->EnumOutputs(0, &m_pOutput);
         if ( FAILED(hr) )
         { return false; }
     }
 
-    // IDXGOutput3に変換.
+    #if defined(A3D_FOR_WINDOWS10)
     {
-        auto hr = pOutput->QueryInterface( IID_PPV_ARGS(&m_pOutput) );
-        SafeRelease(pOutput);
+        HRESULT hr = S_OK;
+        hr = m_pFactory->QueryInterface( IID_PPV_ARGS(&m_pFactory5) );
         if ( FAILED(hr) )
-        { return false; }
+        { SafeRelease(m_pFactory5); }
+
+        hr = m_pAdapter->QueryInterface( IID_PPV_ARGS(&m_pAdapter3) );
+        if ( FAILED(hr) )
+        { SafeRelease(m_pAdapter3); }
+
+        hr = m_pOutput->QueryInterface( IID_PPV_ARGS(&m_pOutput4) );
+        if ( FAILED(hr) )
+        { SafeRelease(m_pOutput4); }
     }
+    #endif
+
 
     {
         D3D_FEATURE_LEVEL featureLevels[] = {
@@ -153,6 +160,15 @@ void Device::Term()
     SafeRelease(m_pCopyQueue);
     SafeRelease(m_pDeviceContext);
     SafeRelease(m_pDevice);
+
+#if defined(A3D_FOR_WINDOWS10)
+    SafeRelease(m_pOutput4);
+    SafeRelease(m_pAdapter3);
+    SafeRelease(m_pFactory5);
+#endif// defined(A3D_FOR_WINDOW10)
+
+    SafeRelease(m_pOutput);
+    SafeRelease(m_pAdapter);
     SafeRelease(m_pFactory);
 }
 
@@ -319,6 +335,15 @@ bool Device::CreateFence(IFence** ppFence)
 { return Fence::Create(this, ppFence); }
 
 //-------------------------------------------------------------------------------------------------
+//      アイドル状態になるまで待機します.
+//-------------------------------------------------------------------------------------------------
+void Device::WaitIdle()
+{
+    m_pDeviceContext->Flush();
+    m_pDeviceContext->ClearState();
+}
+
+//-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D11Device* Device::GetD3D11Device() const
@@ -333,20 +358,42 @@ ID3D11DeviceContext* Device::GetD3D11DeviceContext() const
 //-------------------------------------------------------------------------------------------------
 //      DXGIファクトリーを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIFactory3* Device::GetDXGIFactory() const
+IDXGIFactory* Device::GetDXGIFactory() const
 { return m_pFactory; }
 
 //-------------------------------------------------------------------------------------------------
 //      デフォルトアダプターを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIAdapter2* Device::GetDXGIAdapter() const
+IDXGIAdapter* Device::GetDXGIAdapter() const
 { return m_pAdapter; }
 
 //-------------------------------------------------------------------------------------------------
 //      デフォルトディスプレイを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIOutput3* Device::GetDXGIOutput() const
+IDXGIOutput* Device::GetDXGIOutput() const
 { return m_pOutput; }
+
+#if defined(A3D_FOR_WINDOWS10)
+
+//-------------------------------------------------------------------------------------------------
+//      DXGIファクトリーを取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGIFactory5* Device::GetDXGIFactory5() const
+{ return m_pFactory5; }
+
+//-------------------------------------------------------------------------------------------------
+//      デフォルトアダプターを取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGIAdapter3* Device::GetDXGIAdapter3() const
+{ return m_pAdapter3; }
+
+//-------------------------------------------------------------------------------------------------
+//      デフォルトディスプレイを取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGIOutput4* Device::GetDXGIOutput4() const
+{ return m_pOutput4; }
+
+#endif// defined(A3D_FOR_WINDOWS10)
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

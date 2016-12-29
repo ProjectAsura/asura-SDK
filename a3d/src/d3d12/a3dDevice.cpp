@@ -15,9 +15,10 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 Device::Device()
-: m_RefCount(1)
-, m_pFactory(nullptr)
-, m_pDevice (nullptr)
+: m_RefCount        (1)
+, m_pFactory        (nullptr)
+, m_pDevice         (nullptr)
+, m_TearingSupport  (false)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -55,6 +56,11 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
     auto hr = CreateDXGIFactory2( flags, IID_PPV_ARGS(&m_pFactory) );
     if ( FAILED(hr) )
     { return false; }
+
+    BOOL allowTearing;
+    hr = m_pFactory->CheckFeatureSupport( DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing) );
+    if ( SUCCEEDED(hr) )
+    { m_TearingSupport = (allowTearing == TRUE); }
 
     // デフォルトアダプターを取得.
     IDXGIAdapter1* pAdapter = nullptr;
@@ -332,6 +338,12 @@ bool Device::CreateFence(IFence** ppFence)
 { return Fence::Create(this, ppFence); }
 
 //-------------------------------------------------------------------------------------------------
+//      アイドル状態になるまで待機します.
+//-------------------------------------------------------------------------------------------------
+void Device::WaitIdle()
+{ /* DO_NOTHING */ }
+
+//-------------------------------------------------------------------------------------------------
 //      DXGIファクトリを取得します.
 //-------------------------------------------------------------------------------------------------
 IDXGIFactory5* Device::GetDXGIFactory() const
@@ -363,6 +375,12 @@ DescriptorHeap* Device::GetDescriptorHeap(uint32_t index)
     A3D_ASSERT(index < 4);
     return &m_DescriptorHeap[index];
 }
+
+//-------------------------------------------------------------------------------------------------
+//      ティアリングサポートしているかどうか.
+//-------------------------------------------------------------------------------------------------
+bool Device::IsTearingSupport() const
+{ return m_TearingSupport; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

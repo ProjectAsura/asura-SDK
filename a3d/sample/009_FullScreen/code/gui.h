@@ -92,6 +92,7 @@ private:
     a3d::ICommandList*          m_pCommandList;         //!< コマンドリストです.
     Mat4*                       m_pProjection;          //!< 射影行列です.
     int                         m_BufferIndex;          //!< バッファ番号です.
+    IApp*                       m_pApp;                 //!< アプリケーションです.
     std::chrono::system_clock::time_point m_LastTime;
 
     //=============================================================================================

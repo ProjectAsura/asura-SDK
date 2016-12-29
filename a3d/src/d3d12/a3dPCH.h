@@ -6,16 +6,27 @@
 #pragma once
 
 
+#include <cassert>
+
+#ifndef A3D_ASSERT
+    #if defined(DEBUG) || defined(_DEBUG)
+        #define     A3D_ASSERT(expression)  assert(expression)
+    #else
+        #define     A3D_ASSERT(expression)
+    #endif
+#endif
+
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
 #include <allocator/a3dBaseAllocator.h>
 #include <allocator/a3dStdAllocator.h>
 #include <a3d.h>
-#include <cassert>
+
 #include <atomic>
 #include <mutex>
 #include <container/a3dDynamicArray.h>
+#include <container/a3dPool.h>
 
 #include <d3d12.h>
 #include <dxgi1_5.h>
@@ -41,11 +52,4 @@
 #include "a3dPipelineState.h"
 #include "a3dQueryPool.h"
 
-#ifndef A3D_ASSERT
-    #if defined(DEBUG) || defined(_DEBUG)
-        #define     A3D_ASSERT(expression)  assert(expression)
-    #else
-        #define     A3D_ASSERT(expression)
-    #endif
-#endif
 

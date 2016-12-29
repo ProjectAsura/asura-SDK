@@ -15,9 +15,7 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 Descriptor::Descriptor()
-: m_pNext       (nullptr)
-, m_pPrev       (nullptr)
-, m_pHeap       (nullptr)
+: m_pHeap       (nullptr)
 , m_HandleCPU   ()
 , m_HandleGPU   ()
 , m_RefCount    (1)
@@ -30,7 +28,7 @@ Descriptor::~Descriptor()
 {
     auto pHeap = m_pHeap;
     A3D_ASSERT(pHeap != nullptr);
-    pHeap->Free(this);
+    pHeap->DisposeDescriptor(this);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -46,7 +44,7 @@ void Descriptor::Release()
 {
     m_RefCount--;
     if (m_RefCount == 0)
-    { delete this; }
+    { this->~Descriptor(); }
 }
 
 //-------------------------------------------------------------------------------------------------

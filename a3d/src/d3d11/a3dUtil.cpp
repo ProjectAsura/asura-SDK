@@ -413,6 +413,36 @@ uint32_t ToNativeCpuAccessFlags(HEAP_TYPE type, CPU_PAGE_PROPERTY prop)
     return result;
 }
 
+#if defined(A3D_FOR_WINDOWS10)
+//-------------------------------------------------------------------------------------------------
+//      カラースペースを変換します.
+//-------------------------------------------------------------------------------------------------
+DXGI_COLOR_SPACE_TYPE ToNativeColorSpace(COLOR_SPACE_TYPE value)
+{
+    static const DXGI_COLOR_SPACE_TYPE table[] = {
+        DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709,
+        DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P709,
+        DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020,
+        DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020,
+        DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020,
+        DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_TOPLEFT_P2020,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020,
+        DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020,
+        DXGI_COLOR_SPACE_CUSTOM
+    };
+
+    return table[value];
+}
+#endif//defined(A3D_FOR_WINDOWS10)
+
 //-------------------------------------------------------------------------------------------------
 //      サブリソースを計算します.
 //-------------------------------------------------------------------------------------------------
