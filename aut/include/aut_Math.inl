@@ -1,12 +1,12 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : algebra.inl
+// File : aut_math.inl
 // Desc : Math Module.
 // Copyright(c) Project Asura All right reserved.
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
 
-namespace math {
+namespace aut {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -5771,5 +5771,5 @@ bool OrthonormalBasis::operator != ( const OrthonormalBasis& value ) const
 }
 
 
-} // namespace math
+} // namespace aut
 
