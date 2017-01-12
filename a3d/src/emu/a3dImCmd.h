@@ -18,6 +18,8 @@ enum CMD_TYPE
     CMD_SUB_BEGIN,                      //!< ICommandList::Begin() For COMMANDLIST_TYPE_BUNDLE
     CMD_SET_FRAME_BUFFER,               //!< ICommandList::SetFrameBuffer()
     CMD_CLEAR_FRAME_BUFFER,             //!< ICommandList::ClearFrameBuffer()
+    CMD_SET_BLEND_CONSTANT,             //!< ICommandList::SetBlendConstant()
+    CMD_SET_STENCIL_REFERENCE,          //!< ICommandList::SetStencilReference()
     CMD_SET_VIEWPORTS,                  //!< ICommandList::SetViewports()
     CMD_SET_SCISSORS,                   //!< ICommandList::SetScissors()
     CMD_SET_PIPELINESTATE,              //!< ICommandList::SetPipelineState()
@@ -77,6 +79,22 @@ struct ImCmdClearFrameBuffer : ImCmdBase
     bool                    HasDepth;
     ClearColorValue         ClearColors[8];
     ClearDepthStencilValue  ClearDepthStencil;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdSetBlendConstant structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdSetBlendConstant : ImCmdBase
+{
+    float       BlendConstant[4];
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdSetStencilReference structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdSetStencilReference : ImCmdBase
+{
+    uint32_t    StencilReference;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

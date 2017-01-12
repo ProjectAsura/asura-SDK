@@ -315,15 +315,19 @@ bool PipelineState::GetCachedBlob(IBlob** ppBlob)
 //-------------------------------------------------------------------------------------------------
 //      パイプラインステートを関連付けます.
 //-------------------------------------------------------------------------------------------------
-void PipelineState::Bind(ID3D11DeviceContext* pDeviceContext)
+void PipelineState::Bind
+(
+    ID3D11DeviceContext*    pDeviceContext,
+    const float             blendFactor[4],
+    uint32_t                stencilRef
+)
 {
     if (m_IsGraphicsPipeline)
     {
-        const float blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
         const uint32_t sampleMask = 0xffffffff;
         pDeviceContext->RSSetState(m_pRS);
         pDeviceContext->OMSetBlendState(m_pBS, blendFactor, sampleMask);
-        pDeviceContext->OMSetDepthStencilState(m_pDSS, 0);
+        pDeviceContext->OMSetDepthStencilState(m_pDSS, stencilRef);
 
         pDeviceContext->IASetInputLayout(m_pIL);
         pDeviceContext->VSSetShader(m_pVS, nullptr, 0);

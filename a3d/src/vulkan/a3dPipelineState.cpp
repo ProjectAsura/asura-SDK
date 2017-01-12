@@ -624,13 +624,15 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         VkDynamicState dynamicElements[] = {
             VK_DYNAMIC_STATE_VIEWPORT,
             VK_DYNAMIC_STATE_SCISSOR,
+            VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+            VK_DYNAMIC_STATE_STENCIL_REFERENCE
         };
 
         VkPipelineDynamicStateCreateInfo dynamicState = {};
         dynamicState.sType              = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.pNext              = nullptr;
         dynamicState.flags              = 0;
-        dynamicState.dynamicStateCount  = 2;
+        dynamicState.dynamicStateCount  = 4;
         dynamicState.pDynamicStates     = dynamicElements;
 
         auto pWrapFrameBuffer = reinterpret_cast<FrameBuffer*>(pDesc->pFrameBuffer);

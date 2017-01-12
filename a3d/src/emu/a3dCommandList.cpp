@@ -108,6 +108,30 @@ void CommandList::ClearFrameBuffer
 }
 
 //-------------------------------------------------------------------------------------------------
+//      ブレンド定数を設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetBlendConstant(const float blendConstant[4])
+{
+    ImCmdSetBlendConstant cmd = {};
+    cmd.Type = CMD_SET_BLEND_CONSTANT;
+    memcpy( cmd.BlendConstant, blendConstant, sizeof(cmd.BlendConstant) );
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ステンシル参照値を設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetStencilReference(uint32_t stencilRef)
+{
+    ImCmdSetStencilReference cmd = {};
+    cmd.Type = CMD_SET_STENCIL_REFERENCE;
+    cmd.StencilReference = stencilRef;
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
 //      ビューポートを設定します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetViewports(uint32_t count, Viewport* pViewports)

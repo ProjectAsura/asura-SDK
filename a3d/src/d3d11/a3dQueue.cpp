@@ -200,6 +200,8 @@ void Queue::ParseCmd()
     bool end = false;
     FrameBuffer*     pActiveFrameBuffer   = nullptr;
     DescriptorSet*   pActiveDescriptorSet = nullptr;
+    float            blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    uint32_t         stencilRef     = 0;
 
     for(auto i=0u; i<m_SubmitIndex; ++i)
     {
@@ -265,6 +267,28 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_SET_BLEND_CONSTANT:
+                {
+                    auto cmd = reinterpret_cast<ImCmdSetBlendConstant*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    memcpy( blendFactor, cmd->BlendConstant, sizeof(blendFactor) );
+
+                    pCmd += sizeof(ImCmdSetBlendConstant);
+                }
+                break;
+
+            case CMD_SET_STENCIL_REFERENCE:
+                {
+                    auto cmd = reinterpret_cast<ImCmdSetStencilReference*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    stencilRef = cmd->StencilReference;
+
+                    pCmd += sizeof(ImCmdSetStencilReference);
+                }
+                break;
+
             case CMD_SET_VIEWPORTS:
                 {
                     auto cmd = reinterpret_cast<ImCmdSetViewports*>(pCmd);
@@ -313,7 +337,7 @@ void Queue::ParseCmd()
                     A3D_ASSERT(cmd != nullptr);
 
                     auto pPipelineState = reinterpret_cast<PipelineState*>(cmd->pPipelineState);
-                    pPipelineState->Bind(pDeviceContext);
+                    pPipelineState->Bind(pDeviceContext, blendFactor, stencilRef);
 
                     pCmd += sizeof(ImCmdSetPipelineState);
                 }

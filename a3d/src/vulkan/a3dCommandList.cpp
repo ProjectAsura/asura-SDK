@@ -196,6 +196,17 @@ void CommandList::Begin()
     A3D_UNUSED( result );
 
     m_pFrameBuffer = nullptr;
+
+    VkViewport dummyViewport = {};
+    vkCmdSetViewport( m_CommandBuffer, 0, 1, &dummyViewport );
+
+    VkRect2D dummyScissor = {};
+    vkCmdSetScissor( m_CommandBuffer, 0, 1, &dummyScissor );
+
+    float blendConstant[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    vkCmdSetBlendConstants( m_CommandBuffer, blendConstant );
+
+    vkCmdSetStencilReference( m_CommandBuffer, VK_STENCIL_FRONT_AND_BACK, 0 );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -245,6 +256,18 @@ void CommandList::ClearFrameBuffer
 
     m_pFrameBuffer->Clear(this, clearColorCount, pClearColors, pClearDepthStencil);
 }
+
+//-------------------------------------------------------------------------------------------------
+//      ブレンド定数を設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetBlendConstant(const float blendConstant[4])
+{ vkCmdSetBlendConstants( m_CommandBuffer, blendConstant ); }
+
+//-------------------------------------------------------------------------------------------------
+//      ステンシル参照値を設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetStencilReference(uint32_t stencilRef)
+{ vkCmdSetStencilReference( m_CommandBuffer, VK_STENCIL_FRONT_AND_BACK, stencilRef); }
 
 //-------------------------------------------------------------------------------------------------
 //      ビューポートを設定します.

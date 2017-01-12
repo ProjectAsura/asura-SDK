@@ -93,8 +93,13 @@ public:
     //! @brief      パイプラインステートを関連付けます.
     //!
     //! @param[in]      pDeviceContext      デバイスコンテキストです.
+    //! @param[in]      blendFactor         ブレンド定数です.
+    //! @param[in]      stencilRef          ステンシル参照値です.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY Bind(ID3D11DeviceContext* pDeviceContext);
+    void A3D_APIENTRY Bind(
+        ID3D11DeviceContext*    pDeviceContext,
+        const float             blendFactor[4],
+        uint32_t                stencilRef);
 
 private:
     //=============================================================================================

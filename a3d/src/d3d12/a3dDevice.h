@@ -285,7 +285,7 @@ public:
     IDXGIAdapter3* A3D_APIENTRY GetDXGIAdapter() const;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      デフォルトディスプレイを取得します.
+    //! @brief      アウトプットを取得します.
     //!
     //! @return     デフォルトディスプレイを返却します.
     //---------------------------------------------------------------------------------------------
@@ -321,7 +321,7 @@ private:
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウントです.
     IDXGIFactory5*          m_pFactory;             //!< ファクトリです.
     IDXGIAdapter3*          m_pAdapter;             //!< アダプターです.
-    IDXGIOutput4*           m_pOutput;              //!< 出力ディスプレイです.
+    IDXGIOutput4*           m_pOutput;              //!< DXGIアウトプットです.
     ID3D12Device*           m_pDevice;              //!< デバイスです.
     DeviceDesc              m_Desc;                 //!< 構成設定です.
     DeviceInfo              m_Info;                 //!< デバイス情報です.

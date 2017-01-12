@@ -150,7 +150,7 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
 
     // デバイス情報の設定.
     {
-        m_Info.ConstantBufferMemoryAlignment    = 256;
+        m_Info.ConstantBufferMemoryAlignment    = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
         m_Info.MaxTargetWidth                   = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
         m_Info.MaxTargetHeight                  = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
         m_Info.MaxTargetArraySize               = D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
