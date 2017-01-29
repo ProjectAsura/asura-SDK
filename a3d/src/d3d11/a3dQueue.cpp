@@ -38,21 +38,18 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
 
     // NOTE : Deviceから呼ばれるので，参照カウントを増やしてまうと
     // Device が解放されなくなるので AddRef() しないこと!!
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
 
     m_MaxSubmitCount = maxSubmitCount;
     m_SubmitIndex = 0;
 
-    m_pCommandLists = new(std::nothrow) CommandList* [m_MaxSubmitCount];
+    m_pCommandLists = new CommandList* [m_MaxSubmitCount];
     if (m_pCommandLists == nullptr)
     { return false; }
 
     memset(m_pCommandLists, 0, sizeof(CommandList*) * m_MaxSubmitCount);
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
     {
@@ -72,10 +69,10 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
 //-------------------------------------------------------------------------------------------------
 void Queue::Term()
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
+    if (m_pDevice == nullptr)
+    { return; }
 
-    pWrapDevice->GetD3D11DeviceContext()->ClearState();
+    m_pDevice->GetD3D11DeviceContext()->ClearState();
 
     if (m_pCommandLists != nullptr)
     {
@@ -133,7 +130,7 @@ bool Queue::Submit( ICommandList* pCommandList )
     if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
     { return false; }
 
-    m_pCommandLists[m_SubmitIndex] = reinterpret_cast<CommandList*>(pCommandList);
+    m_pCommandLists[m_SubmitIndex] = static_cast<CommandList*>(pCommandList);
     m_SubmitIndex++;
 
     return true;
@@ -144,10 +141,7 @@ bool Queue::Submit( ICommandList* pCommandList )
 //-------------------------------------------------------------------------------------------------
 void Queue::Execute( IFence* pFence )
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11DeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pD3D11DeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pD3D11DeviceContext != nullptr);
 
     // Freuencyを取得.
@@ -176,10 +170,7 @@ void Queue::Execute( IFence* pFence )
 //-------------------------------------------------------------------------------------------------
 void Queue::WaitIdle()
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11DeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pD3D11DeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pD3D11DeviceContext != nullptr);
 
     while(pD3D11DeviceContext->GetData(m_pQuery, nullptr, 0, 0) == S_FALSE)
@@ -191,10 +182,7 @@ void Queue::WaitIdle()
 //-------------------------------------------------------------------------------------------------
 void Queue::ParseCmd()
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
     bool end = false;
@@ -236,7 +224,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetFrameBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    pActiveFrameBuffer = reinterpret_cast<FrameBuffer*>(cmd->pFrameBuffer);
+                    pActiveFrameBuffer = static_cast<FrameBuffer*>(cmd->pFrameBuffer);
                     if (pActiveFrameBuffer != nullptr)
                     { pActiveFrameBuffer->Bind(pDeviceContext); }
                     else
@@ -336,19 +324,10 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetPipelineState*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pPipelineState = reinterpret_cast<PipelineState*>(cmd->pPipelineState);
+                    auto pPipelineState = static_cast<PipelineState*>(cmd->pPipelineState);
                     pPipelineState->Bind(pDeviceContext, blendFactor, stencilRef);
 
                     pCmd += sizeof(ImCmdSetPipelineState);
-                }
-                break;
-
-            case CMD_SET_DESCRIPTORSETLAYOUT:
-                {
-                    auto cmd = reinterpret_cast<ImCmdSetDescriptorSetLayout*>(pCmd);
-                    A3D_ASSERT(cmd != nullptr);
-                    /* DO_NOTHING */
-                    pCmd += sizeof(ImCmdSetDescriptorSetLayout);
                 }
                 break;
 
@@ -356,7 +335,7 @@ void Queue::ParseCmd()
                 {
                     auto cmd = reinterpret_cast<ImCmdSetDescriptorSet*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
-                    pActiveDescriptorSet = reinterpret_cast<DescriptorSet*>(cmd->pDescriptorSet);
+                    pActiveDescriptorSet = static_cast<DescriptorSet*>(cmd->pDescriptorSet);
                     pActiveDescriptorSet->Bind(pDeviceContext);
                     pActiveDescriptorSet->UpdateSubreosurce(pDeviceContext);
                     pCmd += sizeof(ImCmdSetDescriptorSet);
@@ -374,7 +353,7 @@ void Queue::ParseCmd()
 
                     for(auto i=0u; i<cmd->Count; ++i)
                     {
-                        auto pWrapBuffer = reinterpret_cast<Buffer*>(cmd->pBuffers[i]);
+                        auto pWrapBuffer = static_cast<Buffer*>(cmd->pBuffers[i]);
                         A3D_ASSERT(pWrapBuffer != nullptr);
 
                         pBuffers[i] = pWrapBuffer->GetD3D11Buffer();
@@ -398,7 +377,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetIndexBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pWrapBuffer = reinterpret_cast<Buffer*>(cmd->pBuffer);
+                    auto pWrapBuffer = static_cast<Buffer*>(cmd->pBuffer);
                     auto format = pWrapBuffer->GetDesc().Stride == sizeof(uint16_t)
                                     ? DXGI_FORMAT_R16_UINT
                                     : DXGI_FORMAT_R32_UINT;
@@ -417,7 +396,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdTextureBarrier*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pTexture = reinterpret_cast<Texture*>(cmd->pResource);
+                    auto pTexture = static_cast<Texture*>(cmd->pResource);
                     pTexture->SetState(cmd->NextState);
 
                     pDeviceContext->Flush();
@@ -490,12 +469,12 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdExecuteIndirect*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pWrapCommandSet = reinterpret_cast<CommandSet*>(cmd->pCommandSet);
+                    auto pWrapCommandSet = static_cast<CommandSet*>(cmd->pCommandSet);
                     A3D_ASSERT(pWrapCommandSet != nullptr);
 
                     auto& desc = pWrapCommandSet->GetDesc();
 
-                    auto pWrapArgumentBuffer = reinterpret_cast<Buffer*>(cmd->pArgumentBuffer);
+                    auto pWrapArgumentBuffer = static_cast<Buffer*>(cmd->pArgumentBuffer);
                     A3D_ASSERT(pWrapArgumentBuffer != nullptr);
 
                     auto pNativeArgumentBuffer = pWrapArgumentBuffer->GetD3D11Buffer();
@@ -539,7 +518,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdBeginQuery*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pQuery = reinterpret_cast<QueryPool*>(cmd->pQuery);
+                    auto pQuery = static_cast<QueryPool*>(cmd->pQuery);
                     auto pD3D11Query = pQuery->GetD3D11Query(cmd->Index);
 
                     pDeviceContext->Begin(pD3D11Query);
@@ -552,7 +531,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdEndQuery*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pQuery = reinterpret_cast<QueryPool*>(cmd->pQuery);
+                    auto pQuery = static_cast<QueryPool*>(cmd->pQuery);
                     auto pD3D11Query = pQuery->GetD3D11Query(cmd->Index);
 
                     pDeviceContext->End(pD3D11Query);
@@ -566,11 +545,11 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdResolveQuery*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pWrapQuery = reinterpret_cast<QueryPool*>(cmd->pQuery);
+                    auto pWrapQuery = static_cast<QueryPool*>(cmd->pQuery);
                     A3D_ASSERT(pWrapQuery != nullptr);
                     auto queryType = pWrapQuery->GetDesc().Type;
 
-                    auto pWrapBuffer = reinterpret_cast<Buffer*>(cmd->pDstBuffer);
+                    auto pWrapBuffer = static_cast<Buffer*>(cmd->pDstBuffer);
                     A3D_ASSERT(pWrapBuffer != nullptr);
 
                     auto pDstPtr = static_cast<uint8_t*>(pWrapBuffer->Map()) + cmd->DstOffset;
@@ -633,8 +612,8 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdCopyTexture*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pDstTexture = reinterpret_cast<Texture*>(cmd->pDstTexture);
-                    auto pSrcTexture = reinterpret_cast<Texture*>(cmd->pSrcTexture);
+                    auto pDstTexture = static_cast<Texture*>(cmd->pDstTexture);
+                    auto pSrcTexture = static_cast<Texture*>(cmd->pSrcTexture);
                     A3D_ASSERT(pDstTexture != nullptr);
                     A3D_ASSERT(pSrcTexture != nullptr);
 
@@ -651,8 +630,8 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdCopyBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pDstBuffer = reinterpret_cast<Buffer*>(cmd->pDstBuffer);
-                    auto pSrcBuffer = reinterpret_cast<Buffer*>(cmd->pSrcBuffer);
+                    auto pDstBuffer = static_cast<Buffer*>(cmd->pDstBuffer);
+                    auto pSrcBuffer = static_cast<Buffer*>(cmd->pSrcBuffer);
                     A3D_ASSERT(pDstBuffer != nullptr);
                     A3D_ASSERT(pSrcBuffer != nullptr);
 
@@ -669,8 +648,8 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdCopyTextureRegion*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pDstTexture = reinterpret_cast<Texture*>(cmd->pDstResource);
-                    auto pSrcTexture = reinterpret_cast<Texture*>(cmd->pSrcResource);
+                    auto pDstTexture = static_cast<Texture*>(cmd->pDstResource);
+                    auto pSrcTexture = static_cast<Texture*>(cmd->pSrcResource);
                     A3D_ASSERT(pDstTexture != nullptr);
                     A3D_ASSERT(pSrcTexture != nullptr);
 
@@ -701,8 +680,8 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdCopyBufferRegion*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pDstBuffer = reinterpret_cast<Buffer*>(cmd->pDstBuffer);
-                    auto pSrcBuffer = reinterpret_cast<Buffer*>(cmd->pSrcBuffer);
+                    auto pDstBuffer = static_cast<Buffer*>(cmd->pDstBuffer);
+                    auto pSrcBuffer = static_cast<Buffer*>(cmd->pSrcBuffer);
                     A3D_ASSERT(pDstBuffer != nullptr);
                     A3D_ASSERT(pSrcBuffer != nullptr);
 
@@ -728,8 +707,8 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdCopyBufferToTexture*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pDstTexture = reinterpret_cast<Texture*>(cmd->pDstTexture);
-                    auto pSrcBuffer  = reinterpret_cast<Buffer*>(cmd->pSrcBuffer);
+                    auto pDstTexture = static_cast<Texture*>(cmd->pDstTexture);
+                    auto pSrcBuffer  = static_cast<Buffer*>(cmd->pSrcBuffer);
                     A3D_ASSERT(pDstTexture != nullptr);
                     A3D_ASSERT(pSrcBuffer  != nullptr);
 
@@ -763,8 +742,8 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdCopyTextureToBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pDstBuffer  = reinterpret_cast<Buffer*>(cmd->pDstBuffer);
-                    auto pSrcTexture = reinterpret_cast<Texture*>(cmd->pSrcTexture);
+                    auto pDstBuffer  = static_cast<Buffer*>(cmd->pDstBuffer);
+                    auto pSrcTexture = static_cast<Texture*>(cmd->pSrcTexture);
                     A3D_ASSERT(pDstBuffer  != nullptr);
                     A3D_ASSERT(pSrcTexture != nullptr);
 
@@ -802,8 +781,8 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdResolveSubresource*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pDstTexture = reinterpret_cast<Texture*>(cmd->pDstResource);
-                    auto pSrcTexture = reinterpret_cast<Texture*>(cmd->pSrcResource);
+                    auto pDstTexture = static_cast<Texture*>(cmd->pDstResource);
+                    auto pSrcTexture = static_cast<Texture*>(cmd->pSrcResource);
                     A3D_ASSERT(pDstTexture != nullptr);
                     A3D_ASSERT(pSrcTexture != nullptr);
 

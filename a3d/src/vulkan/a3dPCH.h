@@ -11,6 +11,7 @@
 //-------------------------------------------------------------------------------------------------
 #include <allocator/a3dBaseAllocator.h>
 #include <allocator/a3dStdAllocator.h>
+#include <container/a3dDynamicArray.h>
 #include <a3d.h>
 #include <cassert>
 #include <atomic>
@@ -18,7 +19,10 @@
 
 #include <vulkan/vulkan.h>
 
-#include "a3dBlob.h"
+#include "misc/a3dBlob.h"
+#include "misc/a3dInlines.h"
+#include "misc/a3dNullHandle.h"
+
 #include "a3dDevice.h"
 #include "a3dFence.h"
 #include "a3dCommandSet.h"
@@ -44,32 +48,3 @@
         #define     A3D_ASSERT(expression)
     #endif
 #endif
-
-const class NullHandle
-{
-public:
-    template<typename T>
-    operator T* () const
-    { return nullptr; }
-
-    template<typename S, typename T>
-    operator T S::*() const
-    { return 0; }
-
-    operator uint64_t () const
-    { return 0; }
-
-private:
-    void operator& () const = delete;
-} null_handle = {};
-
-
-template<typename T>
-void SafeRelease(T*& ptr)
-{
-    if (ptr != nullptr)
-    {
-        ptr->Release();
-        ptr = nullptr;
-    }
-}

@@ -112,15 +112,12 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
-
-    auto pNativeDevice = pWrapDevice->GetD3D11Device();
+    auto pNativeDevice = m_pDevice->GetD3D11Device();
     A3D_ASSERT( pNativeDevice != nullptr );
 
     {

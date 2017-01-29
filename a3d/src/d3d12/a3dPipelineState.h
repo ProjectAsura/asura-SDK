@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // PipelineState class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API PipelineState : IPipelineState, BaseAllocator
+class A3D_API PipelineState : public IPipelineState, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -101,7 +101,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウンタです.
-    IDevice*                m_pDevice;              //!< デバイスです.
+    Device*                 m_pDevice;              //!< デバイスです.
     ID3D12PipelineState*    m_pPipelineState;       //!< パイプラインステートです.
     D3D_PRIMITIVE_TOPOLOGY  m_PrimitiveTopology;    //!< プリミティブトポロジーです.
     bool                    m_IsGraphicsPipeline;   //!< グラフィックスパイプラインかどうか.

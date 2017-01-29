@@ -17,7 +17,7 @@ class FrameBuffer;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandList class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API CommandList : ICommandList, BaseAllocator
+class A3D_API CommandList : public ICommandList, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -40,7 +40,6 @@ public:
     //! @param[in]      pDevice         デバイスです.
     //! @param[in]      queueType       キュータイプです.
     //! @param[in]      listType        リストタイプです.
-    //! @param[in]      pOption         プラットフォーム依存データです.
     //! @param[out]     ppCommandList   コマンドリストの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
@@ -48,7 +47,6 @@ public:
     static bool A3D_APIENTRY Create(
         IDevice*         pDevice,
         COMMANDLIST_TYPE listType,
-        const void*      pOption,
         ICommandList**   ppCommandList);
 
     //---------------------------------------------------------------------------------------------
@@ -66,14 +64,14 @@ public:
     //!
     //! @return     参照カウンタを返却します.
     //---------------------------------------------------------------------------------------------
-    uint32_t A3D_APIENTRY GetCount() const;
+    uint32_t A3D_APIENTRY GetCount() const override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デバイスを取得します.
     //!
     //! @param[out]     ppDevice        デバイスの格納先です.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY GetDevice(IDevice** ppDevice);
+    void A3D_APIENTRY GetDevice(IDevice** ppDevice) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの記録を開始します.
@@ -135,13 +133,6 @@ public:
     //! @param[in]      pPipelineState      パイプラインステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットレイアウトを設定します.
-    //!
-    //! @param[in]      pDescriptorSetLayout    ディスクリプタセットレイアウトです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを設定します.
@@ -418,7 +409,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;             //!< 参照カウントです.
-    IDevice*                    m_pDevice;              //!< デバイスです.
+    Device*                     m_pDevice;              //!< デバイスです.
     VkCommandPool               m_CommandPool;          //!< コマンドプールです.
     VkCommandBuffer             m_CommandBuffer;        //!< コマンドバッファです.
     FrameBuffer*                m_pFrameBuffer;         //!< バインドされているフレームバッファです.
@@ -443,11 +434,10 @@ private:
     //! @param[in]      pDevice     デバイスです.
     //! @param[in]      queueType   キュータイプです.
     //! @param[in]      listType    リストタイプです.
-    //! @param[in]      pOption     プラットフォーム依存データです.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(IDevice* pDevice, COMMANDLIST_TYPE listType, const void* pOption);
+    bool A3D_APIENTRY Init(IDevice* pDevice, COMMANDLIST_TYPE listType);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

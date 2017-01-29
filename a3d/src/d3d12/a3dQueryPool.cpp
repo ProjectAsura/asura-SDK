@@ -35,13 +35,10 @@ bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
     {

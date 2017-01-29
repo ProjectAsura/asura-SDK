@@ -165,6 +165,12 @@ void ToNativeTessellationState
     pInfo->pNext                = nullptr;
     pInfo->flags                = 0;
     pInfo->patchControlPoints   = state.PatchControlCount;
+
+    if (pInfo->patchControlPoints == 0)
+    { pInfo->patchControlPoints = 1; }
+
+    if (pInfo->patchControlPoints > 32)
+    { pInfo->patchControlPoints = 32; }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -178,7 +184,7 @@ void ToNativeViewportState
     VkPipelineViewportStateCreateInfo*  pInfo
 )
 {
-    auto pWrapFrameBuffer = reinterpret_cast<a3d::FrameBuffer*>(pFrameBuffer);
+    auto pWrapFrameBuffer = static_cast<a3d::FrameBuffer*>(pFrameBuffer);
     A3D_ASSERT(pWrapFrameBuffer != nullptr);
 
     auto w = pWrapFrameBuffer->GetWidth();
@@ -252,7 +258,7 @@ void ToNativeRasterizationState
     pInfo->depthBiasEnable          = (state.DepthBias != 0) ? VK_TRUE : VK_FALSE;
     pInfo->depthBiasConstantFactor  = static_cast<float>(state.DepthBias);
     pInfo->depthBiasClamp           = state.DepthBiasClamp;
-    pInfo->depthBiasSlopeFactor     = state.SlopeScaledDepthBais;
+    pInfo->depthBiasSlopeFactor     = state.SlopeScaledDepthBias;
     pInfo->lineWidth                = 1.0f;
 }
 
@@ -520,13 +526,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     if (pDesc->pFrameBuffer == nullptr || pDesc->pLayout == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -635,7 +638,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         dynamicState.dynamicStateCount  = 4;
         dynamicState.pDynamicStates     = dynamicElements;
 
-        auto pWrapFrameBuffer = reinterpret_cast<FrameBuffer*>(pDesc->pFrameBuffer);
+        auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pDesc->pFrameBuffer);
         A3D_ASSERT(pWrapFrameBuffer != nullptr);
 
         VkViewport viewports[16];
@@ -654,7 +657,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             colorAttachments,
             &colorBlendState );
 
-        auto pWrapLayout = reinterpret_cast<DescriptorSetLayout*>(pDesc->pLayout);
+        auto pWrapLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
         A3D_ASSERT(pWrapLayout != nullptr);
 
         VkGraphicsPipelineCreateInfo info = {};
@@ -713,13 +716,10 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     || pDesc->ComputeShader.pByteCode    == nullptr)
     { return false;}
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
@@ -740,7 +740,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     // コンピュートパイプラインを生成します.
     {
-        auto pWrapLayout = reinterpret_cast<DescriptorSetLayout*>(pDesc->pLayout);
+        auto pWrapLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
         A3D_ASSERT(pWrapLayout != nullptr);
 
         VkComputePipelineCreateInfo info = {};
@@ -768,10 +768,7 @@ void PipelineState::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (m_PipelineState != null_handle)
@@ -826,10 +823,7 @@ void PipelineState::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 bool PipelineState::GetCachedBlob(IBlob** ppBlob)
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     size_t  size  = 0;

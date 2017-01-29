@@ -34,10 +34,10 @@ bool BufferView::Init(IDevice* pDevice, IBuffer* pBuffer, const BufferViewDesc* 
     if (pDevice == nullptr || pBuffer == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapBuffer = reinterpret_cast<Buffer*>(pBuffer);
+    auto pWrapBuffer = static_cast<Buffer*>(pBuffer);
     A3D_ASSERT(pWrapBuffer != nullptr);
 
     m_pBuffer = pWrapBuffer;

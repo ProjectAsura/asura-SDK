@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Fence class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Fence : IFence, BaseAllocator
+class A3D_API Fence : public IFence, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -110,7 +110,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;         //!< 参照カウンタです.
-    IDevice*                m_pDevice;          //!< デバイスです.
+    Device*                 m_pDevice;          //!< デバイスです.
     ID3D12Fence*            m_pFence;           //!< フェンスです.
     uint32_t                m_CurrentValue;     //!< 現在のフェンスカウンターです.
     uint32_t                m_PreviousValue;    //!< 以前のフェンスカウンターです.

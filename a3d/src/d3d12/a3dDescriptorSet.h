@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescriptorSet class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API DescriptorSet : IDescriptorSet, BaseAllocator
+class A3D_API DescriptorSet : public IDescriptorSet, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and mehtods.
@@ -32,17 +32,14 @@ public:
     //! @brief      生成処理を行います.
     //!
     //! @param[in]      pDevice             デバイスです.
-    //! @param[in]      pDesc               ディスクリプタセットレイアウトです.
-    //! @param[in]      ppDescriptors       ディスクリプタの配列です.
-    //! @param[in]      isGraphicsPipeline  グラフィックスパイプラインかどうか?
+    //! @param[in]      pLayout             ディスクリプタセットレイアウトです.
     //! @param[out]     ppDescriptorSet     ディスクリプタセットの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
         IDevice*                    pDevice,
-        DescriptorSetLayoutDesc*    pDesc,
-        bool                        isGraphicsPipeline,
+        DescriptorSetLayout*        pLayout,
         IDescriptorSet**            ppDescriptorSet);
 
     //---------------------------------------------------------------------------------------------
@@ -94,11 +91,6 @@ public:
     void A3D_APIENTRY SetSampler(uint32_t index, ISampler* pSampler) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを更新します.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY Update() override;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタテーブルを設定する描画コマンドを発行します.
     //!
     //! @param[in]      pCommandList        コマンドリストです.
@@ -109,11 +101,10 @@ private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>                       m_RefCount;             //!< 参照カウントです.
-    IDevice*                                    m_pDevice;              //!< デバイスです.
-    DescriptorSetLayoutDesc*                    m_pLayoutDesc;          //!< レイアウト設定です.
-    bool                                        m_IsGraphicsPipeline;   //!< グラフィックスパイプラインかどうか?
-    dynamic_array<D3D12_GPU_DESCRIPTOR_HANDLE>  m_Handles;              //!< ディスクリプタハンドルです.
+    std::atomic<uint32_t>                       m_RefCount;     //!< 参照カウントです.
+    Device*                                     m_pDevice;      //!< デバイスです.
+    DescriptorSetLayout*                        m_pLayout;      //!< ディスクリプタセットレイアウトです.
+    dynamic_array<D3D12_GPU_DESCRIPTOR_HANDLE>  m_Handles;      //!< ディスクリプタハンドルです.
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コンストラクタです.
@@ -129,14 +120,13 @@ private:
     //! @brief      初期化処理を行います.
     //!
     //! @param[in]      pDevice     デバイスです.
-    //! @parma[in]      pDesc       構成設定です.
+    //! @param[in]      pLayout     ディスクリプタセットレイアウトです.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY Init(
-        IDevice*                    pDevice,
-        DescriptorSetLayoutDesc*    pDesc,
-        bool                        isGraphicsPipeline);
+        IDevice*                pDevice,
+        DescriptorSetLayout*    pLayout);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

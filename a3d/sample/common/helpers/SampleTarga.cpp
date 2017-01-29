@@ -358,7 +358,7 @@ Targa::~Targa()
 //-------------------------------------------------------------------------------------------------
 //      ファイルから読み込みします.
 //-------------------------------------------------------------------------------------------------
-bool Targa::Load( const wchar_t* filename )
+bool Targa::Load( const char* filename )
 {
     // 引数チェック.
     if ( filename == nullptr )
@@ -370,7 +370,7 @@ bool Targa::Load( const wchar_t* filename )
     FILE* pFile;
 
     // ファイルを開く.
-    auto err = _wfopen_s( &pFile, filename, L"rb" );
+    auto err = fopen_s( &pFile, filename, "rb" );
     if ( err != 0 )
     {
         ELOG( "Error : File Open Failed." );

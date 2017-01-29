@@ -34,7 +34,7 @@ bool CommandBuffer::Init(size_t size)
 {
     Term();
 
-    m_pBuffer = new uint8_t [size];
+    m_pBuffer = static_cast<uint8_t*>(a3d_alloc( size, 4 ));
     if (m_pBuffer == nullptr)
     { return false; }
 
@@ -52,7 +52,7 @@ void CommandBuffer::Term()
 {
     if (m_pBuffer != nullptr)
     {
-        delete [] m_pBuffer;
+        a3d_free(m_pBuffer);
         m_pBuffer = nullptr;
     }
 
@@ -93,7 +93,7 @@ void CommandBuffer::Push(void* pData, size_t size)
         if (resize >= usedSize + size)
         { resize = static_cast<size_t>((usedSize + size) * 1.5); }
 
-        m_pBuffer = static_cast<uint8_t*>(a3d_realloc(m_pBuffer, resize, 1));
+        m_pBuffer = static_cast<uint8_t*>(a3d_realloc(m_pBuffer, resize, 4));
         m_Size    = resize;
         m_pCmd    = m_pBuffer;
         m_pCmd    += usedSize;
@@ -119,7 +119,7 @@ void CommandBuffer::Append(const CommandBuffer* pBuffer)
         if (resize >= usedSize + bufSize)
         { resize = static_cast<size_t>((usedSize + bufSize) * 1.5); }
 
-        m_pBuffer = static_cast<uint8_t*>(a3d_realloc(m_pBuffer, resize, 1));
+        m_pBuffer = static_cast<uint8_t*>(a3d_realloc(m_pBuffer, resize, 4));
         m_Size    = resize;
         m_pCmd    = m_pBuffer;
         m_pCmd    += usedSize;

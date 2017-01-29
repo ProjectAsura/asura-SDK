@@ -55,12 +55,9 @@ bool Queue::Init
 
     // NOTE : Device 無いから呼ばれるため，
     // AddRef() してしまうと Device が解放できなくなるため，AddRef() してはいけない !!
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     {
@@ -128,10 +125,7 @@ void Queue::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // 完了を待機する.
@@ -214,7 +208,7 @@ bool Queue::Submit(ICommandList* pCommandList)
     if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
     { return false; }
 
-    auto pWrapList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT( pWrapList != nullptr );
 
     auto pNativeCommandBuffer = pWrapList->GetVulkanCommandBuffer();
@@ -349,10 +343,7 @@ bool Queue::ResetSyncObject()
     // セマフォがシグナルでもウェイトでもどちらでもない状態になることがあるので，
     // バッファ番号をいったんリセットし，セマフォも正しい状態に戻すため再作成を行います.
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // 一旦破棄.

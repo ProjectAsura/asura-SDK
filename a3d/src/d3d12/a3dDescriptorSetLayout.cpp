@@ -95,13 +95,10 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice);
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -256,7 +253,7 @@ bool DescriptorSetLayout::CreateDescriptorSet(IDescriptorSet** ppDesctiproSet)
     auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);
 
-    if (!DescriptorSet::Create(m_pDevice, &m_Desc, m_IsGraphicsPipeline, ppDesctiproSet))
+    if (!DescriptorSet::Create(m_pDevice, this, ppDesctiproSet))
     { return false; }
 
     return true;
@@ -273,6 +270,12 @@ ID3D12RootSignature* DescriptorSetLayout::GetD3D12RootSignature() const
 //-------------------------------------------------------------------------------------------------
 bool DescriptorSetLayout::IsGraphicsPipeline() const
 { return m_IsGraphicsPipeline; }
+
+//-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+const DescriptorSetLayoutDesc& DescriptorSetLayout::GetDesc() const
+{ return m_Desc; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

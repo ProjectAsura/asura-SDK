@@ -34,17 +34,14 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
     m_State = pDesc->InitState;
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
     switch(pDesc->HeapProperty.Type)
@@ -172,10 +169,7 @@ void* Buffer::Map()
     if (m_pSubresource != nullptr)
     { return m_pSubresource; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
     D3D11_MAPPED_SUBRESOURCE subresource;
@@ -194,10 +188,7 @@ void Buffer::Unmap()
     if (m_pSubresource != nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
     pDeviceContext->Unmap(m_pBuffer, 0);
@@ -222,10 +213,10 @@ ID3D11Buffer* Buffer::GetD3D11Buffer() const
 { return m_pBuffer; }
 
 //-------------------------------------------------------------------------------------------------
-//      サブリソースを更新します.
+//      サブリソースへのポインタを取得します.
 //-------------------------------------------------------------------------------------------------
-void Buffer::UpdateSubresource(ID3D11DeviceContext* pDeviceContext)
-{ pDeviceContext->UpdateSubresource(m_pBuffer, 0, nullptr, m_pSubresource, 0, 0); }
+void* Buffer::GetSubresourcePointer() const
+{ return m_pSubresource; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

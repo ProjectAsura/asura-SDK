@@ -59,18 +59,15 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D11Device();
+    auto pNativeDevice = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
-    auto pNativeFactory = pWrapDevice->GetDXGIFactory();
+    auto pNativeFactory = m_pDevice->GetDXGIFactory();
     A3D_ASSERT(pNativeFactory != nullptr);
 
     m_hWnd = static_cast<HWND>(pDesc->WindowHandle);
@@ -78,14 +75,17 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
     auto w = pDesc->Extent.Width;
     auto h = pDesc->Extent.Height;
 
+    // スクリーンサイズを取得.
+    m_FullScreenWidth  = static_cast<uint32_t>(GetSystemMetrics(SM_CXSCREEN));
+    m_FullScreenHeight = static_cast<uint32_t>(GetSystemMetrics(SM_CYSCREEN));
+
     if (pDesc->EnableFullScreen)
     {
-        // スクリーンサイズを取得.
-        w = GetSystemMetrics(SM_CXSCREEN);
-        h = GetSystemMetrics(SM_CYSCREEN);
+        m_Desc.Extent.Width  = m_FullScreenWidth;
+        m_Desc.Extent.Height = m_FullScreenHeight;
 
-        m_Desc.Extent.Width  = w;
-        m_Desc.Extent.Height = h;
+        w = m_FullScreenWidth;
+        h = m_FullScreenHeight;
     }
 
     // スワップチェイン生成.
@@ -117,7 +117,7 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
     {
-        m_pBuffers = new ITexture* [m_Desc.BufferCount];
+        m_pBuffers = new Texture* [m_Desc.BufferCount];
         if (m_pBuffers == nullptr)
         { return false; }
 
@@ -139,16 +139,13 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
                 pBuffer,
                 RESOURCE_USAGE_COLOR_TARGET,
                 componentMapping,
-                &m_pBuffers[i]))
+                reinterpret_cast<ITexture**>(&m_pBuffers[i])))
             {
                 SafeRelease(pBuffer);
                 return false;
             }
 
-            auto pWrapResource = reinterpret_cast<Texture*>(m_pBuffers[i]);
-            A3D_ASSERT(pWrapResource != nullptr);
-
-            pWrapResource->SetState(a3d::RESOURCE_STATE_PRESENT);
+            m_pBuffers[i]->SetState(a3d::RESOURCE_STATE_PRESENT);
         }
 
         SafeRelease(pBuffer);
@@ -318,16 +315,13 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
                 pBuffer,
                 RESOURCE_USAGE_COLOR_TARGET,
                 componentMapping,
-                &m_pBuffers[i]))
+                reinterpret_cast<ITexture**>(&m_pBuffers[i])))
             {
                 SafeRelease(pBuffer);
                 return false;
             }
 
-            auto pWrapResource = reinterpret_cast<Texture*>(m_pBuffers[i]);
-            A3D_ASSERT(pWrapResource != nullptr);
-
-            pWrapResource->SetState(a3d::RESOURCE_STATE_PRESENT);
+            m_pBuffers[i]->SetState(a3d::RESOURCE_STATE_PRESENT);
         }
 
         SafeRelease(pBuffer);
@@ -443,8 +437,7 @@ bool SwapChain::SetFullScreenMode(bool enable)
 
     if (enable)
     {
-        // 最適な値を自動選択させる.
-        ResizeBuffers(0, 0);
+        ResizeBuffers(m_FullScreenWidth, m_FullScreenHeight); 
     }
 
     return true;

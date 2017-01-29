@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescriptorSetLayout class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API DescriptorSetLayout : IDescriptorSetLayout, BaseAllocator
+class A3D_API DescriptorSetLayout : public IDescriptorSetLayout, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -90,12 +90,19 @@ public:
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY IsGraphicsPipeline() const;
 
+    //---------------------------------------------------------------------------------------------
+    //! @brief      構成設定を取得します.
+    //!
+    //! @return     構成設定を返却します.
+    //---------------------------------------------------------------------------------------------
+    const DescriptorSetLayoutDesc& GetDesc() const;
+
 private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウントです.
-    IDevice*                m_pDevice;              //!< デバイスです.
+    Device*                 m_pDevice;              //!< デバイスです.
     DescriptorSetLayoutDesc m_Desc;                 //!< 構成設定です.
     ID3D12RootSignature*    m_pRootSignature;       //!< ルートシグニチャです.
     bool                    m_IsGraphicsPipeline;   //!< グラフィックスパイプラインかどうか?

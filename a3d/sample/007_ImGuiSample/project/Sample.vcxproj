@@ -56,8 +56,8 @@
     <ClCompile Include="..\..\common\helpers\SampleAppWin.cpp" />
     <ClCompile Include="..\..\common\helpers\SampleTarga.cpp" />
     <ClCompile Include="..\..\common\helpers\SampleUtil.cpp" />
-    <ClCompile Include="..\code\gui.cpp" />
-    <ClCompile Include="..\code\main.cpp" />
+    <ClCompile Include="..\src\gui.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\externals\imgui-1.49\imconfig.h" />
@@ -67,7 +67,7 @@
     <ClInclude Include="..\..\common\helpers\SampleMath.h" />
     <ClInclude Include="..\..\common\helpers\SampleTarga.h" />
     <ClInclude Include="..\..\common\helpers\SampleUtil.h" />
-    <ClInclude Include="..\code\gui.h" />
+    <ClInclude Include="..\src\gui.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8E782F2C-D185-47C5-BDE7-19078E96B16A}</ProjectGuid>

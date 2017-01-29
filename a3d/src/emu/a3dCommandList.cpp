@@ -170,18 +170,6 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットレイアウトを設定します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
-{
-    ImCmdSetDescriptorSetLayout cmd = {};
-    cmd.Type                 = CMD_SET_DESCRIPTORSETLAYOUT;
-    cmd.pDescriptorSetLayout = pDescriptorSetLayout;
-
-    m_Buffer.Push(&cmd, sizeof(cmd));
-}
-
-//-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットを設定します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)

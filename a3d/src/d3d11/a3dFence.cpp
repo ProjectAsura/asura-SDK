@@ -41,13 +41,10 @@ bool Fence::Init(IDevice* pDevice)
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
     {
@@ -108,10 +105,7 @@ void Fence::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 bool Fence::IsSignaled() const
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
     return pDeviceContext->GetData(m_pQuery, nullptr, 0, 0) != S_FALSE;
@@ -122,10 +116,7 @@ bool Fence::IsSignaled() const
 //-------------------------------------------------------------------------------------------------
 bool Fence::Wait(uint32_t timeoutMsec)
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
     auto time = std::chrono::system_clock::now();

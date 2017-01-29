@@ -8,10 +8,16 @@
 
 namespace a3d {
 
+//-------------------------------------------------------------------------------------------------
+// Forward Declarations.
+//-------------------------------------------------------------------------------------------------
+class Queue;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Device class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Device : IDevice, BaseAllocator
+class A3D_API Device : public IDevice, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -19,6 +25,18 @@ class A3D_API Device : IDevice, BaseAllocator
     /* NOTHING */
 
 public:
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // EXTENSION enum
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    enum EXTENSION
+    {
+        EXT_KHR_PUSH_DESCRIPTOR = 0,            // VK_KHR_push_descriptor
+        EXT_KHR_DESCRIPTOR_UPDATE_TEMPLATE,     // VK_KHR_descriptor_upate_template
+        EXT_NVX_DEVICE_GENERATE_COMMAND,        // VK_NVX_device_generate_command
+        EXT_AMD_DRAW_INDIRECT_COUNT,            // VK_AMD_draw_indirect_count
+        EXT_COUNT,
+    };
+
     //=============================================================================================
     // public variables.
     //=============================================================================================
@@ -32,14 +50,12 @@ public:
     //! @brief      生成処理を行います.
     //!
     //! @param[in]      pDesc       構成設定です.
-    //! @param[in]      pOption     オプション情報です.
     //! @param[out]     ppDevice    デバイスの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
         const DeviceDesc*   pDesc,
-        const void*         pOption,
         IDevice**           ppDevice);
 
     //---------------------------------------------------------------------------------------------
@@ -78,34 +94,32 @@ public:
     //!
     //! @param[out]     ppQueue     グラフィックスキューの格納先です.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY GetGraphicsQueue(IQueue** ppQueue);
+    void A3D_APIENTRY GetGraphicsQueue(IQueue** ppQueue) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コンピュートキューを取得します.
     //!
     //! @param[out]     ppQueue     コンピュートキューの格納先です.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY GetComputeQueue(IQueue** ppQueue);
+    void A3D_APIENTRY GetComputeQueue(IQueue** ppQueue) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コピーキューを取得します.
     //!
     //! @param[out]     ppQueue     コピーキューの格納先です.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY GetCopyQueue(IQueue** ppQueue);
+    void A3D_APIENTRY GetCopyQueue(IQueue** ppQueue) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストを生成します.
     //!
     //! @param[in]      commandListType     コマンドリストタイプです.
-    //! @param[in]      pOption             オプション情報を指定します.
     //! @param[out]     ppCommandList       コマンドリストの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateCommandList(
         COMMANDLIST_TYPE    commandListType,
-        const void*         pOption,
         ICommandList**      ppCommandList) override;
 
     //---------------------------------------------------------------------------------------------
@@ -254,7 +268,7 @@ public:
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateCommandSet(
         const CommandSetDesc*   pDesc,
-        ICommandSet**           ppCommandSet);
+        ICommandSet**           ppCommandSet) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フェンスを生成します.
@@ -325,6 +339,15 @@ public:
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool);
 
+    //---------------------------------------------------------------------------------------------
+    //! @brief      拡張機能をサポートしているかどうか?
+    //!
+    //! @param[in]      value       拡張機能.
+    //! @retval true    サポート.
+    //! @retval false   非サポート.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY IsSupportExtension(EXTENSION value) const;
+
 private:
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // PhysicalDeviceInfo structure
@@ -348,9 +371,10 @@ private:
     PhysicalDeviceInfo*         m_pPhysicalDeviceInfos; //!< 物理デバイス情報です.
     VkAllocationCallbacks       m_Allocator;            //!< アロケータです.
     VkDescriptorPoolCreateInfo  m_PoolCreateInfo;       //!< ディスクリプタプール生成情報です.
-    IQueue*                     m_pGraphicsQueue;       //!< グラフィックスキューです.
-    IQueue*                     m_pComputeQueue;        //!< コンピュートキューです.
-    IQueue*                     m_pCopyQueue;           //!< コピーキューです.
+    Queue*                      m_pGraphicsQueue;       //!< グラフィックスキューです.
+    Queue*                      m_pComputeQueue;        //!< コンピュートキューです.
+    Queue*                      m_pCopyQueue;           //!< コピーキューです.
+    bool                        m_IsSupportExt[EXT_COUNT];    //!< 拡張機能.
 
     //=============================================================================================
     // private methods.
@@ -370,11 +394,10 @@ private:
     //! @brief      初期化処理を行います.
     //!
     //! @parma[in]      pDesc       構成設定です.
-    //! @param[in]      pOption     オプション情報です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(const DeviceDesc* pDesc, const void* pOption);
+    bool A3D_APIENTRY Init(const DeviceDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

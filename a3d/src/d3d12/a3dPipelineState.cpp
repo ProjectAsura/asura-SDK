@@ -157,7 +157,7 @@ void ToNativeRasterizerDesc( const a3d::RasterizerState& state, D3D12_RASTERIZER
     result.FrontCounterClockwise    = ( state.FrontCounterClockWise ) ? TRUE : FALSE;
     result.DepthBias                = state.DepthBias;
     result.DepthBiasClamp           = state.DepthBiasClamp;
-    result.SlopeScaledDepthBias     = state.SlopeScaledDepthBais;
+    result.SlopeScaledDepthBias     = state.SlopeScaledDepthBias;
     result.DepthClipEnable          = ( state.DepthClipEnable ) ? TRUE : FALSE;
     result.ConservativeRaster       = ( state.EnableConservativeRaster ) 
                                       ? D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON
@@ -349,7 +349,7 @@ bool PipelineState::GetCachedBlob(IBlob** ppBlob)
 //-------------------------------------------------------------------------------------------------
 void PipelineState::Issue(ICommandList* pCommandList)
 {
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
@@ -374,21 +374,18 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     m_IsGraphicsPipeline = true;
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
-    auto pWrapDescriptorLayout = reinterpret_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    auto pWrapDescriptorLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     A3D_ASSERT(pWrapDescriptorLayout != nullptr);
 
-    auto pWrapFrameBuffer = reinterpret_cast<FrameBuffer*>(pDesc->pFrameBuffer);
+    auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pDesc->pFrameBuffer);
     A3D_ASSERT(pWrapFrameBuffer != nullptr);
 
     D3D12_INPUT_ELEMENT_DESC elementDesc[D3D12_COMMONSHADER_INPUT_RESOURCE_REGISTER_COUNT] = {};
@@ -448,18 +445,15 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     m_IsGraphicsPipeline = false;
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
-    auto pWrapDescriptorLayout = reinterpret_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    auto pWrapDescriptorLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     A3D_ASSERT(pWrapDescriptorLayout != nullptr);
 
     D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};

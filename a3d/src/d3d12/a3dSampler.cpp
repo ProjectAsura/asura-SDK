@@ -112,11 +112,8 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
-
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
 
     m_Desc.Filter         = ToNativeFilter(
                                 pDesc->MinFilter,
@@ -134,13 +131,13 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
     m_Desc.MaxLOD         = pDesc->MaxLod;
     ToNativeBorderColor( pDesc->BorderColor, m_Desc.BorderColor );
 
-    m_pDescriptor = pWrapDevice
+    m_pDescriptor = m_pDevice
                         ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
                         ->CreateDescriptor();
     if (m_pDescriptor == nullptr)
     { return false; }
 
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT( pNativeDevice != nullptr );
 
     pNativeDevice->CreateSampler( &m_Desc, m_pDescriptor->GetHandleCPU() );

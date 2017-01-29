@@ -321,10 +321,10 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapTexture = reinterpret_cast<Texture*>(pTexture);
+    auto pWrapTexture = static_cast<Texture*>(pTexture);
     A3D_ASSERT( pWrapTexture != nullptr );
 
     m_pTexture = pWrapTexture;
@@ -332,10 +332,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
     auto& textureDesc = m_pTexture->GetDesc();
  

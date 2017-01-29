@@ -35,13 +35,10 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -58,10 +55,10 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
     {
         for(auto i=0u; i<pDesc->ColorCount; ++i)
         {
-            auto pWrapTexture = reinterpret_cast<TextureView*>(pDesc->pColorTargets[i]);
+            auto pWrapTexture = static_cast<TextureView*>(pDesc->pColorTargets[i]);
             A3D_ASSERT(pWrapTexture != nullptr);
 
-            auto& desc = pWrapTexture->GetTextureDesc();
+            const auto& desc = pWrapTexture->GetTextureDesc();
             attachmentDesc[i].format            = ToNativeFormat(desc.Format);
             attachmentDesc[i].samples           = ToNativeSampleCountFlags(desc.SampleCount);
             attachmentDesc[i].loadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -89,11 +86,11 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
         {
             attachmentCount++;
 
-            auto pWrapTexture = reinterpret_cast<TextureView*>(pDesc->pDepthTarget);
+            auto pWrapTexture = static_cast<TextureView*>(pDesc->pDepthTarget);
             A3D_ASSERT(pWrapTexture != nullptr);
 
-            auto idx   = pDesc->ColorCount;
-            auto& desc = pWrapTexture->GetTextureDesc();
+            auto idx = pDesc->ColorCount;
+            const auto& desc = pWrapTexture->GetTextureDesc();
             attachmentDesc[idx].format          = ToNativeFormat(desc.Format);
             attachmentDesc[idx].samples         = ToNativeSampleCountFlags(desc.SampleCount);
             attachmentDesc[idx].loadOp          = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -189,10 +186,7 @@ void FrameBuffer::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if ( m_FrameBuffer != null_handle )
@@ -254,7 +248,7 @@ FrameBufferDesc FrameBuffer::GetDesc() const
 //-------------------------------------------------------------------------------------------------
 void FrameBuffer::Bind(ICommandList* pCommandList)
 {
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT( pWrapCommandList != nullptr );
 
     auto pNativeCommandBuffer = pWrapCommandList->GetVulkanCommandBuffer();
@@ -275,7 +269,7 @@ void FrameBuffer::Clear
 )
 {
     auto count = clearColorCount;
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT( pWrapCommandList != nullptr );
 
     auto pNativeCommandBuffer = pWrapCommandList->GetVulkanCommandBuffer();
@@ -288,7 +282,7 @@ void FrameBuffer::Clear
     {
         for(auto i=0u; i<clearColorCount; ++i)
         {
-            auto pWrapResources = reinterpret_cast<TextureView*>(m_Desc.pColorTargets[i]);
+            auto pWrapResources = static_cast<TextureView*>(m_Desc.pColorTargets[i]);
             clearAttachment[i].clearValue.color.float32[0] = pClearColors[i].Float[0];
             clearAttachment[i].clearValue.color.float32[1] = pClearColors[i].Float[1];
             clearAttachment[i].clearValue.color.float32[2] = pClearColors[i].Float[2];
@@ -297,8 +291,8 @@ void FrameBuffer::Clear
             clearAttachment[i].aspectMask      = pWrapResources->GetVulkanImageAspectFlags();
             clearAttachment[i].colorAttachment = i;
 
-            auto& desc     = pWrapResources->GetTextureDesc();
-            auto& viewDesc = pWrapResources->GetDesc();
+            const auto& desc     = pWrapResources->GetTextureDesc();
+            const auto& viewDesc = pWrapResources->GetDesc();
             clearRect[i].baseArrayLayer     = viewDesc.FirstArraySlice;
             clearRect[i].layerCount         = viewDesc.ArraySize;
             clearRect[i].rect.offset.x      = 0;
@@ -310,7 +304,7 @@ void FrameBuffer::Clear
 
     if (m_Desc.pDepthTarget != nullptr && pClearDepthStencil != nullptr)
     {
-        auto pWrapResources = reinterpret_cast<TextureView*>(m_Desc.pDepthTarget);
+        auto pWrapResources = static_cast<TextureView*>(m_Desc.pDepthTarget);
 
         VkImageAspectFlags mask = 0;
         if (pClearDepthStencil->EnableClearDepth)
@@ -328,8 +322,8 @@ void FrameBuffer::Clear
             clearAttachment[idx].aspectMask      = mask;
             clearAttachment[idx].colorAttachment = m_Desc.ColorCount;
 
-            auto& desc     = pWrapResources->GetTextureDesc();
-            auto& viewDesc = pWrapResources->GetDesc();
+            const auto& desc     = pWrapResources->GetTextureDesc();
+            const auto& viewDesc = pWrapResources->GetDesc();
             clearRect[idx].baseArrayLayer       = viewDesc.FirstArraySlice;
             clearRect[idx].layerCount           = viewDesc.ArraySize;
             clearRect[idx].rect.offset.x        = 0;

@@ -116,19 +116,31 @@ class Allocator : a3d::IAllocator
 public:
     void* Alloc(size_t size, size_t alignment) noexcept override
     {
-        auto allocSize = a3d::RoundUp(size, alignment);
-        return malloc(size);
+        #if A3D_IS_WIN
+            return _aligned_malloc(size, alignment);
+        #else
+            return aligned_alloc(alignment, size);
+        #endif
     }
 
     void* Realloc(void* ptr, size_t size, size_t alignment) noexcept override
     {
-        auto allocSize = a3d::RoundUp(size, alignment);
-        return realloc(ptr, allocSize);
+        #if A3D_IS_WIN
+            return _aligned_realloc(ptr, size, alignment);
+        #else
+            auto allocSize = a3d::RoundUp(size, alignment);
+            return realloc(ptr, allocSize);
+        #endif
     }
 
     void Free(void* ptr) noexcept override
-    { free(ptr); }
-
+    {
+        #if A3D_IS_WIN
+            _aligned_free(ptr);
+        #else
+            free(ptr);
+        #endif
+    }
 } g_Allocator;
 
 ```
@@ -139,7 +151,10 @@ The memory allocator is passed to the library using the a3d :: InitSystem () met
 メモリアロケータはa3d::InitSystem()メソッドを使って，ライブラリに渡します。実装例は次の通りです。
 
 ```cpp
-if (!a3d::InitSystem(reinterpret_cast<a3d::IAllocator*>(&g_Allocator)))
+a3d::SystemDesc desc = {};
+desc.pAllocator = &g_Allocator;
+
+if (!a3d::InitSystem(&desc))
 { return false; }
 ```
 
@@ -164,46 +179,50 @@ There is a example program using the a3d library under the sample folder.
 
 sampleフォルダ下にa3dライブラリを使ったサンプルがあります。  
 
-* [ClearColor](./sample/001_ClearColor/code "ClearColor")  
+* [ClearColor](./sample/001_ClearColor/src "ClearColor")  
 Sample to clear the screen.  
 画面をクリアするサンプルです。  
 ![ClearColor](./doc/images/001_ClearColor.png)  
 
-* [DrawPolygon](./sample/002_DrawPolygon/code "DrawPolygon")  
+* [DrawPolygon](./sample/002_DrawPolygon/src "DrawPolygon")  
 Sample to draw a polygon.  
 ポリゴンを描画するサンプルです。  
 ![DrawPolygon](./doc/images/002_DrawPolygon.png)  
 
-* [DrawIndexed](./sample/003_DrawIndexed/code "DrawIndexed")  
+* [DrawIndexed](./sample/003_DrawIndexed/src "DrawIndexed")  
 Sample to draw a polygon with index buffer.  
 インデックスバッファを用いてポリゴンを描画するサンプルです。  
 ![DrawIndexed](./doc/images/003_DrawIndexed.png)  
 
-* [ConstantBuffer](./sample/004_ConstantBuffer/code "ConstantBuffer")  
+* [ConstantBuffer](./sample/004_ConstantBuffer/src "ConstantBuffer")  
 This is a sample that rotates a polygon using a constant buffer.  
 定数バッファを用いてポリゴンを回転させるサンプルです。  
 ![ConstantBuffer](./doc/images/004_ConstantBuffer.png)  
 
-* [DepthBuffer](./sample/005_DepthBuffer/code "DepthBuffer")  
+* [DepthBuffer](./sample/005_DepthBuffer/src "DepthBuffer")  
 Sample that displays polygons using a depth buffer.  
 深度バッファを用いて手前と奥のポリゴンを表示するサンプルです。  
 ![DepthBuffer](./doc/images/005_DepthBuffer.png)  
 
-* [DrawTexture](./sample/006_DrawTexture/code "DrawTexture")  
+* [DrawTexture](./sample/006_DrawTexture/src "DrawTexture")  
 Sample to draw a texture.  
 テクスチャを描画するサンプルです。  
 ![DrawTexture](./doc/images/006_DrawTexture.png)  
 
-* [ImGuiSample](./sample/007_ImGuiSample/code "ImGuiSample")  
+* [ImGuiSample](./sample/007_ImGuiSample/src "ImGuiSample")  
 Sample to use Imgui.  
 ImGuiを用いたサンプルです。  
 ![ImGuiSample](./doc/images/007_ImGuiSample.png)  
 
-* [RenderingTexture](./sample/008_RenderingTexture/code "RenderingTexture")  
+* [RenderingTexture](./sample/008_RenderingTexture/src "RenderingTexture")  
 Sample to display rendering texture.  
 レンダリングテクスチャを表示するサンプルです。  
 ![RenderingTexture](./doc/images/008_RenderingTexture.png)  
 
+* [FullScreen](./sample/009_FullScreen/src "FullScreen")  
+Sample to toggle full screen mode.  
+フルスクリーンモードを切り替えるサンプルです。  
+![FullScreen](./doc/images/009_FullScreen.png)  
 
 ## Documents
 docフォルダ下にAPIリファレンスがあります。  

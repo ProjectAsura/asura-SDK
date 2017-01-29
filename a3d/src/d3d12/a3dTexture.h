@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Texture class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Texture : ITexture, BaseAllocator
+class A3D_API Texture : public ITexture, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -143,7 +143,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;     //!< 参照カウンタです.
-    IDevice*                m_pDevice;      //!< デバイスです.
+    Device*                 m_pDevice;      //!< デバイスです.
     TextureDesc             m_Desc;         //!< 構成設定です.
     RESOURCE_STATE          m_State;        //!< リソースステートです.
     ID3D12Resource*         m_pResource;    //!< リソースです.

@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandSet class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API CommandSet : ICommandSet, BaseAllocator
+class A3D_API CommandSet : public ICommandSet, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -75,7 +75,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;             //!< 参照カウンタです.
-    IDevice*                    m_pDevice;              //!< デバイスです.
+    Device*                     m_pDevice;              //!< デバイスです.
     ID3D12CommandSignature*     m_pCommandSignature;    //!< コマンドシグニチャです.
 
     //=============================================================================================

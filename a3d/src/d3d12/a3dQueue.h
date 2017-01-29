@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Queue class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Queue : IQueue, BaseAllocator
+class A3D_API Queue : public IQueue, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -100,7 +100,7 @@ private:
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;         //!< 参照カウンタです.
     std::mutex                  m_Mutex;            //!< ミューテックスです.
-    IDevice*                    m_pDevice;          //!< デバイスです.
+    Device*                     m_pDevice;          //!< デバイスです.
     ID3D12CommandQueue*         m_pQueue;           //!< キューです.
     uint32_t                    m_MaxSubmitCount;   //!< 最大サブミット数です.
     uint32_t                    m_SubmitIndex;      //!< サブミット番号です.

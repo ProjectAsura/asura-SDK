@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Sampler class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Sampler : ISampler, BaseAllocator
+class A3D_API Sampler : public ISampler, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -82,7 +82,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;     //!< 参照カウントです.
-    IDevice*                m_pDevice;      //!< デバイスです.
+    Device*                 m_pDevice;      //!< デバイスです.
     D3D12_SAMPLER_DESC      m_Desc;         //!< 構成設定です.
     Descriptor*             m_pDescriptor;  //!< ディスクリプタです.
 

@@ -34,24 +34,21 @@ bool BufferView::Init(IDevice* pDevice, IBuffer* pBuffer, const BufferViewDesc* 
     if (pDevice == nullptr || pBuffer == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
-    auto pWrapBuffer = reinterpret_cast<Buffer*>(pBuffer);
+    auto pWrapBuffer = static_cast<Buffer*>(pBuffer);
     A3D_ASSERT(pWrapBuffer != nullptr);
 
     m_pBuffer = pWrapBuffer;
     m_pBuffer->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
     auto pD3D11Buffer = pWrapBuffer->GetD3D11Buffer();
     A3D_ASSERT(pD3D11Buffer != nullptr);
 
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
     auto& desc = m_pBuffer->GetDesc();
@@ -163,6 +160,20 @@ ID3D11UnorderedAccessView* BufferView::GetD3D11UnorderedAccessView() const
 //-------------------------------------------------------------------------------------------------
 Buffer* BufferView::GetBuffer() const
 { return m_pBuffer; }
+
+//-------------------------------------------------------------------------------------------------
+//      サブリソースを更新します.
+//-------------------------------------------------------------------------------------------------
+void BufferView::UpdateSubsource(ID3D11DeviceContext* pDeviceContext)
+{
+    auto ptr = reinterpret_cast<uint8_t*>(m_pBuffer->GetSubresourcePointer());
+    if (ptr == nullptr)
+    { return; }
+
+    ptr += m_Desc.Offset;
+    auto pD3D11Buffer = m_pBuffer->GetD3D11Buffer();
+    pDeviceContext->UpdateSubresource(pD3D11Buffer, 0, nullptr, ptr, uint32_t(m_Desc.Range), 1);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

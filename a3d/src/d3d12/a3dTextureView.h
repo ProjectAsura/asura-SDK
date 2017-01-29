@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // TextureView class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API TextureView : ITextureView, BaseAllocator
+class A3D_API TextureView : public ITextureView, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -94,7 +94,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウンタです.
-    IDevice*                m_pDevice;              //!< デバイスです.
+    Device*                 m_pDevice;              //!< デバイスです.
     TextureViewDesc         m_Desc;                 //!< 構成設定です.
     Texture*                m_pTexture;             //!< テクスチャです.
     Descriptor*             m_pTargetDescriptor;    //!< カラーターゲット・深度ターゲット用ディスクリプタです.

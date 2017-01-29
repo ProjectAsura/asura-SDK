@@ -71,13 +71,10 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -105,7 +102,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         auto samplerCount = 0;
         auto imageCount   = 0;
 
-        auto bindings = new (std::nothrow) VkDescriptorSetLayoutBinding [pDesc->EntryCount];
+        auto bindings = new VkDescriptorSetLayoutBinding [pDesc->EntryCount];
         for(auto i=0u; i<pDesc->EntryCount; ++i)
         {
             bindings[i].binding             = pDesc->Entries[i].BindLocation;
@@ -154,7 +151,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         { return false; }
     }
 
-    if (!pWrapDevice->CreateVulkanDescriptorPool(pDesc->MaxSetCount, &m_DescriptorPool))
+    if (!m_pDevice->CreateVulkanDescriptorPool(pDesc->MaxSetCount, &m_DescriptorPool))
     { return false; }
 
     return true;
@@ -168,10 +165,7 @@ void DescriptorSetLayout::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     if ( m_DescriptorSetLayout != null_handle )

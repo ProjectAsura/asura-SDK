@@ -35,13 +35,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
     D3D12_HEAP_PROPERTIES prop = {
@@ -184,10 +181,7 @@ void Texture::Unmap()
 //-------------------------------------------------------------------------------------------------
 SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
     auto nativeDesc = m_pResource->GetDesc();
@@ -275,7 +269,7 @@ bool Texture::CreateFromNative
     if (instance == nullptr)
     { return false; }
 
-    instance->m_pDevice = pDevice;
+    instance->m_pDevice = static_cast<Device*>(pDevice);
     instance->m_pDevice->AddRef();
 
     instance->m_pResource = pNativeResource;

@@ -15,10 +15,9 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 DescriptorSet::DescriptorSet()
-: m_RefCount            (1)
-, m_pDevice             (nullptr)
-, m_pLayoutDesc         (nullptr)
-, m_IsGraphicsPipeline  (true)
+: m_RefCount(1)
+, m_pDevice (nullptr)
+, m_pLayout (nullptr)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -65,22 +64,22 @@ void DescriptorSet::GetDevice(IDevice** ppDevice)
 bool DescriptorSet::Init
 (
     IDevice*                    pDevice,
-    DescriptorSetLayoutDesc*    pDesc,
-    bool                        isGraphicsPipeline
+    DescriptorSetLayout*        pLayout
 )
 {
-    if (pDevice == nullptr || pDesc == nullptr)
+    if (pDevice == nullptr || pLayout == nullptr)
     { return false; }
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_pLayoutDesc        = pDesc;
-    m_IsGraphicsPipeline = isGraphicsPipeline;
+    m_pLayout = pLayout;
+    m_pLayout->AddRef();
 
-    m_Handles.resize(pDesc->EntryCount);
+    auto& desc = pLayout->GetDesc();
+    m_Handles.resize(desc.EntryCount);
 
     return true;
 }
@@ -92,9 +91,7 @@ void DescriptorSet::Term()
 {
     m_Handles.clear();
 
-    if (m_pLayoutDesc != nullptr)
-    { m_pLayoutDesc = nullptr; }
-
+    SafeRelease(m_pLayout);
     SafeRelease(m_pDevice);
 }
 
@@ -103,9 +100,9 @@ void DescriptorSet::Term()
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 {
-    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+    A3D_ASSERT(size_t(index) < m_Handles.size());
 
-    auto pWrapView = reinterpret_cast<TextureView*>(pResource);
+    auto pWrapView = static_cast<TextureView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
     m_Handles[index] = pWrapView->GetShaderDescriptor()->GetHandleGPU();
@@ -116,9 +113,9 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 {
-    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+    A3D_ASSERT(size_t(index) < m_Handles.size());
 
-    auto pWrapView = reinterpret_cast<BufferView*>(pResource);
+    auto pWrapView = static_cast<BufferView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
     m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
@@ -129,38 +126,36 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
 {
-    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+    A3D_ASSERT(size_t(index) < m_Handles.size());
 
-    auto pWrapSampler = reinterpret_cast<Sampler*>(pSampler);
+    auto pWrapSampler = static_cast<Sampler*>(pSampler);
     A3D_ASSERT( pWrapSampler != nullptr );
 
     m_Handles[index] = pWrapSampler->GetDescriptor()->GetHandleGPU();
 }
 
 //-------------------------------------------------------------------------------------------------
-//      更新処理を行います.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::Update()
-{ /* DO_NOTHING */ }
-
-//-------------------------------------------------------------------------------------------------
 //      ディスクリプタテーブルを設定する描画コマンドを発行します.
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Bind(ICommandList* pCommandList)
 {
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
-    if (m_IsGraphicsPipeline)
+    if (m_pLayout->IsGraphicsPipeline())
     {
+        pNativeCommandList->SetGraphicsRootSignature( m_pLayout->GetD3D12RootSignature() );
+
         for(size_t i=0; i<m_Handles.size(); ++i)
         { pNativeCommandList->SetGraphicsRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
     }
     else
     {
+        pNativeCommandList->SetComputeRootSignature( m_pLayout->GetD3D12RootSignature() );
+
         for(size_t i=0u; i<m_Handles.size(); ++i)
         { pNativeCommandList->SetComputeRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
     }
@@ -172,13 +167,12 @@ void DescriptorSet::Bind(ICommandList* pCommandList)
 bool DescriptorSet::Create
 (
     IDevice*                    pDevice,
-    DescriptorSetLayoutDesc*    pDesc,
-    bool                        isGraphicsPipeline,
+    DescriptorSetLayout*        pLayout,
     IDescriptorSet**            ppDescriptorSet
 )
 {
     if (pDevice         == nullptr 
-    || pDesc            == nullptr 
+    || pLayout          == nullptr 
     || ppDescriptorSet  == nullptr)
     { return false; }
 
@@ -186,7 +180,7 @@ bool DescriptorSet::Create
     if ( instance == nullptr )
     { return false; }
 
-    if ( !instance->Init(pDevice, pDesc, isGraphicsPipeline ) )
+    if ( !instance->Init(pDevice, pLayout ) )
     {
         SafeRelease(instance);
         return false;

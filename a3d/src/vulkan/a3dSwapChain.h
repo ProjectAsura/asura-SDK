@@ -8,10 +8,16 @@
 
 namespace a3d {
 
+//-------------------------------------------------------------------------------------------------
+// Forward Declarations.
+//-------------------------------------------------------------------------------------------------
+class Texture;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SwapChain class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API SwapChain : ISwapChain, BaseAllocator
+class A3D_API SwapChain : public ISwapChain, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -131,7 +137,7 @@ public:
     //! @retval true    フルスクリーンモードです.
     //! @retval false   ウィンドウモードです.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY IsFullScreenMode() const;
+    bool A3D_APIENTRY IsFullScreenMode() const override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フルスクリーンモードを設定します.
@@ -147,12 +153,12 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>           m_RefCount;             //!< 参照カウンタです.
-    IDevice*                        m_pDevice;              //!< デバイスです.
-    IQueue*                         m_pQueue;               //!< コマンドキューです.
+    Device*                         m_pDevice;              //!< デバイスです.
+    Queue*                          m_pQueue;               //!< コマンドキューです.
     SwapChainDesc                   m_Desc;                 //!< 構成設定です.
     VkSurfaceKHR                    m_Surface;              //!< サーフェイスです.
     VkSwapchainKHR                  m_SwapChain;            //!< スワップチェインです.
-    ITexture**                      m_pBuffers;             //!< バッファです.
+    Texture**                       m_pBuffers;             //!< バッファです.
     VkImage*                        m_pImages;              //!< イメージです.
     VkImageView*                    m_pImageViews;          //!< イメージビューです.
     uint32_t                        m_CurrentBufferIndex;   //!< 現在のバッファ番号です.

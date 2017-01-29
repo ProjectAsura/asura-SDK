@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescriptorSetLayout class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API DescriptorSetLayout : IDescriptorSetLayout, BaseAllocator
+class A3D_API DescriptorSetLayout : public IDescriptorSetLayout, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -136,7 +136,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウントです.
-    IDevice*                m_pDevice;              //!< デバイスです.
+    Device*                 m_pDevice;              //!< デバイスです.
     DescriptorSetLayoutDesc m_Desc;                 //!< ディスクリプタレイアウト構成設定です.
     VkDescriptorSetLayout   m_DescriptorSetLayout;  //!< ディスクリプタセットレイアウトです.
     VkPipelineLayout        m_PipelineLayout;       //!< パイプラインレイアウトです.

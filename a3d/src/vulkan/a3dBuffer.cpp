@@ -72,16 +72,13 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    auto deviceMemoryProps = pWrapDevice->GetVulkanPhysicalDeviceMemoryProperties(0);
+    auto deviceMemoryProps = m_pDevice->GetVulkanPhysicalDeviceMemoryProperties(0);
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
@@ -139,10 +136,7 @@ void Buffer::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (m_DeviceMemory != null_handle)
@@ -218,10 +212,7 @@ void Buffer::SetState(RESOURCE_STATE state)
 //-------------------------------------------------------------------------------------------------
 void* Buffer::Map()
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     VkResult ret;
@@ -249,10 +240,7 @@ void* Buffer::Map()
 //-------------------------------------------------------------------------------------------------
 void Buffer::Unmap()
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     VkMappedMemoryRange range = {};

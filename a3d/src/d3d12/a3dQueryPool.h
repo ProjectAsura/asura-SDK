@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // QueryPool class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API QueryPool : IQueryPool, BaseAllocator
+class A3D_API QueryPool : public IQueryPool, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -92,7 +92,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;         //!< 参照カウンタです.
-    IDevice*                m_pDevice;          //!< デバイスです.
+    Device*                 m_pDevice;          //!< デバイスです.
     QueryPoolDesc           m_Desc;             //!< 構成設定です.
     ID3D12QueryHeap*        m_pQueryHeap;       //!< クエリヒープです.
     D3D12_QUERY_TYPE        m_QueryType;        //!< クエリタイプです.

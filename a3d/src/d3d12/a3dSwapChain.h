@@ -8,10 +8,15 @@
 
 namespace a3d {
 
+//-------------------------------------------------------------------------------------------------
+// Forward Declarations.
+//-------------------------------------------------------------------------------------------------
+class Texture;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SwapChain class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API SwapChain : ISwapChain, BaseAllocator
+class A3D_API SwapChain : public ISwapChain, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -164,11 +169,11 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;         //!< 参照カウンタです.
-    IDevice*                m_pDevice;          //!< デバイスです.
+    Device*                 m_pDevice;          //!< デバイスです.
     SwapChainDesc           m_Desc;             //!< 構成設定です.
     IDXGISwapChain3*        m_pSwapChain;       //!< スワップチェインです.
     IDXGISwapChain4*        m_pSwapChain4;      //!< スワップチェイン4です.
-    ITexture**              m_pBuffers;         //!< バッファです.
+    Texture**               m_pBuffers;         //!< バッファです.
     HWND                    m_hWnd;             //!< ウィンドウハンドル.
     bool                    m_IsTearingSupport; //!< ティアリングサポートが有効かどうか?
     bool                    m_IsFullScreen;     //!< フルスクリーンモードかどうか?

@@ -394,6 +394,9 @@ void SetImageLayout
         case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
             barrier.srcAccessMask = VK_ACCESS_HOST_READ_BIT;
             break;
+
+        default:
+            break;
     }
 
     switch (newLayout)
@@ -422,6 +425,9 @@ void SetImageLayout
 
         case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
             barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+            break;
+
+        default:
             break;
     }
 
@@ -562,6 +568,5 @@ void DecomposeSubresource
     mipSlice   = subresource % mipLevels;
     arraySlice = (subresource / mipLevels) % arraySize;
 }
-
 
 } // namespace a3d

@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandList class 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API CommandList : ICommandList, BaseAllocator
+class A3D_API CommandList : public ICommandList, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -117,13 +117,6 @@ public:
     //! @param[in]      pPipelineState      設定するパイプラインステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットをレイアウトを設定します.
-    //!
-    //! @param[in]      pDescriptorSetLayout    設定するディスクリプタセットレイアウトです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを設定します.

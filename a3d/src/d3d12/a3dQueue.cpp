@@ -39,12 +39,9 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
 
     // NOTE : Deviceから呼ばれるので，参照カウントを増やしてまうと
     // Device が解放されなくなるので AddRef() しないこと!!
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
     {
@@ -172,12 +169,12 @@ bool Queue::Submit( ICommandList* pCommandList )
     if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
     { return false; }
 
-    auto pWrapList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT( pWrapList != nullptr );
 
     auto pNativeList = pWrapList->GetD3D12GraphicsCommandList();
 
-    m_pSubmitList[m_SubmitIndex] = reinterpret_cast<ID3D12CommandList*>(pNativeList);
+    m_pSubmitList[m_SubmitIndex] = static_cast<ID3D12CommandList*>(pNativeList);
     m_SubmitIndex++;
 
     return true;
@@ -192,7 +189,7 @@ void Queue::Execute( IFence* pFence )
 
     if (pFence != nullptr)
     {
-        auto pWrapFence = reinterpret_cast<Fence*>(pFence);
+        auto pWrapFence = static_cast<Fence*>(pFence);
         A3D_ASSERT( pWrapFence != nullptr );
 
         auto pNativeFence = pWrapFence->GetD3D12Fence();

@@ -77,18 +77,15 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
     { return false; }
 
     Term();
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapTexture = reinterpret_cast<Texture*>(pTexture);
+    auto pWrapTexture = static_cast<Texture*>(pTexture);
     A3D_ASSERT( pWrapTexture != nullptr );
     m_pTexture = pWrapTexture;
     m_pTexture->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -143,10 +140,7 @@ void TextureView::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     if ( m_ImageView != null_handle )

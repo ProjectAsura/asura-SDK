@@ -8,10 +8,16 @@
 
 namespace a3d {
 
+//-------------------------------------------------------------------------------------------------
+// Forward Declarations.
+//-------------------------------------------------------------------------------------------------
+class Queue;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Device class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Device : IDevice, BaseAllocator
+class A3D_API Device : public IDevice, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -32,14 +38,12 @@ public:
     //! @brief      生成処理を行います.
     //!
     //! @param[in]      pDesc       構成設定です.
-    //! @param[in]      pOption     オプション情報です.
     //! @param[out]     ppDevice    デバイスの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
         const DeviceDesc*   pDesc,
-        const void*         pOption,
         IDevice**           ppDevice);
 
     //---------------------------------------------------------------------------------------------
@@ -98,14 +102,12 @@ public:
     //! @brief      コマンドリストを生成します.
     //!
     //! @param[in]      commandListType     コマンドリストタイプです.
-    //! @param[in]      pOption             オプション情報を指定します.
     //! @param[out]     ppCommandList       コマンドリストの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateCommandList(
         COMMANDLIST_TYPE    commandListType,
-        const void*         pOption,
         ICommandList**      ppCommandList) override;
 
     //---------------------------------------------------------------------------------------------
@@ -336,9 +338,9 @@ private:
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウントです.
     DeviceDesc              m_Desc;                 //!< 構成設定です.
     DeviceInfo              m_Info;                 //!< デバイス情報です.
-    IQueue*                 m_pGraphicsQueue;       //!< グラフィックスキューです.
-    IQueue*                 m_pComputeQueue;        //!< コンピュートキューです.
-    IQueue*                 m_pCopyQueue;           //!< コピーキューです.
+    Queue*                  m_pGraphicsQueue;       //!< グラフィックスキューです.
+    Queue*                  m_pComputeQueue;        //!< コンピュートキューです.
+    Queue*                  m_pCopyQueue;           //!< コピーキューです.
     IDXGIFactory*           m_pFactory;             //!< ファクトリーです.
     IDXGIAdapter*           m_pAdapter;             //!< アダプターです.
     IDXGIOutput*            m_pOutput;              //!< アウトプットです.
@@ -369,11 +371,10 @@ private:
     //! @brief      初期化処理を行います.
     //!
     //! @parma[in]      pDesc       構成設定です.
-    //! @param[in]      pOption     オプション情報です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(const DeviceDesc* pDesc, const void* pOption);
+    bool A3D_APIENTRY Init(const DeviceDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

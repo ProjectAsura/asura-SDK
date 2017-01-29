@@ -41,16 +41,13 @@ bool DescriptorSet::Init
     if (pDevice == nullptr || pLayout == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     m_pLayout = pLayout;
     m_pLayout->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // ディスクリプタセットを生成します.
@@ -71,10 +68,8 @@ bool DescriptorSet::Init
     }
 
     {
-        auto& desc       = pLayout->GetDesc();
+        const auto& desc = pLayout->GetDesc();
         auto count       = desc.EntryCount;
-        auto bufferCount = pLayout->GetBufferCount();
-        auto imageCount  = pLayout->GetImageCount();
 
         m_pWrites = new VkWriteDescriptorSet [count];
         if (m_pWrites == nullptr)
@@ -129,10 +124,7 @@ void DescriptorSet::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     auto pNativeDescriptorPool = m_pLayout->GetVulkanDescriptorPool();
@@ -199,7 +191,7 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
-    auto pWrapResource = reinterpret_cast<TextureView*>(pResource);
+    auto pWrapResource = static_cast<TextureView*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
     m_pInfos[index].Image.imageLayout = ToNativeImageLayout(pWrapResource->GetState());
@@ -213,10 +205,10 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
-    auto pWrapResource = reinterpret_cast<BufferView*>(pResource);
+    auto pWrapResource = static_cast<BufferView*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
-    auto& desc = pWrapResource->GetDesc();
+    const auto& desc = pWrapResource->GetDesc();
 
     m_pInfos[index].Buffer.buffer = pWrapResource->GetVulkanBuffer();
     m_pInfos[index].Buffer.offset = desc.Offset;
@@ -230,7 +222,7 @@ void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
-    auto pWrapSampler = reinterpret_cast<Sampler*>(pSampler);
+    auto pWrapSampler = static_cast<Sampler*>(pSampler);
     A3D_ASSERT(pWrapSampler != nullptr);
 
     m_pInfos[index].Image.sampler = pWrapSampler->GetVulkanSampler();
@@ -241,7 +233,7 @@ void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Update()
 {
-    auto& desc = m_pLayout->GetDesc();
+    const auto& desc = m_pLayout->GetDesc();
     auto count = desc.EntryCount;
 
     for(auto i=0u; i<count; ++i)
@@ -259,11 +251,7 @@ void DescriptorSet::Update()
             m_pWrites[i].pBufferInfo = nullptr;
         }
     }
-
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     vkUpdateDescriptorSets(pNativeDevice, count, m_pWrites, 0, nullptr);
@@ -274,7 +262,7 @@ void DescriptorSet::Update()
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Issue(ICommandList* pCommandList)
 {
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
     auto pNativeCommandBuffer = pWrapCommandList->GetVulkanCommandBuffer();

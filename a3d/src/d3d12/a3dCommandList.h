@@ -17,7 +17,7 @@ class FrameBuffer;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandList class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API CommandList : ICommandList, BaseAllocator
+class A3D_API CommandList : public ICommandList, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -47,7 +47,6 @@ public:
     static bool A3D_APIENTRY Create(
         IDevice*         pDevice,
         COMMANDLIST_TYPE listType,
-        const void*      pOption,
         ICommandList**   ppCommandList);
 
     //---------------------------------------------------------------------------------------------
@@ -134,13 +133,6 @@ public:
     //! @param[in]      pPipelineState      パイプラインステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットレイアウトを設定します.
-    //!
-    //! @param[in]      pDescriptorSetLayout    ディスクリプタセットレイアウトです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを設定します.
@@ -411,7 +403,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;             //!< 参照カウントです.
-    IDevice*                    m_pDevice;              //!< デバイスです.
+    Device*                     m_pDevice;              //!< デバイスです.
     ID3D12CommandAllocator*     m_pCommandAllocator;    //!< コマンドアロケータです.
     ID3D12GraphicsCommandList*  m_pCommandList;         //!< コマンドリストです.
     FrameBuffer*                m_pFrameBuffer;         //!< 設定されているフレームバッファです.
@@ -435,11 +427,10 @@ private:
     //!
     //! @param[in]      pDevice     デバイスです.
     //! @param[in]      listType    リストタイプです.
-    //! @param[in]      pOption     プラットフォーム依存データです.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(IDevice* pDevice, COMMANDLIST_TYPE listType, const void* pOption);
+    bool A3D_APIENTRY Init(IDevice* pDevice, COMMANDLIST_TYPE listType);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

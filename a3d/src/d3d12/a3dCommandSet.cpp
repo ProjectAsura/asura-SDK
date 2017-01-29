@@ -34,13 +34,10 @@ bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWarpDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWarpDevice != nullptr);
-
-    auto pNativeDevice = pWarpDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
     {
@@ -65,7 +62,10 @@ bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
         desc.NumArgumentDescs   = pDesc->ArgumentCount;
         desc.pArgumentDescs     = pArguments;
 
-        auto hr = pNativeDevice->CreateCommandSignature(&desc, nullptr, IID_PPV_ARGS(&m_pCommandSignature));
+        auto hr = pNativeDevice->CreateCommandSignature(
+            &desc,
+            nullptr,
+            IID_PPV_ARGS(&m_pCommandSignature));
 
         delete[] pArguments;
 

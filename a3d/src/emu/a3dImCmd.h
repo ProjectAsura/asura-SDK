@@ -23,7 +23,6 @@ enum CMD_TYPE
     CMD_SET_VIEWPORTS,                  //!< ICommandList::SetViewports()
     CMD_SET_SCISSORS,                   //!< ICommandList::SetScissors()
     CMD_SET_PIPELINESTATE,              //!< ICommandList::SetPipelineState()
-    CMD_SET_DESCRIPTORSETLAYOUT,        //!< ICommandList::SetDescriptorSetLayout()
     CMD_SET_DESCRIPTORSET,              //!< ICommandList::SetDescriptorSet()
     CMD_SET_VERTEX_BUFFERS,             //!< ICommandList::SetVertexBuffers()
     CMD_SET_INDEX_BUFFER,               //!< ICommandList::SetIndexBuffer()
@@ -121,14 +120,6 @@ struct ImCmdSetScissors : ImCmdBase
 struct ImCmdSetPipelineState : ImCmdBase
 {
     IPipelineState* pPipelineState;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// ImCmdSetDescriptorSetLayout structure
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ImCmdSetDescriptorSetLayout : ImCmdBase
-{
-    IDescriptorSetLayout*   pDescriptorSetLayout;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

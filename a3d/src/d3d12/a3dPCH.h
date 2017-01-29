@@ -31,8 +31,9 @@
 #include <d3d12.h>
 #include <dxgi1_5.h>
 
+#include "misc/a3dBlob.h"
+
 #include "a3dUtil.h"
-#include "a3dBlob.h"
 #include "a3dDescriptor.h"
 #include "a3dDescriptorHeap.h"
 #include "a3dDevice.h"

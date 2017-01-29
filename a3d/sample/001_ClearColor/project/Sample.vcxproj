@@ -52,7 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\helpers\SampleAppWin.cpp" />
-    <ClCompile Include="..\code\main.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\helpers\SampleApp.h" />

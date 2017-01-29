@@ -5,7 +5,7 @@
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
-//#define A3D_FOR_WINDOWS10
+#define A3D_FOR_WINDOWS10
 
 //-------------------------------------------------------------------------------------------------
 // Includes
@@ -30,8 +30,9 @@
 #include "emu/a3dCommandBuffer.h"
 #include "emu/a3dCommandList.h"
 
+#include "misc/a3dBlob.h"
+
 #include "a3dUtil.h"
-#include "a3dBlob.h"
 #include "a3dDevice.h"
 #include "a3dFence.h"
 #include "a3dCommandSet.h"

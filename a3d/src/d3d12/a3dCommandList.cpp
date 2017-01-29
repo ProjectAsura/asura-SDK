@@ -31,22 +31,17 @@ CommandList::~CommandList()
 //-------------------------------------------------------------------------------------------------
 //      初期化処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType, const void* pOption)
+bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
 {
-    A3D_UNUSED(pOption);
-
     if (pDevice == nullptr)
     { return false; }
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
     {
@@ -135,11 +130,8 @@ void CommandList::Begin()
     m_pCommandList->Reset(m_pCommandAllocator, nullptr);
     m_pFrameBuffer = nullptr;
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto heapBuf = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    auto heapSmp = pWrapDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+    auto heapBuf = m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    auto heapSmp = m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
    
     uint32_t count = 0;
     ID3D12DescriptorHeap* pHeaps[2] = {};
@@ -171,7 +163,7 @@ void CommandList::SetFrameBuffer(IFrameBuffer* pBuffer)
     if (pBuffer == nullptr)
     { return; }
 
-    auto pWrapFrameBuffer = reinterpret_cast<FrameBuffer*>(pBuffer);
+    auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pBuffer);
     A3D_ASSERT(pWrapFrameBuffer != nullptr);
 
     // 同じバッファであればコマンドを出さない.
@@ -254,29 +246,10 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
     if (pPipelineState == nullptr)
     { return; }
 
-    auto pWrapPipelineState = reinterpret_cast<PipelineState*>(pPipelineState);
+    auto pWrapPipelineState = static_cast<PipelineState*>(pPipelineState);
     A3D_ASSERT(pWrapPipelineState != nullptr);
 
     pWrapPipelineState->Issue(this);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットレイアウトを設定します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
-{
-    if (pDescriptorSetLayout == nullptr)
-    { return; }
-
-    auto pWrapDescriptorSetLayout = reinterpret_cast<DescriptorSetLayout*>(pDescriptorSetLayout);
-    A3D_ASSERT(pWrapDescriptorSetLayout != nullptr);
-
-    auto pSignature = pWrapDescriptorSetLayout->GetD3D12RootSignature();
-
-    if ( pWrapDescriptorSetLayout->IsGraphicsPipeline() )
-    { m_pCommandList->SetGraphicsRootSignature( pSignature ); }
-    else
-    { m_pCommandList->SetComputeRootSignature( pSignature ); }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -287,7 +260,7 @@ void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
     if (pDescriptorSet == nullptr)
     { return; }
 
-    auto pWrapDescriptorSet = reinterpret_cast<DescriptorSet*>(pDescriptorSet);
+    auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
     pWrapDescriptorSet->Bind(this);
 }
 
@@ -309,7 +282,7 @@ void CommandList::SetVertexBuffers
 
     for(auto i=0u; i<count; ++i)
     {
-        auto pWrapResource = reinterpret_cast<Buffer*>(ppResources[i]);
+        auto pWrapResource = static_cast<Buffer*>(ppResources[i]);
         A3D_ASSERT(pWrapResource != nullptr);
 
         auto pNativeResource = pWrapResource->GetD3D12Resource();
@@ -341,7 +314,7 @@ void CommandList::SetIndexBuffer
     if (pResource == nullptr)
     { return; }
 
-    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
+    auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
 
     auto pNativeResource = pWrapResource->GetD3D12Resource();
@@ -365,7 +338,7 @@ void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
     if (pResource == nullptr)
     { return; }
 
-    auto pWrapResource = reinterpret_cast<Texture*>(pResource);
+    auto pWrapResource = static_cast<Texture*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
     D3D12_RESOURCE_BARRIER barrier = {};
@@ -388,12 +361,12 @@ void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
     if (pResource == nullptr)
     { return; }
 
-    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
+    auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
     auto heapType = pWrapResource->GetDesc().HeapProperty.Type;
 
-    // D3D12では UPLOAD と READBACK はリソースステートを使用上変更できないため，
+    // D3D12では UPLOAD と READBACK はリソースステートを仕様上変更できないため，
     // 実行せずに正常終了させる.
     if (heapType == HEAP_TYPE_UPLOAD || heapType == HEAP_TYPE_READBACK)
     { return;}
@@ -433,7 +406,10 @@ void CommandList::DrawIndexedInstanced
     int      vertexOffset,
     uint32_t firstInstance
 )
-{ m_pCommandList->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance); }
+{
+    m_pCommandList->DrawIndexedInstanced(
+        indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      スレッドグループからコマンドリストを実行します.
@@ -457,13 +433,13 @@ void CommandList::ExecuteIndirect
     if (pCommandSet == nullptr || maxCommandCount == 0 || pArgumentBuffer == nullptr)
     { return; }
 
-    auto pWrapCommandSet = reinterpret_cast<CommandSet*>(pCommandSet);
+    auto pWrapCommandSet = static_cast<CommandSet*>(pCommandSet);
     A3D_ASSERT(pWrapCommandSet != nullptr);
 
     auto pNativeCommandSignature = pWrapCommandSet->GetD3D12CommandSignature();
     A3D_ASSERT(pNativeCommandSignature != nullptr);
 
-    auto pWrapArgumentBuffer = reinterpret_cast<Buffer*>(pArgumentBuffer);
+    auto pWrapArgumentBuffer = static_cast<Buffer*>(pArgumentBuffer);
     A3D_ASSERT(pWrapArgumentBuffer != nullptr);
 
     auto pNativeArgumentResource = pWrapArgumentBuffer->GetD3D12Resource();
@@ -472,7 +448,7 @@ void CommandList::ExecuteIndirect
     ID3D12Resource* pNativeCounterResource = nullptr;
     if (pCounterBuffer != nullptr)
     {
-        auto pWrapCouterBuffer = reinterpret_cast<Buffer*>(pCounterBuffer);
+        auto pWrapCouterBuffer = static_cast<Buffer*>(pCounterBuffer);
         A3D_ASSERT(pWrapCouterBuffer != nullptr);
 
         pNativeCounterResource = pWrapCouterBuffer->GetD3D12Resource();
@@ -496,7 +472,7 @@ void CommandList::BeginQuery(IQueryPool* pQuery, uint32_t index)
     if (pQuery == nullptr)
     { return; }
 
-    auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+    auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
     m_pCommandList->BeginQuery(
@@ -513,7 +489,7 @@ void CommandList::EndQuery(IQueryPool* pQuery, uint32_t index)
     if (pQuery == nullptr)
     { return; }
 
-    auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+    auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
     m_pCommandList->EndQuery(
@@ -537,7 +513,7 @@ void CommandList::ResolveQuery
     if (pQuery == nullptr || queryCount == 0 || pDstBuffer == nullptr)
     { return; }
 
-    auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+    auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
     auto pNativeQueryPool = pWrapQueryPool->GetD3D12QueryHeap();
@@ -545,7 +521,7 @@ void CommandList::ResolveQuery
 
     auto type = pWrapQueryPool->GetD3D12QueryType();
 
-    auto pWrapBuffer = reinterpret_cast<Buffer*>(pDstBuffer);
+    auto pWrapBuffer = static_cast<Buffer*>(pDstBuffer);
     A3D_ASSERT(pWrapBuffer != nullptr);
 
     auto pNativeResource = pWrapBuffer->GetD3D12Resource();
@@ -568,8 +544,8 @@ void CommandList::CopyBuffer(IBuffer* pDst, IBuffer* pSrc)
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Buffer*>(pDst);
-    auto pWrapSrc = reinterpret_cast<Buffer*>(pSrc);
+    auto pWrapDst = static_cast<Buffer*>(pDst);
+    auto pWrapSrc = static_cast<Buffer*>(pSrc);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
@@ -584,8 +560,8 @@ void CommandList::CopyTexture(ITexture* pDst, ITexture* pSrc)
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Texture*>(pDst);
-    auto pWrapSrc = reinterpret_cast<Texture*>(pSrc);
+    auto pWrapDst = static_cast<Texture*>(pDst);
+    auto pWrapSrc = static_cast<Texture*>(pSrc);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
@@ -609,8 +585,8 @@ void CommandList::CopyTextureRegion
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Texture*>(pDstResource);
-    auto pWrapSrc = reinterpret_cast<Texture*>(pSrcResource);
+    auto pWrapDst = static_cast<Texture*>(pDstResource);
+    auto pWrapSrc = static_cast<Texture*>(pSrcResource);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
@@ -652,8 +628,8 @@ void CommandList::CopyBufferRegion
     if (pDstBuffer == nullptr || pSrcBuffer == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Buffer*>(pDstBuffer);
-    auto pWrapSrc = reinterpret_cast<Buffer*>(pSrcBuffer);
+    auto pWrapDst = static_cast<Buffer*>(pDstBuffer);
+    auto pWrapSrc = static_cast<Buffer*>(pSrcBuffer);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
@@ -680,12 +656,12 @@ void CommandList::CopyBufferToTexture
     if (pDstTexture == nullptr || pSrcBuffer == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Texture*>(pDstTexture);
-    auto pWrapSrc = reinterpret_cast<Buffer*>(pSrcBuffer);
+    auto pWrapDst = static_cast<Texture*>(pDstTexture);
+    auto pWrapSrc = static_cast<Buffer*>(pSrcBuffer);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
+    auto pWrapDevice = static_cast<Device*>(m_pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);
 
     auto pNativeDevice = pWrapDevice->GetD3D12Device();
@@ -733,8 +709,8 @@ void CommandList::CopyTextureToBuffer
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Buffer*>(pDstBuffer);
-    auto pWrapSrc = reinterpret_cast<Texture*>(pSrcTexture);
+    auto pWrapDst = static_cast<Buffer*>(pDstBuffer);
+    auto pWrapSrc = static_cast<Texture*>(pSrcTexture);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
@@ -772,8 +748,8 @@ void CommandList::ResolveSubresource
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Texture*>(pDstResource);
-    auto pWrapSrc = reinterpret_cast<Texture*>(pSrcResource);
+    auto pWrapDst = static_cast<Texture*>(pDstResource);
+    auto pWrapSrc = static_cast<Texture*>(pSrcResource);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
@@ -797,7 +773,7 @@ void CommandList::ExecuteBundle(ICommandList* pCommandList)
     if (pCommandList == nullptr)
     { return; }
 
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
@@ -834,7 +810,6 @@ bool CommandList::Create
 (
     IDevice*         pDevice, 
     COMMANDLIST_TYPE listType,
-    const void*      pOption,
     ICommandList**   ppComandList
 )
 {
@@ -845,7 +820,7 @@ bool CommandList::Create
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDevice, listType, pOption))
+    if (!instance->Init(pDevice, listType))
     {
         SafeRelease(instance);
         return false;

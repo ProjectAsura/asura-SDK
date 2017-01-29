@@ -11,8 +11,8 @@ namespace /* anonymous */ {
 // Global Variables.
 //-------------------------------------------------------------------------------------------------
 a3d::IAllocator*        g_pAllocator    = nullptr;
-std::atomic<uint64_t>   g_AllocCounter  = 0;
-std::atomic<bool>       g_CounterEnable = true;
+std::atomic<uint64_t>   g_AllocCounter  = {};
+std::atomic<bool>       g_CounterEnable = {};
 
 } // namespace /* anonymous */
 
@@ -80,31 +80,35 @@ void a3d_enable_counter(bool value)
 namespace a3d {
 
 //-------------------------------------------------------------------------------------------------
-//      グラフィックスシステムを初期化します.
+//      システムアロケータを設定します.
 //-------------------------------------------------------------------------------------------------
-bool A3D_APIENTRY InitSystem(IAllocator* pAllocator)
+bool InitSystemAllocator(IAllocator* pAllocator)
 {
-    if (g_pAllocator != nullptr)
+    if ( g_pAllocator != nullptr )
     { return false; }
 
-    g_AllocCounter = 0;
-    g_pAllocator   = pAllocator;
+    g_pAllocator    = pAllocator;
+    g_AllocCounter  = 0;
+    g_CounterEnable = true;
+
     return true;
 }
 
 //-------------------------------------------------------------------------------------------------
-//      グラフィクスシステムが初期化済みかどうかチェックします.
+//      システムアロケータを未設定にします.
 //-------------------------------------------------------------------------------------------------
-bool A3D_APIENTRY IsInitSystem()
-{ return (g_pAllocator != nullptr); }
-
-//-------------------------------------------------------------------------------------------------
-//      グラフィックスシステムの終了処理を行います.
-//-------------------------------------------------------------------------------------------------
-void A3D_APIENTRY TermSystem()
+void TermSystemAllocator()
 {
     A3D_ASSERT( g_AllocCounter == 0 );
-    g_pAllocator = nullptr;
+    g_pAllocator    = nullptr;
+    g_AllocCounter  = 0;
+    g_CounterEnable = false;
 }
+
+//-------------------------------------------------------------------------------------------------
+//      システムアロケータが設定済みかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool IsInitSystemAllocator()
+{ return g_pAllocator != nullptr; }
 
 } // namespace a3d

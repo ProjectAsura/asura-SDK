@@ -9,43 +9,49 @@ namespace /* anonymous */ {
 
 void ConstantBufferBinderVS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
 {
-    auto pBuffer = static_cast<ID3D11Buffer*>(pResource);
-    A3D_ASSERT(pBuffer != nullptr);
+    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
+    A3D_ASSERT(pBufferView != nullptr);
+    auto pBuffer = pBufferView->GetD3D11Buffer();
     pContext->VSSetConstantBuffers(slot, 1, &pBuffer);
 }
 
 void ConstantBufferBinderDS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
 {
-    auto pBuffer = static_cast<ID3D11Buffer*>(pResource);
-    A3D_ASSERT(pBuffer != nullptr);
+    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
+    A3D_ASSERT(pBufferView != nullptr);
+    auto pBuffer = pBufferView->GetD3D11Buffer();
     pContext->DSSetConstantBuffers(slot, 1, &pBuffer);
 }
 
 void ConstantBufferBinderGS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
 {
-    auto pBuffer = static_cast<ID3D11Buffer*>(pResource);
-    A3D_ASSERT(pBuffer != nullptr);
+    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
+    A3D_ASSERT(pBufferView != nullptr);
+    auto pBuffer = pBufferView->GetD3D11Buffer();
     pContext->GSSetConstantBuffers(slot, 1, &pBuffer);
 }
 
 void ConstantBufferBinderHS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
 {
-    auto pBuffer = static_cast<ID3D11Buffer*>(pResource);
-    A3D_ASSERT(pBuffer != nullptr);
+    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
+    A3D_ASSERT(pBufferView != nullptr);
+    auto pBuffer = pBufferView->GetD3D11Buffer();
     pContext->HSSetConstantBuffers(slot, 1, &pBuffer);
 }
 
 void ConstantBufferBinderPS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
 {
-    auto pBuffer = static_cast<ID3D11Buffer*>(pResource);
-    A3D_ASSERT(pBuffer != nullptr);
+    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
+    A3D_ASSERT(pBufferView != nullptr);
+    auto pBuffer = pBufferView->GetD3D11Buffer();
     pContext->PSSetConstantBuffers(slot, 1, &pBuffer);
 }
 
 void ConstantBufferBinderCS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
 {
-    auto pBuffer = static_cast<ID3D11Buffer*>(pResource);
-    A3D_ASSERT(pBuffer != nullptr);
+    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
+    A3D_ASSERT(pBufferView != nullptr);
+    auto pBuffer = pBufferView->GetD3D11Buffer();
     pContext->CSSetConstantBuffers(slot, 1, &pBuffer);
 }
 
@@ -132,10 +138,10 @@ void ShaderResourceViewBinderCS(ID3D11DeviceContext* pContext, uint32_t slot, vo
     pContext->CSSetShaderResources(slot, 1, &pView);
 }
 
-void ConstantBufferUpdater(ID3D11DeviceContext* pContext, void* pSubresource)
+void ConstantBufferUpdater(ID3D11DeviceContext* pContext, void* pResource)
 {
-    auto pBuffer = static_cast<a3d::Buffer*>(pSubresource);
-    pBuffer->UpdateSubresource(pContext);
+    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
+    pBufferView->UpdateSubsource(pContext);
 }
 
 void EmptyUpdater(ID3D11DeviceContext*, void*)
@@ -210,12 +216,12 @@ bool DescriptorSet::Init
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     m_pLayoutDesc = pDesc;
 
-    m_pBindInfo = new (std::nothrow) BindInfo [pDesc->EntryCount];
+    m_pBindInfo = new BindInfo [pDesc->EntryCount];
     if (m_pBindInfo == nullptr)
     { return false; }
 
@@ -246,7 +252,7 @@ void DescriptorSet::Term()
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 {
-    auto pWrapTextureView = reinterpret_cast<TextureView*>(pResource);
+    auto pWrapTextureView = static_cast<TextureView*>(pResource);
     A3D_ASSERT(pWrapTextureView != nullptr);
 
     auto pD3D11ShaderResourceView = pWrapTextureView->GetD3D11ShaderResourceView();
@@ -257,7 +263,6 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 
     info.Slot         = entry.ShaderRegister;
     info.pResource    = pD3D11ShaderResourceView;
-    info.pSubresource = nullptr;
     info.Updater      = EmptyUpdater;
 
     auto count = 0;
@@ -305,7 +310,7 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 {
-    auto pWrapBufferView = reinterpret_cast<BufferView*>(pResource);
+    auto pWrapBufferView = static_cast<BufferView*>(pResource);
     A3D_ASSERT(pWrapBufferView != nullptr);
 
     auto pD3D11Buffer = pWrapBufferView->GetD3D11Buffer();
@@ -315,8 +320,7 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
     auto& info  = m_pBindInfo[index];
 
     info.Slot         = entry.ShaderRegister;
-    info.pResource    = pD3D11Buffer;
-    info.pSubresource = pWrapBufferView->GetBuffer();
+    info.pResource    = pWrapBufferView;
     info.Updater      = ConstantBufferUpdater;
 
     auto count = 0;
@@ -364,7 +368,7 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
 {
-    auto pWrapSampler = reinterpret_cast<Sampler*>(pSampler);
+    auto pWrapSampler = static_cast<Sampler*>(pSampler);
     A3D_ASSERT(pWrapSampler != nullptr);
 
     auto pD3D11SamplerState = pWrapSampler->GetD3D11SamplerState();
@@ -375,7 +379,6 @@ void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
 
     info.Slot           = entry.ShaderRegister;
     info.pResource      = pD3D11SamplerState;
-    info.pSubresource   = nullptr;
     info.Updater        = EmptyUpdater;
 
     auto count = 0;
@@ -419,12 +422,6 @@ void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      更新処理を行います.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::Update()
-{ /* DO_NOTHING */ }
-
-//-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットを関連付けます.
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Bind(ID3D11DeviceContext* pDeviceContext)
@@ -453,7 +450,7 @@ void DescriptorSet::UpdateSubreosurce(ID3D11DeviceContext* pDeviceContext)
         for(auto j=0u; j<info.StageCount; ++j)
         {
             auto updater = info.Updater;
-            updater(pDeviceContext, info.pSubresource);
+            updater(pDeviceContext, info.pResource);
         }
     }
 }

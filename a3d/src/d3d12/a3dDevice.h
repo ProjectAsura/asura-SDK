@@ -8,10 +8,16 @@
 
 namespace a3d {
 
+//-------------------------------------------------------------------------------------------------
+// Forward Declaratios.
+//-------------------------------------------------------------------------------------------------
+class Queue;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Device class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Device : IDevice, BaseAllocator
+class A3D_API Device : public IDevice, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -39,7 +45,6 @@ public:
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
         const DeviceDesc*   pDesc,
-        const void*         pOption,
         IDevice**           ppDevice);
 
     //---------------------------------------------------------------------------------------------
@@ -105,7 +110,6 @@ public:
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateCommandList(
         COMMANDLIST_TYPE    commandListType,
-        const void*         pOption,
         ICommandList**      ppCommandList) override;
 
     //---------------------------------------------------------------------------------------------
@@ -326,9 +330,9 @@ private:
     DeviceDesc              m_Desc;                 //!< 構成設定です.
     DeviceInfo              m_Info;                 //!< デバイス情報です.
     DescriptorHeap          m_DescriptorHeap[4];    //!< ディスクリプタヒープです.
-    IQueue*                 m_pGraphicsQueue;       //!< グラフィックスキューです.
-    IQueue*                 m_pComputeQueue;        //!< コンピュートキューです.
-    IQueue*                 m_pCopyQueue;           //!< コピーキューです.
+    Queue*                  m_pGraphicsQueue;       //!< グラフィックスキューです.
+    Queue*                  m_pComputeQueue;        //!< コンピュートキューです.
+    Queue*                  m_pCopyQueue;           //!< コピーキューです.
     bool                    m_TearingSupport;       //!< ティアリングサポートフラグ.
 
     //=============================================================================================
@@ -349,11 +353,10 @@ private:
     //! @brief      初期化処理を行います.
     //!
     //! @parma[in]      pDesc       構成設定です.
-    //! @param[in]      pOption     オプション情報です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(const DeviceDesc* pDesc, const void* pOption);
+    bool A3D_APIENTRY Init(const DeviceDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

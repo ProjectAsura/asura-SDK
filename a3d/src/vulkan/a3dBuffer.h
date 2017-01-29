@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Buffer class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API Buffer : IBuffer, BaseAllocator
+class A3D_API Buffer : public IBuffer, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -132,7 +132,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウンタです.
-    IDevice*                m_pDevice;              //!< デバイスです.
+    Device*                 m_pDevice;              //!< デバイスです.
     BufferDesc              m_Desc;                 //!< 構成設定です.
     RESOURCE_STATE          m_State;                //!< リソースステートです.
     VkBuffer                m_Buffer;               //!< バッファです.

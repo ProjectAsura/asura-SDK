@@ -47,20 +47,17 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
     for(auto i=0u; i<pDesc->ColorCount; ++i)
     {
-        auto pWrapResource = reinterpret_cast<TextureView*>(pDesc->pColorTargets[i]);
+        auto pWrapResource = static_cast<TextureView*>(pDesc->pColorTargets[i]);
         A3D_ASSERT(pWrapResource != nullptr);
 
         m_RTVFormats[i] = ToNativeFormat( pWrapResource->GetDesc().Format );
@@ -69,7 +66,7 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
 
     if (pDesc->pDepthTarget != nullptr)
     {
-        auto pWrapResource = reinterpret_cast<TextureView*>(pDesc->pDepthTarget);
+        auto pWrapResource = static_cast<TextureView*>(pDesc->pDepthTarget);
         A3D_ASSERT(pWrapResource != nullptr);
 
         m_DSVFormat = ToNativeFormat( pWrapResource->GetDesc().Format );
@@ -146,7 +143,7 @@ void FrameBuffer::Bind(ICommandList* pCommandList)
 {
     A3D_ASSERT(pCommandList != nullptr);
 
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
@@ -181,7 +178,7 @@ void FrameBuffer::Clear
     const ClearDepthStencilValue*   pClearDepthStencil
 )
 {
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();

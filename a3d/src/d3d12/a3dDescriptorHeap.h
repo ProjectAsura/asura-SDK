@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescriptorHeap class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API DescriptorHeap : BaseAllocator
+class A3D_API DescriptorHeap : public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.

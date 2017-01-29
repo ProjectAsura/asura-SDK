@@ -35,7 +35,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -92,9 +92,6 @@ bool DescriptorSetLayout::CreateDescriptorSet(IDescriptorSet** ppDesctiproSet)
 {
     if (ppDesctiproSet == nullptr)
     { return false; }
-
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
 
     if (!DescriptorSet::Create(m_pDevice, &m_Desc, ppDesctiproSet))
     { return false; }

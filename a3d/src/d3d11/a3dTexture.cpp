@@ -34,17 +34,14 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
     m_State = pDesc->InitState;
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
     if (pDesc->Dimension == RESOURCE_DIMENSION_BUFFER)
@@ -223,10 +220,7 @@ RESOURCE_STATE Texture::GetState() const
 //-------------------------------------------------------------------------------------------------
 void* Texture::Map()
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
     D3D11_MAPPED_SUBRESOURCE subresource;
@@ -242,10 +236,7 @@ void* Texture::Map()
 //-------------------------------------------------------------------------------------------------
 void Texture::Unmap()
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pDeviceContext = pWrapDevice->GetD3D11DeviceContext();
+    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
     pDeviceContext->Unmap(m_pResource, 0);
@@ -313,19 +304,19 @@ RESOURCE_KIND Texture::GetKind() const
 //      1次元テクスチャとして取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D11Texture1D* A3D_APIENTRY Texture::GetAsD3D11Texture1D() const
-{ return reinterpret_cast<ID3D11Texture1D*>(m_pResource); }
+{ return static_cast<ID3D11Texture1D*>(m_pResource); }
 
 //-------------------------------------------------------------------------------------------------
 //      2次元テクスチャとして取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D11Texture2D* A3D_APIENTRY Texture::GetAsD3D11Texture2D() const
-{ return reinterpret_cast<ID3D11Texture2D*>(m_pResource); }
+{ return static_cast<ID3D11Texture2D*>(m_pResource); }
 
 //-------------------------------------------------------------------------------------------------
 //      3次元テクスチャとして取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D11Texture3D* A3D_APIENTRY Texture::GetAsD3D11Texture3D() const
-{ return reinterpret_cast<ID3D11Texture3D*>(m_pResource); }
+{ return static_cast<ID3D11Texture3D*>(m_pResource); }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースを取得します.
@@ -374,7 +365,7 @@ bool Texture::CreateFromNative
     if (instance == nullptr)
     { return false; }
 
-    instance->m_pDevice = pDevice;
+    instance->m_pDevice = static_cast<Device*>(pDevice);
     instance->m_pDevice->AddRef();
 
     instance->m_pResource = pNativeResource;

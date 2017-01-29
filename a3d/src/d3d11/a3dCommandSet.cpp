@@ -33,7 +33,7 @@ bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );

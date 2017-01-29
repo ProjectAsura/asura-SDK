@@ -1,9 +1,0 @@
-setlocal
-set SHADER_COMPILER="C:\Program Files (x86)\Windows Kits\10\bin\x64\fxc.exe"
-%SHADER_COMPILER% /E main /T vs_4_0 /Fo simpleVS.cso simpleVS.hlsl
-%SHADER_COMPILER% /E main /T ps_4_0 /Fo simplePS.cso simplePS.hlsl
-%SHADER_COMPILER% /E main /T vs_4_0 /Fo imguiVS.cso imguiVS.hlsl
-%SHADER_COMPILER% /E main /T ps_4_0 /Fo imguiPS.cso imguiPS.hlsl
-%SHADER_COMPILER% /E main /T vs_4_0 /Fo colorVS.cso colorVS.hlsl
-%SHADER_COMPILER% /E main /T ps_4_0 /Fo colorPS.cso colorPS.hlsl
-endlocal

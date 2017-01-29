@@ -41,14 +41,14 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
     for(auto i=0u; i<pDesc->ColorCount; ++i)
     {
-        auto pWrapTextureView = reinterpret_cast<TextureView*>(pDesc->pColorTargets[i]);
+        auto pWrapTextureView = static_cast<TextureView*>(pDesc->pColorTargets[i]);
         A3D_ASSERT(pWrapTextureView != nullptr);
 
         m_pRTVs[i] = pWrapTextureView->GetD3D11RenderTargetView();
@@ -59,7 +59,7 @@ bool FrameBuffer::Init(IDevice* pDevice, const FrameBufferDesc* pDesc)
 
     if (pDesc->pDepthTarget != nullptr)
     {
-        auto pWrapTextureView = reinterpret_cast<TextureView*>(pDesc->pDepthTarget);
+        auto pWrapTextureView = static_cast<TextureView*>(pDesc->pDepthTarget);
         A3D_ASSERT(pWrapTextureView != nullptr);
 
         m_pDSV = pWrapTextureView->GetD3D11DepthStencilView();

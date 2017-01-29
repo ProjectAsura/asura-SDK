@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DescriptorSet class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API DescriptorSet : IDescriptorSet, BaseAllocator
+class A3D_API DescriptorSet : public IDescriptorSet, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and mehtods.
@@ -92,11 +92,6 @@ public:
     void A3D_APIENTRY SetSampler(uint32_t index, ISampler* pSampler) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを更新します.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY Update() override;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを関連付けます.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Bind(ID3D11DeviceContext* pDeviceContext);
@@ -111,7 +106,7 @@ private:
     // Type Definitions.
     //---------------------------------------------------------------------------------------------
     typedef void (*Binder) (ID3D11DeviceContext* pContext, uint32_t slot, void* pResource);
-    typedef void (*Updater)(ID3D11DeviceContext* pContext, void* pSubresource);
+    typedef void (*Updater)(ID3D11DeviceContext* pContext, void* pResource);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // BindInfo structure
@@ -121,7 +116,6 @@ private:
         uint32_t    StageCount;     //!< シェーダステージ数です.
         uint32_t    Slot;           //!< スロット番号です.
         void*       pResource;      //!< リソースです.
-        void*       pSubresource;   //!< サブリソースです.
         Binder      Binder[6];      //!< バインダーです.
         Updater     Updater;        //!< アップデータです.
     };
@@ -130,7 +124,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;                 //!< 参照カウントです.
-    IDevice*                    m_pDevice;                  //!< デバイスです.
+    Device*                     m_pDevice;                  //!< デバイスです.
     DescriptorSetLayoutDesc*    m_pLayoutDesc;              //!< レイアウト設定です.
     bool                        m_IsGraphicsPipeline;       //!< グラフィックスパイプラインかどうか?
     BindInfo*                   m_pBindInfo;                //!< バインド情報です.

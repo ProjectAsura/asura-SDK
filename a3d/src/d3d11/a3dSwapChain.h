@@ -8,10 +8,16 @@
 
 namespace a3d {
 
+//-------------------------------------------------------------------------------------------------
+// Forward Declarations.
+//-------------------------------------------------------------------------------------------------
+class Texture;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SwapChain class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API SwapChain : ISwapChain, BaseAllocator
+class A3D_API SwapChain : public ISwapChain, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -165,14 +171,16 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;         //!< 参照カウンタです.
-    IDevice*                m_pDevice;          //!< デバイスです.
+    Device*                 m_pDevice;          //!< デバイスです.
     SwapChainDesc           m_Desc;             //!< 構成設定です.
-    ITexture**              m_pBuffers;         //!< バッファです.
+    Texture**               m_pBuffers;         //!< バッファです.
     uint32_t                m_BufferIndex;      //!< バッファ番号です.
     HWND                    m_hWnd;             //!< ウィンドウハンドルです.
     IDXGISwapChain*         m_pSwapChain;       //!< DXGIスワップチェインです.
     bool                    m_EnableFullScren;  //!< フルスクリーンモードかどうか?
     RECT                    m_Rect;             //!< 矩形です.
+    uint32_t                m_FullScreenWidth;  //!< フルスクリーン時の横幅です.
+    uint32_t                m_FullScreenHeight; //!< フルスクリーン時の縦幅です.
 #if defined(A3D_FOR_WINDOWS10)
     IDXGISwapChain4*        m_pSwapChain4;      //!< DXGIスワップチェイン4です.
 #endif

@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // FrameBuffer class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API FrameBuffer : IFrameBuffer, BaseAllocator
+class A3D_API FrameBuffer : public IFrameBuffer, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -127,7 +127,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;         //!< 参照カウンタです.
-    IDevice*                    m_pDevice;          //!< デバイスです.
+    Device*                     m_pDevice;          //!< デバイスです.
     FrameBufferDesc             m_Desc;             //!< 構成設定です.
     VkFramebuffer               m_FrameBuffer;      //!< フレームバッファです.
     VkRenderPass                m_RenderPass;       //!< レンダーパスです.

@@ -31,19 +31,15 @@ CommandList::~CommandList()
 //-------------------------------------------------------------------------------------------------
 //      初期化処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType, const void* pOption)
+bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
 {
-    A3D_UNUSED(pOption);
     if ( pDevice == nullptr )
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     {
@@ -51,11 +47,11 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType, const void* 
 
         IQueue* pQueue = nullptr;
         if (listType == COMMANDLIST_TYPE_DIRECT)
-        { pWrapDevice->GetGraphicsQueue(&pQueue); }
+        { m_pDevice->GetGraphicsQueue(&pQueue); }
         else if (listType == COMMANDLIST_TYPE_COMPUTE)
-        { pWrapDevice->GetComputeQueue(&pQueue); }
+        { m_pDevice->GetComputeQueue(&pQueue); }
         else if (listType == COMMANDLIST_TYPE_COPY)
-        { pWrapDevice->GetCopyQueue(&pQueue); }
+        { m_pDevice->GetCopyQueue(&pQueue); }
 
         if (pQueue != nullptr)
         {
@@ -116,10 +112,7 @@ void CommandList::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (m_CommandBuffer != null_handle)
@@ -198,6 +191,10 @@ void CommandList::Begin()
     m_pFrameBuffer = nullptr;
 
     VkViewport dummyViewport = {};
+    dummyViewport.width    = 1;
+    dummyViewport.height   = 1;
+    dummyViewport.minDepth = 0.0f;
+    dummyViewport.maxDepth = 1.0f;
     vkCmdSetViewport( m_CommandBuffer, 0, 1, &dummyViewport );
 
     VkRect2D dummyScissor = {};
@@ -226,7 +223,7 @@ void CommandList::SetFrameBuffer(IFrameBuffer* pBuffer)
         return;
     }
 
-    auto pWrapFrameBuffer = reinterpret_cast<FrameBuffer*>(pBuffer);
+    auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pBuffer);
     A3D_ASSERT(pWrapFrameBuffer != nullptr);
 
     // 同じフレームバッファであればコマンドは出さない.
@@ -327,7 +324,7 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
     if (pPipelineState == nullptr)
     { return; }
 
-    auto pWrapPipelineState = reinterpret_cast<PipelineState*>(pPipelineState);
+    auto pWrapPipelineState = static_cast<PipelineState*>(pPipelineState);
     A3D_ASSERT( pWrapPipelineState != nullptr );
 
     auto bindPoint = pWrapPipelineState->GetVulkanPipelineBindPoint();
@@ -338,12 +335,6 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットレイアウトを設定します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout*)
-{ /* DO_NOTHING */ }
-
-//-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットを設定します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
@@ -351,7 +342,7 @@ void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
     if (pDescriptorSet == nullptr)
     { return; }
 
-    auto pWrapDescriptorSet = reinterpret_cast<DescriptorSet*>(pDescriptorSet);
+    auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
     A3D_ASSERT( pWrapDescriptorSet != nullptr );
 
     pWrapDescriptorSet->Issue( this );
@@ -371,15 +362,15 @@ void CommandList::SetVertexBuffers
     if (count == 0 || ppResources == nullptr)
     { return; }
 
-    VkBuffer     buffers[32];
-    VkDeviceSize offsets[32];
+    VkBuffer     buffers[32] = {};
+    VkDeviceSize offsets[32] = {};
 
     for(auto i=0u; i<count; ++i)
     {
         if (i >= 32)
         { break; }
 
-        auto pWrapResource = reinterpret_cast<Buffer*>(ppResources[i]);
+        auto pWrapResource = static_cast<Buffer*>(ppResources[i]);
         A3D_ASSERT( pWrapResource != nullptr );
 
         buffers[i] = pWrapResource->GetVulkanBuffer();
@@ -401,7 +392,7 @@ void CommandList::SetIndexBuffer
     if (pResource == nullptr)
     { return; }
 
-    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
+    auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
 
     auto type = (pWrapResource->GetDesc().Stride == sizeof(uint16_t))
@@ -419,7 +410,7 @@ void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
     if (pResource == nullptr)
     { return; }
 
-    auto pWrapResource = reinterpret_cast<Texture*>(pResource);
+    auto pWrapResource = static_cast<Texture*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
 
     auto pNativeImage = pWrapResource->GetVulkanImage();
@@ -515,7 +506,7 @@ void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
     if (pResource == nullptr)
     { return; }
 
-    auto pWrapResource = reinterpret_cast<Buffer*>(pResource);
+    auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
 
     auto pNativeBuffer = pWrapResource->GetVulkanBuffer();
@@ -621,12 +612,12 @@ void CommandList::ExecuteIndirect
     if (pCommandSet == nullptr || maxCommandCount == 0 || pArgumentBuffer == nullptr)
     { return; }
 
-    auto pWrapCommandSet = reinterpret_cast<CommandSet*>(pCommandSet);
+    auto pWrapCommandSet = static_cast<CommandSet*>(pCommandSet);
     A3D_ASSERT(pWrapCommandSet != nullptr);
 
-    auto& desc = pWrapCommandSet->GetDesc();
+    const auto& desc = pWrapCommandSet->GetDesc();
 
-    auto pWrapArgumentBuffer = reinterpret_cast<Buffer*>(pArgumentBuffer);
+    auto pWrapArgumentBuffer = static_cast<Buffer*>(pArgumentBuffer);
     A3D_ASSERT(pWrapArgumentBuffer != nullptr);
 
     auto pNativeArgumentBuffer = pWrapArgumentBuffer->GetVulkanBuffer();
@@ -670,7 +661,7 @@ void CommandList::BeginQuery(IQueryPool* pQuery, uint32_t index)
     if (pQuery == nullptr)
     { return; }
 
-    auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+    auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
     auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
@@ -692,7 +683,7 @@ void CommandList::EndQuery(IQueryPool* pQuery, uint32_t index)
     if (pQuery == nullptr)
     { return; }
 
-    auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+    auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
     auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
@@ -722,13 +713,10 @@ void CommandList::ResolveQuery
     { return; }
 
     #if 0
-        auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-        A3D_ASSERT(pWrapDevice != nullptr);
-
-        auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+        auto pNativeDevice = m_pDevice->GetVulkanDevice();
         A3D_ASSERT(pNativeDevice != null_handle);
 
-        auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+        auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
         A3D_ASSERT(pWrapQueryPool != nullptr);
 
         auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
@@ -752,13 +740,13 @@ void CommandList::ResolveQuery
 
         pDstBuffer->Unmap();
     #else
-        auto pWrapQueryPool = reinterpret_cast<QueryPool*>(pQuery);
+        auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
         A3D_ASSERT(pWrapQueryPool != nullptr);
 
         auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
         A3D_ASSERT(pNativeQueryPool != null_handle);
 
-        auto pWrapBuffer = reinterpret_cast<Buffer*>(pDstBuffer);
+        auto pWrapBuffer = static_cast<Buffer*>(pDstBuffer);
         A3D_ASSERT(pWrapBuffer != nullptr);
 
         auto pNativeBuffer = pWrapBuffer->GetVulkanBuffer();
@@ -788,7 +776,7 @@ void CommandList::CopyTexture(ITexture* pDst, ITexture* pSrc)
 
     Offset3D offset = { 0, 0, 0 };
     Extent3D extent = {};
-    auto& desc = pDst->GetDesc();
+    const auto& desc = pDst->GetDesc();
     extent.Width    = desc.Width;
     extent.Height   = desc.Height;
     extent.Depth    = desc.DepthOrArraySize;
@@ -823,8 +811,8 @@ void CommandList::CopyTextureRegion
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
-    auto pWrapSrc = reinterpret_cast<Texture*>(pSrcResource);
-    auto pWrapDst = reinterpret_cast<Texture*>(pDstResource);
+    auto pWrapSrc = static_cast<Texture*>(pSrcResource);
+    auto pWrapDst = static_cast<Texture*>(pDstResource);
     A3D_ASSERT( pWrapSrc != nullptr );
     A3D_ASSERT( pWrapDst != nullptr );
 
@@ -836,8 +824,8 @@ void CommandList::CopyTextureRegion
     auto srcLayout = ToNativeImageLayout(pWrapSrc->GetState());
     auto dstLayout = ToNativeImageLayout(pWrapDst->GetState());
 
-    auto& srcDesc = pWrapSrc->GetDesc();
-    auto& dstDesc = pWrapDst->GetDesc();
+    const auto& srcDesc = pWrapSrc->GetDesc();
+    const auto& dstDesc = pWrapDst->GetDesc();
 
     VkImageCopy region = {};
     region.dstOffset.x = dstOffset.X;
@@ -888,8 +876,8 @@ void CommandList::CopyBufferRegion
     if (pDstBuffer == nullptr || pSrcBuffer == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Buffer*>(pDstBuffer);
-    auto pWrapSrc = reinterpret_cast<Buffer*>(pSrcBuffer);
+    auto pWrapDst = static_cast<Buffer*>(pDstBuffer);
+    auto pWrapSrc = static_cast<Buffer*>(pSrcBuffer);
     A3D_ASSERT( pWrapDst != nullptr );
     A3D_ASSERT( pWrapSrc != nullptr );
 
@@ -920,13 +908,12 @@ void CommandList::CopyBufferToTexture
     if (pDstTexture == nullptr || pSrcBuffer == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Texture*>(pDstTexture);
-    auto pWrapSrc = reinterpret_cast<Buffer*>(pSrcBuffer);
+    auto pWrapDst = static_cast<Texture*>(pDstTexture);
+    auto pWrapSrc = static_cast<Buffer*>(pSrcBuffer);
     A3D_ASSERT( pWrapDst != nullptr );
     A3D_ASSERT( pWrapSrc != nullptr );
 
-    auto& dstDesc = pWrapDst->GetDesc();
-    auto& srcDesc = pWrapSrc->GetDesc();
+    const auto& dstDesc = pWrapDst->GetDesc();
 
     auto nativeState = ToNativeImageLayout(pWrapDst->GetState());
 
@@ -971,12 +958,12 @@ void CommandList::CopyTextureToBuffer
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
     { return; }
 
-    auto pWrapDst = reinterpret_cast<Buffer*>(pDstBuffer);
-    auto pWrapSrc = reinterpret_cast<Texture*>(pSrcTexture);
+    auto pWrapDst = static_cast<Buffer*>(pDstBuffer);
+    auto pWrapSrc = static_cast<Texture*>(pSrcTexture);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
-    auto& srcDesc = pWrapSrc->GetDesc();
+    const auto& srcDesc = pWrapSrc->GetDesc();
 
     VkBufferImageCopy region = {};
     region.bufferOffset                 = dstOffset;
@@ -1019,8 +1006,8 @@ void CommandList::ResolveSubresource
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
-    auto pWrapSrc = reinterpret_cast<Texture*>(pSrcResource);
-    auto pWrapDst = reinterpret_cast<Texture*>(pDstResource);
+    auto pWrapSrc = static_cast<Texture*>(pSrcResource);
+    auto pWrapDst = static_cast<Texture*>(pDstResource);
     A3D_ASSERT( pWrapSrc != nullptr );
     A3D_ASSERT( pWrapDst != nullptr );
 
@@ -1032,8 +1019,8 @@ void CommandList::ResolveSubresource
     auto srcLayout = ToNativeImageLayout(pWrapSrc->GetState());
     auto dstLayout = ToNativeImageLayout(pWrapDst->GetState());
 
-    auto &dstDesc = pWrapDst->GetDesc();
-    auto &srcDesc = pWrapSrc->GetDesc();
+    const auto &dstDesc = pWrapDst->GetDesc();
+    const auto &srcDesc = pWrapSrc->GetDesc();
 
     VkImageResolve region = {};
     region.dstSubresource.aspectMask = pWrapDst->GetVulkanImageAspectFlags();
@@ -1077,7 +1064,7 @@ void CommandList::ExecuteBundle(ICommandList* pCommandList)
     if (pCommandList == nullptr)
     { return; }
 
-    auto pWrapCommandList = reinterpret_cast<CommandList*>(pCommandList);
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
     auto pNativeBundle = pWrapCommandList->GetVulkanCommandBuffer();
@@ -1108,7 +1095,7 @@ void CommandList::Flush()
     IQueue* pQueue;
     m_pDevice->GetGraphicsQueue(&pQueue);
 
-    auto pWrapQueue = reinterpret_cast<Queue*>(pQueue);
+    auto pWrapQueue = static_cast<Queue*>(pQueue);
     A3D_ASSERT(pWrapQueue != nullptr);
 
     auto pNativeQueue = pWrapQueue->GetVulkanQueue();
@@ -1151,7 +1138,6 @@ bool CommandList::Create
 (
     IDevice*            pDevice,
     COMMANDLIST_TYPE    listType,
-    const void*         pOption,
     ICommandList**      ppCommandList
 )
 {
@@ -1162,7 +1148,7 @@ bool CommandList::Create
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDevice, listType, pOption))
+    if (!instance->Init(pDevice, listType))
     {
         SafeRelease(instance);
         return false;

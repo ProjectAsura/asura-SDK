@@ -38,13 +38,10 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(pDevice);
-    A3D_ASSERT( pWrapDevice != nullptr );
-
-    auto pNativeDevice = pWrapDevice->GetD3D12Device();
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT( pNativeDevice != nullptr );
 
     auto pWrapTexture = reinterpret_cast<Texture*>(pTexture);
@@ -58,7 +55,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
     auto textureDesc = m_pTexture->GetDesc();
     if (textureDesc.Usage & RESOURCE_USAGE_COLOR_TARGET)
     {
-        m_pTargetDescriptor = pWrapDevice
+        m_pTargetDescriptor = m_pDevice
                                     ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
                                     ->CreateDescriptor();
         if (m_pTargetDescriptor == nullptr)
@@ -139,7 +136,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
     }
     else if (textureDesc.Usage & RESOURCE_USAGE_DEPTH_TARGET)
     {
-        m_pTargetDescriptor = pWrapDevice
+        m_pTargetDescriptor = m_pDevice
                                     ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV)
                                     ->CreateDescriptor();
         if (m_pTargetDescriptor == nullptr)
@@ -207,7 +204,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
 
     if (textureDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE)
     {
-        m_pShaderDescriptor = pWrapDevice
+        m_pShaderDescriptor = m_pDevice
                                     ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
                                     ->CreateDescriptor();
         if (m_pShaderDescriptor == nullptr)

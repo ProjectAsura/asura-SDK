@@ -152,6 +152,83 @@ template<typename T>
 inline T GetProc(VkDevice device, const char* name)
 { return reinterpret_cast<T>(vkGetDeviceProcAddr(device, name)); }
 
+//-------------------------------------------------------------------------------------------------
+//      インスタンス拡張機能をチェックします.
+//-------------------------------------------------------------------------------------------------
+void CheckInstanceExtension
+(
+    const char*     layer,
+    size_t          requestCount,
+    const char**    requestNames,
+    a3d::dynamic_array<char*>& result
+)
+{
+    uint32_t count;
+    vkEnumerateInstanceExtensionProperties(layer, &count, nullptr);
+
+    a3d::dynamic_array<VkExtensionProperties> temp;
+    temp.resize(count);
+
+    vkEnumerateInstanceExtensionProperties(layer, &count, temp.data());
+
+    result.reserve(count);
+    for(size_t i=0; i<temp.size(); ++i)
+    {
+        bool hit = false;
+        for(size_t j=0; j<requestCount; ++j)
+        {
+            if (strcmp(temp[i].extensionName, requestNames[j]) == 0)
+            {
+                hit = true;
+                break;
+            }
+        }
+
+        if (!hit)
+        { continue; }
+
+        auto extname = new char[VK_MAX_EXTENSION_NAME_SIZE];
+        memset(extname, 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+        memcpy(extname, temp[i].extensionName, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+        result.push_back(extname);
+    }
+
+    result.shrink_to_fit();
+    temp.clear();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバイス拡張機能をチェックします.
+//-------------------------------------------------------------------------------------------------
+void CheckDeviceExtension
+(
+    const char*      layer,
+    VkPhysicalDevice physicalDevice,
+    a3d::dynamic_array<char*>& result
+)
+{
+    uint32_t count;
+    vkEnumerateDeviceExtensionProperties(physicalDevice, layer, &count, nullptr);
+
+    a3d::dynamic_array<VkExtensionProperties> temp;
+    temp.resize(count);
+
+    vkEnumerateDeviceExtensionProperties(physicalDevice, layer, &count, temp.data());
+
+    result.reserve(count);
+    for(size_t i=0; i<temp.size(); ++i)
+    {
+        auto extname = new char[VK_MAX_EXTENSION_NAME_SIZE];
+        memset(extname, 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+        memcpy(extname, temp[i].extensionName, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+        result.push_back(extname);
+    }
+
+    result.shrink_to_fit();
+
+    temp.clear();
+}
+
 } // namespace /* anonymous */
 
 
@@ -184,16 +261,14 @@ Device::~Device()
 //-------------------------------------------------------------------------------------------------
 //      初期化処理です.
 //-------------------------------------------------------------------------------------------------
-bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
+bool Device::Init(const DeviceDesc* pDesc)
 {
-    A3D_UNUSED(pOption);
-
     if (pDesc == nullptr)
     { return false; }
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
-    const char* layerExtension[] = {
+    const char* instanceExtension[] = {
         VK_KHR_SURFACE_EXTENSION_NAME,
     #if A3D_IS_WIN
         VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
@@ -209,17 +284,25 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
         "VK_LAYER_LUNARG_standard_validation",
     };
 
-    uint32_t layerExtensionCount = 2;
+    uint32_t instanceExtensionCount = 2;
     uint32_t layerCount = 0;
 
     if (pDesc->EnableDebug)
     {
         layerCount          = 1;
-        layerExtensionCount = 3;
+        instanceExtensionCount++;
     }
 
     // インスタンスの生成.
     {
+        a3d::dynamic_array<char*> extensions;
+        CheckInstanceExtension(
+            nullptr,
+            instanceExtensionCount,
+            instanceExtension,
+            extensions
+        );
+
         VkApplicationInfo appInfo = {};
         appInfo.sType               = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pNext               = nullptr;
@@ -236,8 +319,8 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
         instanceInfo.pApplicationInfo           = &appInfo;
         instanceInfo.enabledLayerCount          = layerCount;
         instanceInfo.ppEnabledLayerNames        = (pDesc->EnableDebug) ? layer : nullptr;
-        instanceInfo.enabledExtensionCount      = layerExtensionCount;
-        instanceInfo.ppEnabledExtensionNames    = layerExtension;
+        instanceInfo.enabledExtensionCount      = static_cast<uint32_t>(extensions.size());
+        instanceInfo.ppEnabledExtensionNames    = extensions.data();
 
         m_Allocator.pfnAllocation           = Alloc;
         m_Allocator.pfnFree                 = Free;
@@ -246,6 +329,14 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
         m_Allocator.pfnInternalFree         = nullptr;
 
         auto ret = vkCreateInstance(&instanceInfo, &m_Allocator, &m_Instance);
+
+        for(size_t i=0; i<extensions.size(); ++i)
+        {
+            delete [] extensions[i];
+            extensions[i] = nullptr;
+        }
+        extensions.clear();
+
         if ( ret != VK_SUCCESS )
         { return false; }
     }
@@ -377,7 +468,9 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
                 }
             }
 
-            if (pProps[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+            // コンピュート専用キューを見つける.
+            if ( (pProps[i].queueFlags & VK_QUEUE_COMPUTE_BIT) 
+             && ((pProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != VK_QUEUE_GRAPHICS_BIT) )
             {
                 if (computeIndex == UINT32_MAX)
                 {
@@ -387,13 +480,50 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
                 }
             }
 
-            if (pProps[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+            // 転送専用キューを見つける.
+            if ( (pProps[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+             && ((pProps[i].queueFlags & VK_QUEUE_TRANSFER_BIT) != VK_QUEUE_GRAPHICS_BIT) )
             {
                 if (transferIndex == UINT32_MAX)
                 {
                     transferIndex = i;
                     transferQueueindex = queueIndex;
                     queueIndex++;
+                }
+            }
+        }
+
+        // 1つも見つからなければ仕方ないので共用のものを探す.
+        if (computeIndex == UINT32_MAX)
+        {
+            for(auto i=0u; i<propCount; ++i)
+            {
+                if ( pProps[i].queueFlags & VK_QUEUE_COMPUTE_BIT) 
+                {
+                    if (computeIndex == UINT32_MAX)
+                    {
+                        computeIndex = i;
+                        computeQueueIndex = queueIndex;
+                        queueIndex++;
+                    }
+                }
+            }
+        }
+
+        // 1つも見つからなければ仕方ないので共用のものを探す.
+        if (transferIndex == UINT32_MAX)
+        {
+            for(auto i=0u; i<propCount; ++i)
+            {
+          
+                if ( pProps[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+                {
+                    if (transferIndex == UINT32_MAX)
+                    {
+                        transferIndex = i;
+                        transferQueueindex = queueIndex;
+                        queueIndex++;
+                    }
                 }
             }
         }
@@ -415,8 +545,43 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
             offset += pProps[i].queueCount;
         }
 
-        const char* deviceExtensions[]   = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-        uint32_t    deviceExtensionCount = 1;
+        a3d::dynamic_array<char*> deviceExtensions;
+        if (pDesc->EnableDebug)
+        {
+            deviceExtensions.resize(1);
+            deviceExtensions[0] = new char [VK_MAX_EXTENSION_NAME_SIZE];
+            memset(deviceExtensions[0], 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+
+            #if A3D_IS_WIN
+                strcpy_s(deviceExtensions[0], sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            #else
+                strcpy(deviceExtensions[0], VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            #endif
+        }
+        else
+        {
+            CheckDeviceExtension(
+                nullptr,
+                physicalDevice,
+                deviceExtensions);
+
+            // 初期化のためフラグを下しておく.
+            for(auto i=0; i<EXT_COUNT; ++i)
+            { m_IsSupportExt[i] = false; }
+
+            for(size_t i=0; i<deviceExtensions.size(); ++i)
+            {
+            #if defined(VK_NVX_DEVICE_GENERATED_COMMANDS_SPEC_VERSION)
+                if (strcmp(deviceExtensions[i], VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_NVX_DEVICE_GENERATE_COMMAND] = true; }
+            #endif
+
+            #if defined(VK_AMD_DRAW_INDIRECT_COUNT_SPEC_VERSION)
+                if (strcmp(deviceExtensions[i], VK_AMD_DRAW_INDIRECT_COUNT_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_AMD_DRAW_INDIRECT_COUNT] = true; }
+            #endif
+            }
+        }
 
         VkDeviceCreateInfo deviceInfo = {};
         deviceInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -425,11 +590,18 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
         deviceInfo.pQueueCreateInfos        = pQueueInfos;
         deviceInfo.enabledLayerCount        = layerCount;
         deviceInfo.ppEnabledLayerNames      = layer;
-        deviceInfo.enabledExtensionCount    = deviceExtensionCount;
-        deviceInfo.ppEnabledExtensionNames  = deviceExtensions;
+        deviceInfo.enabledExtensionCount    = uint32_t(deviceExtensions.size());
+        deviceInfo.ppEnabledExtensionNames  = deviceExtensions.data();
         deviceInfo.pEnabledFeatures         = nullptr;
 
         auto ret = vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &m_Device);
+
+        for(size_t i=0; i<deviceExtensions.size(); ++i)
+        {
+            delete [] deviceExtensions[i];
+            deviceExtensions[i] = nullptr;
+        }
+        deviceExtensions.clear();
 
         delete[] pProps;
         delete[] pQueueInfos;
@@ -438,13 +610,28 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
         if (ret != VK_SUCCESS )
         { return false; }
 
-        if (!Queue::Create(this, graphicsIndex, graphicsQueueIndex, pDesc->MaxGraphicsQueueSubmitCount, &m_pGraphicsQueue))
+        if (!Queue::Create(
+            this, 
+            graphicsIndex,
+            graphicsQueueIndex,
+            pDesc->MaxGraphicsQueueSubmitCount,
+            reinterpret_cast<IQueue**>(&m_pGraphicsQueue)))
         { return false; }
 
-        if (!Queue::Create(this, computeIndex, computeQueueIndex, pDesc->MaxComputeQueueSubmitCount, &m_pComputeQueue))
+        if (!Queue::Create(
+            this,
+            computeIndex,
+            computeQueueIndex,
+            pDesc->MaxComputeQueueSubmitCount,
+            reinterpret_cast<IQueue**>(&m_pComputeQueue)))
         { return false; }
 
-        if (!Queue::Create(this, transferIndex, transferQueueindex, pDesc->MaxCopyQueueSubmitCount, &m_pCopyQueue))
+        if (!Queue::Create(
+            this,
+            transferIndex,
+            transferQueueindex,
+            pDesc->MaxCopyQueueSubmitCount,
+            reinterpret_cast<IQueue**>(&m_pCopyQueue)))
         { return false; }
     }
 
@@ -597,8 +784,8 @@ void Device::GetCopyQueue(IQueue** ppQueue)
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandList(COMMANDLIST_TYPE type, const void* pOption, ICommandList** ppCommandList)
-{ return CommandList::Create(this, type, pOption, ppCommandList); }
+bool Device::CreateCommandList(COMMANDLIST_TYPE type, ICommandList** ppCommandList)
+{ return CommandList::Create(this, type, ppCommandList); }
 
 //-------------------------------------------------------------------------------------------------
 //      スワップチェインを生成します.
@@ -791,9 +978,15 @@ bool Device::CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool
 }
 
 //-------------------------------------------------------------------------------------------------
+//      拡張機能がサポートされているかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool Device::IsSupportExtension(EXTENSION value) const
+{ return m_IsSupportExt[value]; }
+
+//-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
+bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
@@ -802,7 +995,7 @@ bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDe
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDesc, pOption))
+    if (!instance->Init(pDesc))
     {
         SafeRelease(instance);
         return false;
@@ -815,7 +1008,7 @@ bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDe
 //-------------------------------------------------------------------------------------------------
 //      デバイスを生成します.
 //-------------------------------------------------------------------------------------------------
-bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
+bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
@@ -823,7 +1016,25 @@ bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, const void* pOption, IDe
     for(auto i=0; i<VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE; ++i)
     { g_AllocationSize[i] = 0; }
 
-    return Device::Create(pDesc, pOption, ppDevice);
+    return Device::Create(pDesc, ppDevice);
 }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィックスシステムを初期化します.
+//-------------------------------------------------------------------------------------------------
+bool A3D_APIENTRY InitSystem(const SystemDesc* pDesc)
+{ return InitSystemAllocator(pDesc->pAllocator); }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィクスシステムが初期化済みかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool A3D_APIENTRY IsInitSystem()
+{ return IsInitSystemAllocator(); }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィックスシステムの終了処理を行います.
+//-------------------------------------------------------------------------------------------------
+void A3D_APIENTRY TermSystem()
+{ TermSystemAllocator(); }
 
 } // namespace a3d

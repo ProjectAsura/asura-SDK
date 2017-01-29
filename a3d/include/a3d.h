@@ -8,6 +8,7 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
+#include <stddef.h>
 #include <cstdint>
 
 
@@ -502,6 +503,7 @@ enum MIPMAP_MODE
 {
     MIPMAP_MODE_NEAREST = 0,    //!< 近傍フィルタです.
     MIPMAP_MODE_LINEAR  = 1,    //!< 線形フィルタです.
+    MIPMAP_MODE_NONE    = 2,    //!< フィルタなしです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -594,17 +596,6 @@ enum COLOR_SPACE_TYPE
     COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020,
     COLOR_SPACE_RGB_FULL_G22_NONE_P2020,
     COLOR_SPACE_CUSTOM
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//! @enum   COLOR_SPACE_SUPPORT_FLAG
-//! @brief  カラースペースサポートフラグです.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-enum COLOR_SPACE_SUPPROT_FLAG
-{
-    COLOR_SPACE_SUPPORT_FLAG_NONE               = 0x0,  //!< 非サポートです.
-    COLOR_SPACE_SUPPORT_FLAG_PRESENT            = 0x1,  //!< 表示用にカラースペースがサポートされます.
-    COLOR_SPACE_SUPPORT_FLAG_OVERLAY_PRESENT    = 0x2   //!< 表示用にオーバーレイカラースペースがサポートされます.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -867,7 +858,7 @@ struct RasterizerState
     bool                FrontCounterClockWise;      //!< 前面を反時計周りにするかどうか.
     int                 DepthBias;                  //!< 深度バイアス.
     float               DepthBiasClamp;             //!< 深度バイアスのクランプ値です.
-    float               SlopeScaledDepthBais;       //!< 深度傾斜バイアスです.
+    float               SlopeScaledDepthBias;       //!< 深度傾斜バイアスです.
     bool                DepthClipEnable;            //!< 深度クリップを有効にするかどうか.
     bool                EnableConservativeRaster;   //!< コンサバティブラスタライゼーションを有効化にするかどうか.
 };
@@ -1071,15 +1062,15 @@ struct QueryPoolDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct SwapChainDesc
 {
-    Extent2D        Extent;             //!< サイズです.
-    RESOURCE_FORMAT Format;             //!< フォーマットです.
-    uint32_t        MipLevels;          //!< ミップレベルです.
-    uint32_t        SampleCount;        //!< マルチサンプル数です.
-    uint32_t        BufferCount;        //!< バックバッファ数です.
-    uint32_t        SyncInterval;       //!< 垂直同期間隔です.
-    void*           InstanceHandle;     //!< インスタンスハンドルです.
-    void*           WindowHandle;       //!< ウィンドウハンドルです.
-    bool            EnableFullScreen;   //!< フルスクリーン化する場合は true を指定.
+    Extent2D            Extent;             //!< サイズです.
+    RESOURCE_FORMAT     Format;             //!< フォーマットです.
+    uint32_t            MipLevels;          //!< ミップレベルです.
+    uint32_t            SampleCount;        //!< マルチサンプル数です.
+    uint32_t            BufferCount;        //!< バックバッファ数です.
+    uint32_t            SyncInterval;       //!< 垂直同期間隔です.
+    void*               InstanceHandle;     //!< インスタンスハンドルです.
+    void*               WindowHandle;       //!< ウィンドウハンドルです.
+    bool                EnableFullScreen;   //!< フルスクリーン化する場合は true を指定.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1117,17 +1108,17 @@ struct SubresourceLayout
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct PipelineStatistics
 {
-    uint64_t IAVertices;            //!< 入力アセンブラによって読み込まれた頂点数です.
-    uint64_t IAPrimitives;          //!< 入力アセンブラによって読み込まれたプリミティブ数です.
-    uint64_t VSInvocations;         //!< 頂点シェーダが呼び出された回数です.
-    uint64_t GSInvocations;         //!< ジオメトリシェーダが呼び出された回数です.
-    uint64_t GSPrimitives;          //!< ジオメトリシェーダによって出力されたプリミティブ数です.
-    uint64_t CInvocations;          //!< ラスタライザに送信されたプリミティブ数です.
-    uint64_t CPrimitives;           //!< レンダリングされたプリミティブ数です.
-    uint64_t PSInvocations;         //!< ピクセルシェーダが呼び出された回数です.
-    uint64_t HSInvocations;         //!< ハルシェーダが呼び出された回数です.
-    uint64_t DSInvocations;         //!< ドメインシェーダが呼び出された回数です.
-    uint64_t CSInvocations;         //!< コンピュートシェーダが呼び出された回数です.
+    uint64_t    IAVertices;            //!< 入力アセンブラによって読み込まれた頂点数です.
+    uint64_t    IAPrimitives;          //!< 入力アセンブラによって読み込まれたプリミティブ数です.
+    uint64_t    VSInvocations;         //!< 頂点シェーダが呼び出された回数です.
+    uint64_t    GSInvocations;         //!< ジオメトリシェーダが呼び出された回数です.
+    uint64_t    GSPrimitives;          //!< ジオメトリシェーダによって出力されたプリミティブ数です.
+    uint64_t    CInvocations;          //!< ラスタライザに送信されたプリミティブ数です.
+    uint64_t    CPrimitives;           //!< レンダリングされたプリミティブ数です.
+    uint64_t    PSInvocations;         //!< ピクセルシェーダが呼び出された回数です.
+    uint64_t    HSInvocations;         //!< ハルシェーダが呼び出された回数です.
+    uint64_t    DSInvocations;         //!< ドメインシェーダが呼び出された回数です.
+    uint64_t    CSInvocations;         //!< コンピュートシェーダが呼び出された回数です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1161,6 +1152,17 @@ struct DeviceDesc
     bool            EnableDebug;                    //!< デバッグモードを有効にします.
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// SystemDesc structure
+//! @brief  システムの設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct SystemDesc
+{
+    IAllocator*     pAllocator;
+    uint32_t        OptionType;
+    size_t          OptionSize;
+    void*           pOption;
+};
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      指定された数値の倍数に切り上げます.
@@ -1171,7 +1173,10 @@ struct DeviceDesc
 //-------------------------------------------------------------------------------------------------
 template<typename T>
 T RoundUp(T value, T base)
-{ return ( value + ( base - 1 ) ) & ~( base - 1 ); }
+{
+    T mask = (base - 1);
+    return ( value + mask ) & ~mask;
+}
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      指定された数値の倍数に切り下げます.
@@ -1182,7 +1187,7 @@ T RoundUp(T value, T base)
 //-------------------------------------------------------------------------------------------------
 template<typename T>
 T RoundDown(T value, T base)
-{ return ( val + ( base - 1 )) & ~( base - 1 ); }
+{ return value & ~( base - 1 ); }
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      解放処理を行います.
@@ -1196,11 +1201,11 @@ void SafeRelease(T*& ptr)
 //-------------------------------------------------------------------------------------------------
 //! @brief      グラフィックスシステムを初期化します.
 //!
-//! @param[in]      pAllocator      アロケータです.
+//! @param[in]      pDesc           システム設定です.
 //! @retval true    初期化に成功.
 //! @retval false   初期化に失敗，または初期化済みです.
 //-------------------------------------------------------------------------------------------------
-A3D_API bool A3D_APIENTRY InitSystem(IAllocator* pAllocator);
+A3D_API bool A3D_APIENTRY InitSystem(const SystemDesc* pDesc);
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      グラフィックスが初期化済みかどうかチェックします.
@@ -1219,15 +1224,23 @@ A3D_API void A3D_APIENTRY TermSystem();
 //! @brief      デバイスを生成します.
 //!
 //! @param[in]      pDesc       デバイス設定です.
-//! @param[in]      pOption     オプション情報です.
 //! @param[out]     ppDevice    デバイスの格納先です.
 //! @retval true    生成に成功.
 //! @retval false   生成に失敗.
 //-------------------------------------------------------------------------------------------------
 A3D_API bool A3D_APIENTRY CreateDevice(
     const DeviceDesc*   pDesc,
-    const void*         pOption,
     IDevice**           ppDevice);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      バイナリラージオブジェクトを生成します.
+//!
+//! @param[in]      size        サイズです(バイト単位).
+//! @param[out]     ppBlob      バイナリラージオブジェクトの格納先です.
+//! @retval true    生成に成功.
+//! @retval false   生成に失敗.
+//-------------------------------------------------------------------------------------------------
+A3D_API bool A3D_APIENTRY CreateBlob(size_t size, IBlob** ppBlob);
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1536,6 +1549,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
+    //! @note       設定したテクスチャは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) = 0;
 
@@ -1544,6 +1558,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
+    //! @note       設定したバッファは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) = 0;
 
@@ -1552,13 +1567,18 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pSampler    設定するサンプラーです.
+    //! @note       設定したサンプラーは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY SetSampler(uint32_t index, ISampler* pSampler) = 0;
 
+#if 1
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを更新します.
+    //! @note       このAPIは削除予定される予定です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Update() = 0;
+    virtual void A3D_APIENTRY Update() 
+    { /* DO_NOTHING */ }
+#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1727,13 +1747,6 @@ struct A3D_API ICommandList : IDeviceChild
     //! @param[in]      pPipelineState      設定するパイプラインステートです.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットをレイアウトを設定します.
-    //!
-    //! @param[in]      pDescriptorSetLayout    設定するディスクリプタセットレイアウトです.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを設定します.
@@ -2083,16 +2096,6 @@ struct A3D_API ISwapChain : IDeviceChild
     virtual bool A3D_APIENTRY SetMetaData(META_DATA_TYPE type, void* pData) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      色空間がサポートされているかチェックします.
-    //!
-    //! @param[in]      type        色空間タイプです.
-    //! @param[out]     pFlags      サポートフラグ(マスクビット)の格納先です(COLOR_SPACE_SUPPROT_FLAG参照).
-    //! @retval true    チェックに成功.
-    //! @retval false   チェックに失敗.
-    //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags) = 0;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      フルスクリーンモードかどうかチェックします.
     //!
     //! @retval true    フルスクリーンモードです.
@@ -2108,6 +2111,16 @@ struct A3D_API ISwapChain : IDeviceChild
     //! @retval false   設定に失敗.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY SetFullScreenMode(bool enable) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      色空間がサポートされているかチェックします.
+    //!
+    //! @param[in]      type        色空間タイプです.
+    //! @param[out]     pFlags      サポートフラグ(マスクビット)の格納先です(COLOR_SPACE_SUPPROT_FLAG参照).
+    //! @retval true    チェックに成功.
+    //! @retval false   チェックに失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2161,14 +2174,12 @@ struct A3D_API IDevice : IReference
     //! @brief      コマンドリストを生成します.
     //!
     //! @param[in]      commandListType     コマンドリストタイプです.
-    //! @param[in]      pOption             オプション情報を指定します.
     //! @param[out]     ppCommandList       コマンドリストの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY CreateCommandList(
         COMMANDLIST_TYPE    commandListType,
-        const void*         pOption,
         ICommandList**      ppCommandList) = 0;
 
     //---------------------------------------------------------------------------------------------

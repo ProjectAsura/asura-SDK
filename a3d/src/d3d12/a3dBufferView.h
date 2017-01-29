@@ -11,7 +11,7 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // BufferView class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API BufferView : IBufferView, BaseAllocator
+class A3D_API BufferView : public IBufferView, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -87,7 +87,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;     //!< 参照カウンタです.
-    IDevice*                m_pDevice;      //!< デバイスです.
+    Device*                 m_pDevice;      //!< デバイスです.
     Buffer*                 m_pBuffer;      //!< バッファです.
     BufferViewDesc          m_Desc;         //!< 構成設定です.
     Descriptor*             m_pDescriptor;  //!< ディスクリプタです.

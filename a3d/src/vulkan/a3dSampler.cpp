@@ -93,13 +93,10 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWarpDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWarpDevice != nullptr);
-
-    auto pNativeDevice = pWarpDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     VkSamplerCreateInfo info = {};
@@ -137,10 +134,7 @@ void Sampler::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     vkDestroySampler(pNativeDevice, m_Sampler, nullptr);

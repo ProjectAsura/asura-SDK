@@ -43,10 +43,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     SafeRelease(m_pQueue);
     SafeRelease(m_pDevice);
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_pDevice->GetGraphicsQueue(&m_pQueue);
+    m_pDevice->GetGraphicsQueue(reinterpret_cast<IQueue**>(&m_pQueue));
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
@@ -70,31 +70,24 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         // TODO : Implement.
     }
     #elif A3D_IS_ANDROID
-    {
-        // TODO : Implement.
-    }
+    { /* DO_NOTHING */ }
+    #elif A3D_IS_NX
+    { /* DO_NMOTHING */ }
     #endif
 
     if (!InitSurface(&m_Surface))
     { return false; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    auto pNativePhysicalDevice = pWrapDevice->GetVulkanPhysicalDevice(0);
+    auto pNativePhysicalDevice = m_pDevice->GetVulkanPhysicalDevice(0);
     A3D_ASSERT(pNativePhysicalDevice != null_handle);
-
-    auto pWrapQueue = reinterpret_cast<Queue*>(m_pQueue);
-    A3D_ASSERT(pWrapQueue != null_handle);
 
     // フォーマットをチェック
     m_ImageFormat   = VK_FORMAT_UNDEFINED;
-    m_ColorSpace    = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     {
-        auto familyIndex = pWrapQueue->GetFamilyIndex();
+        auto familyIndex = m_pQueue->GetFamilyIndex();
         VkBool32 support = VK_FALSE;
 
         auto ret = vkGetPhysicalDeviceSurfaceSupportKHR(pNativePhysicalDevice, familyIndex, m_Surface, &support);
@@ -119,10 +112,13 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
 
         bool isFind = false;
 
-        auto nativeFormat = ToNativeFormat(pDesc->Format);
+        auto nativeFormat     = ToNativeFormat(pDesc->Format);
+        auto nativeColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
         for(auto i=0u; i<count; ++i)
         {
-            if (nativeFormat == pFormats[i].format)
+            if (nativeFormat     == pFormats[i].format &&
+                nativeColorSpace == pFormats[i].colorSpace)
             {
                 m_ImageFormat   = pFormats[i].format;
                 m_ColorSpace    = pFormats[i].colorSpace;
@@ -253,14 +249,14 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         if ( chainCount != pDesc->BufferCount )
         { return false; }
 
-        m_pImages = new(std::nothrow) VkImage [chainCount];
+        m_pImages = new VkImage [chainCount];
         if ( m_pImages == nullptr )
         { return false; }
 
         for(auto i=0u; i<chainCount; ++i)
         {  m_pImages[i] = null_handle; }
 
-        m_pImageViews = new(std::nothrow) VkImageView [chainCount];
+        m_pImageViews = new VkImageView [chainCount];
         if ( m_pImageViews == nullptr )
         { return false; }
 
@@ -302,13 +298,18 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
 
     // リソース初期化
     {
-        m_pBuffers = new (std::nothrow) ITexture* [m_Desc.BufferCount];
+        m_pBuffers = new Texture* [m_Desc.BufferCount];
         if ( m_pBuffers == nullptr )
         { return false; }
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         {
-            if (!Texture::Create(pDevice, &m_Desc, m_pImages[i], m_pImageViews[i], &m_pBuffers[i]))
+            if (!Texture::Create(
+                pDevice,
+                &m_Desc,
+                m_pImages[i],
+                m_pImageViews[i],
+                reinterpret_cast<ITexture**>(&m_pBuffers[i])))
             { return false; }
         }
     }
@@ -316,19 +317,16 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     // イメージレイアウトを変更.
     {
         ICommandList* pCmdList;
-        if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, nullptr, &pCmdList))
+        if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, &pCmdList))
         { return false; }
 
-        auto pWrapCmdList = reinterpret_cast<CommandList*>(pCmdList);
+        auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
         pWrapCmdList->Begin();
 
         auto cmdBuffer = pWrapCmdList->GetVulkanCommandBuffer();
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         { 
-            auto pWrapTexture = reinterpret_cast<Texture*>(m_pBuffers[i]);
-            A3D_ASSERT(pWrapTexture != nullptr);
-
             VkImageMemoryBarrier barrier = {};
             barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.pNext               = nullptr;
@@ -338,13 +336,13 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
             barrier.newLayout           = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             barrier.srcQueueFamilyIndex = 0;
             barrier.dstQueueFamilyIndex = 0;
-            barrier.image               = pWrapTexture->GetVulkanImage();
+            barrier.image               = m_pBuffers[i]->GetVulkanImage();
 
             barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.baseMipLevel   = 0;
-            barrier.subresourceRange.layerCount     = pWrapTexture->GetDesc().DepthOrArraySize;
-            barrier.subresourceRange.levelCount     = pWrapTexture->GetDesc().MipLevels;
+            barrier.subresourceRange.layerCount     = m_pBuffers[i]->GetDesc().DepthOrArraySize;
+            barrier.subresourceRange.levelCount     = m_pBuffers[i]->GetDesc().MipLevels;
 
             vkCmdPipelineBarrier(
                 cmdBuffer,
@@ -352,7 +350,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 0, 0, nullptr, 0, nullptr, 1, &barrier );
 
-            pWrapTexture->SetState( RESOURCE_STATE_PRESENT );
+            m_pBuffers[i]->SetState( RESOURCE_STATE_PRESENT );
         }
 
         pWrapCmdList->End();
@@ -363,9 +361,9 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
 
     // バックバッファ取得.
     {
-        auto index      = pWrapQueue->GetCurrentBufferIndex();
-        auto semaphore  = pWrapQueue->GetVulkanWaitSemaphore(index);
-        auto fence      = pWrapQueue->GetVulkanFence(index);
+        auto index      = m_pQueue->GetCurrentBufferIndex();
+        auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
+        auto fence      = m_pQueue->GetVulkanFence(index);
 
         auto ret = vkAcquireNextImageKHR(
             pNativeDevice,
@@ -393,22 +391,16 @@ void SwapChain::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeInstance = pWrapDevice->GetVulkanInstance();
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
     A3D_ASSERT(pNativeInstance != null_handle);
 
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // キューの完了を待機.
     if (m_pQueue != nullptr)
     {
-        auto pWrapQueue = reinterpret_cast<Queue*>(m_pQueue);
-        A3D_ASSERT(pWrapQueue != nullptr);
-
-        auto pNativeQueue = pWrapQueue->GetVulkanQueue();
+        auto pNativeQueue = m_pQueue->GetVulkanQueue();
         A3D_ASSERT(pNativeQueue != null_handle);
 
         vkQueueWaitIdle(pNativeQueue);
@@ -523,23 +515,17 @@ void SwapChain::Present()
     info.pSwapchains    = &m_SwapChain;
     info.pImageIndices  = &m_CurrentBufferIndex;
 
-    auto pWrapQueue = reinterpret_cast<Queue*>(m_pQueue);
-    A3D_ASSERT(pWrapQueue != nullptr);
-
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    auto index = pWrapQueue->GetCurrentBufferIndex();
-    auto semaphore = pWrapQueue->GetVulkanWaitSemaphore(index);
+    auto index      = m_pQueue->GetCurrentBufferIndex();
+    auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
     uint64_t Infinite = 0xFFFFFFFF;
 
-    auto ret = vkQueuePresentKHR(pWrapQueue->GetVulkanQueue(), &info);
+    auto ret = vkQueuePresentKHR(m_pQueue->GetVulkanQueue(), &info);
     A3D_ASSERT(ret == VK_SUCCESS);
 
-    auto fence = pWrapQueue->GetVulkanFence(index);
+    auto fence = m_pQueue->GetVulkanFence(index);
     A3D_ASSERT(fence != null_handle);
 
     ret = vkAcquireNextImageKHR(
@@ -584,21 +570,12 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    auto pWrapQueue = reinterpret_cast<Queue*>(m_pQueue);
-    A3D_ASSERT(pWrapQueue != nullptr);
+    m_pQueue->WaitIdle();
 
-    pWrapQueue->WaitIdle();
-
-    auto pNativeInstance = pWrapDevice->GetVulkanInstance();
-    A3D_ASSERT(pNativeInstance != null_handle);
-
-    auto pNativePhysicalDevice = pWrapDevice->GetVulkanPhysicalDevice(0);
+    auto pNativePhysicalDevice = m_pDevice->GetVulkanPhysicalDevice(0);
     A3D_ASSERT(pNativePhysicalDevice != null_handle);
 
     m_Desc.Extent.Width  = width;
@@ -718,14 +695,14 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         if ( chainCount != m_Desc.BufferCount )
         { return false; }
 
-        m_pImages = new(std::nothrow) VkImage [chainCount];
+        m_pImages = new VkImage [chainCount];
         if ( m_pImages == nullptr )
         { return false; }
 
         for(auto i=0u; i<chainCount; ++i)
         {  m_pImages[i] = null_handle; }
 
-        m_pImageViews = new(std::nothrow) VkImageView [chainCount];
+        m_pImageViews = new VkImageView [chainCount];
         if ( m_pImageViews == nullptr )
         { return false; }
 
@@ -767,13 +744,18 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 
     // リソース初期化
     {
-        m_pBuffers = new (std::nothrow) ITexture* [m_Desc.BufferCount];
+        m_pBuffers = new Texture* [m_Desc.BufferCount];
         if ( m_pBuffers == nullptr )
         { return false; }
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         {
-            if (!Texture::Create(m_pDevice, &m_Desc, m_pImages[i], m_pImageViews[i], &m_pBuffers[i]))
+            if (!Texture::Create(
+                m_pDevice,
+                &m_Desc,
+                m_pImages[i],
+                m_pImageViews[i],
+                reinterpret_cast<ITexture**>(&m_pBuffers[i])))
             { return false; }
         }
     }
@@ -781,19 +763,16 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
     // イメージレイアウトを変更.
     {
         ICommandList* pCmdList;
-        if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, nullptr, &pCmdList))
+        if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, &pCmdList))
         { return false; }
 
-        auto pWrapCmdList = reinterpret_cast<CommandList*>(pCmdList);
+        auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
         pWrapCmdList->Begin();
 
         auto cmdBuffer = pWrapCmdList->GetVulkanCommandBuffer();
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         { 
-            auto pWrapTexture = reinterpret_cast<Texture*>(m_pBuffers[i]);
-            A3D_ASSERT(pWrapTexture != nullptr);
-
             VkImageMemoryBarrier barrier = {};
             barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.pNext               = nullptr;
@@ -803,13 +782,13 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
             barrier.newLayout           = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             barrier.srcQueueFamilyIndex = 0;
             barrier.dstQueueFamilyIndex = 0;
-            barrier.image               = pWrapTexture->GetVulkanImage();
+            barrier.image               = m_pBuffers[i]->GetVulkanImage();
 
             barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.baseMipLevel   = 0;
-            barrier.subresourceRange.layerCount     = pWrapTexture->GetDesc().DepthOrArraySize;
-            barrier.subresourceRange.levelCount     = pWrapTexture->GetDesc().MipLevels;
+            barrier.subresourceRange.layerCount     = m_pBuffers[i]->GetDesc().DepthOrArraySize;
+            barrier.subresourceRange.levelCount     = m_pBuffers[i]->GetDesc().MipLevels;
 
             vkCmdPipelineBarrier(
                 cmdBuffer,
@@ -817,7 +796,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 0, 0, nullptr, 0, nullptr, 1, &barrier );
 
-            pWrapTexture->SetState( RESOURCE_STATE_PRESENT );
+            m_pBuffers[i]->SetState( RESOURCE_STATE_PRESENT );
         }
 
         pWrapCmdList->End();
@@ -829,13 +808,13 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
     m_CurrentBufferIndex = 0;
 
     // 同期オブジェクトをリセット
-    pWrapQueue->ResetSyncObject();
+    m_pQueue->ResetSyncObject();
 
     // バックバッファ取得.
     {
-        auto index      = pWrapQueue->GetCurrentBufferIndex();
-        auto semaphore  = pWrapQueue->GetVulkanWaitSemaphore(index);
-        auto fence      = pWrapQueue->GetVulkanFence(index);
+        auto index      = m_pQueue->GetCurrentBufferIndex();
+        auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
+        auto fence      = m_pQueue->GetVulkanFence(index);
         A3D_ASSERT(semaphore != null_handle);
         A3D_ASSERT(fence != null_handle);
 
@@ -920,10 +899,7 @@ bool SwapChain::Create
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeInstance = pWrapDevice->GetVulkanInstance();
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
     A3D_ASSERT(pNativeInstance != null_handle);
 
     VkWin32SurfaceCreateInfoKHR info = {};
@@ -1000,7 +976,7 @@ bool SwapChain::SetFullScreenMode(bool enable)
 //-------------------------------------------------------------------------------------------------
 //      Linux向けにサーフェイスを作成します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::InitSurface()
+bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 {
     VkXcbSurfaceCreateInfoKHR info = {};
     info.sType      = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
@@ -1009,13 +985,10 @@ bool SwapChain::InitSurface()
     info.connection = static_cast<xcb_connection_t*>(m_Desc.InstanceHandle);
     info.windows    = static_cast<xcb_window_t>(m_Desc.WindowHandle);
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeInstance = pWrapDevice->GetVulkanInstance();
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
     A3D_ASSERT(pNativeInstance != null_handle);
 
-    auto ret = vkCreateXcbSurfaceKHR(pNativeInstance, &info, nullptr, &m_Surface);
+    auto ret = vkCreateXcbSurfaceKHR(pNativeInstance, &info, nullptr, pSurface);
     if (ret != VK_SUCCESS)
     { return false; }
 
@@ -1060,7 +1033,7 @@ bool SwapChain::SetFullScreenMode(bool enable)
 //-------------------------------------------------------------------------------------------------
 //      Android向けにサーフェイスを作成します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::InitSurface()
+bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 {
     VkAndroidSurfaceCreateInfoKHR info = {};
     info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
@@ -1068,13 +1041,10 @@ bool SwapChain::InitSurface()
     info.flags = 0;
     info.window = static_cast<ANativeWindow*>(m_Desc.WindowHandle);
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeInstance = pWrapDevice->GetVulkanInstance();
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
     A3D_ASSERT(pNativeInstance != null_handle);
 
-    auto ret = vkCreateAndroidSurfaceKHR(pNativeInstance, &info, nullptr, &m_Surface);
+    auto ret = vkCreateAndroidSurfaceKHR(pNativeInstance, &info, nullptr, pSurface);
     if (ret != VK_SUCCESS)
     { return false; }
 
@@ -1083,6 +1053,38 @@ bool SwapChain::InitSurface()
 
 //-------------------------------------------------------------------------------------------------
 //      Android向けにフルスクリーンモードを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetFullScreenMode(bool enable)
+{
+    /* DO_NOTHING */
+    m_IsFullScreen = enable;
+    return true;
+}
+
+#elif A3D_IS_NX
+//-------------------------------------------------------------------------------------------------
+//      NX 向けにサーフェイスを作成します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
+{
+    VkViSurfaceCreateInfoNN info = {};
+    info.sType  = VK_STRUCTURE_TYPE_VI_SURFACE_CREATE_INFO_NN;
+    info.pNext  = nullptr;
+    info.flags  = 0;
+    info.window = m_Desc.WindowHandle;
+
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
+    A3D_ASSERT(pNativeInstance != null_handle);
+
+    auto ret = vkCreateViSurfaceNN(pNativeInstance, &info, nullptr, pSurface);
+    if (ret != VK_SUCCESS)
+    { return false; }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      NX 向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::SetFullScreenMode(bool enable)
 {

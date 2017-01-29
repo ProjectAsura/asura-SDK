@@ -34,13 +34,10 @@ bool Fence::Init(IDevice* pDevice)
     if (pDevice == nullptr)
     { return false; }
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
     VkFenceCreateInfo info = {};
@@ -63,10 +60,7 @@ void Fence::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
     vkDestroyFence( pNativeDevice, m_Fence, nullptr );
@@ -112,10 +106,7 @@ void Fence::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 bool Fence::IsSignaled() const
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
     auto ret = vkGetFenceStatus(pNativeDevice, m_Fence);
@@ -130,10 +121,7 @@ bool Fence::IsSignaled() const
 //-------------------------------------------------------------------------------------------------
 bool Fence::Wait(uint32_t timeoutMsec)
 {
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
     const uint32_t MilliSecToNanoSec = 1000 * 1000;

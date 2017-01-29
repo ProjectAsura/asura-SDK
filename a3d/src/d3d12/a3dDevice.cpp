@@ -35,10 +35,8 @@ Device::~Device()
 //-------------------------------------------------------------------------------------------------
 //      初期化処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
+bool Device::Init(const DeviceDesc* pDesc)
 {
-    A3D_UNUSED(pOption);
-
     if (pDesc == nullptr)
     { return false; }
 
@@ -139,13 +137,25 @@ bool Device::Init(const DeviceDesc* pDesc, const void* pOption)
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
-    if (!Queue::Create(this, COMMANDLIST_TYPE_DIRECT, pDesc->MaxGraphicsQueueSubmitCount, &m_pGraphicsQueue))
+    if (!Queue::Create(
+        this,
+        COMMANDLIST_TYPE_DIRECT,
+        pDesc->MaxGraphicsQueueSubmitCount,
+        reinterpret_cast<IQueue**>(&m_pGraphicsQueue)))
     { return false; }
 
-    if (!Queue::Create(this, COMMANDLIST_TYPE_COMPUTE, pDesc->MaxComputeQueueSubmitCount, &m_pComputeQueue))
+    if (!Queue::Create(
+        this,
+        COMMANDLIST_TYPE_COMPUTE,
+        pDesc->MaxComputeQueueSubmitCount,
+        reinterpret_cast<IQueue**>(&m_pComputeQueue)))
     { return false; }
 
-    if (!Queue::Create(this, COMMANDLIST_TYPE_COPY, pDesc->MaxCopyQueueSubmitCount, &m_pCopyQueue))
+    if (!Queue::Create(
+        this,
+        COMMANDLIST_TYPE_COPY,
+        pDesc->MaxCopyQueueSubmitCount,
+        reinterpret_cast<IQueue**>(&m_pCopyQueue)))
     { return false; }
 
     // デバイス情報の設定.
@@ -247,8 +257,8 @@ void Device::GetCopyQueue(IQueue** ppQueue)
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandList(COMMANDLIST_TYPE type, const void* pOption, ICommandList** ppCommandList)
-{ return CommandList::Create(this, type, pOption, ppCommandList); }
+bool Device::CreateCommandList(COMMANDLIST_TYPE type, ICommandList** ppCommandList)
+{ return CommandList::Create(this, type, ppCommandList); }
 
 //-------------------------------------------------------------------------------------------------
 //      スワップチェインを生成します.
@@ -390,7 +400,7 @@ bool Device::IsTearingSupport() const
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
+bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
@@ -399,7 +409,7 @@ bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDe
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDesc, pOption))
+    if (!instance->Init(pDesc))
     {
         SafeRelease(instance);
         return false;
@@ -412,12 +422,30 @@ bool Device::Create(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDe
 //-------------------------------------------------------------------------------------------------
 //      デバイスを生成します.
 //-------------------------------------------------------------------------------------------------
-bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, const void* pOption, IDevice** ppDevice)
+bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
 
-    return Device::Create(pDesc, pOption, ppDevice);
+    return Device::Create(pDesc, ppDevice);
 }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィックスシステムを初期化します.
+//-------------------------------------------------------------------------------------------------
+bool A3D_APIENTRY InitSystem(const SystemDesc* pDesc)
+{ return InitSystemAllocator(pDesc->pAllocator); }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィクスシステムが初期化済みかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool A3D_APIENTRY IsInitSystem()
+{ return IsInitSystemAllocator(); }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィックスシステムの終了処理を行います.
+//-------------------------------------------------------------------------------------------------
+void A3D_APIENTRY TermSystem()
+{ TermSystemAllocator(); }
 
 } // namespace a3d

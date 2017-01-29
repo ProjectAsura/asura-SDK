@@ -151,7 +151,7 @@ void ToNativeRasterizerDesc( const a3d::RasterizerState& state, D3D11_RASTERIZER
     result.FrontCounterClockwise    = ( state.FrontCounterClockWise ) ? TRUE : FALSE;
     result.DepthBias                = state.DepthBias;
     result.DepthBiasClamp           = state.DepthBiasClamp;
-    result.SlopeScaledDepthBias     = state.SlopeScaledDepthBais;
+    result.SlopeScaledDepthBias     = state.SlopeScaledDepthBias;
     result.DepthClipEnable          = ( state.DepthClipEnable ) ? TRUE : FALSE;
 #if 0 // 低スペックPCでも動くようにしたいので非サポート.
     //result.ConservativeRaster       = ( state.EnableConservativeRaster ) 
@@ -362,15 +362,12 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     m_IsGraphicsPipeline = true;
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
     // 頂点シェーダ.
@@ -509,15 +506,12 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     Term();
 
-    m_pDevice = pDevice;
+    m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     m_IsGraphicsPipeline = false;
 
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    auto pD3D11Device = pWrapDevice->GetD3D11Device();
+    auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
     {
