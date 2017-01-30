@@ -14,9 +14,17 @@
 #include "SampleTarga.h"
 
 
-#ifndef ELOG
-#define ELOG( x, ... )  fprintf_s( stderr, "[File: %s, Line:%d] " x, __FILE__, __LINE__, ##__VA_ARGS__ )
-#endif//ELOG
+#if defined(WIN32) || defined(WIN64)
+    #ifndef ELOG
+    #define ELOG( x, ... )  fprintf_s( stderr, "[File: %s, Line:%d] " x, __FILE__, __LINE__, ##__VA_ARGS__ )
+    #endif//ELOG
+
+#else
+    #ifndef ELOG
+    #define ELOG( x, ... )  fprintf( stderr, "[File: %s, Line:%d] " x, __FILE__, __LINE__, ##__VA_ARGS__ )
+    #endif//ELOG
+
+#endif
 
 
 namespace /* anonymous */ {
@@ -370,12 +378,21 @@ bool Targa::Load( const char* filename )
     FILE* pFile;
 
     // ファイルを開く.
-    auto err = fopen_s( &pFile, filename, "rb" );
-    if ( err != 0 )
-    {
-        ELOG( "Error : File Open Failed." );
-        return false;
-    }
+    #if defined(WIN32) || defined(WIN64)
+        auto err = fopen_s( &pFile, filename, "rb" );
+        if ( err != 0 )
+        {
+            ELOG( "Error : File Open Failed." );
+            return false;
+        }
+    #else
+        pFile = fopen( filename, "r");
+        if (pFile == nullptr)
+        {
+            ELOG( "Error : File Open Failed." );
+            return false;
+        }
+    #endif
 
     // フッターを読み込み.
     TGA_FOOTER footer;

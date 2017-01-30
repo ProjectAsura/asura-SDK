@@ -13,7 +13,7 @@ struct FormatConvertTable
 {
     DXGI_FORMAT             NativeFormat;       //!< ネイティブ形式です.
     DXGI_FORMAT             TypelessFormat;     //!< タイプレス形式です.
-    uint32_t                BytePerPixel;       //!< 1ピクセルあたりのバイト数です..
+    uint32_t                BitPerPixel;        //!< 1ピクセルあたりのビット数です.
     a3d::RESOURCE_FORMAT    Format;             //!< A3D形式です.
     bool                    IsCompress;         //!< 圧縮フォーマットかどうか?
 };
@@ -169,13 +169,13 @@ RESOURCE_FORMAT ToWrapFormat(DXGI_FORMAT format)
 //      リソースフォーマットのビット数に変換します.
 //-------------------------------------------------------------------------------------------------
 uint32_t ToBits(RESOURCE_FORMAT format)
-{ return g_FormatTable[format].BytePerPixel * 8; }
+{ return g_FormatTable[format].BitPerPixel; }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースフォーマットのバイト数に変換します.
 //-------------------------------------------------------------------------------------------------
 uint32_t ToByte(RESOURCE_FORMAT format)
-{ return g_FormatTable[format].BytePerPixel; }
+{ return g_FormatTable[format].BitPerPixel / 8; }
 
 //-------------------------------------------------------------------------------------------------
 //      圧縮フォーマットかどうかチェックします.
@@ -677,7 +677,7 @@ SubresourceLayout CalcSubresourceLayout
 
     SubresourceLayout result = {};
 
-    for(auto i=0u; i<subresource; ++i)
+    for(auto i=0u; i<=subresource; ++i)
     {
         CalcSubresourceSize(format, w, h, d, size, rowPitch, rowCount);
         result.Offset       = offset;

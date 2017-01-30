@@ -289,7 +289,7 @@ bool Device::Init(const DeviceDesc* pDesc)
 
     if (pDesc->EnableDebug)
     {
-        layerCount          = 1;
+        layerCount = 1;
         instanceExtensionCount++;
     }
 
@@ -340,7 +340,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         if ( ret != VK_SUCCESS )
         { return false; }
     }
-        
+
     if (pDesc->EnableDebug)
     {
         vkCreateDebugReportCallback  = GetProc<PFN_vkCreateDebugReportCallbackEXT>(

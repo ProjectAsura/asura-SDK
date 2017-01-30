@@ -19,15 +19,16 @@ namespace a3d {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct Block
 {
-    ptrdiff_t   Offset; //!< オフセットです.
-    size_t      Size;   //!< 確保サイズです.
+    ptrdiff_t   Offset;     //!< オフセットです.
+    size_t      Size;       //!< 確保サイズです.
+    size_t      Alignment;  //!< アライメントです.
 };
 
 //-------------------------------------------------------------------------------------------------
 //         等価比較演算子のオーバーロードです.
 //-------------------------------------------------------------------------------------------------
 inline bool operator == (const Block& lhs, const Block& rhs)
-{ return lhs.Offset == rhs.Offset && lhs.Size == rhs.Size; }
+{ return lhs.Offset == rhs.Offset && lhs.Size == rhs.Size && lhs.Alignment == rhs.Alignment; }
 
 //-------------------------------------------------------------------------------------------------
 //        大小比較演算子のオーバーロードです.
@@ -107,15 +108,15 @@ public:
     //---------------------------------------------------------------------------------------------
     //! @brief      ブロック確保可能かチェックします.
     //---------------------------------------------------------------------------------------------
-    bool CanAlloc( size_t size ) const
+    bool CanAlloc( size_t size, size_t alignment ) const
     {
-        auto allocSize = size;
+        auto allocSize = RoundUp( size, alignment );
         if (m_CurOffset + allocSize <= m_Size)
         { return true; }
 
         for(auto& itr : m_FreeBlocks)
         {
-            if (allocSize < itr.Size)
+            if (allocSize <= itr.Size)
             { return true; }
         }
 
@@ -125,45 +126,46 @@ public:
     //---------------------------------------------------------------------------------------------
     //! @brief      ブロックを確保します.
     //---------------------------------------------------------------------------------------------
-    Block Alloc( size_t size )
+    Block Alloc( size_t size, size_t alignment )
     {
         Locker locker(m_Mutex);
 
-        auto allocSize = size;
+        auto allocSize = RoundUp( size, alignment );
 
         if (m_CurOffset + allocSize <= m_Size)
         {
-            Block result  = {};
-            result.Size   = allocSize;
-            result.Offset = m_Offset + m_CurOffset;
+            auto prevOffset = m_Offset + m_CurOffset;
+            auto currOffset = RoundUp( prevOffset, alignment );
 
-            m_CurOffset += allocSize;
-            m_UsedSize  += allocSize;
+            Block result  = {};
+            result.Size      = size;
+            result.Offset    = currOffset;
+            result.Alignment = alignment;
+
+            auto usedSize = (currOffset - prevOffset) + size;
+            m_CurOffset += usedSize;
+            m_UsedSize  += usedSize;
             return result;
         }
 
-        for(auto& itr : m_FreeBlocks)
+        Block result = {};
+
+        // 空いているブロックを探す.
+        if (FindFreeBlock(size, alignment, result))
+        { return result; }
+
+        // 空きサイズが十分かどうかチェック.
+        if (m_UsedSize + allocSize <= m_Size)
         {
-            if (allocSize <= itr.Size)
-            {
-                Block result  = {};
-                result.Size   = allocSize;
-                result.Offset = itr.Offset;
+            // 一回メモリコンパクションを行う.
+            InnerCompact();
 
-                m_UsedSize -= itr.Size;
-                m_UsedSize += allocSize;
-
-                Block free  = {};
-                free.Size   = itr.Size   - allocSize;
-                free.Offset = itr.Offset + allocSize;
-
-                m_FreeBlocks.remove( itr );
-                m_FreeBlocks.push_back( free );
-
-                return result;
-            }
+            // 綺麗になった状態で，もう一度確保できるか実行する.
+            if (FindFreeBlock(size, alignment, result))
+            { return result; }
         }
 
+        // ダメだったら空ブロックを返す.
         Block empty = {};
         return empty;
     }
@@ -175,8 +177,16 @@ public:
     {
         Locker locker(m_Mutex);
 
-        m_UsedSize -= block.Size;
-        m_FreeBlocks.push_back(block);
+        auto offset   = RoundDown(block.Offset, block.Alignment);
+        auto usedSize = (block.Offset - offset) + block.Size;
+
+        Block freeBlock = {};
+        freeBlock.Offset    = offset;
+        freeBlock.Size      = usedSize;
+        freeBlock.Alignment = 0;
+
+        m_UsedSize -= usedSize;
+        m_FreeBlocks.push_back(freeBlock);
     }
 
     //---------------------------------------------------------------------------------------------
@@ -185,34 +195,7 @@ public:
     void Compact()
     {
         Locker locker(m_Mutex);
-        m_FreeBlocks.sort();
-
-        Block prev = {};
-        auto itr = std::begin(m_FreeBlocks);
-
-        while (itr != std::end(m_FreeBlocks))
-        {
-            if (prev.Offset + prev.Size == itr->Offset)
-            {
-                // ブロックを連結.
-                Block comb = {};
-                comb.Offset = prev.Offset;
-                comb.Size   = prev.Size + itr->Size;
-
-                itr = m_FreeBlocks.erase ( itr );
-                itr = m_FreeBlocks.insert( itr, comb );
-                m_FreeBlocks.remove( prev );
-
-                prev.Offset = comb.Offset;
-                prev.Size   = comb.Size;
-            }
-            else
-            {
-                prev.Offset = itr->Offset;
-                prev.Size   = itr->Size;
-                itr++;
-            }
-        }
+        InnerCompact();
     }
 
     //---------------------------------------------------------------------------------------------
@@ -253,6 +236,83 @@ private:
     //---------------------------------------------------------------------------------------------
     static size_t RoundUp(size_t value, size_t base)
     { return ( value + ( base - 1 ) ) & ~( base - 1 ); }
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      指定された倍数に切り下げます.
+    //---------------------------------------------------------------------------------------------
+    static size_t RoundDown(size_t value, size_t base)
+    { return value & ~( base - 1 ); }
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      メモリコンパクションを行います.
+    //---------------------------------------------------------------------------------------------
+    void InnerCompact()
+    {
+        m_FreeBlocks.sort();
+
+        Block prev = {};
+        auto itr = std::begin(m_FreeBlocks);
+
+        while (itr != std::end(m_FreeBlocks))
+        {
+            if (prev.Offset + prev.Size == itr->Offset)
+            {
+                // ブロックを連結.
+                Block comb = {};
+                comb.Offset = prev.Offset;
+                comb.Size   = prev.Size + itr->Size;
+
+                itr = m_FreeBlocks.erase ( itr );
+                itr = m_FreeBlocks.insert( itr, comb );
+                m_FreeBlocks.remove( prev );
+
+                prev.Offset = comb.Offset;
+                prev.Size   = comb.Size;
+            }
+            else
+            {
+                prev.Offset = itr->Offset;
+                prev.Size   = itr->Size;
+                itr++;
+            }
+        }
+    }
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      空きブロックリストから割り当て可能なブロックを探します.
+    //---------------------------------------------------------------------------------------------
+    bool FindFreeBlock(size_t size, size_t alignment, Block& result)
+    {
+        auto allocSize = RoundUp( size, alignment );
+
+        for(auto& itr : m_FreeBlocks)
+        {
+            if (allocSize <= itr.Size)
+            {
+                auto prevOffset = itr.Offset;
+                auto currOffset = RoundUp( prevOffset, alignment );
+
+                result.Size      = size;
+                result.Offset    = currOffset;
+                result.Alignment = alignment;
+
+                auto usedSize = (currOffset - prevOffset) + size;
+
+                m_UsedSize += usedSize;
+
+                Block free  = {};
+                free.Size       = itr.Size   - usedSize;
+                free.Offset     = itr.Offset + usedSize;
+                free.Alignment  = 0;
+
+                m_FreeBlocks.remove( itr );
+                m_FreeBlocks.push_back( free );
+                return true;
+            }
+        }
+
+        return false;
+    }
 };
 
 } // namespace a3d

@@ -258,6 +258,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
 
     // ディスクリプタセットレイアウトを生成.
     {
+    #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
         desc.EntryCount                = 3;
@@ -286,6 +287,31 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         m_pDescriptorSet->SetBuffer (0, m_pConstantView);
         m_pDescriptorSet->SetSampler(1, m_pSampler);
         m_pDescriptorSet->SetTexture(2, m_pTextureView);
+    #else
+        a3d::DescriptorSetLayoutDesc desc = {};
+        desc.MaxSetCount               = 2;
+        desc.EntryCount                = 2;
+        
+        desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
+        desc.Entries[0].ShaderRegister = 0;
+        desc.Entries[0].BindLocation   = 0;
+        desc.Entries[0].Type           = a3d::DESCRIPTOR_TYPE_CBV;
+
+        desc.Entries[1].ShaderMask     = a3d::SHADER_MASK_PIXEL;
+        desc.Entries[1].ShaderRegister = 0;
+        desc.Entries[1].BindLocation   = 0;
+        desc.Entries[1].Type           = a3d::DESCRIPTOR_TYPE_SRV;
+
+        if (!m_pDevice->CreateDescriptorSetLayout(&desc, &m_pDescriptorSetLayout))
+        { return false; }
+
+        if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet))
+        { return false; }
+
+        m_pDescriptorSet->SetBuffer (0, m_pConstantView);
+        m_pDescriptorSet->SetSampler(1, m_pSampler);
+        m_pDescriptorSet->SetTexture(1, m_pTextureView);
+    #endif
 
     #if 1
         // DescriptorSet::Update()は削除される予定です.

@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstring>
 #include <string>
+#include <cstdlib>
 #include <SampleApp.h>
 #include <SampleUtil.h>
 #include <SampleMath.h>
@@ -174,6 +175,7 @@ bool InitA3D()
     {
         a3d::SystemDesc desc = {};
         desc.pAllocator = &g_Allocator;
+        desc.pOption    = g_pApp->GetWindowHandle();
 
         if (!a3d::InitSystem(&desc))
         { return false; }
