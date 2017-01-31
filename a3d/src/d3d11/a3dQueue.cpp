@@ -536,7 +536,7 @@ void Queue::ParseCmd()
 
                     pDeviceContext->End(pD3D11Query);
 
-                    pCmd += sizeof(ImCmdBeginQuery);
+                    pCmd += sizeof(ImCmdEndQuery);
                 }
                 break;
 
@@ -561,7 +561,7 @@ void Queue::ParseCmd()
                         case QUERY_TYPE_OCCLUSION:
                             {
                                 UINT64 data = 0;
-                                pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0);
+                                while( pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0) != S_OK);
                                 memcpy(pDstPtr, &data, sizeof(data));
                                 pDstPtr += sizeof(data);
                             }
@@ -570,7 +570,7 @@ void Queue::ParseCmd()
                         case QUERY_TYPE_TIMESTAMP:
                             {
                                 UINT64 data = 0;
-                                pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0);
+                                while( pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0) != S_OK);
                                 memcpy(pDstPtr, &data, sizeof(data));
                                 pDstPtr += sizeof(data);
                             }
@@ -579,7 +579,7 @@ void Queue::ParseCmd()
                         case QUERY_TYPE_PIPELINE_STATISTICS:
                             {
                                 D3D11_QUERY_DATA_PIPELINE_STATISTICS data = {};
-                                pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0);
+                                while( pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0) != S_OK);
 
                                 PipelineStatistics convert = {};
                                 convert.IAVertices      = data.IAVertices;

@@ -534,7 +534,7 @@ VkAccessFlags ToNativeAccessFlags(a3d::RESOURCE_STATE state)
         { result = VK_ACCESS_MEMORY_READ_BIT; }
         break;
 
-    case a3d::RESORUCE_STATE_PREDICATION:
+    case a3d::RESOURCE_STATE_PREDICATION:
         { result = VK_ACCESS_SHADER_WRITE_BIT; }
         break;
     }

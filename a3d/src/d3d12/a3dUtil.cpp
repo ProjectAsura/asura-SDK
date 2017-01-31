@@ -126,7 +126,7 @@ StateConvertTable g_StateTable[] = {
     { D3D12_RESOURCE_STATE_RESOLVE_DEST                 , a3d::RESOURCE_STATE_RESOLVE_DST       },
     { D3D12_RESOURCE_STATE_RESOLVE_SOURCE               , a3d::RESOURCE_STATE_RESOLVE_SRC       },
     { D3D12_RESOURCE_STATE_PRESENT                      , a3d::RESOURCE_STATE_PRESENT           },
-    { D3D12_RESOURCE_STATE_PREDICATION                  , a3d::RESORUCE_STATE_PREDICATION       },
+    { D3D12_RESOURCE_STATE_PREDICATION                  , a3d::RESOURCE_STATE_PREDICATION       },
 };
 
 } // namespace /* anonymous */

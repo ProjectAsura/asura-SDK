@@ -52,7 +52,7 @@ bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
     VkQueryPoolCreateInfo info = {};
     info.sType      = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
     info.pNext      = nullptr;
-    info.flags      = VK_QUERY_CONTROL_PRECISE_BIT;
+    info.flags      = 0;
     info.queryType  = m_Type;
     info.queryCount = pDesc->Count;
 

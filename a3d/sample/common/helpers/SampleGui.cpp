@@ -531,7 +531,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         style.WindowRounding      = 2.0f;
         style.ChildWindowRounding = 2.0f;
 
-        #if !(SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D12)
+        #if (!SAMPLE_IS_VULKAN && !SAMPLE_IS_D3D12 && !SAMPLE_IS_D3D11)
             // マウスカーソル描画.
             io.MouseDrawCursor = true;
         #endif

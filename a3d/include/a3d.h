@@ -165,6 +165,7 @@ enum RESOURCE_USAGE
     RESOURCE_USAGE_SHADER_RESOURCE  = 0x080,   //!< シェーダリソースとして使用します.
     RESOURCE_USAGE_COPY_SRC         = 0x100,   //!< コピー元として使用します.
     RESOURCE_USAGE_COPY_DST         = 0x200,   //!< コピー先として使用します.
+    RESOURCE_USAGE_QUERY_BUFFER     = 0x300,   //!< クエリバッファとして使用します.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,7 +276,7 @@ enum RESOURCE_STATE
     RESOURCE_STATE_RESOLVE_DST          = 15,   //!< 解決先の状態です.
     RESOURCE_STATE_RESOLVE_SRC          = 16,   //!< 解決元の状態です.
     RESOURCE_STATE_PRESENT              = 17,   //!< 表示状態です.
-    RESORUCE_STATE_PREDICATION          = 18,   //!< 予測状態です.
+    RESOURCE_STATE_PREDICATION          = 18,   //!< 予測状態です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

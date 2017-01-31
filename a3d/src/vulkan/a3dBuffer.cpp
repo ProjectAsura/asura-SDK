@@ -35,6 +35,9 @@ VkBufferUsageFlags ToNativeBufferUsage(uint32_t usage)
     if (usage & a3d::RESOURCE_USAGE_COPY_DST)
     { result |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; }
 
+    if (usage & a3d::RESOURCE_USAGE_QUERY_BUFFER)
+    { result |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; }
+
     return result;
 }
 
