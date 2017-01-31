@@ -165,4 +165,23 @@ void DecomposeSubresource(
     uint32_t& arraySlice,
     uint32_t& planeSlice);
 
+//-------------------------------------------------------------------------------------------------
+//! @brief      サブリソースレイアウトを求めます.
+//!
+//! @param[in]      subresource     サブリソース番号です.
+//! @param[in]      format          リソースフォーマットです.
+//! @param[in]      width           横幅です.
+//! @param[in]      height          縦幅です.
+//! @param[in]      depth           奥行です.
+//! @return     サブリソースレイアウトを返却します.
+//-------------------------------------------------------------------------------------------------
+SubresourceLayout CalcSubresourceLayout(
+    uint32_t        subresource,
+    RESOURCE_FORMAT format,
+    uint32_t        width,
+    uint32_t        height,
+    uint32_t        depth
+);
+
+
 } // namespace a3d

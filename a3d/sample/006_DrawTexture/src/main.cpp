@@ -193,10 +193,10 @@ bool InitA3D()
         desc.EnableDebug = true;
 
         // 最大ディスクリプタ数を設定.
-        desc.MaxColorTargetCount            = 2;
-        desc.MaxDepthTargetCount            = 2;
-        desc.MaxShaderResourceCount         = 4;
-        desc.MaxSamplerCount                = 2;
+        desc.MaxColorTargetCount            = 256;
+        desc.MaxDepthTargetCount            = 256;
+        desc.MaxShaderResourceCount         = 256;
+        desc.MaxSamplerCount                = 256;
 
         // 最大サブミット数を設定.
         desc.MaxGraphicsQueueSubmitCount    = 256;
@@ -1046,6 +1046,7 @@ void Resize( uint32_t w, uint32_t h, void* pUser )
         // 1枚目のフレームバッファを生成.
         auto ret = g_pDevice->CreateFrameBuffer(&desc, &g_pFrameBuffer[0]);
         assert(ret == true);
+        A3D_UNUSED(ret);
 
         // 2枚目のフレームバッファを生成.
         desc.pColorTargets[0] = g_pColorView[1];

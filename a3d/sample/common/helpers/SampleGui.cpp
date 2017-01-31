@@ -258,6 +258,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
 
     // ディスクリプタセットレイアウトを生成.
     {
+    #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
         desc.EntryCount                = 3;
@@ -276,6 +277,21 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.Entries[2].ShaderRegister = 0;
         desc.Entries[2].BindLocation   = 2;
         desc.Entries[2].Type           = a3d::DESCRIPTOR_TYPE_SRV;
+    #else
+        a3d::DescriptorSetLayoutDesc desc = {};
+        desc.MaxSetCount               = 2;
+        desc.EntryCount                = 2;
+        
+        desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
+        desc.Entries[0].ShaderRegister = 0;
+        desc.Entries[0].BindLocation   = 0;
+        desc.Entries[0].Type           = a3d::DESCRIPTOR_TYPE_CBV;
+
+        desc.Entries[1].ShaderMask     = a3d::SHADER_MASK_PIXEL;
+        desc.Entries[1].ShaderRegister = 0;
+        desc.Entries[1].BindLocation   = 0;
+        desc.Entries[1].Type           = a3d::DESCRIPTOR_TYPE_SRV;
+    #endif
 
         if (!m_pDevice->CreateDescriptorSetLayout(&desc, &m_pDescriptorSetLayout))
         { return false; }
@@ -283,9 +299,15 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet))
         { return false; }
 
+    #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         m_pDescriptorSet->SetBuffer (0, m_pConstantView);
         m_pDescriptorSet->SetSampler(1, m_pSampler);
         m_pDescriptorSet->SetTexture(2, m_pTextureView);
+    #else
+        m_pDescriptorSet->SetBuffer (0, m_pConstantView);
+        m_pDescriptorSet->SetSampler(1, m_pSampler);
+        m_pDescriptorSet->SetTexture(1, m_pTextureView);
+    #endif
 
     #if 1
         // DescriptorSet::Update()は削除される予定です.
@@ -297,13 +319,16 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
     a3d::ShaderBinary vs = {};
     a3d::ShaderBinary ps = {};
     {
-        std::string dir = "../../common/shaders/";
+        std::string dir = GetShaderDirectoryForSampleProgram();
     #if SAMPLE_IS_VULKAN
-        const auto vsFilePath = dir + "vulkan_glsl/imguiVS.spv";
-        const auto psFilePath = dir + "vulkan_glsl/imguiPS.spv";
+        const auto vsFilePath = dir + "imguiVS.spv";
+        const auto psFilePath = dir + "imguiPS.spv";
+    #elif SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
+        const auto vsFilePath = dir + "imguiVS.cso";
+        const auto psFilePath = dir + "imguiPS.cso";
     #else
-        const auto vsFilePath = dir + "hlsl/imguiVS.cso";
-        const auto psFilePath = dir + "hlsl/imguiPS.cso";
+        const auto vsFilePath = dir + "imguiVS.bin";
+        const auto psFilePath = dir + "imguiPS.bin";
     #endif
 
         if (!LoadShaderBinary(vsFilePath.c_str(), vs))
@@ -505,6 +530,11 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         auto& style = ImGui::GetStyle();
         style.WindowRounding      = 2.0f;
         style.ChildWindowRounding = 2.0f;
+
+        #if !(SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D12)
+            // マウスカーソル描画.
+            io.MouseDrawCursor = true;
+        #endif
 
         style.Colors[ImGuiCol_Text]                 = ImVec4(1.000000f, 1.000000f, 1.000000f, 1.000000f);
         style.Colors[ImGuiCol_TextDisabled]         = ImVec4(0.400000f, 0.400000f, 0.400000f, 1.000000f);

@@ -28,13 +28,10 @@ GuiMgr GuiMgr::s_Instance;
 //-------------------------------------------------------------------------------------------------
 GuiMgr::GuiMgr()
 : m_pDevice             (nullptr)
-, m_pConstantBuffer     (nullptr)
-, m_pConstantView       (nullptr)
 , m_pSampler            (nullptr)
 , m_pTexture            (nullptr)
 , m_pTextureView        (nullptr)
 , m_pDescriptorSetLayout(nullptr)
-, m_pDescriptorSet      (nullptr)
 , m_pPipelineState      (nullptr)
 , m_pCommandList        (nullptr)
 , m_BufferIndex         (0)
@@ -45,6 +42,10 @@ GuiMgr::GuiMgr()
         m_pIB[i]    = nullptr;
         m_SizeVB[i] = 0;
         m_SizeIB[i] = 0;
+
+        m_pCB[i]            = nullptr;
+        m_pCBV[i]           = nullptr;
+        m_pDescriptorSet[i] = nullptr;
     }
 }
 
@@ -119,17 +120,20 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
         desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
 
-        if ( !m_pDevice->CreateBuffer(&desc, &m_pConstantBuffer) )
-        { return false; }
+        for(auto i=0; i<2; ++i)
+        {
+            if ( !m_pDevice->CreateBuffer(&desc, &m_pCB[i]) )
+            { return false; }
 
-        a3d::BufferViewDesc viewDesc = {};
-        viewDesc.Offset = 0;
-        viewDesc.Range  = desc.Stride;
+            a3d::BufferViewDesc viewDesc = {};
+            viewDesc.Offset = 0;
+            viewDesc.Range  = desc.Stride;
 
-        if ( !m_pDevice->CreateBufferView(m_pConstantBuffer, &viewDesc, &m_pConstantView) )
-        { return false; }
+            if ( !m_pDevice->CreateBufferView(m_pCB[i], &viewDesc, &m_pCBV[i]) )
+            { return false; }
 
-        m_pProjection = static_cast<Mat4*>(m_pConstantBuffer->Map());
+            m_pProjection[i] = static_cast<Mat4*>(m_pCB[i]->Map());
+        }
     }
 
     // フォントテクスチャを生成.
@@ -281,12 +285,20 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         if (!m_pDevice->CreateDescriptorSetLayout(&desc, &m_pDescriptorSetLayout))
         { return false; }
 
-        if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet))
-        { return false; }
+        for(auto i=0; i<2; ++i)
+        {
+            if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet[i]))
+            { return false; }
 
-        m_pDescriptorSet->SetBuffer (0, m_pConstantView);
-        m_pDescriptorSet->SetSampler(1, m_pSampler);
-        m_pDescriptorSet->SetTexture(2, m_pTextureView);
+            m_pDescriptorSet[i]->SetBuffer (0, m_pCBV[i]);
+            m_pDescriptorSet[i]->SetSampler(1, m_pSampler);
+            m_pDescriptorSet[i]->SetTexture(2, m_pTextureView);
+
+        #if 1
+            // DescriptorSet::Update()は削除される予定です.
+            m_pDescriptorSet[i]->Update();
+        #endif
+        }
     #else
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
@@ -305,17 +317,15 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         if (!m_pDevice->CreateDescriptorSetLayout(&desc, &m_pDescriptorSetLayout))
         { return false; }
 
-        if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet))
-        { return false; }
+        for(auto i=0; i<2; ++i)
+        {
+            if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet[i]))
+            { return false; }
 
-        m_pDescriptorSet->SetBuffer (0, m_pConstantView);
-        m_pDescriptorSet->SetSampler(1, m_pSampler);
-        m_pDescriptorSet->SetTexture(1, m_pTextureView);
-    #endif
-
-    #if 1
-        // DescriptorSet::Update()は削除される予定です.
-        m_pDescriptorSet->Update();
+            m_pDescriptorSet[i]->SetBuffer (0, m_pCBV[i]);
+            m_pDescriptorSet[i]->SetSampler(1, m_pSampler);
+            m_pDescriptorSet[i]->SetTexture(1, m_pTextureView);
+        }
     #endif
     }
 
@@ -536,6 +546,10 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         style.WindowRounding      = 2.0f;
         style.ChildWindowRounding = 2.0f;
 
+    #if !(SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11)
+        io.MouseDrawCursor = true;
+    #endif
+
         style.Colors[ImGuiCol_Text]                 = ImVec4(1.000000f, 1.000000f, 1.000000f, 1.000000f);
         style.Colors[ImGuiCol_TextDisabled]         = ImVec4(0.400000f, 0.400000f, 0.400000f, 1.000000f);
         style.Colors[ImGuiCol_WindowBg]             = ImVec4(0.060000f, 0.060000f, 0.060000f, 0.752000f);
@@ -597,16 +611,16 @@ void GuiMgr::Term()
     {
         a3d::SafeRelease(m_pVB[i]);
         a3d::SafeRelease(m_pIB[i]);
+        a3d::SafeRelease(m_pCB[i]);
+        a3d::SafeRelease(m_pCBV[i]);
+        a3d::SafeRelease(m_pDescriptorSet[i]);
         m_SizeVB[i] = 0;
         m_SizeIB[i] = 0;
     }
 
-    a3d::SafeRelease(m_pConstantView);
-    a3d::SafeRelease(m_pConstantBuffer);
     a3d::SafeRelease(m_pSampler);
     a3d::SafeRelease(m_pTextureView);
     a3d::SafeRelease(m_pTexture);
-    a3d::SafeRelease(m_pDescriptorSet);
     a3d::SafeRelease(m_pDescriptorSetLayout);
     a3d::SafeRelease(m_pPipelineState);
     m_pCommandList = nullptr;
@@ -688,7 +702,7 @@ void GuiMgr::OnDraw(ImDrawData* pData)
     // パイプラインステートとディスクリプタセットを設定.
     {
         m_pCommandList->SetPipelineState(m_pPipelineState);
-        m_pCommandList->SetDescriptorSet(m_pDescriptorSet);
+        m_pCommandList->SetDescriptorSet(m_pDescriptorSet[m_BufferIndex]);
     }
 
     // 頂点バッファとインデックスバッファを設定.
@@ -723,7 +737,7 @@ void GuiMgr::OnDraw(ImDrawData* pData)
             { 0.0f,         0.0f,           0.5f,       0.0f },
             { (R+L)/(L-R),  (T+B)/(B-T),    0.5f,       1.0f },
         };
-        memcpy( m_pProjection, mvp, sizeof(float) * 16 );
+        memcpy( m_pProjection[m_BufferIndex], mvp, sizeof(float) * 16 );
     }
 
     // 描画コマンドを生成.
@@ -740,11 +754,22 @@ void GuiMgr::OnDraw(ImDrawData* pData)
                 { pCmd->UserCallback(pList, pCmd); }
                 else
                 {
+                    auto x = static_cast<int>(pCmd->ClipRect.x);
+                    auto y = static_cast<int>(pCmd->ClipRect.y);
+                    auto w = static_cast<int>(pCmd->ClipRect.z - pCmd->ClipRect.x);
+                    auto h = static_cast<int>(pCmd->ClipRect.w - pCmd->ClipRect.y);
+
+                    if ( x < 0 ) { x = 0; }
+                    if ( y < 0 ) { y = 0; }
+                    if ( w < 1 ) { w = 1; }
+                    if ( h < 1 ) { h = 1; }
+
                     a3d::Rect scissor = {};
-                    scissor.Offset.X      = static_cast<int>(pCmd->ClipRect.x);
-                    scissor.Offset.Y      = static_cast<int>(pCmd->ClipRect.y);
-                    scissor.Extent.Width  = static_cast<uint32_t>(pCmd->ClipRect.z - pCmd->ClipRect.x);
-                    scissor.Extent.Height = static_cast<uint32_t>(pCmd->ClipRect.w - pCmd->ClipRect.y);
+                    scissor.Offset.X        = x;
+                    scissor.Offset.Y        = y;
+                    scissor.Extent.Width    = uint32_t(w);
+                    scissor.Extent.Height   = uint32_t(h);
+
                     m_pCommandList->SetScissors(1, &scissor);
                     m_pCommandList->DrawIndexedInstanced(pCmd->ElemCount, 1, idxOffset, vtxOffset, 0);
                 }

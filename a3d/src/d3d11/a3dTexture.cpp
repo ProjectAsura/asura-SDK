@@ -247,45 +247,12 @@ void Texture::Unmap()
 //-------------------------------------------------------------------------------------------------
 SubresourceLayout Texture::GetSubresourceLayout(uint32_t subResource) const
 {
-    SubresourceLayout result = {};
-    auto bpp = static_cast<uint32_t>(ToByte(m_Desc.Format));
-
-    if (m_Desc.MipLevels <= 1)
-    {
-        result.Offset       = 0;
-        result.RowPitch     = m_Desc.Width * bpp;
-        result.RowCount     = m_Desc.Height;
-        result.SlicePitch   = result.RowPitch * m_Desc.Height;
-        result.Size         = result.SlicePitch;
-
-        return result;
-    }
-
-    auto w      = m_Desc.Width;
-    auto h      = m_Desc.Height;
-    auto d      = m_Desc.DepthOrArraySize;
-    auto offset = 0;
-    for(auto i=0u; i<subResource; ++i)
-    {
-        offset += w * bpp * h;
-
-        w = w >> 1;
-        h = h >> 1;
-        d = d >> 1;
-
-        // クランプ処理.
-        if ( w == 0 ) { w = 1; }
-        if ( h == 0 ) { h = 1; }
-        if ( d == 0 ) { d = 1; }
-    }
-
-    result.Offset       = offset;
-    result.RowPitch     = w * bpp;
-    result.RowCount     = h;
-    result.SlicePitch   = result.RowPitch * h;
-    result.Size         = result.SlicePitch;
-
-    return result;
+    return CalcSubresourceLayout(
+        subResource,
+        m_Desc.Format,
+        m_Desc.Width,
+        m_Desc.Height,
+        m_Desc.DepthOrArraySize);
 }
 
 //-------------------------------------------------------------------------------------------------

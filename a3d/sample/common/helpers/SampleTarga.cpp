@@ -378,7 +378,7 @@ bool Targa::Load( const char* filename )
     FILE* pFile;
 
     // ファイルを開く.
-    #if defined(WIN32) || defined(WIN64)
+    #if defined(WIN32) || defined(_WIN32) || defined(WIN64)
         auto err = fopen_s( &pFile, filename, "rb" );
         if ( err != 0 )
         {

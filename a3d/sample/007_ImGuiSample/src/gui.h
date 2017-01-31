@@ -74,18 +74,18 @@ private:
     a3d::IDevice*               m_pDevice;              //!< デバイスです.
     a3d::IBuffer*               m_pVB[2];               //!< 頂点バッファです.
     a3d::IBuffer*               m_pIB[2];               //!< インデックスバッファです.
-    a3d::IBuffer*               m_pConstantBuffer;      //!< 定数バッファです.
-    a3d::IBufferView*           m_pConstantView;        //!< 定数バッファビューです.
+    a3d::IBuffer*               m_pCB[2];               //!< 定数バッファです.
+    a3d::IBufferView*           m_pCBV[2];              //!< 定数バッファビューです.
     size_t                      m_SizeVB[2];            //!< 頂点バッファのサイズです.
     size_t                      m_SizeIB[2];            //!< インデックスバッファのサイズです.
     a3d::ISampler*              m_pSampler;             //!< サンプラーです.
     a3d::ITexture*              m_pTexture;             //!< テクスチャです.
     a3d::ITextureView*          m_pTextureView;         //!< テクスチャビューです.
     a3d::IDescriptorSetLayout*  m_pDescriptorSetLayout; //!< ディスクリプタレイアウトです.
-    a3d::IDescriptorSet*        m_pDescriptorSet;       //!< ディスクリプタセットです.
+    a3d::IDescriptorSet*        m_pDescriptorSet[2];    //!< ディスクリプタセットです.
     a3d::IPipelineState*        m_pPipelineState;       //!< パイプラインステートです.
     a3d::ICommandList*          m_pCommandList;         //!< コマンドリストです.
-    Mat4*                       m_pProjection;          //!< 射影行列です.
+    Mat4*                       m_pProjection[2];       //!< 射影行列です.
     int                         m_BufferIndex;          //!< バッファ番号です.
     IApp*                       m_pApp;                 //!< アプリケーションです.
     std::chrono::system_clock::time_point m_LastTime;

@@ -29,36 +29,36 @@ struct StateConvertTable
 
 FormatConvertTable g_FormatTable[] = {
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 0     , a3d::RESOURCE_FORMAT_UNKNOWN               , false },  // 0
-    { DXGI_FORMAT_R32G32B32A32_FLOAT        , DXGI_FORMAT_R32G32B32A32_TYPELESS     , 16    , a3d::RESOURCE_FORMAT_R32G32B32A32_FLOAT    , false },  // 1
-    { DXGI_FORMAT_R32G32B32A32_UINT         , DXGI_FORMAT_R32G32B32A32_TYPELESS     , 16    , a3d::RESOURCE_FORMAT_R32G32B32A32_UINT     , false },  // 2
-    { DXGI_FORMAT_R32G32B32A32_SINT         , DXGI_FORMAT_R32G32B32A32_TYPELESS     , 16    , a3d::RESOURCE_FORMAT_R32G32B32A32_SINT     , false },  // 3
-    { DXGI_FORMAT_R16G16B16A16_FLOAT        , DXGI_FORMAT_R16G16B16A16_TYPELESS     , 8     , a3d::RESOURCE_FORMAT_R16G16B16A16_FLOAT    , false },  // 4
-    { DXGI_FORMAT_R16G16B16A16_UINT         , DXGI_FORMAT_R16G16B16A16_TYPELESS     , 8     , a3d::RESOURCE_FORMAT_R16G16B16A16_UINT     , false },  // 5
-    { DXGI_FORMAT_R16G16B16A16_SINT         , DXGI_FORMAT_R16G16B16A16_TYPELESS     , 8     , a3d::RESOURCE_FORMAT_R16G16B16A16_SINT     , false },  // 6
-    { DXGI_FORMAT_R32G32B32_FLOAT           , DXGI_FORMAT_R32G32B32_TYPELESS        , 12    , a3d::RESOURCE_FORMAT_R32G32B32_FLOAT       , false },  // 7
-    { DXGI_FORMAT_R32G32B32_UINT            , DXGI_FORMAT_R32G32B32_TYPELESS        , 12    , a3d::RESOURCE_FORMAT_R32G32B32_UINT        , false },  // 8
-    { DXGI_FORMAT_R32G32B32_SINT            , DXGI_FORMAT_R32G32B32_TYPELESS        , 12    , a3d::RESOURCE_FORMAT_R32G32B32_SINT        , false },  // 9
-    { DXGI_FORMAT_R32G32_FLOAT              , DXGI_FORMAT_R32G32_TYPELESS           , 8     , a3d::RESOURCE_FORMAT_R32G32_FLOAT          , false },  // 10
-    { DXGI_FORMAT_R32G32_UINT               , DXGI_FORMAT_R32G32_TYPELESS           , 8     , a3d::RESOURCE_FORMAT_R32G32_UINT           , false },  // 11
-    { DXGI_FORMAT_R32G32_SINT               , DXGI_FORMAT_R32G32_TYPELESS           , 8     , a3d::RESOURCE_FORMAT_R32G32_SINT           , false },  // 12
-    { DXGI_FORMAT_R16G16_FLOAT              , DXGI_FORMAT_R16G16_TYPELESS           , 4     , a3d::RESOURCE_FORMAT_R16G16_FLOAT          , false },  // 13
-    { DXGI_FORMAT_R16G16_UINT               , DXGI_FORMAT_R16G16_TYPELESS           , 4     , a3d::RESOURCE_FORMAT_R16G16_UINT           , false },  // 14
-    { DXGI_FORMAT_R16G16_SINT               , DXGI_FORMAT_R16G16_TYPELESS           , 4     , a3d::RESOURCE_FORMAT_R16G16_SINT           , false },  // 15
-    { DXGI_FORMAT_R32_FLOAT                 , DXGI_FORMAT_R32_TYPELESS              , 4     , a3d::RESOURCE_FORMAT_R32_FLOAT             , false },  // 16
-    { DXGI_FORMAT_R32_UINT                  , DXGI_FORMAT_R32_TYPELESS              , 4     , a3d::RESOURCE_FORMAT_R32_UINT              , false },  // 17
-    { DXGI_FORMAT_R32_SINT                  , DXGI_FORMAT_R32_TYPELESS              , 4     , a3d::RESOURCE_FORMAT_R32_SINT              , false },  // 18
-    { DXGI_FORMAT_R16_FLOAT                 , DXGI_FORMAT_R16_TYPELESS              , 2     , a3d::RESOURCE_FORMAT_R16_FLOAT             , false },  // 19
-    { DXGI_FORMAT_R16_UINT                  , DXGI_FORMAT_R16_TYPELESS              , 2     , a3d::RESOURCE_FORMAT_R16_UINT              , false },  // 20
-    { DXGI_FORMAT_R16_SINT                  , DXGI_FORMAT_R16_TYPELESS              , 2     , a3d::RESOURCE_FORMAT_R16_SINT              , false },  // 21
-    { DXGI_FORMAT_R8G8B8A8_UNORM_SRGB       , DXGI_FORMAT_R8G8B8A8_TYPELESS         , 4     , a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM_SRGB   , false },  // 22
-    { DXGI_FORMAT_R8G8B8A8_UNORM            , DXGI_FORMAT_R8G8B8A8_TYPELESS         , 4     , a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM        , false },  // 23
-    { DXGI_FORMAT_B8G8R8A8_UNORM_SRGB       , DXGI_FORMAT_B8G8R8A8_TYPELESS         , 4     , a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM_SRGB   , false },  // 24
-    { DXGI_FORMAT_B8G8R8A8_UNORM            , DXGI_FORMAT_B8G8R8A8_TYPELESS         , 4     , a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM        , false },  // 25
-    { DXGI_FORMAT_R8G8_UNORM                , DXGI_FORMAT_R8G8_TYPELESS             , 2     , a3d::RESOURCE_FORMAT_R8G8_UNORM            , false },  // 26
-    { DXGI_FORMAT_R8_UNORM                  , DXGI_FORMAT_R8_TYPELESS               , 1     , a3d::RESOURCE_FORMAT_R8_UNORM              , false },  // 27
-    { DXGI_FORMAT_D32_FLOAT                 , DXGI_FORMAT_R32_TYPELESS              , 4     , a3d::RESOURCE_FORMAT_D32_FLOAT             , false },  // 28
-    { DXGI_FORMAT_D24_UNORM_S8_UINT         , DXGI_FORMAT_R24_UNORM_X8_TYPELESS     , 4     , a3d::RESOURCE_FORMAT_D24_UNORM_S8_UINT     , false },  // 29
-    { DXGI_FORMAT_D16_UNORM                 , DXGI_FORMAT_R16_TYPELESS              , 2     , a3d::RESOURCE_FORMAT_D16_UNORM             , false },  // 30
+    { DXGI_FORMAT_R32G32B32A32_FLOAT        , DXGI_FORMAT_R32G32B32A32_TYPELESS     , 128   , a3d::RESOURCE_FORMAT_R32G32B32A32_FLOAT    , false },  // 1
+    { DXGI_FORMAT_R32G32B32A32_UINT         , DXGI_FORMAT_R32G32B32A32_TYPELESS     , 128   , a3d::RESOURCE_FORMAT_R32G32B32A32_UINT     , false },  // 2
+    { DXGI_FORMAT_R32G32B32A32_SINT         , DXGI_FORMAT_R32G32B32A32_TYPELESS     , 128   , a3d::RESOURCE_FORMAT_R32G32B32A32_SINT     , false },  // 3
+    { DXGI_FORMAT_R16G16B16A16_FLOAT        , DXGI_FORMAT_R16G16B16A16_TYPELESS     , 64    , a3d::RESOURCE_FORMAT_R16G16B16A16_FLOAT    , false },  // 4
+    { DXGI_FORMAT_R16G16B16A16_UINT         , DXGI_FORMAT_R16G16B16A16_TYPELESS     , 64    , a3d::RESOURCE_FORMAT_R16G16B16A16_UINT     , false },  // 5
+    { DXGI_FORMAT_R16G16B16A16_SINT         , DXGI_FORMAT_R16G16B16A16_TYPELESS     , 64    , a3d::RESOURCE_FORMAT_R16G16B16A16_SINT     , false },  // 6
+    { DXGI_FORMAT_R32G32B32_FLOAT           , DXGI_FORMAT_R32G32B32_TYPELESS        , 96    , a3d::RESOURCE_FORMAT_R32G32B32_FLOAT       , false },  // 7
+    { DXGI_FORMAT_R32G32B32_UINT            , DXGI_FORMAT_R32G32B32_TYPELESS        , 96    , a3d::RESOURCE_FORMAT_R32G32B32_UINT        , false },  // 8
+    { DXGI_FORMAT_R32G32B32_SINT            , DXGI_FORMAT_R32G32B32_TYPELESS        , 96    , a3d::RESOURCE_FORMAT_R32G32B32_SINT        , false },  // 9
+    { DXGI_FORMAT_R32G32_FLOAT              , DXGI_FORMAT_R32G32_TYPELESS           , 64    , a3d::RESOURCE_FORMAT_R32G32_FLOAT          , false },  // 10
+    { DXGI_FORMAT_R32G32_UINT               , DXGI_FORMAT_R32G32_TYPELESS           , 64    , a3d::RESOURCE_FORMAT_R32G32_UINT           , false },  // 11
+    { DXGI_FORMAT_R32G32_SINT               , DXGI_FORMAT_R32G32_TYPELESS           , 64    , a3d::RESOURCE_FORMAT_R32G32_SINT           , false },  // 12
+    { DXGI_FORMAT_R16G16_FLOAT              , DXGI_FORMAT_R16G16_TYPELESS           , 32    , a3d::RESOURCE_FORMAT_R16G16_FLOAT          , false },  // 13
+    { DXGI_FORMAT_R16G16_UINT               , DXGI_FORMAT_R16G16_TYPELESS           , 32    , a3d::RESOURCE_FORMAT_R16G16_UINT           , false },  // 14
+    { DXGI_FORMAT_R16G16_SINT               , DXGI_FORMAT_R16G16_TYPELESS           , 32    , a3d::RESOURCE_FORMAT_R16G16_SINT           , false },  // 15
+    { DXGI_FORMAT_R32_FLOAT                 , DXGI_FORMAT_R32_TYPELESS              , 32    , a3d::RESOURCE_FORMAT_R32_FLOAT             , false },  // 16
+    { DXGI_FORMAT_R32_UINT                  , DXGI_FORMAT_R32_TYPELESS              , 32    , a3d::RESOURCE_FORMAT_R32_UINT              , false },  // 17
+    { DXGI_FORMAT_R32_SINT                  , DXGI_FORMAT_R32_TYPELESS              , 32    , a3d::RESOURCE_FORMAT_R32_SINT              , false },  // 18
+    { DXGI_FORMAT_R16_FLOAT                 , DXGI_FORMAT_R16_TYPELESS              , 32    , a3d::RESOURCE_FORMAT_R16_FLOAT             , false },  // 19
+    { DXGI_FORMAT_R16_UINT                  , DXGI_FORMAT_R16_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_R16_UINT              , false },  // 20
+    { DXGI_FORMAT_R16_SINT                  , DXGI_FORMAT_R16_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_R16_SINT              , false },  // 21
+    { DXGI_FORMAT_R8G8B8A8_UNORM_SRGB       , DXGI_FORMAT_R8G8B8A8_TYPELESS         , 32    , a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM_SRGB   , false },  // 22
+    { DXGI_FORMAT_R8G8B8A8_UNORM            , DXGI_FORMAT_R8G8B8A8_TYPELESS         , 32    , a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM        , false },  // 23
+    { DXGI_FORMAT_B8G8R8A8_UNORM_SRGB       , DXGI_FORMAT_B8G8R8A8_TYPELESS         , 32    , a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM_SRGB   , false },  // 24
+    { DXGI_FORMAT_B8G8R8A8_UNORM            , DXGI_FORMAT_B8G8R8A8_TYPELESS         , 32    , a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM        , false },  // 25
+    { DXGI_FORMAT_R8G8_UNORM                , DXGI_FORMAT_R8G8_TYPELESS             , 16    , a3d::RESOURCE_FORMAT_R8G8_UNORM            , false },  // 26
+    { DXGI_FORMAT_R8_UNORM                  , DXGI_FORMAT_R8_TYPELESS               , 8     , a3d::RESOURCE_FORMAT_R8_UNORM              , false },  // 27
+    { DXGI_FORMAT_D32_FLOAT                 , DXGI_FORMAT_R32_TYPELESS              , 32    , a3d::RESOURCE_FORMAT_D32_FLOAT             , false },  // 28
+    { DXGI_FORMAT_D24_UNORM_S8_UINT         , DXGI_FORMAT_R24_UNORM_X8_TYPELESS     , 32    , a3d::RESOURCE_FORMAT_D24_UNORM_S8_UINT     , false },  // 29
+    { DXGI_FORMAT_D16_UNORM                 , DXGI_FORMAT_R16_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_D16_UNORM             , false },  // 30
     { DXGI_FORMAT_BC1_UNORM_SRGB            , DXGI_FORMAT_BC1_TYPELESS              , 8     , a3d::RESOURCE_FORMAT_BC1_UNORM_SRGB        , true  },  // 31
     { DXGI_FORMAT_BC1_UNORM                 , DXGI_FORMAT_BC1_TYPELESS              , 8     , a3d::RESOURCE_FORMAT_BC1_UNORM             , true  },  // 32
     { DXGI_FORMAT_BC2_UNORM_SRGB            , DXGI_FORMAT_BC2_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_BC2_UNORM_SRGB        , true  },  // 33
@@ -101,9 +101,9 @@ FormatConvertTable g_FormatTable[] = {
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 16    , a3d::RESOURCE_FORMAT_ASTC_12X10_UNORM      , true  },  // 70
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 16    , a3d::RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB , true  },  // 71
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 16    , a3d::RESOURCE_FORMAT_ASTC_12X12_UNORM      , true  },  // 72
-    { DXGI_FORMAT_R10G10B10A2_UNORM         , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 4     , a3d::RESOURCE_FORMAT_R10G10B10A2_UNORM     , false },  // 73
-    { DXGI_FORMAT_R10G10B10A2_UINT          , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 4     , a3d::RESOURCE_FORMAT_R10G10B10A2_UINT      , false },  // 74
-    { DXGI_FORMAT_R11G11B10_FLOAT           , DXGI_FORMAT_R11G11B10_FLOAT           , 4     , a3d::RESOURCE_FORMAT_R11G11B10_FLOAT       , false },  // 75
+    { DXGI_FORMAT_R10G10B10A2_UNORM         , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 32    , a3d::RESOURCE_FORMAT_R10G10B10A2_UNORM     , false },  // 73
+    { DXGI_FORMAT_R10G10B10A2_UINT          , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 32    , a3d::RESOURCE_FORMAT_R10G10B10A2_UINT      , false },  // 74
+    { DXGI_FORMAT_R11G11B10_FLOAT           , DXGI_FORMAT_R11G11B10_FLOAT           , 32    , a3d::RESOURCE_FORMAT_R11G11B10_FLOAT       , false },  // 75
 };
 
 StateConvertTable g_StateTable[] = {

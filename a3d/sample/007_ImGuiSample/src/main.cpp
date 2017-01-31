@@ -458,7 +458,7 @@ bool InitA3D()
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
         desc.EntryCount                = 3;
-        
+
         desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
         desc.Entries[0].ShaderRegister = 0;
         desc.Entries[0].BindLocation   = 0;
@@ -477,7 +477,7 @@ bool InitA3D()
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
         desc.EntryCount                = 2;
-        
+
         desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
         desc.Entries[0].ShaderRegister = 0;
         desc.Entries[0].BindLocation   = 0;
