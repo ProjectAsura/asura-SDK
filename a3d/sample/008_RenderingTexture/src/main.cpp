@@ -135,8 +135,8 @@ public:
         #if A3D_IS_WIN
             return _aligned_realloc(ptr, size, alignment);
         #else
-            auto allocSize = a3d::RoundUp(size, alignment);
-            return realloc(ptr, allocSize);
+            A3D_UNUSED(alignment);
+            return realloc(ptr, size);
         #endif
     }
 

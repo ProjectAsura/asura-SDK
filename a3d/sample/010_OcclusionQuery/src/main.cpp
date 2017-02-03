@@ -118,8 +118,8 @@ public:
         #if A3D_IS_WIN
             return _aligned_realloc(ptr, size, alignment);
         #else
-            auto allocSize = a3d::RoundUp(size, alignment);
-            return realloc(ptr, allocSize);
+            A3D_UNUSED(alignment);
+            return realloc(ptr, size);
         #endif
     }
 
@@ -178,6 +178,7 @@ bool InitA3D()
     {
         a3d::SystemDesc desc = {};
         desc.pAllocator = &g_Allocator;
+        desc.pOption    = g_pApp->GetWindowHandle();
 
         if (!a3d::InitSystem(&desc))
         { return false; }
@@ -607,8 +608,10 @@ void TermA3D()
     // ダブルバッファリソースの破棄.
     for(auto i=0; i<2; ++i)
     {
-
+        // クエリバッファを破棄します.
         a3d::SafeRelease(g_pQueryResultBuffer[i]);
+
+        // クエリプールを破棄します.
         a3d::SafeRelease(g_pQueryPool[i]);
 
         // フレームバッファの破棄.

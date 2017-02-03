@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cfloat>
 #include <cstring>
+#include <cstdlib>
 #include <string>
 #include <SampleApp.h>
 #include <SampleUtil.h>
@@ -123,8 +124,8 @@ public:
         #if A3D_IS_WIN
             return _aligned_realloc(ptr, size, alignment);
         #else
-            auto allocSize = a3d::RoundUp(size, alignment);
-            return realloc(ptr, allocSize);
+            A3D_UNUSED(alignment);
+            return realloc(ptr, size);
         #endif
     }
 
@@ -455,6 +456,7 @@ bool InitA3D()
 
     // ディスクリプタセットレイアウトを生成します.
     {
+    #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
         desc.EntryCount                = 3;
@@ -473,6 +475,21 @@ bool InitA3D()
         desc.Entries[2].ShaderRegister = 0;
         desc.Entries[2].BindLocation   = 2;
         desc.Entries[2].Type           = a3d::DESCRIPTOR_TYPE_SRV;
+    #else
+        a3d::DescriptorSetLayoutDesc desc = {};
+        desc.MaxSetCount               = 2;
+        desc.EntryCount                = 2;
+        
+        desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
+        desc.Entries[0].ShaderRegister = 0;
+        desc.Entries[0].BindLocation   = 0;
+        desc.Entries[0].Type           = a3d::DESCRIPTOR_TYPE_CBV;
+
+        desc.Entries[1].ShaderMask     = a3d::SHADER_MASK_PIXEL;
+        desc.Entries[1].ShaderRegister = 0;
+        desc.Entries[1].BindLocation   = 0;
+        desc.Entries[1].Type           = a3d::DESCRIPTOR_TYPE_SRV;
+    #endif
 
         if (!g_pDevice->CreateDescriptorSetLayout(&desc, &g_pDescriptorSetLayout))
         { return false; }
@@ -734,10 +751,17 @@ bool InitA3D()
     // ディスクリプタセットの更新.
     for(auto i=0; i<2; ++i)
     {
+    #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
         g_pDescriptorSet[i]->SetTexture(2, g_pTextureView);
         g_pDescriptorSet[i]->Update();
+    #else
+        g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
+        g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
+        g_pDescriptorSet[i]->SetTexture(1, g_pTextureView);
+        g_pDescriptorSet[i]->Update();
+    #endif
     }
 
     // GUIマネージャの初期化.

@@ -76,8 +76,8 @@ public:
         #if A3D_IS_WIN
             return _aligned_realloc(ptr, size, alignment);
         #else
-            auto allocSize = a3d::RoundUp(size, alignment);
-            return realloc(ptr, allocSize);
+            A3D_UNUSED(alignment);
+            return realloc(ptr, size);
         #endif
     }
 
@@ -104,6 +104,7 @@ void Main()
     if (!CreateApp(960, 540, &g_pApp))
     { return; }
 
+    // リサイズ時のコールバック関数を設定.
     g_pApp->SetResizeCallback(Resize, nullptr);
 
     // A3D初期化.
