@@ -10,7 +10,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\code;$(ProjectDir)..\..\common\externals\imgui-1.49;$(ProjectDir)..\..\common\helpers;$(ProjectDir)..\..\..\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>SAMPLE_IS_D3D11;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SAMPLE_IS_D3D11;TARGET_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

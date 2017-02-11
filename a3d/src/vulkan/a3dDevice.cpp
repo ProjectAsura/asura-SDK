@@ -152,6 +152,50 @@ template<typename T>
 inline T GetProc(VkDevice device, const char* name)
 { return reinterpret_cast<T>(vkGetDeviceProcAddr(device, name)); }
 
+#if 1
+void CheckInstanceLayer
+(
+    size_t                      requestCount,
+    const char**                requestName,
+    a3d::dynamic_array<char*>&  result
+)
+{
+    uint32_t count;
+    vkEnumerateInstanceLayerProperties(&count, nullptr);
+
+    if (count == 0)
+    { return; }
+
+    a3d::dynamic_array<VkLayerProperties> props;
+    props.resize(count);
+
+    vkEnumerateInstanceLayerProperties(&count, props.data());
+
+    for(size_t i=0; i<props.size(); ++i)
+    {
+        bool hit = false;
+        for(size_t j=0; j<requestCount; ++j)
+        {
+            if (strcmp(props[i].layerName, requestName[j]) == 0)
+            {
+                hit = true;
+                break;
+            }
+        }
+
+        if (!hit)
+        { continue; }
+
+        auto layerName = new char [VK_MAX_EXTENSION_NAME_SIZE];
+        memset(layerName, 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+        memcpy(layerName, props[i].layerName, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+        result.push_back(layerName);
+    }
+
+    props.clear();
+}
+#endif
+
 //-------------------------------------------------------------------------------------------------
 //      インスタンス拡張機能をチェックします.
 //-------------------------------------------------------------------------------------------------
@@ -276,11 +320,13 @@ bool Device::Init(const DeviceDesc* pDesc)
         VK_KHR_XCB_SURFACE_EXTENSION_NAME,
     #elif A3D_IS_ANDROID
         VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
+    #elif A3D_IS_NX
+        VK_NN_VI_SURFACE_EXTENSION_NAME,
     #endif
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
     };
 
-    const char* layer[] = {
+    const char* layerNames[] = {
         "VK_LAYER_LUNARG_standard_validation",
     };
 
@@ -289,9 +335,19 @@ bool Device::Init(const DeviceDesc* pDesc)
 
     if (pDesc->EnableDebug)
     {
-        layerCount = 1;
+    #if !A3D_IS_NX
+        layerCount++;
+    #endif
         instanceExtensionCount++;
     }
+
+    #if 0
+    //a3d::dynamic_array<char*> layers;
+    //CheckInstanceLayer(
+    //    layerCount,
+    //    layerNames,
+    //    layers);
+    #endif
 
     // インスタンスの生成.
     {
@@ -318,7 +374,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         instanceInfo.flags                      = 0;
         instanceInfo.pApplicationInfo           = &appInfo;
         instanceInfo.enabledLayerCount          = layerCount;
-        instanceInfo.ppEnabledLayerNames        = (pDesc->EnableDebug) ? layer : nullptr;
+        instanceInfo.ppEnabledLayerNames        = (layerCount == 0) ? nullptr : layerNames;
         instanceInfo.enabledExtensionCount      = static_cast<uint32_t>(extensions.size());
         instanceInfo.ppEnabledExtensionNames    = extensions.data();
 
@@ -327,6 +383,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         m_Allocator.pfnReallocation         = Realloc;
         m_Allocator.pfnInternalAllocation   = nullptr;
         m_Allocator.pfnInternalFree         = nullptr;
+        m_Allocator.pUserData               = nullptr;
 
         auto ret = vkCreateInstance(&instanceInfo, &m_Allocator, &m_Instance);
 
@@ -457,7 +514,7 @@ bool Device::Init(const DeviceDesc* pDesc)
             pQueueInfos[i].queueFamilyIndex = i;
 
             totalQueueCount += pProps[i].queueCount;
-;
+
             if (pProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             {
                 if (graphicsIndex == UINT32_MAX)
@@ -589,7 +646,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         deviceInfo.queueCreateInfoCount     = propCount;
         deviceInfo.pQueueCreateInfos        = pQueueInfos;
         deviceInfo.enabledLayerCount        = layerCount;
-        deviceInfo.ppEnabledLayerNames      = layer;
+        deviceInfo.ppEnabledLayerNames      = (layerCount == 0) ? nullptr : layerNames;
         deviceInfo.enabledExtensionCount    = uint32_t(deviceExtensions.size());
         deviceInfo.ppEnabledExtensionNames  = deviceExtensions.data();
         deviceInfo.pEnabledFeatures         = nullptr;

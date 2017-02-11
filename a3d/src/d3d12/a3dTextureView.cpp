@@ -210,10 +210,12 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
         if (m_pShaderDescriptor == nullptr)
         { return false; }
 
+        auto viewFormat = ToNativeViewFormat(pDesc->Format, pDesc->TextureAspect == TEXTURE_ASPECT_STENCIL);
+
         if (textureDesc.Usage & RESOURCE_USAGE_UNORDERD_ACCESS)
         {
             D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
-            desc.Format         = ToNativeFormat(pDesc->Format);
+            desc.Format         = viewFormat;
             desc.ViewDimension  = ToNativeUAVDimension(pDesc->Dimension);
 
             switch(desc.ViewDimension)
@@ -276,7 +278,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
         else
         {
             D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
-            desc.Format         = ToNativeFormat(pDesc->Format);
+            desc.Format         = viewFormat;
             desc.ViewDimension  = ToNativeSRVDimension(pDesc->Dimension);
             desc.Shader4ComponentMapping = D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(
                                             pDesc->ComponentMapping.R,

@@ -145,9 +145,9 @@ void ToNativeDSVDesc(const a3d::TextureViewDesc* pDesc, D3D11_DEPTH_STENCIL_VIEW
 //-------------------------------------------------------------------------------------------------
 //      シェーダリソースビューの構成設定に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeSRVDesc(const a3d::TextureViewDesc* pDesc, D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc)
+void ToNativeSRVDesc(const a3d::TextureViewDesc* pDesc, D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc, bool isStencil)
 {
-    srvDesc.Format = a3d::ToNativeFormat(pDesc->Format);
+    srvDesc.Format = a3d::ToNativeViewFormat(pDesc->Format, isStencil);
 
     switch(pDesc->Dimension)
     {
@@ -233,9 +233,9 @@ void ToNativeSRVDesc(const a3d::TextureViewDesc* pDesc, D3D11_SHADER_RESOURCE_VI
 //-------------------------------------------------------------------------------------------------
 //      アンオーダードアクセスビューの構成設定に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeUAVDesc(const a3d::TextureViewDesc* pDesc, D3D11_UNORDERED_ACCESS_VIEW_DESC& uavDesc)
+void ToNativeUAVDesc(const a3d::TextureViewDesc* pDesc, D3D11_UNORDERED_ACCESS_VIEW_DESC& uavDesc, bool isStencil)
 {
-    uavDesc.Format = a3d::ToNativeFormat(pDesc->Format);
+    uavDesc.Format = a3d::ToNativeViewFormat(pDesc->Format, isStencil);
 
     switch(pDesc->Dimension)
     {
@@ -365,7 +365,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
     if (textureDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE)
     {
         D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        ToNativeSRVDesc(pDesc, srvDesc);
+        ToNativeSRVDesc(pDesc, srvDesc, pDesc->TextureAspect == TEXTURE_ASPECT_STENCIL);
 
         auto hr = pD3D11Device->CreateShaderResourceView(
             pWrapTexture->GetD3D11Resource(),
@@ -378,7 +378,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
     if (textureDesc.Usage & RESOURCE_USAGE_UNORDERD_ACCESS)
     {
         D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-        ToNativeUAVDesc(pDesc, uavDesc);
+        ToNativeUAVDesc(pDesc, uavDesc, pDesc->TextureAspect == TEXTURE_ASPECT_STENCIL);
 
         auto hr = pD3D11Device->CreateUnorderedAccessView(
             pWrapTexture->GetD3D11Resource(),

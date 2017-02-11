@@ -374,7 +374,7 @@ public:
     //!
     //! @return     コマンドバッファを返却します.
     //---------------------------------------------------------------------------------------------
-    const CommandBuffer* GetCommandBuffer() const;
+    const CommandBuffer* A3D_APIENTRY GetCommandBuffer() const;
 
 private:
     //=============================================================================================

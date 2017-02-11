@@ -230,7 +230,7 @@ bool InitA3D()
 
     // スワップチェインの生成.
     {
-    #if SAMPLE_IS_VULKAN
+    #if SAMPLE_IS_VULKAN && TARGET_PC
         auto format = a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM;
     #else
         auto format = a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM;

@@ -44,6 +44,13 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
+    DXGI_FORMAT format;
+    if (pDesc->Usage & RESOURCE_USAGE_SHADER_RESOURCE ||
+        pDesc->Usage & RESOURCE_USAGE_UNORDERD_ACCESS)
+    { format = ToNativeTypelessFormat(pDesc->Format); }
+    else
+    { format = ToNativeFormat(pDesc->Format); }
+
     if (pDesc->Dimension == RESOURCE_DIMENSION_BUFFER)
     { return false; }
     else if (pDesc->Dimension == RESOURCE_DIMENSION_TEXTURE1D)
@@ -52,7 +59,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.Width          = pDesc->Width;
         desc.MipLevels      = pDesc->MipLevels;
         desc.ArraySize      = pDesc->DepthOrArraySize;
-        desc.Format         = ToNativeFormat(pDesc->Format);
+        desc.Format         = format;
         desc.Usage          = ToNativeUsage(pDesc->HeapProperty.Type);
         desc.BindFlags      = ToNativeBindFlags(pDesc->Usage);
         desc.CPUAccessFlags = ToNativeCpuAccessFlags(
@@ -73,7 +80,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.Height             = pDesc->Height;
         desc.ArraySize          = pDesc->DepthOrArraySize;
         desc.MipLevels          = pDesc->MipLevels;
-        desc.Format             = ToNativeFormat(pDesc->Format);
+        desc.Format             = format;
         desc.SampleDesc.Count   = pDesc->SampleCount;
         desc.SampleDesc.Quality = 0;
         desc.Usage              = ToNativeUsage(pDesc->HeapProperty.Type);
@@ -102,7 +109,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.Height             = pDesc->Height;
         desc.ArraySize          = pDesc->DepthOrArraySize;
         desc.MipLevels          = pDesc->MipLevels;
-        desc.Format             = ToNativeFormat(pDesc->Format);
+        desc.Format             = format;
         desc.SampleDesc.Count   = pDesc->SampleCount;
         desc.SampleDesc.Quality = 0;
         desc.Usage              = ToNativeUsage(pDesc->HeapProperty.Type);
@@ -126,7 +133,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.Height         = pDesc->Height;
         desc.Depth          = pDesc->DepthOrArraySize;
         desc.MipLevels      = pDesc->MipLevels;
-        desc.Format         = ToNativeFormat(pDesc->Format);
+        desc.Format         = format;
         desc.Usage          = ToNativeUsage(pDesc->HeapProperty.Type);
         desc.BindFlags      = ToNativeBindFlags(pDesc->Usage);
         desc.CPUAccessFlags = ToNativeCpuAccessFlags(

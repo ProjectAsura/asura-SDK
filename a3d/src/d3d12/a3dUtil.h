@@ -20,11 +20,19 @@ DXGI_FORMAT ToNativeFormat(RESOURCE_FORMAT format);
 //! @brief      タイプレスのネイティブ形式に変換します.
 //!
 //! @param[in]      format      A3D形式です.
-//! @param[in]      isStencil   ステンシルテクスチャとする場合はtrueを指定.
 //! @return     タイプレスのネイティブ形式に変換したフォーマットを返却します. 
 //!             タイプレス形式が無い場合は該当するDXGI_FORMATを返却します.
 //-------------------------------------------------------------------------------------------------
-DXGI_FORMAT ToNativeTypelessFormat(RESOURCE_FORMAT format, bool isStencil);
+DXGI_FORMAT ToNativeTypelessFormat(RESOURCE_FORMAT format);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      ビューフォーマットに変換します.
+//!
+//! @param[in]      format      A3D形式です.
+//! @param[in]      isStencil   ステンシルテクスチャとする場合はtrueを指定.
+//! @return     ビューフォーマットに適した形式のフォーマットを返却します. 
+//-------------------------------------------------------------------------------------------------
+DXGI_FORMAT ToNativeViewFormat(RESOURCE_FORMAT format, bool isStencil);
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      ネイティブ形式からA3D形式に変換します.

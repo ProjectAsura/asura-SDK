@@ -58,7 +58,7 @@ FormatConvertTable g_FormatTable[] = {
     { DXGI_FORMAT_R8G8_UNORM                , DXGI_FORMAT_R8G8_TYPELESS             , 16    , a3d::RESOURCE_FORMAT_R8G8_UNORM            , false },  // 26
     { DXGI_FORMAT_R8_UNORM                  , DXGI_FORMAT_R8_TYPELESS               , 8     , a3d::RESOURCE_FORMAT_R8_UNORM              , false },  // 27
     { DXGI_FORMAT_D32_FLOAT                 , DXGI_FORMAT_R32_TYPELESS              , 32    , a3d::RESOURCE_FORMAT_D32_FLOAT             , false },  // 28
-    { DXGI_FORMAT_D24_UNORM_S8_UINT         , DXGI_FORMAT_R24_UNORM_X8_TYPELESS     , 32    , a3d::RESOURCE_FORMAT_D24_UNORM_S8_UINT     , false },  // 29
+    { DXGI_FORMAT_D24_UNORM_S8_UINT         , DXGI_FORMAT_R24G8_TYPELESS            , 32    , a3d::RESOURCE_FORMAT_D24_UNORM_S8_UINT     , false },  // 29
     { DXGI_FORMAT_D16_UNORM                 , DXGI_FORMAT_R16_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_D16_UNORM             , false },  // 30
     { DXGI_FORMAT_BC1_UNORM_SRGB            , DXGI_FORMAT_BC1_TYPELESS              , 8     , a3d::RESOURCE_FORMAT_BC1_UNORM_SRGB        , true  },  // 31
     { DXGI_FORMAT_BC1_UNORM                 , DXGI_FORMAT_BC1_TYPELESS              , 8     , a3d::RESOURCE_FORMAT_BC1_UNORM             , true  },  // 32
@@ -143,12 +143,29 @@ DXGI_FORMAT ToNativeFormat(RESOURCE_FORMAT format)
 //-------------------------------------------------------------------------------------------------
 //      タイプレスのネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-DXGI_FORMAT ToNativeTypelessFormat(RESOURCE_FORMAT format, bool isStencilFormat)
-{
-    if (isStencilFormat && format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
-    { return DXGI_FORMAT_X24_TYPELESS_G8_UINT; }
+DXGI_FORMAT ToNativeTypelessFormat(RESOURCE_FORMAT format)
+{ return g_FormatTable[format].TypelessFormat; }
 
-    return g_FormatTable[format].TypelessFormat;
+//-------------------------------------------------------------------------------------------------
+//      ビューフォーマットに変換します.
+//-------------------------------------------------------------------------------------------------
+DXGI_FORMAT ToNativeViewFormat(RESOURCE_FORMAT format, bool isStencil)
+{
+    if (format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
+    {
+        if (isStencil)
+        { return DXGI_FORMAT_X24_TYPELESS_G8_UINT; }
+        else
+        { return DXGI_FORMAT_R24_UNORM_X8_TYPELESS; }
+    }
+
+    if (format == RESOURCE_FORMAT_D16_UNORM)
+    { return DXGI_FORMAT_R16_UNORM; }
+
+    if (format == RESOURCE_FORMAT_D32_FLOAT)
+    { return DXGI_FORMAT_R32_FLOAT; }
+
+    return g_FormatTable[format].NativeFormat;
 }
 
 //-------------------------------------------------------------------------------------------------

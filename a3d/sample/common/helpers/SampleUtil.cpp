@@ -13,7 +13,7 @@
 #include <cstring>
 
 
-#if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
+#ifdef TARGET_PC
 
 //-------------------------------------------------------------------------------------------------
 //      サンプルプログラム向けのシェーダディレクトリ名を取得します.
@@ -33,7 +33,7 @@ std::string GetShaderDirectoryForSampleProgram()
 std::string GetTextureDirectoryForSampleProgram()
 { return "../../common/textures/"; }
 
-#endif//SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
+#endif//TARGET_PC
 
 
 //-------------------------------------------------------------------------------------------------

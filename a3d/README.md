@@ -224,6 +224,12 @@ Sample to toggle full screen mode.
 フルスクリーンモードを切り替えるサンプルです。  
 ![FullScreen](./doc/images/009_FullScreen.png)  
 
+* [OcclusionQuery](./sample/010_OcclusionQuery/src "OcclusionQuery")  
+Sample to use Occlussion query.  
+オクルージョンクエリを使用するサンプルです。  
+![OcclusionQuery](./doc/images/010_OcclusionQuery.png)  
+
+
 ## Documents
 docフォルダ下にAPIリファレンスがあります。  
 * [API Document](./doc/a3d_api.chm)  (JP Only)
