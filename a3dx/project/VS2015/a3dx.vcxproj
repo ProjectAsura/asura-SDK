@@ -68,7 +68,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -82,7 +89,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\..\a3d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\include;$(ProjectDir)..\..\..\a3d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +113,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\..\a3d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\include;$(ProjectDir)..\..\..\a3d\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -114,30 +121,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\a3dxAny.h" />
-    <ClInclude Include="..\include\a3dxHash.h" />
-    <ClInclude Include="..\include\a3dxHeap.h" />
-    <ClInclude Include="..\include\a3dxLfuCache.h" />
-    <ClInclude Include="..\include\a3dxLruCache.h" />
-    <ClInclude Include="..\include\a3dxMath.h" />
-    <ClInclude Include="..\include\a3dxOptional.h" />
-    <ClInclude Include="..\include\a3dxRef.h" />
-    <ClInclude Include="..\include\a3dxResMaterial.h" />
-    <ClInclude Include="..\include\a3dxResMesh.h" />
-    <ClInclude Include="..\include\a3dxResMotion.h" />
-    <ClInclude Include="..\include\a3dxResTexture.h" />
+    <ClCompile Include="..\..\src\a3dxHeap.cpp" />
+    <ClCompile Include="..\..\src\a3dxResMaterial.cpp" />
+    <ClCompile Include="..\..\src\a3dxResMesh.cpp" />
+    <ClCompile Include="..\..\src\a3dxResMotion.cpp" />
+    <ClCompile Include="..\..\src\a3dxResTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\include\a3dxLfuCache.inl" />
-    <None Include="..\include\a3dxLruCache.inl" />
-    <None Include="..\include\a3dxMath.inl" />
+    <ClInclude Include="..\..\include\a3dxAny.h" />
+    <ClInclude Include="..\..\include\a3dxHash.h" />
+    <ClInclude Include="..\..\include\a3dxHeap.h" />
+    <ClInclude Include="..\..\include\a3dxLfuCache.h" />
+    <ClInclude Include="..\..\include\a3dxLruCache.h" />
+    <ClInclude Include="..\..\include\a3dxMath.h" />
+    <ClInclude Include="..\..\include\a3dxOptional.h" />
+    <ClInclude Include="..\..\include\a3dxRef.h" />
+    <ClInclude Include="..\..\include\a3dxResMaterial.h" />
+    <ClInclude Include="..\..\include\a3dxResMesh.h" />
+    <ClInclude Include="..\..\include\a3dxResMotion.h" />
+    <ClInclude Include="..\..\include\a3dxResTexture.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\a3dxHeap.cpp" />
-    <ClCompile Include="..\src\a3dxResMaterial.cpp" />
-    <ClCompile Include="..\src\a3dxResMesh.cpp" />
-    <ClCompile Include="..\src\a3dxResMotion.cpp" />
-    <ClCompile Include="..\src\a3dxResTexture.cpp" />
+    <None Include="..\..\include\a3dxLfuCache.inl" />
+    <None Include="..\..\include\a3dxLruCache.inl" />
+    <None Include="..\..\include\a3dxMath.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

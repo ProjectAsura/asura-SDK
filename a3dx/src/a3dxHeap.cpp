@@ -19,6 +19,27 @@ namespace {
 constexpr uint64_t SIGN_ALLOC = 0xA3DA110C; // "a3d alloc".
 constexpr uint64_t SIGN_DEAD  = 0xDEADC0DE; // "dead code".
 
+inline uintptr_t GetIntPtr(const void* ptr)
+{ return reinterpret_cast<uintptr_t>(ptr); }
+
+inline ptrdiff_t GetOffsetFromPtr(const void* start, const void* end)
+{ return static_cast<ptrdiff_t>(GetIntPtr(end) - GetIntPtr(start)); }
+
+template<typename T>
+inline void* AddOffsetToPtr(void* ptr, T offset)
+{ return reinterpret_cast<void*>(GetIntPtr(ptr) + offset); }
+
+template<typename T>
+inline const void* AddOffsetToPtr(const void* ptr, T offset)
+{ return reinterpret_cast<const void*>(GetIntPtr(ptr) + offset); }
+
+inline void* RoundUpPtr(void* ptr, size_t base)
+{ 
+    auto value   = GetIntPtr(ptr);
+    auto aligned = (value + (base - 1)) & ~(base - 1);
+    return reinterpret_cast<void*>(aligned);
+}
+
 }
 
 namespace a3dx {
@@ -112,6 +133,8 @@ void* Heap::Alloc(size_t size, size_t alignment) noexcept
 //-------------------------------------------------------------------------------------------------
 void* Heap::Realloc(void* ptr, size_t size, size_t alignment) noexcept
 {
+    /* Free() と Alloc() を行う簡易実装のため，アドレスが変わります. */
+
     auto newPtr = Alloc(size, alignment);
     if (newPtr == nullptr)
     { return nullptr; }
@@ -318,10 +341,18 @@ void Heap::FreeBlock(void* ptr)
 //-------------------------------------------------------------------------------------------------
 void* Heap::MemoryAlign(void* ptr, size_t alignment)
 {
+    auto space = static_cast<int>(sizeof(uint64_t));
 
-    // TODO:
+    // ずらしてからアライメントする.
+    void* top = AddOffsetToPtr( ptr, space );
+    top = RoundUpPtr(top, alignment);
 
-    return nullptr;
+    // ずらした領域にオフセットを書き込んでおく.
+    auto head = reinterpret_cast<uint64_t*>(AddOffsetToPtr( top, -space ));
+    (*head) = GetOffsetFromPtr( ptr, top );
+
+    // アライメントしたポインタを返す.
+    return reinterpret_cast<void*>(top);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -329,10 +360,14 @@ void* Heap::MemoryAlign(void* ptr, size_t alignment)
 //-------------------------------------------------------------------------------------------------
 void* Heap::MemoryUnalign(void* ptr)
 {
+    auto space = static_cast<int>(sizeof(uint64_t));
 
-    // TODO:
+    // 手前にオフセットがあるので取得する.
+    auto head   = reinterpret_cast<uint64_t*>(AddOffsetToPtr(ptr, -space));
+    auto offset = (*head);
 
-    return nullptr;
+    // 復元したポインタを返す.
+    return reinterpret_cast<void*>(GetIntPtr(head) - offset);
 }
 
 } // namespace a3dx

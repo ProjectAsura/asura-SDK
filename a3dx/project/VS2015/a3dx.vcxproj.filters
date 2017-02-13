@@ -15,69 +15,69 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\a3dxHash.h">
+    <ClCompile Include="..\..\src\a3dxHeap.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\a3dxResMaterial.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\a3dxResMesh.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\a3dxResMotion.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\a3dxResTexture.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\a3dxAny.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxLfuCache.h">
+    <ClInclude Include="..\..\include\a3dxHash.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxLruCache.h">
+    <ClInclude Include="..\..\include\a3dxHeap.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxMath.h">
+    <ClInclude Include="..\..\include\a3dxLfuCache.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxRef.h">
+    <ClInclude Include="..\..\include\a3dxLruCache.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxResMaterial.h">
+    <ClInclude Include="..\..\include\a3dxMath.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxResMesh.h">
+    <ClInclude Include="..\..\include\a3dxOptional.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxResMotion.h">
+    <ClInclude Include="..\..\include\a3dxRef.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxResTexture.h">
+    <ClInclude Include="..\..\include\a3dxResMaterial.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxAny.h">
+    <ClInclude Include="..\..\include\a3dxResMesh.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxHeap.h">
+    <ClInclude Include="..\..\include\a3dxResMotion.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\a3dxOptional.h">
+    <ClInclude Include="..\..\include\a3dxResTexture.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\include\a3dxLfuCache.inl">
+    <None Include="..\..\include\a3dxLfuCache.inl">
       <Filter>ヘッダー ファイル</Filter>
     </None>
-    <None Include="..\include\a3dxLruCache.inl">
+    <None Include="..\..\include\a3dxLruCache.inl">
       <Filter>ヘッダー ファイル</Filter>
     </None>
-    <None Include="..\include\a3dxMath.inl">
+    <None Include="..\..\include\a3dxMath.inl">
       <Filter>ヘッダー ファイル</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\a3dxResMesh.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\a3dxResMotion.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\a3dxResTexture.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\a3dxResMaterial.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\a3dxHeap.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

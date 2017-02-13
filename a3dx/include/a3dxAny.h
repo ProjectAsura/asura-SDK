@@ -82,6 +82,9 @@ public:
     const std::type_info& type() const
     { return (m_item != nullptr) ? m_item->type() : typeid(void); }
 
+    size_t size() const
+    { return (m_item != nullptr) ? m_item->size() : 0; }
+
     template<typename T>
     T cast() const
     {
