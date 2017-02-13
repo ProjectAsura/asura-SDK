@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : aut_Hash.h
+// File : a3dxHash.h
 // Desc : Hash Key.
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 #include <cstdint>
 
 
-namespace aut {
+namespace a3dx {
 
 //-------------------------------------------------------------------------------------------------
 // Constant Values
@@ -42,4 +42,4 @@ inline uint32_t CalcFnv1a(uint32_t count, const uint8_t* pBuffer)
     return ret;
 }
 
-} // namespace aut
+} // namespace a3dx

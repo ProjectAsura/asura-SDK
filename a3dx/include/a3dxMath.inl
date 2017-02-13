@@ -1,12 +1,12 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : aut_math.inl
+// File : a3dxMath.inl
 // Desc : Math Module.
 // Copyright(c) Project Asura All right reserved.
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
 
-namespace aut {
+namespace a3dx {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -545,8 +545,8 @@ inline
 Vector2 Vector2::Clamp( const Vector2& value, const Vector2& a, const Vector2& b )
 {
     return Vector2(
-        asvk::Clamp( value.x, a.x, b.x ),
-        asvk::Clamp( value.y, a.y, b.y )
+        a3dx::Clamp( value.x, a.x, b.x ),
+        a3dx::Clamp( value.y, a.y, b.y )
     );
 }
 
@@ -556,8 +556,8 @@ Vector2 Vector2::Clamp( const Vector2& value, const Vector2& a, const Vector2& b
 inline
 void Vector2::Clamp( const Vector2& value, const Vector2& a, const Vector2& b, Vector2 &result )
 {
-    result.x = asvk::Clamp( value.x, a.x, b.x );
-    result.y = asvk::Clamp( value.y, a.y, b.y );
+    result.x = a3dx::Clamp( value.x, a.x, b.x );
+    result.y = a3dx::Clamp( value.y, a.y, b.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -567,8 +567,8 @@ inline
 Vector2 Vector2::Saturate( const Vector2& value )
 {
     return Vector2(
-        asvk::Saturate( value.x ),
-        asvk::Saturate( value.y )
+        a3dx::Saturate( value.x ),
+        a3dx::Saturate( value.y )
     );
 }
 
@@ -578,8 +578,8 @@ Vector2 Vector2::Saturate( const Vector2& value )
 inline
 void Vector2::Saturate( const Vector2& value, Vector2& result )
 {
-    result.x = asvk::Saturate( value.x );
-    result.y = asvk::Saturate( value.y );
+    result.x = a3dx::Saturate( value.x );
+    result.y = a3dx::Saturate( value.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -751,8 +751,8 @@ inline
 Vector2 Vector2::Min( const Vector2& a, const Vector2& b )
 { 
     return Vector2(
-        asvk::Min( a.x, b.x ),
-        asvk::Min( a.y, b.y )
+        a3dx::Min( a.x, b.x ),
+        a3dx::Min( a.y, b.y )
     );
 }
 
@@ -762,8 +762,8 @@ Vector2 Vector2::Min( const Vector2& a, const Vector2& b )
 inline
 void Vector2::Min( const Vector2 &a, const Vector2 &b, Vector2 &result )
 {
-    result.x = asvk::Min( a.x, b.x );
-    result.y = asvk::Min( a.y, b.y );
+    result.x = a3dx::Min( a.x, b.x );
+    result.y = a3dx::Min( a.y, b.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -773,8 +773,8 @@ inline
 Vector2 Vector2::Max( const Vector2& a, const Vector2& b )
 {
     return Vector2(
-        asvk::Max( a.x, b.x ),
-        asvk::Max( a.y, b.y )
+        a3dx::Max( a.x, b.x ),
+        a3dx::Max( a.y, b.y )
     );
 }
 
@@ -784,8 +784,8 @@ Vector2 Vector2::Max( const Vector2& a, const Vector2& b )
 inline
 void Vector2::Max( const Vector2 &a, const Vector2 &b, Vector2 &result )
 {
-    result.x = asvk::Max( a.x, b.x );
-    result.y = asvk::Max( a.y, b.y );
+    result.x = a3dx::Max( a.x, b.x );
+    result.y = a3dx::Max( a.y, b.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1023,7 +1023,7 @@ void Vector2::Lerp( const Vector2 &a, const Vector2 &b, float amount, Vector2 &r
 inline
 Vector2 Vector2::SmoothStep( const Vector2& a, const Vector2& b, float amount )
 {
-    auto s = asvk::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3dx::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     return Vector2(
         a.x + u * ( b.x - a.x ),
@@ -1037,7 +1037,7 @@ Vector2 Vector2::SmoothStep( const Vector2& a, const Vector2& b, float amount )
 inline
 void Vector2::SmoothStep( const Vector2 &a, const Vector2 &b, float t, Vector2 &result )
 {
-    auto s = asvk::Clamp( t, 0.0f, 1.0f );
+    auto s = a3dx::Clamp( t, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     result.x = a.x + u * ( b.x - a.x );
     result.y = a.y + u * ( b.y - a.y );
@@ -1392,9 +1392,9 @@ inline
 Vector3 Vector3::Clamp( const Vector3& value, const Vector3& a, const Vector3& b )
 {
     return Vector3( 
-        asvk::Clamp( value.x, a.x, b.x ),
-        asvk::Clamp( value.y, a.y, b.y ),
-        asvk::Clamp( value.z, a.z, b.z )
+        a3dx::Clamp( value.x, a.x, b.x ),
+        a3dx::Clamp( value.y, a.y, b.y ),
+        a3dx::Clamp( value.z, a.z, b.z )
     );
 }
 
@@ -1404,9 +1404,9 @@ Vector3 Vector3::Clamp( const Vector3& value, const Vector3& a, const Vector3& b
 inline
 void Vector3::Clamp( const Vector3 &value, const Vector3 &a, const Vector3 &b, Vector3 &result )
 {
-    result.x = asvk::Clamp( value.x, a.x, b.x );
-    result.y = asvk::Clamp( value.y, a.y, b.y );
-    result.z = asvk::Clamp( value.z, a.z, b.z );
+    result.x = a3dx::Clamp( value.x, a.x, b.x );
+    result.y = a3dx::Clamp( value.y, a.y, b.y );
+    result.z = a3dx::Clamp( value.z, a.z, b.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1416,9 +1416,9 @@ inline
 Vector3 Vector3::Saturate( const Vector3& value )
 {
     return Vector3(
-        asvk::Saturate( value.x ),
-        asvk::Saturate( value.y ),
-        asvk::Saturate( value.z )
+        a3dx::Saturate( value.x ),
+        a3dx::Saturate( value.y ),
+        a3dx::Saturate( value.z )
     );
 }
 
@@ -1428,9 +1428,9 @@ Vector3 Vector3::Saturate( const Vector3& value )
 inline
 void Vector3::Saturate( const Vector3& value, Vector3& result )
 {
-    result.x = asvk::Saturate( value.x );
-    result.y = asvk::Saturate( value.y );
-    result.z = asvk::Saturate( value.z );
+    result.x = a3dx::Saturate( value.x );
+    result.y = a3dx::Saturate( value.y );
+    result.z = a3dx::Saturate( value.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1716,9 +1716,9 @@ inline
 Vector3 Vector3::Min( const Vector3& a, const Vector3& b )
 { 
     return Vector3( 
-        asvk::Min( a.x, b.x ),
-        asvk::Min( a.y, b.y ),
-        asvk::Min( a.z, b.z )
+        a3dx::Min( a.x, b.x ),
+        a3dx::Min( a.y, b.y ),
+        a3dx::Min( a.z, b.z )
     );
 }
 
@@ -1728,9 +1728,9 @@ Vector3 Vector3::Min( const Vector3& a, const Vector3& b )
 inline
 void Vector3::Min( const Vector3 &a, const Vector3 &b, Vector3 &result )
 {
-    result.x = asvk::Min( a.x, b.x );
-    result.y = asvk::Min( a.y, b.y );
-    result.z = asvk::Min( a.z, b.z );
+    result.x = a3dx::Min( a.x, b.x );
+    result.y = a3dx::Min( a.y, b.y );
+    result.z = a3dx::Min( a.z, b.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1740,9 +1740,9 @@ inline
 Vector3 Vector3::Max( const Vector3& a, const Vector3& b )
 {
     return Vector3(
-        asvk::Max( a.x, b.x ),
-        asvk::Max( a.y, b.y ),
-        asvk::Max( a.z, b.z )
+        a3dx::Max( a.x, b.x ),
+        a3dx::Max( a.y, b.y ),
+        a3dx::Max( a.z, b.z )
     );
 }
 
@@ -1752,9 +1752,9 @@ Vector3 Vector3::Max( const Vector3& a, const Vector3& b )
 inline
 void Vector3::Max( const Vector3 &a, const Vector3 &b, Vector3 &result )
 {
-    result.x = asvk::Max( a.x, b.x );
-    result.y = asvk::Max( a.y, b.y );
-    result.z = asvk::Max( a.z, b.z );
+    result.x = a3dx::Max( a.x, b.x );
+    result.y = a3dx::Max( a.y, b.y );
+    result.z = a3dx::Max( a.z, b.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2008,7 +2008,7 @@ void Vector3::Lerp( const Vector3 &a, const Vector3 &b, float amount, Vector3 &r
 inline
 Vector3 Vector3::SmoothStep( const Vector3& a, const Vector3& b, float amount )
 {
-    auto s = asvk::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3dx::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     return Vector3(
         a.x + u * ( b.x - a.x ),
@@ -2023,7 +2023,7 @@ Vector3 Vector3::SmoothStep( const Vector3& a, const Vector3& b, float amount )
 inline
 void Vector3::SmoothStep( const Vector3 &a, const Vector3 &b, float amount, Vector3 &result )
 { 
-    auto s = asvk::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3dx::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     result.x = a.x + u * ( b.x - a.x );
     result.y = a.y + u * ( b.y - a.y );
@@ -2529,10 +2529,10 @@ inline
 Vector4 Vector4::Clamp( const Vector4& value, const Vector4& a, const Vector4& b )
 {
     return Vector4( 
-        asvk::Clamp( value.x, a.x, b.x ),
-        asvk::Clamp( value.y, a.y, b.y ),
-        asvk::Clamp( value.z, a.z, b.z ),
-        asvk::Clamp( value.w, a.w, b.w )
+        a3dx::Clamp( value.x, a.x, b.x ),
+        a3dx::Clamp( value.y, a.y, b.y ),
+        a3dx::Clamp( value.z, a.z, b.z ),
+        a3dx::Clamp( value.w, a.w, b.w )
     );
 }
 
@@ -2542,10 +2542,10 @@ Vector4 Vector4::Clamp( const Vector4& value, const Vector4& a, const Vector4& b
 inline
 void Vector4::Clamp( const Vector4 &value, const Vector4 &a, const Vector4 &b, Vector4 &result )
 {
-    result.x = asvk::Clamp( value.x, a.x, b.x );
-    result.y = asvk::Clamp( value.y, a.y, b.y );
-    result.z = asvk::Clamp( value.z, a.z, b.z );
-    result.w = asvk::Clamp( value.w, a.w, b.w );
+    result.x = a3dx::Clamp( value.x, a.x, b.x );
+    result.y = a3dx::Clamp( value.y, a.y, b.y );
+    result.z = a3dx::Clamp( value.z, a.z, b.z );
+    result.w = a3dx::Clamp( value.w, a.w, b.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2555,10 +2555,10 @@ inline
 Vector4 Vector4::Saturate( const Vector4& value )
 {
     return Vector4(
-        asvk::Saturate( value.x ),
-        asvk::Saturate( value.y ),
-        asvk::Saturate( value.z ),
-        asvk::Saturate( value.w )
+        a3dx::Saturate( value.x ),
+        a3dx::Saturate( value.y ),
+        a3dx::Saturate( value.z ),
+        a3dx::Saturate( value.w )
     );
 }
 
@@ -2568,10 +2568,10 @@ Vector4 Vector4::Saturate( const Vector4& value )
 inline
 void Vector4::Saturate( const Vector4& value, Vector4& result )
 {
-    result.x = asvk::Saturate( value.x );
-    result.y = asvk::Saturate( value.y );
-    result.z = asvk::Saturate( value.z );
-    result.w = asvk::Saturate( value.w );
+    result.x = a3dx::Saturate( value.x );
+    result.y = a3dx::Saturate( value.y );
+    result.z = a3dx::Saturate( value.z );
+    result.w = a3dx::Saturate( value.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2757,10 +2757,10 @@ inline
 Vector4 Vector4::Min( const Vector4& a, const Vector4& b )
 { 
     return Vector4( 
-        asvk::Min( a.x, b.x ),
-        asvk::Min( a.y, b.y ),
-        asvk::Min( a.z, b.z ),
-        asvk::Min( a.w, b.w )
+        a3dx::Min( a.x, b.x ),
+        a3dx::Min( a.y, b.y ),
+        a3dx::Min( a.z, b.z ),
+        a3dx::Min( a.w, b.w )
     );
 }
 
@@ -2770,10 +2770,10 @@ Vector4 Vector4::Min( const Vector4& a, const Vector4& b )
 inline
 void Vector4::Min( const Vector4 &a, const Vector4 &b, Vector4 &result )
 {
-    result.x = asvk::Min( a.x, b.x );
-    result.y = asvk::Min( a.y, b.y );
-    result.z = asvk::Min( a.z, b.z );
-    result.w = asvk::Min( a.w, b.w );
+    result.x = a3dx::Min( a.x, b.x );
+    result.y = a3dx::Min( a.y, b.y );
+    result.z = a3dx::Min( a.z, b.z );
+    result.w = a3dx::Min( a.w, b.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2783,10 +2783,10 @@ inline
 Vector4 Vector4::Max( const Vector4& a, const Vector4& b )
 {
     return Vector4( 
-        asvk::Max( a.x, b.x ),
-        asvk::Max( a.y, b.y ),
-        asvk::Max( a.z, b.z ),
-        asvk::Max( a.w, b.w )
+        a3dx::Max( a.x, b.x ),
+        a3dx::Max( a.y, b.y ),
+        a3dx::Max( a.z, b.z ),
+        a3dx::Max( a.w, b.w )
     );
 }
 
@@ -2796,10 +2796,10 @@ Vector4 Vector4::Max( const Vector4& a, const Vector4& b )
 inline
 void Vector4::Max( const Vector4 &a, const Vector4 &b, Vector4 &result )
 {
-    result.x = asvk::Max( a.x, b.x );
-    result.y = asvk::Max( a.y, b.y );
-    result.z = asvk::Max( a.z, b.z );
-    result.w = asvk::Max( a.w, b.w );
+    result.x = a3dx::Max( a.x, b.x );
+    result.y = a3dx::Max( a.y, b.y );
+    result.z = a3dx::Max( a.z, b.z );
+    result.w = a3dx::Max( a.w, b.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3003,7 +3003,7 @@ void Vector4::Lerp( const Vector4 &a, const Vector4 &b, float amount, Vector4 &r
 inline
 Vector4 Vector4::SmoothStep( const Vector4& a, const Vector4& b, float amount )
 {
-    auto s = asvk::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3dx::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     return Vector4(
         a.x + u * ( b.x - a.x ),
@@ -3019,7 +3019,7 @@ Vector4 Vector4::SmoothStep( const Vector4& a, const Vector4& b, float amount )
 inline
 void Vector4::SmoothStep( const Vector4 &a, const Vector4 &b, float amount, Vector4 &result )
 {
-    auto s = asvk::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3dx::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     result.x = a.x + u * ( b.x - a.x );
     result.y = a.y + u * ( b.y - a.y );
@@ -5771,5 +5771,5 @@ bool OrthonormalBasis::operator != ( const OrthonormalBasis& value ) const
 }
 
 
-} // namespace aut
+} // namespace a3dx
 

@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : aut_LruCache.h
+// File : a3dxLruCache.h
 // Desc : Least Recently Used Cache Module.
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
@@ -12,7 +12,7 @@
 #include <algorithm>
 
 
-namespace aut {
+namespace a3dx {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // LruCache class

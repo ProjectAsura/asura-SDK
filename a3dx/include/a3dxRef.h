@@ -1,12 +1,12 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : aut_refptr.h
+// File : a3dxRef.h
 // Desc : Reference Pointer.
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
 
-namespace aut {
+namespace a3dx {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // RefPtr class
@@ -327,4 +327,4 @@ bool operator != ( std::nullptr_t, const RefPtr<T>& value )
 { return ( value.GetPtr() != nullptr ); }
 
 
-} // namespace aut
+} // namespace a3dx
