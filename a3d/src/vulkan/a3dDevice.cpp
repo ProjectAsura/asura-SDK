@@ -628,6 +628,14 @@ bool Device::Init(const DeviceDesc* pDesc)
 
             for(size_t i=0; i<deviceExtensions.size(); ++i)
             {
+            #if VK_HEADER_VERSION >= 42
+                if (strcmp(deviceExtensions[i], VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_PUSH_DESCRIPTOR] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_DESCRIPTOR_UPDATE_TEMPLATE] = true; }
+            #endif
+
             #if defined(VK_NVX_DEVICE_GENERATED_COMMANDS_SPEC_VERSION)
                 if (strcmp(deviceExtensions[i], VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_NVX_DEVICE_GENERATE_COMMAND] = true; }

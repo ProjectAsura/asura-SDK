@@ -127,7 +127,11 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         VkDescriptorSetLayoutCreateInfo info = {};
         info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         info.pNext          = nullptr;
+    #if VK_HEADER_VERSION < 42
         info.flags          = 0;
+    #else
+        info.flags          = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR
+    #endif
         info.bindingCount   = pDesc->EntryCount;
         info.pBindings      = bindings;
 
