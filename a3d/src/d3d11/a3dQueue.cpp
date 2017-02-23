@@ -4,6 +4,15 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Includes
+//-------------------------------------------------------------------------------------------------
+#if A3D_IS_WIN
+    #include <pix_win.h>
+#else
+    #include <pix.h>
+#endif
+
 
 namespace a3d {
 
@@ -794,6 +803,34 @@ void Queue::ParseCmd()
                         ToNativeFormat(pDstTexture->GetDesc().Format));
 
                     pCmd += sizeof(ImCmdResolveSubresource);
+                }
+                break;
+
+            case CMD_PUSH_MARKER:
+                {
+                    auto cmd = reinterpret_cast<ImCmdPushMarker*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    // ID3D11DeviceContext2じゃないと実行できない.
+                    #if 0
+                        //PIXBeginEvent(pDeviceContext, 0, cmd->Tag);
+                    #endif
+
+                    pCmd += sizeof(ImCmdPushMarker);
+                }
+                break;
+
+            case CMD_POP_MARKER:
+                {
+                    auto cmd = reinterpret_cast<ImCmdPopMarker*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    // ID3D11DeviceContext2じゃないと実行できない.
+                    #if 0
+                        //PIXEndEvent(pDeviceContext);
+                    #endif
+
+                    pCmd += sizeof(ImCmdPopMarker);
                 }
                 break;
 

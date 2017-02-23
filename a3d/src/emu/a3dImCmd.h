@@ -43,6 +43,8 @@ enum CMD_TYPE
     CMD_COPY_TEXTURE_TO_BUFFER,         //!< ICommandList::CopyTextureToBuffer()
     CMD_RESOLVE_SUBRESOURCE,            //!< ICommandList::ResolveSubresource()
     CMD_EXECUTE_BUNDLE,                 //!< ICommandList::ExecuteBundle()
+    CMD_PUSH_MARKER,                    //!< ICommandList::PushMarker()
+    CMD_POP_MARKER,                     //!< ICommandList::PopMarker()
     CMD_SUB_END,                        //!< ICommandList::End() For COMMANDLIST_TYPE_BUNDLE
     CMD_END,                            //!< ICommandList::End() For COMMANDLIST_TYPE_DIRECT
 };
@@ -324,6 +326,20 @@ struct ImCmdResolveSubresource : ImCmdBase
     ITexture*       pSrcResource;
     uint32_t        SrcSubresource;
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdPushMarker stcuture
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdPushMarker : ImCmdBase
+{
+    char        Tag[256];
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdPopMarker structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdPopMarker : ImCmdBase
+{ /* NOTHING */ };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // ImCmdEnd structure

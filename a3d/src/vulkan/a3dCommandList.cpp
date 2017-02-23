@@ -1074,6 +1074,29 @@ void CommandList::ExecuteBundle(ICommandList* pCommandList)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      デバッグマーカーをプッシュします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::PushMarker(const char* tag)
+{
+    VkDebugMarkerMarkerInfoEXT info = {};
+    info.sType          = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+    info.pNext          = nullptr;
+    info.pMarkerName    = tag;
+    info.color[0]       = 0.3f;
+    info.color[1]       = 0.5f;
+    info.color[2]       = 1.0f;
+    info.color[3]       = 1.0f;
+
+    vkCmdDebugMarkerBeginEXT(m_CommandBuffer, &info);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバッグマーカーをポップします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::PopMarker()
+{ vkCmdDebugMarkerEndEXT(m_CommandBuffer); }
+
+//-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を終了します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::End()
