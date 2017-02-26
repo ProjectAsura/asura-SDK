@@ -15,21 +15,39 @@
 namespace a3dx {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ResMotionKey structure
+// ResMorphKey structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ResMotionKey
+struct ResMorphKey
 {
-    uint32_t    Time;           //!< フレーム番号です.
+    double      Time;       //!< フレーム
+    uint32_t    Index;      //!< モーフメッシュ番号です.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ResMorphAnimation structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ResMorphAnimation
+{
+    std::string                 Tag;            //!< タグです.
+    std::vector<ResMorphKey>    Keyframe;       //!< キーフレームです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ResNodeKey structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ResNodeKey
+{
+    double      Time;           //!< フレーム番号です.
     Matrix      Transform;      //!< 変換行列です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ResKeyframe structure
+// ResNodeAnimation structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ResKeyframe
+struct ResNodeAnimation
 {
     std::string                 BoneTag;    //!< ボーンタグです.
-    std::vector<ResMotionKey>   Keyframe;   //!< キーフレームデータです.
+    std::vector<ResNodeKey>     Keyframe;   //!< キーフレームデータです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,9 +55,10 @@ struct ResKeyframe
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ResMotion
 {
-    std::string                 Tag;        //!< タグです.
-    uint32_t                    Duration;   //!< 再生フレーム時間です
-    std::vector<ResKeyframe>    Bone;       //!< ボーンデータです.
+    std::string                     Tag;            //!< タグです.
+    double                          Duration;       //!< 再生フレーム時間です.
+    std::vector<ResNodeAnimation>   Node;           //!< ノードアニメーションデータです.
+    std::vector<ResMorphAnimation>  Morph;          //!< モーフアニメーションデータです.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -50,7 +69,7 @@ struct ResMotion
 //! @retval true    読み込みに成功.
 //! @retval false   読み込みに失敗.
 //-------------------------------------------------------------------------------------------------
-bool LoadResMotion(const char* filename, ResMotion& resource);
+bool LoadResMotion(const char* filename, std::vector<ResMotion>& resource);
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      モーションリソースを書き込みます.
@@ -60,7 +79,7 @@ bool LoadResMotion(const char* filename, ResMotion& resource);
 //! @retval true    書き込みに成功.
 //! @retval false   書き込みに失敗.
 //-------------------------------------------------------------------------------------------------
-bool SaveResMotion(const char* filename, const ResMotion& resource);
+bool SaveResMotion(const char* filename, const std::vector<ResMotion>& resource);
 
 } // namespace a3dx
 

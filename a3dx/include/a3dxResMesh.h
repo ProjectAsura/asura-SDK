@@ -15,14 +15,12 @@
 namespace a3dx {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ResBoneIndex structure
+// ResVertexWeight structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ResBoneIndex
+struct ResVertexWeight
 {
-    int     x;      //!< 1番目のボーン番号.
-    int     y;      //!< 2番目のボーン番号.
-    int     z;      //!< 3番目のボーン番号.
-    int     w;      //!< 4番目のボーン番号.
+    uint32_t    VertexId;       //!< 頂点番号です.
+    float       Weight;         //!< 頂点の重みです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,10 +28,21 @@ struct ResBoneIndex
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ResBone
 {
-    std::string     Tag;            //!< タグです.
-    uint32_t        ParentId;       //!< 親ボーンの番号です.
-    Matrix          BindPose;       //!< バインドポーズ行列です.
-    Matrix          InvBindPose;    //!< 逆バインドポーズ行列です.
+    std::string                  Tag;            //!< タグです.
+    Matrix                       BindPose;       //!< バインドポーズ行列です.
+    std::vector<ResVertexWeight> Weight;         //!< 頂点の重みです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ResMorphMesh structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ResMorphMesh
+{
+    std::vector<Vector3>    Position;   //!< 位置座標.
+    std::vector<Vector3>    Normal;     //!< 法線ベクトル.
+    std::vector<Vector3>    Tangent;    //!< 接線ベクトル.
+    std::vector<Vector4>    Color;      //!< 頂点カラー.
+    std::vector<Vector2>    TexCoord;   //!< テクスチャ座標.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,10 +55,11 @@ struct ResMesh
     std::vector<Vector2>        TexCoord;       //!< テクスチャ座標です.
     std::vector<Vector3>        Normal;         //!< 法線ベクトルです.
     std::vector<Vector3>        Tangent;        //!< 接線ベクトルです.
-    std::vector<ResBoneIndex>   BoneIndex;      //!< ボーン番号です.
-    std::vector<Vector4>        BoneWeight;     //!< ボーンの重みです.
+    std::vector<Vector4>        Color;          //!< 頂点カラーです.
     std::vector<ResBone>        Bone;           //!< ボーンです.
-    std::string                 MaterialTag;    //!< マテリアルタグです.
+    std::vector<uint32_t>       VertexIndex;    //!< 頂点インデックスです.
+    std::vector<ResMorphMesh>   MorphMesh;      //!< モーフメッシュです.
+    std::uint32_t               MaterialId;     //!< マテリアルIDです.
 };
 
 //-------------------------------------------------------------------------------------------------

@@ -76,7 +76,7 @@ bool Heap::Init(uint64_t size)
 
     std::lock_guard<std::mutex> locker(m_Mutex);
 
-    m_pBuffer = static_cast<uint8_t*>(malloc(size));
+    m_pBuffer = static_cast<uint8_t*>(malloc(size_t(size)));
     if (m_pBuffer == nullptr)
     { return false; }
 
@@ -145,7 +145,7 @@ void* Heap::Realloc(void* ptr, size_t size, size_t alignment) noexcept
 
     // 最小サイズを求める.
     auto oldSize  = pBlock->Header.Size;
-    auto copySize = (size < oldSize) ? size : oldSize;
+    auto copySize = (size < oldSize) ? size : size_t(oldSize);
 
     // メモリコピー.
     m_Mutex.lock();
@@ -325,9 +325,9 @@ void Heap::FreeBlock(void* ptr)
 
     // メモリ領域をクリアしておく.
     #if defined(DEBUG) || defined(_DEBUG)
-        memset(pBlock->pBuffer, 0xf7, pBlock->Header.Size);
+        memset(pBlock->pBuffer, 0xf7, size_t(pBlock->Header.Size));
     #else
-        memset(pBlock->pBuffer, 0x0, pBlock->Header.Size);
+        memset(pBlock->pBuffer, 0x0, size_t(pBlock->Header.Size));
     #endif
 
     // ヘッダに値を設定.

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <a3d.h>
+#include <a3dxMath.h>
 
 
 namespace a3dx {
@@ -20,24 +21,15 @@ namespace a3dx {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum RESMAT_ELEMENT_TYPE
 {
-    RESMAT_ELEMENT_TYPE_BOOL = 0,       //!< bool型です.
-    RESMAT_ELEMENT_TYPE_SINT8,          //!< int8_t 型です.
-    RESMAT_ELEMENT_TYPE_UINT8,          //!< uint8_t 型です.
-    RESMAT_ELEMENT_TYPE_SINT16,         //!< int16_t 型です.
-    RESMAT_ELEMENT_TYPE_UINT16,         //!< uint16_t 型です.
-    RESMAT_ELEMENT_TYPE_SINT32,         //!< int32_t 型です.
-    RESMAT_ELEMENT_TYPE_UINT32,         //!< uint32_t 型です.
-    RESMAT_ELEMENT_TYPE_SINT64,         //!< int64_t 型です.
-    RESMAT_ELEMENT_TYPE_UINT64,         //!< uint64_t 型です.
-    RESMAT_ELEMENT_TYPE_FLOAT16,        //!< half 型です.
-    RESMAT_ELEMENT_TYPE_FLOAT32,        //!< float 型です.
-    RESMAT_ELEMENT_TYPE_FLOAT64,        //!< double 型です.
-    RESMAT_ELEMENT_TYPE_VECTOR2,        //!< a3dx::Vector2 型です.
-    RESMAT_ELEMENT_TYPE_VECTOR3,        //!< a3dx::Vector3 型です.
-    RESMAT_ELEMENT_TYPE_VECTOR4,        //!< a3dx::Vector4 型です.
-    RESMAT_ELEMENT_TYPE_QUATERNION,     //!< a3dx::Quaternion 型です.
-    RESMAT_ELEMENT_TYPE_MATRIX,         //!< a3dx::Matrix 型です.
+    RESMAT_ELEMENT_TYPE_INT,            //!< int型です.
+    RESMAT_ELEMENT_TYPE_FLOAT,          //!< float型です.
+    RESMAT_ELEMENT_TYPE_DOUBLE,         //!< double型です.
+    RESMAT_ELEMENT_TYPE_VECTOR2,        //!< a3dx::Vector2型です.
+    RESMAT_ELEMENT_TYPE_VECTOR3,        //!< a3dx::Vector3型です.
+    RESMAT_ELEMENT_TYPE_VECTOR4,        //!< a3dx::Vector4型です.
+    RESMAT_ELEMENT_TYPE_MATRIX,         //!< a3dx::Matrix型です.
     RESMAT_ELEMENT_TYPE_STRING,         //!< char [256] 型です.
+    RESMAT_ELEMENT_TYPE_BUFFER,         //!< バッファ型です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

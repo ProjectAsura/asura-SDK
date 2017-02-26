@@ -13,17 +13,17 @@
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// TEX_FILE_HEADER structure
+// TXL_FILE_HEADER structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct TEX_FILE_HEADER
+struct TXL_FILE_HEADER
 {
     uint8_t     Tag[4];     //!< ファイルタグです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// TEX_DATA_HEADER structure
+// TXL_DATA_HEADER structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct TEX_DATA_HEADER
+struct TXL_DATA_HEADER
 {
     uint32_t    Dimension;          //!< 次元です.
     uint32_t    Width;              //!< 横幅です.
@@ -35,9 +35,9 @@ struct TEX_DATA_HEADER
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// TEX_SURFACE structure
+// TXL_SURFACE structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct TEX_SURFACE
+struct TXL_SURFACE
 {
     uint32_t    Width;          //!< 横幅です.
     uint32_t    Height;         //!< 縦幅です.
@@ -67,19 +67,19 @@ bool LoadResTexture(const char* filename, ResTexture& resource)
         { return false; }
     #endif
 
-    TEX_FILE_HEADER header = {};
+    TXL_FILE_HEADER header = {};
     fread(&header, sizeof(header), 1, pFile);
 
     if (header.Tag[0] != 'T' ||
-        header.Tag[1] != 'E' ||
-        header.Tag[2] != 'X' ||
+        header.Tag[1] != 'X' ||
+        header.Tag[2] != 'L' ||
         header.Tag[3] != '\0')
     {
         fclose(pFile);
         return false;
     }
 
-    TEX_DATA_HEADER section = {};
+    TXL_DATA_HEADER section = {};
     fread(&section, sizeof(section), 1, pFile);
 
     resource.Dimension          = a3d::RESOURCE_DIMENSION(section.Dimension);
@@ -92,7 +92,7 @@ bool LoadResTexture(const char* filename, ResTexture& resource)
 
     for(auto i=0u; i<section.SurfaceCount; ++i)
     {
-        TEX_SURFACE surface = {};
+        TXL_SURFACE surface = {};
         fread(&surface, sizeof(surface), 1, pFile);
 
         resource.Surfaces[i].Width      = surface.Width;
@@ -127,14 +127,14 @@ bool SaveResTexture(const char* filename, const ResTexture& resource)
         { return false; }
     #endif
 
-    TEX_FILE_HEADER header = {};
+    TXL_FILE_HEADER header = {};
     header.Tag[0] = 'T';
-    header.Tag[1] = 'E';
-    header.Tag[2] = 'X';
+    header.Tag[1] = 'X';
+    header.Tag[2] = 'L';
     header.Tag[3] = '\0';
     fwrite(&header, sizeof(header), 1, pFile);
 
-    TEX_DATA_HEADER section = {};
+    TXL_DATA_HEADER section = {};
     section.Dimension        = uint32_t(resource.Dimension);
     section.Width            = resource.Width;
     section.Height           = resource.Height;
@@ -146,7 +146,7 @@ bool SaveResTexture(const char* filename, const ResTexture& resource)
 
     for(size_t i=0; i<resource.Surfaces.size(); ++i)
     {
-        TEX_SURFACE surface = {};
+        TXL_SURFACE surface = {};
         surface.Width       = resource.Surfaces[i].Width;
         surface.Height      = resource.Surfaces[i].Height;
         surface.RowPitch    = resource.Surfaces[i].RowPitch;
