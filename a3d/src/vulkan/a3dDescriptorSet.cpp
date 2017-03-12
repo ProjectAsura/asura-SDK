@@ -4,6 +4,11 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Includes
+//-------------------------------------------------------------------------------------------------
+#include "a3dVulkanFunc.h"
+
 
 namespace a3d {
 
@@ -228,47 +233,46 @@ void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
     m_pInfos[index].Image.sampler = pWrapSampler->GetVulkanSampler();
 }
 
-#if 1
 //-------------------------------------------------------------------------------------------------
 //      更新処理を行います.
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Update()
 {
-    #if VK_HEADER_VERSION >= 42
-        // vkCmdPushDescriptorSetKHR() を使用するため，ここでは何もしない.
-    #else
-        const auto& desc = m_pLayout->GetDesc();
-        auto count = desc.EntryCount;
+    if (m_pDevice->IsSupportExtension(Device::EXT_KHR_PUSH_DESCRIPTOR))
+    { return; }
 
-        for(auto i=0u; i<count; ++i)
+    const auto& desc = m_pLayout->GetDesc();
+    auto count = desc.EntryCount;
+
+    for(auto i=0u; i<count; ++i)
+    {
+        if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV ||
+            desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
         {
-            if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV ||
-                desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
-            {
-                m_pWrites[i].pBufferInfo = &m_pInfos[i].Buffer;
-                m_pWrites[i].pImageInfo  = nullptr;
-            }
-            else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV ||
-                     desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
-            {
-                m_pWrites[i].pImageInfo  = &m_pInfos[i].Image;
-                m_pWrites[i].pBufferInfo = nullptr;
-            }
+            m_pWrites[i].pBufferInfo = &m_pInfos[i].Buffer;
+            m_pWrites[i].pImageInfo  = nullptr;
         }
-        auto pNativeDevice = m_pDevice->GetVulkanDevice();
-        A3D_ASSERT(pNativeDevice != null_handle);
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV ||
+                    desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
+        {
+            m_pWrites[i].pImageInfo  = &m_pInfos[i].Image;
+            m_pWrites[i].pBufferInfo = nullptr;
+        }
+    }
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
 
-        vkUpdateDescriptorSets(pNativeDevice, count, m_pWrites, 0, nullptr);
-    #endif
+    vkUpdateDescriptorSets(pNativeDevice, count, m_pWrites, 0, nullptr);
 }
-#endif
 
 //-------------------------------------------------------------------------------------------------
 //      描画コマンドを生成します.
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Issue(ICommandList* pCommandList)
 {
-    #if VK_HEADER_VERSION >= 42
+#if defined(VK_KHR_PUSH_DESCRIPTOR_SPEC_VERSION)
+    if (m_pDevice->IsSupportExtension(Device::EXT_KHR_PUSH_DESCRIPTOR))
+    {
         auto& desc = m_pLayout->GetDesc();
         auto count = desc.EntryCount;
 
@@ -294,14 +298,16 @@ void DescriptorSet::Issue(ICommandList* pCommandList)
         auto pNativeCommandBuffer = pWrapCommandList->GetVulkanCommandBuffer();
         A3D_ASSERT(pNativeCommandBuffer != null_handle);
 
-        vkCmdPushDescriptorSetKHR(
+        vkCmdPushDescriptorSet(
             pNativeCommandBuffer,
             m_pLayout->GetVulkanPipelineBindPoint(),
             m_pLayout->GetVulkanPipelineLayout(),
             1,
             count,
             m_pWrites);
-    #else
+    }
+    else
+    {
         auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
         A3D_ASSERT(pWrapCommandList != nullptr);
 
@@ -317,7 +323,24 @@ void DescriptorSet::Issue(ICommandList* pCommandList)
             &m_DescriptorSet,
             0,
             nullptr);
-    #endif
+    }
+#else
+    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
+    A3D_ASSERT(pWrapCommandList != nullptr);
+
+    auto pNativeCommandBuffer = pWrapCommandList->GetVulkanCommandBuffer();
+    A3D_ASSERT(pNativeCommandBuffer != null_handle);
+
+    vkCmdBindDescriptorSets(
+        pNativeCommandBuffer,
+        m_pLayout->GetVulkanPipelineBindPoint(),
+        m_pLayout->GetVulkanPipelineLayout(),
+        0,
+        1,
+        &m_DescriptorSet,
+        0,
+        nullptr);
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------

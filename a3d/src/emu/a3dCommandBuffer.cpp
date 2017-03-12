@@ -81,7 +81,7 @@ void CommandBuffer::Close()
 //-------------------------------------------------------------------------------------------------
 //      コマンドを追加します.
 //-------------------------------------------------------------------------------------------------
-void CommandBuffer::Push(void* pData, size_t size)
+void CommandBuffer::Push(const void* pData, size_t size)
 {
     if (!m_Enable)
     { return; }

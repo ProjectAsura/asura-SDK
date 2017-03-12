@@ -111,6 +111,7 @@ void Buffer::Term()
         m_pSubresource = nullptr;
     }
 
+    SafeRelease(m_pBuffer);
     SafeRelease(m_pDevice);
 
     m_State = RESOURCE_STATE_UNKNOWN;

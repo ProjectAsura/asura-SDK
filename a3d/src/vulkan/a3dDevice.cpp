@@ -275,6 +275,25 @@ void CheckDeviceExtension
 
 } // namespace /* anonymous */
 
+//-------------------------------------------------------------------------------------------------
+//  Vulkan Device Extension Functions.
+//-------------------------------------------------------------------------------------------------
+#if defined(VK_EXT_debug_marker)
+PFN_vkDebugMarkerSetObjectTagEXT     vkDebugMarkerSetObjectTag  = nullptr;
+PFN_vkDebugMarkerSetObjectNameEXT    vkDebugMarkerSetObjectName = nullptr;
+PFN_vkCmdDebugMarkerBeginEXT         vkCmdDebugMarkerBegin      = nullptr;
+PFN_vkCmdDebugMarkerEndEXT           vkCmdDebugMarkerEnd        = nullptr;
+PFN_vkCmdDebugMarkerInsertEXT        vkCmdDebugMarkerInsert     = nullptr;
+#endif
+
+#if defined(VK_KHR_push_descriptor)
+PFN_vkCmdPushDescriptorSetKHR        vkCmdPushDescriptorSet     = nullptr;
+#endif
+
+#if defined(VK_EXT_hdr_metadata)
+PFN_vkSetHdrMetadataEXT              vkSetHdrMetadata           = nullptr;
+#endif
+
 
 namespace a3d {
 
@@ -628,7 +647,7 @@ bool Device::Init(const DeviceDesc* pDesc)
 
             for(size_t i=0; i<deviceExtensions.size(); ++i)
             {
-            #if VK_HEADER_VERSION >= 42
+            #if defined(VK_KHR_push_descriptor)
                 if (strcmp(deviceExtensions[i], VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_KHR_PUSH_DESCRIPTOR] = true; }
 
@@ -636,14 +655,24 @@ bool Device::Init(const DeviceDesc* pDesc)
                 { m_IsSupportExt[EXT_KHR_DESCRIPTOR_UPDATE_TEMPLATE] = true; }
             #endif
 
-            #if defined(VK_NVX_DEVICE_GENERATED_COMMANDS_SPEC_VERSION)
+            #if defined(VK_NVX_device_generated_commands)
                 if (strcmp(deviceExtensions[i], VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_NVX_DEVICE_GENERATE_COMMAND] = true; }
             #endif
 
-            #if defined(VK_AMD_DRAW_INDIRECT_COUNT_SPEC_VERSION)
+            #if defined(VK_AMD_draw_indirect_count)
                 if (strcmp(deviceExtensions[i], VK_AMD_DRAW_INDIRECT_COUNT_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_AMD_DRAW_INDIRECT_COUNT] = true; }
+            #endif
+
+            #if defined(VK_EXT_debug_marker)
+                if (strcmp(deviceExtensions[i], VK_EXT_DEBUG_MARKER_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_DEBUG_MARKER] = true; }
+            #endif
+
+            #if defined(VK_EXT_hdr_metadata)
+                if (strcmp(deviceExtensions[i], VK_EXT_HDR_METADATA_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_HDR_METADATA] = true; }
             #endif
             }
         }
@@ -674,6 +703,37 @@ bool Device::Init(const DeviceDesc* pDesc)
 
         if (ret != VK_SUCCESS )
         { return false; }
+
+        #if defined(VK_EXT_debug_marker)
+        {
+            if (m_IsSupportExt[EXT_DEBUG_MARKER])
+            {
+                vkDebugMarkerSetObjectTag   = GetProc<PFN_vkDebugMarkerSetObjectTagEXT> (m_Device, "vkDebugMarkerSetObjectTagEXT");
+                vkDebugMarkerSetObjectName  = GetProc<PFN_vkDebugMarkerSetObjectNameEXT>(m_Device, "vkDebugMarkerSetObjectNameEXT");
+                vkCmdDebugMarkerBegin       = GetProc<PFN_vkCmdDebugMarkerBeginEXT>     (m_Device, "vkCmdDebugMarkerBeginEXT");
+                vkCmdDebugMarkerEnd         = GetProc<PFN_vkCmdDebugMarkerEndEXT>       (m_Device, "vkCmdDebugMarkerEndEXT");
+                vkCmdDebugMarkerInsert      = GetProc<PFN_vkCmdDebugMarkerInsertEXT>    (m_Device, "vkCmdDebugMarkerInsert");
+            }
+        }
+        #endif
+
+        #if defined(VK_KHR_push_descriptor)
+        {
+            if (m_IsSupportExt[EXT_KHR_PUSH_DESCRIPTOR])
+            {
+                vkCmdPushDescriptorSet = GetProc<PFN_vkCmdPushDescriptorSetKHR>(m_Device, "vkCmdPushDescriptorSetKHR");
+            }
+        }
+        #endif
+
+        #if defined(VK_EXT_hdr_metadata)
+        {
+            if (m_IsSupportExt[EXT_HDR_METADATA])
+            {
+                vkSetHdrMetadata = GetProc<PFN_vkSetHdrMetadataEXT>(m_Device, "vkSetHdrMetadataEXT");
+            }
+        }
+        #endif
 
         if (!Queue::Create(
             this, 

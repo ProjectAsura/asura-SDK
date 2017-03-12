@@ -4,183 +4,210 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
+namespace {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// FormatConvertTable structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct FormatConvertTable
+{
+    VkFormat                NativeFormat;       //!< ネイティブ形式です.
+    uint32_t                BitPerPixel;        //!< 1ピクセル当たりのビット数です.
+    a3d::RESOURCE_FORMAT    Format;             //!< A3D形式です.
+    bool                    IsCompress;         //!< 圧縮フォーマットかどうか?
+};
+
+// フォーマット変換テーブル.
+FormatConvertTable g_FormatTable[] = {
+    { VK_FORMAT_UNDEFINED               , 0     , a3d::RESOURCE_FORMAT_UNKNOWN               , false },
+    { VK_FORMAT_R32G32B32A32_SFLOAT     , 128   , a3d::RESOURCE_FORMAT_R32G32B32A32_FLOAT    , false },
+    { VK_FORMAT_R32G32B32A32_UINT       , 128   , a3d::RESOURCE_FORMAT_R32G32B32A32_UINT     , false },
+    { VK_FORMAT_R32G32B32A32_SINT       , 128   , a3d::RESOURCE_FORMAT_R32G32B32A32_SINT     , false },
+    { VK_FORMAT_R16G16B16A16_SFLOAT     , 64    , a3d::RESOURCE_FORMAT_R16G16B16A16_FLOAT    , false },
+    { VK_FORMAT_R16G16B16A16_UINT       , 64    , a3d::RESOURCE_FORMAT_R16G16B16A16_UINT     , false },
+    { VK_FORMAT_R16G16B16A16_SINT       , 64    , a3d::RESOURCE_FORMAT_R16G16B16A16_SINT     , false },
+    { VK_FORMAT_R32G32B32_SFLOAT        , 96    , a3d::RESOURCE_FORMAT_R32G32B32_FLOAT       , false },
+    { VK_FORMAT_R32G32B32_UINT          , 96    , a3d::RESOURCE_FORMAT_R32G32B32_UINT        , false },
+    { VK_FORMAT_R32G32B32_SINT          , 96    , a3d::RESOURCE_FORMAT_R32G32B32_SINT        , false },
+    { VK_FORMAT_R32G32_SFLOAT           , 64    , a3d::RESOURCE_FORMAT_R32G32_FLOAT          , false },
+    { VK_FORMAT_R32G32_UINT             , 64    , a3d::RESOURCE_FORMAT_R32G32_UINT           , false },
+    { VK_FORMAT_R32G32_SINT             , 64    , a3d::RESOURCE_FORMAT_R32G32_SINT           , false },
+    { VK_FORMAT_R16G16_SFLOAT           , 32    , a3d::RESOURCE_FORMAT_R16G16_FLOAT          , false },
+    { VK_FORMAT_R16G16_UINT             , 32    , a3d::RESOURCE_FORMAT_R16G16_UINT           , false },
+    { VK_FORMAT_R16G16_SINT             , 32    , a3d::RESOURCE_FORMAT_R16G16_SINT           , false },
+    { VK_FORMAT_R32_SFLOAT              , 32    , a3d::RESOURCE_FORMAT_R32_FLOAT             , false },
+    { VK_FORMAT_R32_UINT                , 32    , a3d::RESOURCE_FORMAT_R32_UINT              , false },
+    { VK_FORMAT_R32_SINT                , 32    , a3d::RESOURCE_FORMAT_R32_SINT              , false },
+    { VK_FORMAT_R16_SFLOAT              , 16    , a3d::RESOURCE_FORMAT_R16_FLOAT             , false },
+    { VK_FORMAT_R16_UINT                , 16    , a3d::RESOURCE_FORMAT_R16_UINT              , false },
+    { VK_FORMAT_R16_SINT                , 16    , a3d::RESOURCE_FORMAT_R16_SINT              , false },
+    { VK_FORMAT_R8G8B8A8_SRGB           , 32    , a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM_SRGB   , false },
+    { VK_FORMAT_R8G8B8A8_UNORM          , 32    , a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM        , false },
+    { VK_FORMAT_B8G8R8A8_SRGB           , 32    , a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM_SRGB   , false },
+    { VK_FORMAT_B8G8R8A8_UNORM          , 32    , a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM        , false },
+    { VK_FORMAT_R8G8_UNORM              , 16    , a3d::RESOURCE_FORMAT_R8G8_UNORM            , false },
+    { VK_FORMAT_R8_UNORM                , 8     , a3d::RESOURCE_FORMAT_R8_UNORM              , false },
+    { VK_FORMAT_D32_SFLOAT              , 32    , a3d::RESOURCE_FORMAT_D32_FLOAT             , false },
+    { VK_FORMAT_D24_UNORM_S8_UINT       , 32    , a3d::RESOURCE_FORMAT_D24_UNORM_S8_UINT     , false },
+    { VK_FORMAT_D16_UNORM               , 16    , a3d::RESOURCE_FORMAT_D16_UNORM             , false },
+    { VK_FORMAT_BC1_RGBA_SRGB_BLOCK     , 8     , a3d::RESOURCE_FORMAT_BC1_UNORM_SRGB        , true  },
+    { VK_FORMAT_BC1_RGBA_UNORM_BLOCK    , 8     , a3d::RESOURCE_FORMAT_BC1_UNORM             , true  },
+    { VK_FORMAT_BC2_SRGB_BLOCK          , 16    , a3d::RESOURCE_FORMAT_BC2_UNORM_SRGB        , true  },
+    { VK_FORMAT_BC2_UNORM_BLOCK         , 16    , a3d::RESOURCE_FORMAT_BC2_UNORM             , true  },
+    { VK_FORMAT_BC3_SRGB_BLOCK          , 16    , a3d::RESOURCE_FORMAT_BC3_UNORM_SRGB        , true  },
+    { VK_FORMAT_BC3_UNORM_BLOCK         , 16    , a3d::RESOURCE_FORMAT_BC3_UNORM             , true  },
+    { VK_FORMAT_BC4_UNORM_BLOCK         , 8     , a3d::RESOURCE_FORMAT_BC4_UNORM             , true  },
+    { VK_FORMAT_BC4_SNORM_BLOCK         , 8     , a3d::RESOURCE_FORMAT_BC4_SNORM             , true  },
+    { VK_FORMAT_BC5_UNORM_BLOCK         , 16    , a3d::RESOURCE_FORMAT_BC5_UNORM             , true  },
+    { VK_FORMAT_BC5_SNORM_BLOCK         , 16    , a3d::RESOURCE_FORMAT_BC5_SNORM             , true  },
+    { VK_FORMAT_BC6H_UFLOAT_BLOCK       , 16    , a3d::RESOURCE_FORMAT_BC6H_UF16             , true  },
+    { VK_FORMAT_BC6H_SFLOAT_BLOCK       , 16    , a3d::RESOURCE_FORMAT_BC6H_SF16             , true  },
+    { VK_FORMAT_BC7_SRGB_BLOCK          , 16    , a3d::RESOURCE_FORMAT_BC7_UNORM_SRGB        , true  },
+    { VK_FORMAT_BC7_UNORM_BLOCK         , 16    , a3d::RESOURCE_FORMAT_BC7_UNORN             , true  },
+    { VK_FORMAT_ASTC_4x4_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_4X4_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_4x4_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_4X4_UNORM        , true  },
+    { VK_FORMAT_ASTC_5x4_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_5x4_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_5X4_UNORM        , true  },
+    { VK_FORMAT_ASTC_5x5_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_5X5_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_5x5_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_5X5_UNORM        , true  },
+    { VK_FORMAT_ASTC_6x5_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_6X5_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_6x5_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_6X5_UNORM        , true  },
+    { VK_FORMAT_ASTC_6x6_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_6X6_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_6x6_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_6X6_UNORM        , true  },
+    { VK_FORMAT_ASTC_8x5_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_8X5_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_8x5_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_8X5_UNORM        , true  },
+    { VK_FORMAT_ASTC_8x6_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_8X6_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_8x6_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_8X6_UNORM        , true  },
+    { VK_FORMAT_ASTC_8x8_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_8X8_UNORM_SRGB   , true  },
+    { VK_FORMAT_ASTC_8x8_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_8X8_UNORM        , true  },
+    { VK_FORMAT_ASTC_10x5_SRGB_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_10X5_UNORM_SRGB  , true  },
+    { VK_FORMAT_ASTC_10x5_UNORM_BLOCK   , 16    , a3d::RESOURCE_FORMAT_ASTC_10X5_UNORM       , true  },
+    { VK_FORMAT_ASTC_10x6_SRGB_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_10X6_UNORM_SRGB  , true  },
+    { VK_FORMAT_ASTC_10x6_UNORM_BLOCK   , 16    , a3d::RESOURCE_FORMAT_ASTC_10X6_UNORM       , true  },
+    { VK_FORMAT_ASTC_10x8_SRGB_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_10X8_UNORM_SRGB  , true  },
+    { VK_FORMAT_ASTC_10x8_UNORM_BLOCK   , 16    , a3d::RESOURCE_FORMAT_ASTC_10X8_UNORM       , true  },
+    { VK_FORMAT_ASTC_10x10_SRGB_BLOCK   , 16    , a3d::RESOURCE_FORMAT_ASTC_10X10_UNORM_SRGB , true  },
+    { VK_FORMAT_ASTC_10x10_UNORM_BLOCK  , 16    , a3d::RESOURCE_FORMAT_ASTC_10X10_UNORM      , true  },
+    { VK_FORMAT_ASTC_12x10_SRGB_BLOCK   , 16    , a3d::RESOURCE_FORMAT_ASTC_12X10_UNORM_SRGB , true  },
+    { VK_FORMAT_ASTC_12x10_UNORM_BLOCK  , 16    , a3d::RESOURCE_FORMAT_ASTC_12X10_UNORM      , true  },
+    { VK_FORMAT_ASTC_12x12_SRGB_BLOCK   , 16    , a3d::RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB , true  },
+    { VK_FORMAT_ASTC_12x12_UNORM_BLOCK  , 16    , a3d::RESOURCE_FORMAT_ASTC_12X12_UNORM      , true  },
+    { VK_FORMAT_A2B10G10R10_UNORM_PACK32, 32    , a3d::RESOURCE_FORMAT_R10G10B10A2_UNORM     , true  },
+    { VK_FORMAT_A2B10G10R10_UINT_PACK32 , 32    , a3d::RESOURCE_FORMAT_R10G10B10A2_UINT      , true  },
+    { VK_FORMAT_B10G11R11_UFLOAT_PACK32 , 32    , a3d::RESOURCE_FORMAT_R11G11B10_FLOAT       , true  },
+};
+
+} // namespace /* anonymous */
+
 
 namespace a3d {
 
 //-------------------------------------------------------------------------------------------------
-//      ネイティブ形式に変換します.
+//      リソースフォーマットのビット数に変換します.
 //-------------------------------------------------------------------------------------------------
+uint32_t ToBits(RESOURCE_FORMAT format)
+{ return g_FormatTable[format].BitPerPixel; }
+
+//-------------------------------------------------------------------------------------------------
+//      リソースフォーマットのバイト数に変換します.
+//-------------------------------------------------------------------------------------------------
+uint32_t ToByte(RESOURCE_FORMAT format)
+{ return g_FormatTable[format].BitPerPixel / 8; }
+
+//-------------------------------------------------------------------------------------------------
+//      圧縮フォーマットかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool IsCompressFormat(RESOURCE_FORMAT format)
+{ return g_FormatTable[format].IsCompress; }
+
+//-------------------------------------------------------------------------------------------------
+//      ブロックの横幅を取得します.
+//-------------------------------------------------------------------------------------------------
+uint32_t GetBlockWidth(RESOURCE_FORMAT format)
+{
+    switch(format)
+    {
+    case RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_5X4_UNORM:
+    case RESOURCE_FORMAT_ASTC_5X5_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_5X5_UNORM:
+        { return 5; }
+
+    case RESOURCE_FORMAT_ASTC_6X5_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_6X5_UNORM:
+    case RESOURCE_FORMAT_ASTC_6X6_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_6X6_UNORM:
+        { return 6; }
+
+    case RESOURCE_FORMAT_ASTC_8X5_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_8X5_UNORM:
+    case RESOURCE_FORMAT_ASTC_8X6_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_8X6_UNORM:
+    case RESOURCE_FORMAT_ASTC_8X8_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_8X8_UNORM:
+        { return 8; }
+
+    case RESOURCE_FORMAT_ASTC_10X5_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_10X5_UNORM:
+    case RESOURCE_FORMAT_ASTC_10X6_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_10X6_UNORM:
+    case RESOURCE_FORMAT_ASTC_10X8_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_10X8_UNORM:
+    case RESOURCE_FORMAT_ASTC_10X10_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_10X10_UNORM:
+        { return 10; }
+
+    case RESOURCE_FORMAT_ASTC_12X10_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_12X10_UNORM:
+    case RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_12X12_UNORM:
+        { return 12; }
+
+    default:
+        return 4;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ブロックの縦幅を求めます.
+//-------------------------------------------------------------------------------------------------
+uint32_t GetBlockHeight(RESOURCE_FORMAT format)
+{
+    switch(format)
+    {
+    case RESOURCE_FORMAT_ASTC_5X5_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_5X5_UNORM:
+    case RESOURCE_FORMAT_ASTC_8X5_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_8X5_UNORM:
+    case RESOURCE_FORMAT_ASTC_10X5_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_10X5_UNORM:
+        { return 5; }
+
+    case RESOURCE_FORMAT_ASTC_6X6_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_6X6_UNORM:
+    case RESOURCE_FORMAT_ASTC_8X6_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_8X6_UNORM:
+    case RESOURCE_FORMAT_ASTC_10X6_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_10X6_UNORM:
+        { return 6; }
+
+    case RESOURCE_FORMAT_ASTC_10X10_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_10X10_UNORM:
+    case RESOURCE_FORMAT_ASTC_12X10_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_12X10_UNORM:
+        { return 10; }
+
+    case RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB:
+    case RESOURCE_FORMAT_ASTC_12X12_UNORM:
+        { return 12; }
+
+    default:
+        return 4;
+    }
+}
+
 VkFormat ToNativeFormat(RESOURCE_FORMAT value)
-{
-    static VkFormat table[] = {
-        VK_FORMAT_UNDEFINED,
-        VK_FORMAT_R32G32B32A32_SFLOAT,
-        VK_FORMAT_R32G32B32A32_UINT,
-        VK_FORMAT_R32G32B32A32_SINT,
-        VK_FORMAT_R16G16B16A16_SFLOAT,
-        VK_FORMAT_R16G16B16A16_UINT,
-        VK_FORMAT_R16G16B16A16_SINT,
-        VK_FORMAT_R32G32B32_SFLOAT,
-        VK_FORMAT_R32G32B32_UINT,
-        VK_FORMAT_R32G32B32_SINT,
-        VK_FORMAT_R32G32_SFLOAT,
-        VK_FORMAT_R32G32_UINT,
-        VK_FORMAT_R32G32_SINT,
-        VK_FORMAT_R16G16_SFLOAT,
-        VK_FORMAT_R16G16_UINT,
-        VK_FORMAT_R16G16_SINT,
-        VK_FORMAT_R32_SFLOAT,
-        VK_FORMAT_R32_UINT,
-        VK_FORMAT_R32_SINT,
-        VK_FORMAT_R16_SFLOAT,
-        VK_FORMAT_R16_UINT,
-        VK_FORMAT_R16_SINT,
-        VK_FORMAT_R8G8B8A8_SRGB,
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_FORMAT_B8G8R8A8_SRGB,
-        VK_FORMAT_B8G8R8A8_UNORM,
-        VK_FORMAT_R8G8_UNORM,
-        VK_FORMAT_R8_UNORM,
-        VK_FORMAT_D32_SFLOAT,
-        VK_FORMAT_D24_UNORM_S8_UINT,
-        VK_FORMAT_D16_UNORM,
-        VK_FORMAT_BC1_RGBA_SRGB_BLOCK,
-        VK_FORMAT_BC1_RGBA_UNORM_BLOCK,
-        VK_FORMAT_BC2_SRGB_BLOCK,
-        VK_FORMAT_BC2_UNORM_BLOCK,
-        VK_FORMAT_BC3_SRGB_BLOCK,
-        VK_FORMAT_BC3_UNORM_BLOCK,
-        VK_FORMAT_BC4_UNORM_BLOCK,
-        VK_FORMAT_BC4_SNORM_BLOCK,
-        VK_FORMAT_BC5_UNORM_BLOCK,
-        VK_FORMAT_BC5_SNORM_BLOCK,
-        VK_FORMAT_BC6H_UFLOAT_BLOCK,
-        VK_FORMAT_BC6H_SFLOAT_BLOCK,
-        VK_FORMAT_BC7_SRGB_BLOCK,
-        VK_FORMAT_BC7_UNORM_BLOCK,
-        VK_FORMAT_ASTC_4x4_SRGB_BLOCK,
-        VK_FORMAT_ASTC_4x4_UNORM_BLOCK,
-        VK_FORMAT_ASTC_5x4_SRGB_BLOCK,
-        VK_FORMAT_ASTC_5x4_UNORM_BLOCK,
-        VK_FORMAT_ASTC_5x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_5x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_6x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_6x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_6x6_SRGB_BLOCK,
-        VK_FORMAT_ASTC_6x6_UNORM_BLOCK,
-        VK_FORMAT_ASTC_8x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_8x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_8x6_SRGB_BLOCK,
-        VK_FORMAT_ASTC_8x6_UNORM_BLOCK,
-        VK_FORMAT_ASTC_8x8_SRGB_BLOCK,
-        VK_FORMAT_ASTC_8x8_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x6_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x6_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x8_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x8_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x10_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x10_UNORM_BLOCK,
-        VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
-        VK_FORMAT_ASTC_12x10_UNORM_BLOCK,
-        VK_FORMAT_ASTC_12x12_SRGB_BLOCK,
-        VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
-        VK_FORMAT_A2R10G10B10_UNORM_PACK32,
-        VK_FORMAT_A2B10G10R10_UINT_PACK32,
-        VK_FORMAT_B10G11R11_UFLOAT_PACK32
-    };
-
-    return table[value];
-}
-
-
-//-------------------------------------------------------------------------------------------------
-//      ネイティブ形式に変換します.
-//-------------------------------------------------------------------------------------------------
-VkFormat ToNativeViewFormat(RESOURCE_FORMAT value)
-{
-    static VkFormat table[] = {
-        VK_FORMAT_UNDEFINED,
-        VK_FORMAT_R32G32B32A32_SFLOAT,
-        VK_FORMAT_R32G32B32A32_UINT,
-        VK_FORMAT_R32G32B32A32_SINT,
-        VK_FORMAT_R16G16B16A16_SFLOAT,
-        VK_FORMAT_R16G16B16A16_UINT,
-        VK_FORMAT_R16G16B16A16_SINT,
-        VK_FORMAT_R32G32B32_SFLOAT,
-        VK_FORMAT_R32G32B32_UINT,
-        VK_FORMAT_R32G32B32_SINT,
-        VK_FORMAT_R32G32_SFLOAT,
-        VK_FORMAT_R32G32_UINT,
-        VK_FORMAT_R32G32_SINT,
-        VK_FORMAT_R16G16_SFLOAT,
-        VK_FORMAT_R16G16_UINT,
-        VK_FORMAT_R16G16_SINT,
-        VK_FORMAT_R32_SFLOAT,
-        VK_FORMAT_R32_UINT,
-        VK_FORMAT_R32_SINT,
-        VK_FORMAT_R16_SFLOAT,
-        VK_FORMAT_R16_UINT,
-        VK_FORMAT_R16_SINT,
-        VK_FORMAT_R8G8B8A8_SRGB,
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_FORMAT_B8G8R8A8_SRGB,
-        VK_FORMAT_B8G8R8A8_UNORM,
-        VK_FORMAT_R8G8_UNORM,
-        VK_FORMAT_R8_UNORM,
-        VK_FORMAT_R32_SFLOAT,
-        VK_FORMAT_D24_UNORM_S8_UINT,
-        VK_FORMAT_R16_UNORM,
-        VK_FORMAT_BC1_RGBA_SRGB_BLOCK,
-        VK_FORMAT_BC1_RGBA_UNORM_BLOCK,
-        VK_FORMAT_BC2_SRGB_BLOCK,
-        VK_FORMAT_BC2_UNORM_BLOCK,
-        VK_FORMAT_BC3_SRGB_BLOCK,
-        VK_FORMAT_BC3_UNORM_BLOCK,
-        VK_FORMAT_BC4_UNORM_BLOCK,
-        VK_FORMAT_BC4_SNORM_BLOCK,
-        VK_FORMAT_BC5_UNORM_BLOCK,
-        VK_FORMAT_BC5_SNORM_BLOCK,
-        VK_FORMAT_BC6H_UFLOAT_BLOCK,
-        VK_FORMAT_BC6H_SFLOAT_BLOCK,
-        VK_FORMAT_BC7_SRGB_BLOCK,
-        VK_FORMAT_BC7_UNORM_BLOCK,
-        VK_FORMAT_ASTC_4x4_SRGB_BLOCK,
-        VK_FORMAT_ASTC_4x4_UNORM_BLOCK,
-        VK_FORMAT_ASTC_5x4_SRGB_BLOCK,
-        VK_FORMAT_ASTC_5x4_UNORM_BLOCK,
-        VK_FORMAT_ASTC_5x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_5x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_6x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_6x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_6x6_SRGB_BLOCK,
-        VK_FORMAT_ASTC_6x6_UNORM_BLOCK,
-        VK_FORMAT_ASTC_8x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_8x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_8x6_SRGB_BLOCK,
-        VK_FORMAT_ASTC_8x6_UNORM_BLOCK,
-        VK_FORMAT_ASTC_8x8_SRGB_BLOCK,
-        VK_FORMAT_ASTC_8x8_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x5_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x5_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x6_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x6_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x8_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x8_UNORM_BLOCK,
-        VK_FORMAT_ASTC_10x10_SRGB_BLOCK,
-        VK_FORMAT_ASTC_10x10_UNORM_BLOCK,
-        VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
-        VK_FORMAT_ASTC_12x10_UNORM_BLOCK,
-        VK_FORMAT_ASTC_12x12_SRGB_BLOCK,
-        VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
-        VK_FORMAT_A2R10G10B10_UNORM_PACK32,
-        VK_FORMAT_A2B10G10R10_UINT_PACK32,
-        VK_FORMAT_B10G11R11_UFLOAT_PACK32
-    };
-
-    return table[value];
-}
+{ return g_FormatTable[value].NativeFormat; }
 
 //-------------------------------------------------------------------------------------------------
 //      ネイティブ形式に変換します.
@@ -548,10 +575,11 @@ uint32_t CalcSubresource
 (
     uint32_t mipSlice,
     uint32_t arraySlice,
+    uint32_t planeSlice,
     uint32_t mipLevels,
     uint32_t arraySize
 )
-{ return mipSlice + arraySlice * mipLevels; }
+{ return mipSlice + arraySlice * mipLevels + planeSlice * mipLevels * arraySize; }
 
 //-------------------------------------------------------------------------------------------------
 //      サブリソース番号からミップレベル・配列番号・平面スライスを求めます.
@@ -562,11 +590,86 @@ void DecomposeSubresource
     uint32_t mipLevels,
     uint32_t arraySize,
     uint32_t& mipSlice,
-    uint32_t& arraySlice
+    uint32_t& arraySlice,
+    uint32_t& planeSlice
 )
 {
     mipSlice   = subresource % mipLevels;
     arraySlice = (subresource / mipLevels) % arraySize;
+    planeSlice = (subresource / (mipLevels * arraySize));
+}
+
+//-------------------------------------------------------------------------------------------------
+//      サブリソースサイズを求めます.
+//-------------------------------------------------------------------------------------------------
+void CalcSubresourceSize
+(
+    RESOURCE_FORMAT format,
+    uint32_t        width,
+    uint32_t        height,
+    uint32_t        depth,
+    uint64_t&       slicePitch,
+    uint64_t&       rowPitch,
+    uint64_t&       rowCount
+)
+{
+    if (IsCompressFormat(format))
+    {
+        auto w = GetBlockWidth( format );
+        auto h = GetBlockHeight( format );
+        width  = ( width  + w - 1 ) / w;
+        height = ( height + h - 1 ) / h;
+    }
+
+    rowPitch    = width * ToByte( format );
+    rowCount    = height;
+    slicePitch  = rowPitch * rowCount;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      サブリソースレイアウトを求めます.
+//-------------------------------------------------------------------------------------------------
+SubresourceLayout CalcSubresourceLayout
+(
+    uint32_t        subresource,
+    RESOURCE_FORMAT format,
+    uint32_t        width,
+    uint32_t        height,
+    uint32_t        depth
+)
+{
+    uint64_t offset   = 0;
+    uint64_t size     = 0;
+    uint64_t rowCount = 0;
+    uint64_t rowPitch = 0;
+
+    auto w = width;
+    auto h = height;
+    auto d = depth;
+
+    SubresourceLayout result = {};
+
+    for(auto i=0u; i<=subresource; ++i)
+    {
+        CalcSubresourceSize(format, w, h, d, size, rowPitch, rowCount);
+        result.Offset       = offset;
+        result.RowCount     = rowCount;
+        result.RowPitch     = rowPitch;
+        result.Size         = size;
+        result.SlicePitch   = size;
+    
+        offset += size;
+
+        w = w >> 1;
+        h = h >> 1;
+        d = d >> 1;
+
+        if (w == 0) { w = 1; }
+        if (h == 0) { h = 1; }
+        if (d == 0) { d = 1; }
+    }
+
+    return result;
 }
 
 } // namespace a3d

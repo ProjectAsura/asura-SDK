@@ -104,6 +104,7 @@ private:
     Device*                 m_pDevice;              //!< デバイスです.
     ID3D12PipelineState*    m_pPipelineState;       //!< パイプラインステートです.
     D3D_PRIMITIVE_TOPOLOGY  m_PrimitiveTopology;    //!< プリミティブトポロジーです.
+    DescriptorSetLayout*    m_pLayout;              //!< ディスクリプタセットレイアウトです.
     bool                    m_IsGraphicsPipeline;   //!< グラフィックスパイプラインかどうか.
 
     //=============================================================================================

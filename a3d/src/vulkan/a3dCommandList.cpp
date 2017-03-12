@@ -4,6 +4,11 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Includes
+//-------------------------------------------------------------------------------------------------
+#include "a3dVulkanFunc.h"
+
 
 namespace a3d {
 
@@ -832,6 +837,7 @@ void CommandList::CopyTextureRegion
     region.dstOffset.y = dstOffset.Y;
     region.dstOffset.z = dstOffset.Z;
     
+    uint32_t placeSlice;
     region.dstSubresource.aspectMask     = pWrapDst->GetVulkanImageAspectFlags();
     region.dstSubresource.layerCount     = dstDesc.DepthOrArraySize;
     DecomposeSubresource(
@@ -839,7 +845,8 @@ void CommandList::CopyTextureRegion
         dstDesc.MipLevels,
         dstDesc.DepthOrArraySize,
         region.dstSubresource.mipLevel,
-        region.dstSubresource.baseArrayLayer);
+        region.dstSubresource.baseArrayLayer,
+        placeSlice);
     
     region.srcOffset.x = srcOffset.X;
     region.srcOffset.y = srcOffset.Y;
@@ -852,7 +859,8 @@ void CommandList::CopyTextureRegion
         srcDesc.MipLevels,
         srcDesc.DepthOrArraySize,
         region.srcSubresource.mipLevel,
-        region.srcSubresource.baseArrayLayer);
+        region.srcSubresource.baseArrayLayer,
+        placeSlice);
 
     region.extent.width  = srcExtent.Width;
     region.extent.height = srcExtent.Height;
@@ -927,12 +935,15 @@ void CommandList::CopyBufferToTexture
     region.imageExtent.height           = dstDesc.Height;
     region.imageExtent.depth            = dstDesc.DepthOrArraySize;
     region.bufferOffset                 = srcOffset;
+
+    uint32_t planeSlice;
     DecomposeSubresource(
         dstSubresource,
         dstDesc.MipLevels,
         dstDesc.DepthOrArraySize, 
         region.imageSubresource.mipLevel,
-        region.imageSubresource.baseArrayLayer);
+        region.imageSubresource.baseArrayLayer,
+        planeSlice);
 
     vkCmdCopyBufferToImage(
         m_CommandBuffer,
@@ -977,12 +988,15 @@ void CommandList::CopyTextureToBuffer
     region.imageExtent.depth            = srcExtent.Depth;
     region.imageSubresource.aspectMask  = pWrapSrc->GetVulkanImageAspectFlags();
     region.imageSubresource.layerCount  = srcDesc.DepthOrArraySize;
+
+    uint32_t planeSlice;
     DecomposeSubresource(
         srcSubresource,
         srcDesc.MipLevels,
         srcDesc.DepthOrArraySize,
         region.imageSubresource.mipLevel,
-        region.imageSubresource.baseArrayLayer);
+        region.imageSubresource.baseArrayLayer,
+        planeSlice);
 
     vkCmdCopyImageToBuffer(
         m_CommandBuffer,
@@ -1025,12 +1039,15 @@ void CommandList::ResolveSubresource
     VkImageResolve region = {};
     region.dstSubresource.aspectMask = pWrapDst->GetVulkanImageAspectFlags();
     region.dstSubresource.layerCount = dstDesc.DepthOrArraySize;
+
+    uint32_t planeSlice;
     DecomposeSubresource(
         dstSubresource,
         dstDesc.MipLevels,
         dstDesc.DepthOrArraySize,
         region.dstSubresource.mipLevel,
-        region.dstSubresource.baseArrayLayer);
+        region.dstSubresource.baseArrayLayer,
+        planeSlice);
 
     region.dstOffset.x = 0;
     region.dstOffset.y = 0;
@@ -1043,7 +1060,8 @@ void CommandList::ResolveSubresource
         srcDesc.MipLevels,
         srcDesc.DepthOrArraySize,
         region.srcSubresource.mipLevel,
-        region.srcSubresource.baseArrayLayer);
+        region.srcSubresource.baseArrayLayer,
+        planeSlice);
 
     region.srcOffset.x = 0;
     region.srcOffset.y = 0;
@@ -1078,6 +1096,9 @@ void CommandList::ExecuteBundle(ICommandList* pCommandList)
 //-------------------------------------------------------------------------------------------------
 void CommandList::PushMarker(const char* tag)
 {
+    if (!m_pDevice->IsSupportExtension(Device::EXT_DEBUG_MARKER))
+    { return; }
+
     VkDebugMarkerMarkerInfoEXT info = {};
     info.sType          = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
     info.pNext          = nullptr;
@@ -1087,14 +1108,32 @@ void CommandList::PushMarker(const char* tag)
     info.color[2]       = 1.0f;
     info.color[3]       = 1.0f;
 
-    vkCmdDebugMarkerBeginEXT(m_CommandBuffer, &info);
+    vkCmdDebugMarkerBegin(m_CommandBuffer, &info);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      デバッグマーカーをポップします.
 //-------------------------------------------------------------------------------------------------
 void CommandList::PopMarker()
-{ vkCmdDebugMarkerEndEXT(m_CommandBuffer); }
+{
+    if (!m_pDevice->IsSupportExtension(Device::EXT_DEBUG_MARKER))
+    { return; }
+
+    vkCmdDebugMarkerEnd(m_CommandBuffer);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      バッファを更新します.
+//-------------------------------------------------------------------------------------------------
+bool CommandList::UpdateBuffer(IBuffer* pBuffer, size_t offset, size_t size, const void* pData)
+{
+    auto pWrapBuffer = static_cast<Buffer*>(pBuffer);
+    if (pWrapBuffer == nullptr || size == 0 || pData == nullptr)
+    { return false; }
+
+    vkCmdUpdateBuffer(m_CommandBuffer, pWrapBuffer->GetVulkanBuffer(), offset, size, pData);
+    return true;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を終了します.

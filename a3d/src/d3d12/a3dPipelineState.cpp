@@ -277,6 +277,7 @@ PipelineState::PipelineState()
 , m_pDevice             (nullptr)
 , m_pPipelineState      (nullptr)
 , m_PrimitiveTopology   (D3D_PRIMITIVE_TOPOLOGY_UNDEFINED)
+, m_pLayout             (nullptr)
 , m_IsGraphicsPipeline  (true)
 { /* DO_NOTHING */ }
 
@@ -355,6 +356,11 @@ void PipelineState::Issue(ICommandList* pCommandList)
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
+    if (m_IsGraphicsPipeline)
+    { pNativeCommandList->SetGraphicsRootSignature(m_pLayout->GetD3D12RootSignature()); }
+    else
+    { pNativeCommandList->SetComputeRootSignature(m_pLayout->GetD3D12RootSignature()); }
+
     pNativeCommandList->SetPipelineState(m_pPipelineState);
 
     if (m_IsGraphicsPipeline)
@@ -379,11 +385,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     m_IsGraphicsPipeline = true;
 
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout->AddRef();
+
     auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
-
-    auto pWrapDescriptorLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
-    A3D_ASSERT(pWrapDescriptorLayout != nullptr);
 
     auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pDesc->pFrameBuffer);
     A3D_ASSERT(pWrapFrameBuffer != nullptr);
@@ -391,7 +397,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     D3D12_INPUT_ELEMENT_DESC elementDesc[D3D12_COMMONSHADER_INPUT_RESOURCE_REGISTER_COUNT] = {};
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-    desc.pRootSignature     = pWrapDescriptorLayout->GetD3D12RootSignature();
+    desc.pRootSignature     = m_pLayout->GetD3D12RootSignature();
     ToNativeShaderByteCode  ( pDesc->VertexShader      , desc.VS );
     ToNativeShaderByteCode  ( pDesc->PixelShader       , desc.PS );
     ToNativeShaderByteCode  ( pDesc->DomainShader      , desc.DS );
@@ -474,6 +480,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 void PipelineState::Term()
 {
     SafeRelease(m_pPipelineState);
+    SafeRelease(m_pLayout);
     SafeRelease(m_pDevice);
 }
 

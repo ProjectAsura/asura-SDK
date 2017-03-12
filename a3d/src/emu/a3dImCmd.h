@@ -45,6 +45,7 @@ enum CMD_TYPE
     CMD_EXECUTE_BUNDLE,                 //!< ICommandList::ExecuteBundle()
     CMD_PUSH_MARKER,                    //!< ICommandList::PushMarker()
     CMD_POP_MARKER,                     //!< ICommandList::PopMarker()
+    CMD_UPDATE_BUFFER,                  //!< ICommandList::UpdateBuffer()
     CMD_SUB_END,                        //!< ICommandList::End() For COMMANDLIST_TYPE_BUNDLE
     CMD_END,                            //!< ICommandList::End() For COMMANDLIST_TYPE_DIRECT
 };
@@ -340,6 +341,17 @@ struct ImCmdPushMarker : ImCmdBase
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ImCmdPopMarker : ImCmdBase
 { /* NOTHING */ };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdUpdateBuffer structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdUpdateBuffer: ImCmdBase
+{
+    IBuffer*        pBuffer;
+    size_t          Offset;
+    size_t          Size;
+    // ここから更新データがSize分はいる.
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // ImCmdEnd structure

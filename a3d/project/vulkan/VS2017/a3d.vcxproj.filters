@@ -155,5 +155,8 @@
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h">
       <Filter>ソース ファイル\misc</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

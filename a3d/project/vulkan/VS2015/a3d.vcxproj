@@ -175,6 +175,7 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTextureView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUtil.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />

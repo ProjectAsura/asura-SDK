@@ -586,24 +586,15 @@ enum META_DATA_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum COLOR_SPACE_TYPE
 {
-    COLOR_SPACE_RGB_FULL_G22_NONE_P709 = 0,
-    COLOR_SPACE_RGB_FULL_G10_NONE_P709,
-    COLOR_SPACE_RGB_STUDIO_G22_NONE_P709,
-    COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020,
-    COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601,
-    COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601,
-    COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601,
-    COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
-    COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709,
-    COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020,
-    COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020,
-    COLOR_SPACE_RGB_FULL_G2084_NONE_P2020,
-    COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020,
-    COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020,
-    COLOR_SPACE_YCBCR_STUDIO_G22_TOPLEFT_P2020,
-    COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020,
-    COLOR_SPACE_RGB_FULL_G22_NONE_P2020,
-    COLOR_SPACE_CUSTOM
+    COLOR_SPACE_UNKNOWN = 0,        //!< 未知の形式です.
+    COLOR_SPACE_SRGB,               //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.709
+    COLOR_SPACE_SCRGB,              //!< ColorSpace:RGB,   Range:0-255, Gamma:1.0,  Primaries:BT.709
+    COLOR_SPACE_YCBCR_BT601,        //!< ColorSpace:YCbCr, Range:0-255, Gamma:2.2,  Primaries:BT.601
+    COLOR_SPACE_YCBCR_BT709,        //!< ColorSpace:YCbCr, Range:0-255, Gamma:2.2,  Primaries:BT.709
+    COLOR_SPACE_RGB_BT2020,         //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.2020
+    COLOR_SPACE_RGB_BT2020_PQ,      //!< ColorSpace:RGB,   Range:0-255, Gamma:2084, Primaries:BT.2020
+    COLOR_SPACE_YCBCR_BT2020,       //!< ColorSpace:YCbCr, Range:0-255, Gamma:2.2,  Primaries:BT.2020
+    COLOR_SPACE_YCBCR_BT2020_PQ,    //!< ColorSpace:YCbCr, Range:0-255, Gamma:2084, Primaries:BT.2020
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1093,6 +1084,8 @@ struct MetaDataHDR10
     float       WhitePoint[2];                  //!< 色座標の白色点です(配列番号0がX座標, 1がY座標となります).
     float       MaxMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最大ニト[nit]数です(数値の単位は1nitです).
     float       MinMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最小ニト[nit]数です(数値の単位は1nitです).
+    float       MaxContentLightLevel;           //!< コンテンツの最大ニト[nit]数です.
+    float       MaxFrameAverageLightLevel;      //!< フレーム平均の最大ニト[nit]数です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1577,14 +1570,13 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY SetSampler(uint32_t index, ISampler* pSampler) = 0;
 
-#if 1
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを更新します.
-    //! @note       このAPIは削除予定される予定です.
+    //! @note       このAPIはVulkanのみでサポートされ将来削除予定される予定です. 
+    //!             Vulkan以外のその他の環境では呼び出し不要です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Update() 
+    virtual void A3D_APIENTRY Update()
     { /* DO_NOTHING */ }
-#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2011,6 +2003,23 @@ struct A3D_API ICommandList : IDeviceChild
     //! @brief      デバッグマーカーをポップします.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY PopMarker() = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      バッファを更新します.
+    //!
+    //! @param[in]      pBuffer     更新するバッファです.
+    //! @param[in]      offset      バッファのオフセットです(バイト単位).
+    //! @param[in]      size        書き込みサイズです(バイト単位).
+    //! @param[in]      pData       書き込みデータです.
+    //! @retval true    更新に成功.
+    //! @retval false   更新に失敗.
+    //! @note       D3D12環境のみ対応APIが無いためサポートされません.そのため常に false を返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY UpdateBuffer(
+        IBuffer*    pBuffer,
+        size_t      offset,
+        size_t      size,
+        const void* pData) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの記録を終了します.

@@ -137,10 +137,23 @@ RESOURCE_STATE Buffer::GetState() const
 void* Buffer::Map()
 { 
     void* ptr = nullptr;
+
+    if (m_Desc.HeapProperty.Type == HEAP_TYPE_READBACK)
+    {
+        D3D12_RANGE range = {};
+        range.Begin = 0;
+        range.End   = SIZE_T(m_Desc.Size);
     
-    auto hr = m_pResource->Map(0, nullptr, &ptr);
-    if ( FAILED(hr) )
-    { return nullptr; }
+        auto hr = m_pResource->Map(0, &range, &ptr);
+        if ( FAILED(hr) )
+        { return nullptr; }
+    }
+    else
+    {
+        auto hr = m_pResource->Map(0, nullptr, &ptr);
+        if (FAILED(hr))
+        { return nullptr; }
+    }
 
     return ptr;
 }
@@ -149,7 +162,20 @@ void* Buffer::Map()
 //      メモリマッピングを解除します.
 //-------------------------------------------------------------------------------------------------
 void Buffer::Unmap()
-{ m_pResource->Unmap(0, nullptr); }
+{
+    if (m_Desc.HeapProperty.Type == HEAP_TYPE_READBACK)
+    {
+        m_pResource->Unmap(0, nullptr);
+    }
+    else
+    {
+        D3D12_RANGE range = {};
+        range.Begin = 0;
+        range.End   = SIZE_T(m_Desc.Size);
+
+        m_pResource->Unmap(0, &range);
+    }
+}
 
 //-------------------------------------------------------------------------------------------------
 //      リソースタイプを取得します.

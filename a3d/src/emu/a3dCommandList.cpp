@@ -554,6 +554,22 @@ void CommandList::PopMarker()
 }
 
 //-------------------------------------------------------------------------------------------------
+//      バッファを更新します.
+//-------------------------------------------------------------------------------------------------
+bool CommandList::UpdateBuffer(IBuffer* pBuffer, size_t offset, size_t size, const void* pData)
+{
+    ImCmdUpdateBuffer cmd = {};
+    cmd.Type    = CMD_UPDATE_BUFFER;
+    cmd.pBuffer = pBuffer;
+    cmd.Offset  = offset;
+    cmd.Size    = size;
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+    m_Buffer.Push(pData, size);
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      コマンドの記録を終了します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::End()

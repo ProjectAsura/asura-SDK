@@ -361,10 +361,8 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
                 meta.WhitePoint[1]              = GetCoord(pData->WhitePoint[1]);
                 meta.MaxMasteringLuminance      = static_cast<UINT>(pData->MaxMasteringLuminance / 10000.0);
                 meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 100000.0);
-            #if 0 // TODO : 設定.
-                //meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
-                //meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
-            #endif
+                meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
+                meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
 
                 auto hr = m_pSwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
                 if (FAILED(hr))

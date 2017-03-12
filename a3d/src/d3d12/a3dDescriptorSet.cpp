@@ -15,9 +15,9 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 DescriptorSet::DescriptorSet()
-: m_RefCount(1)
-, m_pDevice (nullptr)
-, m_pLayout (nullptr)
+: m_RefCount    (1)
+, m_pDevice     (nullptr)
+, m_IsGraphics  (true)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -75,11 +75,10 @@ bool DescriptorSet::Init
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_pLayout = pLayout;
-    m_pLayout->AddRef();
-
     auto& desc = pLayout->GetDesc();
     m_Handles.resize(desc.EntryCount);
+
+    m_IsGraphics = pLayout->IsGraphicsPipeline();
 
     return true;
 }
@@ -90,8 +89,6 @@ bool DescriptorSet::Init
 void DescriptorSet::Term()
 {
     m_Handles.clear();
-
-    SafeRelease(m_pLayout);
     SafeRelease(m_pDevice);
 }
 
@@ -145,17 +142,13 @@ void DescriptorSet::Bind(ICommandList* pCommandList)
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
-    if (m_pLayout->IsGraphicsPipeline())
+    if (m_IsGraphics)
     {
-        pNativeCommandList->SetGraphicsRootSignature( m_pLayout->GetD3D12RootSignature() );
-
         for(size_t i=0; i<m_Handles.size(); ++i)
         { pNativeCommandList->SetGraphicsRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
     }
     else
     {
-        pNativeCommandList->SetComputeRootSignature( m_pLayout->GetD3D12RootSignature() );
-
         for(size_t i=0u; i<m_Handles.size(); ++i)
         { pNativeCommandList->SetComputeRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
     }

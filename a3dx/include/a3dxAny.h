@@ -85,6 +85,9 @@ public:
     size_t size() const
     { return (m_item != nullptr) ? m_item->size() : 0; }
 
+    size_t align() const
+    { return (m_item != nullptr) ? m_item->align() : 1; }
+
     template<typename T>
     T cast() const
     {
@@ -106,6 +109,7 @@ private:
         virtual const std::type_info&   type () const = 0;
         virtual holder_base*            clone() const = 0;
         virtual size_t                  size () const = 0;
+        virtual size_t                  align() const = 0;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +140,9 @@ private:
 
         size_t size() const override
         { return sizeof(T); }
+
+        size_t align() const override
+        { return alignof(T); }
 
     private:
         holder& oeprator = (const holder&) = delete;

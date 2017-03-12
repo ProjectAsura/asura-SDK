@@ -448,42 +448,57 @@ void Texture::Unmap()
 //-------------------------------------------------------------------------------------------------
 SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
 {
-    VkImageSubresource subres = {};
-    subres.aspectMask = m_ImageAspectFlags;
-    DecomposeSubresource(
+    // Vulkanの仕様変更にVkSubresourceLayout()はLINEARモードしか呼び出しできなくなった(1.0.42あたりから).
+    if (m_Desc.Layout == RESOURCE_LAYOUT_LINEAR)
+    {
+        VkImageSubresource subres = {};
+        subres.aspectMask = m_ImageAspectFlags;
+
+        uint32_t placeSlice;
+        DecomposeSubresource(
+            subresource,
+            m_Desc.MipLevels,
+            m_Desc.DepthOrArraySize,
+            subres.mipLevel,
+            subres.arrayLayer,
+            placeSlice);
+
+        auto pNativeDevice = m_pDevice->GetVulkanDevice();
+        A3D_ASSERT(pNativeDevice != null_handle);
+
+        SubresourceLayout result = {};
+        
+        VkSubresourceLayout layout = {};
+        vkGetImageSubresourceLayout(pNativeDevice, m_Image, &subres, &layout);
+
+        result.Offset   = layout.offset;
+        result.Size     = layout.size;
+
+        if (m_Desc.Dimension == RESOURCE_DIMENSION_TEXTURE3D)
+        { result.SlicePitch = layout.depthPitch; }
+        else
+        { result.SlicePitch = layout.arrayPitch; }
+
+        if (layout.rowPitch != 0)
+        {
+            result.RowPitch = layout.rowPitch;
+            result.RowCount = layout.size / layout.rowPitch;
+        }
+        else
+        {
+            result.RowPitch = result.SlicePitch / m_Desc.Height;
+            result.RowCount = m_Desc.Height;
+        }
+
+        return result;
+    }
+
+    return CalcSubresourceLayout(
         subresource,
-        m_Desc.MipLevels,
-        m_Desc.DepthOrArraySize,
-        subres.mipLevel,
-        subres.arrayLayer);
-
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
-    A3D_ASSERT(pNativeDevice != null_handle);
-
-    VkSubresourceLayout layout = {};
-    vkGetImageSubresourceLayout(pNativeDevice, m_Image, &subres, &layout);
-
-    SubresourceLayout result = {};
-    result.Offset   = layout.offset;
-    result.Size     = layout.size;
-
-    if (m_Desc.Dimension == RESOURCE_DIMENSION_TEXTURE3D)
-    { result.SlicePitch = layout.depthPitch; }
-    else
-    { result.SlicePitch = layout.arrayPitch; }
-
-    if (layout.rowPitch != 0)
-    {
-        result.RowPitch = layout.rowPitch;
-        result.RowCount = layout.size / layout.rowPitch;
-    }
-    else
-    {
-        result.RowPitch = result.SlicePitch / m_Desc.Height;
-        result.RowCount = m_Desc.Height;
-    }
-
-    return result;
+        m_Desc.Format,
+        m_Desc.Width,
+        m_Desc.Height,
+        m_Desc.DepthOrArraySize);
 }
 
 //-------------------------------------------------------------------------------------------------

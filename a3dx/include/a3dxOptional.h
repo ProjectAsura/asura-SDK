@@ -5,8 +5,15 @@
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
+#include <type_traits>
+
 
 namespace a3dx {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// nullopt structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct nullopt {};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // optional_base class
@@ -29,16 +36,19 @@ public:
     // public methods.
     //=============================================================================================
     optional_base()
-    : m_value(false)
+    : m_valid(false)
+    , m_data ()
     { /* DO_NOTHING */ }
 
     optional_base(optional_base const& other)
-    : m_value(other.m_valid)
+    : m_valid(other.m_valid)
+    , m_data (other.m_data)
     { /* DO_NOTHING */ }
 
     optional_base& operator = (optional_base const& value)
     {
-        m_value = value.m_value;
+        m_valid = value.m_valid;
+        m_data  = value.m_data;
         return *this;
     }
 
@@ -49,11 +59,16 @@ public:
     { return !m_valid; }
 
 private:
+    //---------------------------------------------------------------------------------------------
+    // Using Alias
+    //---------------------------------------------------------------------------------------------
+    using storage = std::aligned_storage<sizeof(T), alignof(T)>::type;
+
     //=============================================================================================
     // private variables.
     //=============================================================================================
     bool    m_valid;
-    char    m_data[size];
+    storage m_data;
 
     //=============================================================================================
     // private methods.
@@ -217,13 +232,13 @@ private:
     // private methods.
     //=============================================================================================
     T const* const get() const
-    { return reinterpret_cast<T const* const>(m_data); }
+    { return static_cast<T const* const>(static_cast<void*>(&m_data)); }
 
-    T const get()
-    { return reinterpret_cast<T* const>(m_data); }
+    T const* get()
+    { return static_cast<T const*>(static_cast<void*>(&m_data)); }
 
     void construct(const T& value)
-    { new (get()) T(value); }
+    { new () T(value); }
 
     void destruct()
     { get()->~T(); }

@@ -199,6 +199,7 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTextureView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUtil.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

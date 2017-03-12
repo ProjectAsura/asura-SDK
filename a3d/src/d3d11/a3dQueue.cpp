@@ -158,20 +158,24 @@ void Queue::Execute( IFence* pFence )
     if (pD3D11DeviceContext->GetData(m_pQuery, &data, sizeof(data), 0) != S_FALSE)
     { m_Frequency = data.Frequency; }
 
+    ID3D11Query* pFecneQuery = nullptr;
+    if (pFence != nullptr)
+    {
+        auto pWrapFence = reinterpret_cast<Fence*>(pFence);
+        A3D_ASSERT(pWrapFence != nullptr);
+        pFecneQuery = pWrapFence->GetD3D11Query();
+    }
+
     pD3D11DeviceContext->Begin(m_pQuery);
 
     ParseCmd();
     m_SubmitIndex = 0;
 
-    if (pFence != nullptr)
-    {
-        auto pWrapFence = reinterpret_cast<Fence*>(pFence);
-        A3D_ASSERT(pWrapFence != nullptr);
-
-        pD3D11DeviceContext->End(pWrapFence->GetD3D11Query());
-    }
-
     pD3D11DeviceContext->End(m_pQuery);
+
+    if (pFecneQuery != nullptr)
+    { pD3D11DeviceContext->End(pFecneQuery); }
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -781,6 +785,8 @@ void Queue::ParseCmd()
                         srcMap.RowPitch,
                         srcMap.DepthPitch);
 
+                    pDeviceContext->Unmap(pSrcTexture->GetD3D11Resource(), cmd->SrcSubresource);
+
                     pCmd += sizeof(ImCmdCopyTextureToBuffer);
                 }
                 break;
@@ -831,6 +837,33 @@ void Queue::ParseCmd()
                     #endif
 
                     pCmd += sizeof(ImCmdPopMarker);
+                }
+                break;
+
+            case CMD_UPDATE_BUFFER:
+                {
+                    auto cmd = reinterpret_cast<ImCmdUpdateBuffer*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    pCmd += sizeof(ImCmdUpdateBuffer);
+
+                    auto pBuffer = static_cast<Buffer*>(cmd->pBuffer);
+
+                    D3D11_BOX box = {};
+                    box.left     = static_cast<uint32_t>(cmd->Offset);
+                    box.right    = static_cast<uint32_t>(cmd->Size);
+                    box.top      = 0;
+                    box.bottom   = 1;
+                    box.front    = 0;
+                    box.back     = 1;
+
+                    pDeviceContext->UpdateSubresource(
+                        pBuffer->GetD3D11Buffer(),
+                        0,
+                        &box,
+                        pCmd,
+                        UINT(pBuffer->GetDesc().Size),
+                        1);
                 }
                 break;
 

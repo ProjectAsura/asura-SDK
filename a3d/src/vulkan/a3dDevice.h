@@ -34,6 +34,8 @@ public:
         EXT_KHR_DESCRIPTOR_UPDATE_TEMPLATE,     // VK_KHR_descriptor_upate_template
         EXT_NVX_DEVICE_GENERATE_COMMAND,        // VK_NVX_device_generate_command
         EXT_AMD_DRAW_INDIRECT_COUNT,            // VK_AMD_draw_indirect_count
+        EXT_DEBUG_MARKER,                       // VK_EXT_debug_marker
+        EXT_HDR_METADATA,                       // VK_EXT_hdr_metadata
         EXT_COUNT,
     };
 

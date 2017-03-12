@@ -123,6 +123,7 @@ void Main()
     if (!CreateApp(960, 540, &g_pApp))
     { return; }
 
+    // リサイズ時のコールバック関数を設定.
     g_pApp->SetResizeCallback(Resize, nullptr);
 
     // A3D初期化.

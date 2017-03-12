@@ -127,7 +127,7 @@ bool Fence::Wait(uint32_t timeoutMsec)
         if (elapsed >= timeoutMsec)
         { return false; }
 
-        std::this_thread::sleep_for(std::chrono::microseconds(1));
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
     }
 
     return true;

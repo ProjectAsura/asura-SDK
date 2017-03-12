@@ -9,12 +9,25 @@
 namespace a3d {
 
 //-------------------------------------------------------------------------------------------------
-//! @brief      ネイティブ形式に変換します.
+//! @brief      リソースフォーマットのビット数に変換します.
 //!
-//! @param[in]      value       A3D形式です.
-//! @return     ネイティブ形式に変換したフォーマットを返却します.
+//! @param[in]      format      リソースフォーマットです.
+//! @return     リソースフォーマットのビット数を返却します.
 //-------------------------------------------------------------------------------------------------
-VkFormat ToNativeFormat(RESOURCE_FORMAT value);
+uint32_t ToBits(RESOURCE_FORMAT format);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      リソースフォーマットのバイト数に変換します.
+//!
+//! @param[in]      format      リソースフォーマットです.
+//! @return     リソースフォーマットのビット数を返却します.
+//-------------------------------------------------------------------------------------------------
+uint32_t ToByte(RESOURCE_FORMAT format);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      圧縮フォーマットかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool IsCompressFormat(RESOURCE_FORMAT format);
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      ネイティブ形式に変換します.
@@ -22,7 +35,7 @@ VkFormat ToNativeFormat(RESOURCE_FORMAT value);
 //! @param[in]      value       A3D形式です.
 //! @return     ネイティブ形式に変換したフォーマットを返却します.
 //-------------------------------------------------------------------------------------------------
-VkFormat ToNativeViewFormat(RESOURCE_FORMAT value);
+VkFormat ToNativeFormat(RESOURCE_FORMAT value);
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      ネイティブ形式に変換します.
@@ -125,6 +138,7 @@ VkAccessFlags ToNativeAccessFlags(RESOURCE_STATE state);
 uint32_t CalcSubresource(
     uint32_t mipSlice,
     uint32_t arraySlice,
+    uint32_t planeSlice,
     uint32_t mipLevels,
     uint32_t arraySize);
 
@@ -143,7 +157,30 @@ void DecomposeSubresource(
     uint32_t mipLevels,
     uint32_t arraySize,
     uint32_t& mipSlice,
-    uint32_t& arraySlice);
+    uint32_t& arraySlice,
+    uint32_t& planeSlice);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      サブリソースサイズを求めます.
+//-------------------------------------------------------------------------------------------------
+void CalcSubresourceSize(
+    RESOURCE_FORMAT format,
+    uint32_t        width,
+    uint32_t        height,
+    uint32_t        depth,
+    uint64_t&       slicePitch,
+    uint64_t&       rowPitch,
+    uint64_t&       rowCount);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      サブリソースレイアウトを求めます.
+//-------------------------------------------------------------------------------------------------
+SubresourceLayout CalcSubresourceLayout(
+    uint32_t        subresource,
+    RESOURCE_FORMAT format,
+    uint32_t        width, 
+    uint32_t        height,
+    uint32_t        depth);
 
 
 } // namespace a3d

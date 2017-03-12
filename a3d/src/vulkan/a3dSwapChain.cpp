@@ -4,6 +4,11 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Includes
+//-------------------------------------------------------------------------------------------------
+#include "a3dVulkanFunc.h"
+
 
 namespace a3d {
 
@@ -843,24 +848,29 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
 {
-    #if (VK_HEADER_VERSION >= 41) 
+    #if defined(VK_EXT_hdr_metadata)
+        if (!m_pDevice->IsSupportExtension(Device::EXT_HDR_METADATA))
+        { return false; }
+
         if (type == META_DATA_HDR10 && pData != nullptr)
         {
             auto pWarp = static_cast<MetaDataHDR10*>(pData);
             A3D_ASSERT(pWrap != nullptr);
 
-            vkSMPTE2086MetaDataEXT meta = {};
-            meta.displayPrimaryRed.x    = pWrap->PrimaryR[0];
-            meta.displayPrimaryRed.y    = pWrap->PrimaryR[1];
-            meta.displayPrimaryGreen.x  = pWrap->PrimaryG[0];
-            meta.displayPrimaryGreen.y  = pWrap->PrimaryG[1];
-            meta.displayPrimaryBlue.x   = pWrap->PrimaryB[0];
-            meta.displayPrimaryBlue.y   = pWrap->PrimaryB[1];
-            meta.maxLuminance           = pWrap->MaxMasteringLuminance;
-            meta.minLuminance           = pWrap->MinMasteringLuminance;
+            vkHdrMetaDataEXT meta = {};
+            meta.displayPrimaryRed.x        = pWrap->PrimaryR[0];
+            meta.displayPrimaryRed.y        = pWrap->PrimaryR[1];
+            meta.displayPrimaryGreen.x      = pWrap->PrimaryG[0];
+            meta.displayPrimaryGreen.y      = pWrap->PrimaryG[1];
+            meta.displayPrimaryBlue.x       = pWrap->PrimaryB[0];
+            meta.displayPrimaryBlue.y       = pWrap->PrimaryB[1];
+            meta.maxLuminance               = pWrap->MaxMasteringLuminance;
+            meta.minLuminance               = pWrap->MinMasteringLuminance;
+            meta.maxContentLightLevel       = pWrap->MaxContentLightLevel;
+            meta.maxFrameAverageLightLevel  = pWrap->MaxFrameAverageLightLevel;
 
             auto pDevice = m_pDevice->GetVulkanDevice();
-            vkSetSMPTE2086MetadataEXT( pDevice, 1, &m_SwapChain, &meta );
+            vkSetHdrMetadata( pDevice, 1, &m_SwapChain, &meta );
 
             return true;
         }
