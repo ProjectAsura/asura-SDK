@@ -377,7 +377,7 @@ public:
     void A3D_APIENTRY PopMarker() override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを更新します.
+    //! @brief      定数バッファを更新します.
     //!
     //! @param[in]      pBuffer     更新するバッファです.
     //! @param[in]      offset      バッファのオフセットです(バイト単位).
@@ -386,7 +386,7 @@ public:
     //! @retval true    更新に成功.
     //! @retval false   更新に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY UpdateBuffer(
+    bool A3D_APIENTRY UpdateConstantBuffer(
         IBuffer*    pBuffer,
         size_t      offset,
         size_t      size,

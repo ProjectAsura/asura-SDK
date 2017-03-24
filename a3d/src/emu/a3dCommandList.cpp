@@ -554,12 +554,12 @@ void CommandList::PopMarker()
 }
 
 //-------------------------------------------------------------------------------------------------
-//      バッファを更新します.
+//      定数バッファを更新します.
 //-------------------------------------------------------------------------------------------------
-bool CommandList::UpdateBuffer(IBuffer* pBuffer, size_t offset, size_t size, const void* pData)
+bool CommandList::UpdateConstantBuffer(IBuffer* pBuffer, size_t offset, size_t size, const void* pData)
 {
-    ImCmdUpdateBuffer cmd = {};
-    cmd.Type    = CMD_UPDATE_BUFFER;
+    ImCmdUpdateConstantBuffer cmd = {};
+    cmd.Type    = CMD_UPDATE_CONSTANT_BUFFER;
     cmd.pBuffer = pBuffer;
     cmd.Offset  = offset;
     cmd.Size    = size;

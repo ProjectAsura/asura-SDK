@@ -1619,6 +1619,7 @@ struct A3D_API IPipelineState : IDeviceChild
     //! @param[out]     ppBlob      キャッシュデータの角の先です.
     //! @retval true    取得に成功.
     //! @retval false   取得に失敗.
+    //! @note       Vulkan, D3D12環境でのみサポートされます.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY GetCachedBlob(IBlob** ppBlob) = 0;
 };
@@ -2005,7 +2006,7 @@ struct A3D_API ICommandList : IDeviceChild
     virtual void A3D_APIENTRY PopMarker() = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを更新します.
+    //! @brief      定数バッファを更新します.
     //!
     //! @param[in]      pBuffer     更新するバッファです.
     //! @param[in]      offset      バッファのオフセットです(バイト単位).
@@ -2015,7 +2016,7 @@ struct A3D_API ICommandList : IDeviceChild
     //! @retval false   更新に失敗.
     //! @note       D3D12環境のみ対応APIが無いためサポートされません.そのため常に false を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY UpdateBuffer(
+    virtual bool A3D_APIENTRY UpdateConstantBuffer(
         IBuffer*    pBuffer,
         size_t      offset,
         size_t      size,

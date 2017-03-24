@@ -804,9 +804,9 @@ void CommandList::PopMarker()
 { PIXEndEvent(); }
 
 //-------------------------------------------------------------------------------------------------
-//      バッファを更新します.
+//      定数バッファを更新します.
 //-------------------------------------------------------------------------------------------------
-bool CommandList::UpdateBuffer(IBuffer* pBuffer, size_t offset, size_t size, const void* pData)
+bool CommandList::UpdateConstantBuffer(IBuffer* pBuffer, size_t offset, size_t size, const void* pData)
 {
     A3D_UNUSED(pBuffer);
     A3D_UNUSED(offset);

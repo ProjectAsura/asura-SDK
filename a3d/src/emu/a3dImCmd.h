@@ -45,7 +45,7 @@ enum CMD_TYPE
     CMD_EXECUTE_BUNDLE,                 //!< ICommandList::ExecuteBundle()
     CMD_PUSH_MARKER,                    //!< ICommandList::PushMarker()
     CMD_POP_MARKER,                     //!< ICommandList::PopMarker()
-    CMD_UPDATE_BUFFER,                  //!< ICommandList::UpdateBuffer()
+    CMD_UPDATE_CONSTANT_BUFFER,         //!< ICommandList::UpdateConstantBuffer()
     CMD_SUB_END,                        //!< ICommandList::End() For COMMANDLIST_TYPE_BUNDLE
     CMD_END,                            //!< ICommandList::End() For COMMANDLIST_TYPE_DIRECT
 };
@@ -343,9 +343,9 @@ struct ImCmdPopMarker : ImCmdBase
 { /* NOTHING */ };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ImCmdUpdateBuffer structure
+// ImCmdUpdateConstantBuffer structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ImCmdUpdateBuffer: ImCmdBase
+struct ImCmdUpdateConstantBuffer: ImCmdBase
 {
     IBuffer*        pBuffer;
     size_t          Offset;

@@ -840,12 +840,12 @@ void Queue::ParseCmd()
                 }
                 break;
 
-            case CMD_UPDATE_BUFFER:
+            case CMD_UPDATE_CONSTANT_BUFFER:
                 {
-                    auto cmd = reinterpret_cast<ImCmdUpdateBuffer*>(pCmd);
+                    auto cmd = reinterpret_cast<ImCmdUpdateConstantBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    pCmd += sizeof(ImCmdUpdateBuffer);
+                    pCmd += sizeof(ImCmdUpdateConstantBuffer);
 
                     auto pBuffer = static_cast<Buffer*>(cmd->pBuffer);
 
