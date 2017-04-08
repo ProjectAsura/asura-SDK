@@ -854,10 +854,10 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
 
         if (type == META_DATA_HDR10 && pData != nullptr)
         {
-            auto pWarp = static_cast<MetaDataHDR10*>(pData);
+            auto pWrap = static_cast<MetaDataHDR10*>(pData);
             A3D_ASSERT(pWrap != nullptr);
 
-            vkHdrMetaDataEXT meta = {};
+            VkHdrMetadataEXT meta = {};
             meta.displayPrimaryRed.x        = pWrap->PrimaryR[0];
             meta.displayPrimaryRed.y        = pWrap->PrimaryR[1];
             meta.displayPrimaryGreen.x      = pWrap->PrimaryG[0];

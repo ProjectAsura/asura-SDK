@@ -16,19 +16,19 @@
 
     #if defined(WIN32) || defined(_WIN32)
         #ifndef A3D_PLATFORM_WIN
-        #define A3D_PLATFORM_WIN
+        #define A3D_PLATFORM_WIN    // Windowsプラットフォームです.
         #endif//A3D_PLATFORM_WIN
     #endif//defined(WIN32) || defined(_WIN32)
 
     #ifdef WIN64
         #ifndef A3D_PLATFORM_WIN
-        #define A3D_PLATFORM_WIN
+        #define A3D_PLATFORM_WIN    // Windowsプラットフォームです.
         #endif//A3D_PLATFORM_WIN
     #endif//defined(WIN64)
 
     #ifdef __linux__
         #ifndef A3D_PLATFORM_LINUX
-        #define A3D_PALTFORM_LINUX
+        #define A3D_PALTFORM_LINUX  // Linuxプラットフォームです.
         #endif//A3D_PLATFORM_LINUX
     #endif//__linux__
 
@@ -94,6 +94,16 @@ struct IBlob;
 using TimeStamp   = uint64_t;       //!< タイムスタンプです.
 using QuerySample = uint64_t;       //!< オクルージョンクエリのサンプル数です.
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   SYSTEM_OPTION_TYPE
+//! @brief  システムオプションタイプです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum SYSTEM_OPTION_TYPE
+{
+    SYSTEM_OPTION_NONE = 0,     //!< PC向けオプションです.
+    SYSTEM_OPTION_CONSOLE,      //!< コンソール向けオプションです.
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //! @enum   INDIRECT_ARGUMENT_TYPE
@@ -181,82 +191,82 @@ enum RESOURCE_USAGE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum RESOURCE_FORMAT
 {
-    RESOURCE_FORMAT_UNKNOWN                 = 0,
-    RESOURCE_FORMAT_R32G32B32A32_FLOAT      = 1,
-    RESOURCE_FORMAT_R32G32B32A32_UINT       = 2,
-    RESOURCE_FORMAT_R32G32B32A32_SINT       = 3,
-    RESOURCE_FORMAT_R16G16B16A16_FLOAT      = 4,
-    RESOURCE_FORMAT_R16G16B16A16_UINT       = 5,
-    RESOURCE_FORMAT_R16G16B16A16_SINT       = 6,
-    RESOURCE_FORMAT_R32G32B32_FLOAT         = 7,
-    RESOURCE_FORMAT_R32G32B32_UINT          = 8,
-    RESOURCE_FORMAT_R32G32B32_SINT          = 9,
-    RESOURCE_FORMAT_R32G32_FLOAT            = 10,
-    RESOURCE_FORMAT_R32G32_UINT             = 11,
-    RESOURCE_FORMAT_R32G32_SINT             = 12,
-    RESOURCE_FORMAT_R16G16_FLOAT            = 13,
-    RESOURCE_FORMAT_R16G16_UINT             = 14,
-    RESOURCE_FORMAT_R16G16_SINT             = 15,
-    RESOURCE_FORMAT_R32_FLOAT               = 16,
-    RESOURCE_FORMAT_R32_UINT                = 17,
-    RESOURCE_FORMAT_R32_SINT                = 18,
-    RESOURCE_FORMAT_R16_FLOAT               = 19,
-    RESOURCE_FORMAT_R16_UINT                = 20,
-    RESOURCE_FORMAT_R16_SINT                = 21,
-    RESOURCE_FORMAT_R8G8B8A8_UNORM_SRGB     = 22,
-    RESOURCE_FORMAT_R8G8B8A8_UNORM          = 23,
-    RESOURCE_FORMAT_B8G8R8A8_UNORM_SRGB     = 24,
-    RESOURCE_FORMAT_B8G8R8A8_UNORM          = 25,
-    RESOURCE_FORMAT_R8G8_UNORM              = 26,
-    RESOURCE_FORMAT_R8_UNORM                = 27,
-    RESOURCE_FORMAT_D32_FLOAT               = 28,
-    RESOURCE_FORMAT_D24_UNORM_S8_UINT       = 29,
-    RESOURCE_FORMAT_D16_UNORM               = 30,
-    RESOURCE_FORMAT_BC1_UNORM_SRGB          = 31, 
-    RESOURCE_FORMAT_BC1_UNORM               = 32,
-    RESOURCE_FORMAT_BC2_UNORM_SRGB          = 33,
-    RESOURCE_FORMAT_BC2_UNORM               = 34,
-    RESOURCE_FORMAT_BC3_UNORM_SRGB          = 35,
-    RESOURCE_FORMAT_BC3_UNORM               = 36,
-    RESOURCE_FORMAT_BC4_UNORM               = 37,
-    RESOURCE_FORMAT_BC4_SNORM               = 38,
-    RESOURCE_FORMAT_BC5_UNORM               = 39,
-    RESOURCE_FORMAT_BC5_SNORM               = 40,
-    RESOURCE_FORMAT_BC6H_UF16               = 41,
-    RESOURCE_FORMAT_BC6H_SF16               = 42,
-    RESOURCE_FORMAT_BC7_UNORM_SRGB          = 43,
-    RESOURCE_FORMAT_BC7_UNORN               = 44,
-    RESOURCE_FORMAT_ASTC_4X4_UNORM_SRGB     = 45,
-    RESOURCE_FORMAT_ASTC_4X4_UNORM          = 46,
-    RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB     = 47,
-    RESOURCE_FORMAT_ASTC_5X4_UNORM          = 48,
-    RESOURCE_FORMAT_ASTC_5X5_UNORM_SRGB     = 49,
-    RESOURCE_FORMAT_ASTC_5X5_UNORM          = 50,
-    RESOURCE_FORMAT_ASTC_6X5_UNORM_SRGB     = 51,
-    RESOURCE_FORMAT_ASTC_6X5_UNORM          = 52,
-    RESOURCE_FORMAT_ASTC_6X6_UNORM_SRGB     = 53,
-    RESOURCE_FORMAT_ASTC_6X6_UNORM          = 54,
-    RESOURCE_FORMAT_ASTC_8X5_UNORM_SRGB     = 55,
-    RESOURCE_FORMAT_ASTC_8X5_UNORM          = 56,
-    RESOURCE_FORMAT_ASTC_8X6_UNORM_SRGB     = 57,
-    RESOURCE_FORMAT_ASTC_8X6_UNORM          = 58,
-    RESOURCE_FORMAT_ASTC_8X8_UNORM_SRGB     = 59,
-    RESOURCE_FORMAT_ASTC_8X8_UNORM          = 60,
-    RESOURCE_FORMAT_ASTC_10X5_UNORM_SRGB    = 61,
-    RESOURCE_FORMAT_ASTC_10X5_UNORM         = 62,
-    RESOURCE_FORMAT_ASTC_10X6_UNORM_SRGB    = 63,
-    RESOURCE_FORMAT_ASTC_10X6_UNORM         = 64,
-    RESOURCE_FORMAT_ASTC_10X8_UNORM_SRGB    = 65,
-    RESOURCE_FORMAT_ASTC_10X8_UNORM         = 66,
-    RESOURCE_FORMAT_ASTC_10X10_UNORM_SRGB   = 67,
-    RESOURCE_FORMAT_ASTC_10X10_UNORM        = 68,
-    RESOURCE_FORMAT_ASTC_12X10_UNORM_SRGB   = 69,
-    RESOURCE_FORMAT_ASTC_12X10_UNORM        = 70,
-    RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB   = 71,
-    RESOURCE_FORMAT_ASTC_12X12_UNORM        = 72,
-    RESOURCE_FORMAT_R10G10B10A2_UNORM       = 73,
-    RESOURCE_FORMAT_R10G10B10A2_UINT        = 74,
-    RESOURCE_FORMAT_R11G11B10_FLOAT         = 75,
+    RESOURCE_FORMAT_UNKNOWN                 = 0,    //!< 未知の形式です.
+    RESOURCE_FORMAT_R32G32B32A32_FLOAT      = 1,    //!< RGBA 32bit 浮動小数形式です.
+    RESOURCE_FORMAT_R32G32B32A32_UINT       = 2,    //!< RGBA 32bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R32G32B32A32_SINT       = 3,    //!< RGBA 32bit 符号つき整数形式です.
+    RESOURCE_FORMAT_R16G16B16A16_FLOAT      = 4,    //!< RGBA 16bit 浮動小数形式です.
+    RESOURCE_FORMAT_R16G16B16A16_UINT       = 5,    //!< RGBA 16bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R16G16B16A16_SINT       = 6,    //!< RGBA 16bit 符号つき整数形式です.
+    RESOURCE_FORMAT_R32G32B32_FLOAT         = 7,    //!< RGB 32bit 浮動小数形式です.
+    RESOURCE_FORMAT_R32G32B32_UINT          = 8,    //!< RGB 32bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R32G32B32_SINT          = 9,    //!< RGB 32bit 符号つき整数形式です.
+    RESOURCE_FORMAT_R32G32_FLOAT            = 10,   //!< RG 32bit 浮動小数形式です.
+    RESOURCE_FORMAT_R32G32_UINT             = 11,   //!< RG 32bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R32G32_SINT             = 12,   //!< RG 32bit 符号つき整数形式です.
+    RESOURCE_FORMAT_R16G16_FLOAT            = 13,   //!< RG 16bit 浮動小数形式です.
+    RESOURCE_FORMAT_R16G16_UINT             = 14,   //!< RG 16bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R16G16_SINT             = 15,   //!< RG 16bit 符号つき整数形式です.
+    RESOURCE_FORMAT_R32_FLOAT               = 16,   //!< R 32bit 浮動小数形式です.
+    RESOURCE_FORMAT_R32_UINT                = 17,   //!< R 32bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R32_SINT                = 18,   //!< R 32bit 符号つき整数形式です.
+    RESOURCE_FORMAT_R16_FLOAT               = 19,   //!< R 16bit 浮動小数形式です.
+    RESOURCE_FORMAT_R16_UINT                = 20,   //!< R 16bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R16_SINT                = 21,   //!< R 16bit 符号つき整数形式です.
+    RESOURCE_FORMAT_R8G8B8A8_UNORM_SRGB     = 22,   //!< RGBA 8bit SRGB UNORM 形式です.
+    RESOURCE_FORMAT_R8G8B8A8_UNORM          = 23,   //!< RGBA 8bit UNORM 形式です.
+    RESOURCE_FORMAT_B8G8R8A8_UNORM_SRGB     = 24,   //!< BGRA 8bit SRGB UNORM 形式です.
+    RESOURCE_FORMAT_B8G8R8A8_UNORM          = 25,   //!< BGRA 8bit UNORM 形式です.
+    RESOURCE_FORMAT_R8G8_UNORM              = 26,   //!< RG 8bit UNORM 形式です.
+    RESOURCE_FORMAT_R8_UNORM                = 27,   //!< R 8b8t UNORM 形式です.
+    RESOURCE_FORMAT_D32_FLOAT               = 28,   //!< Depth 32bit 浮動小数形式です.
+    RESOURCE_FORMAT_D24_UNORM_S8_UINT       = 29,   //!< Depth 24bit UNORM Stencil 8bit 符号なし整数形式です.
+    RESOURCE_FORMAT_D16_UNORM               = 30,   //!< Depth 16bit UNORM 形式です.
+    RESOURCE_FORMAT_BC1_UNORM_SRGB          = 31,   //!< BC1 SRGB UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC1_UNORM               = 32,   //!< BC1 UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC2_UNORM_SRGB          = 33,   //!< BC2 SRGB UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC2_UNORM               = 34,   //!< BC2 UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC3_UNORM_SRGB          = 35,   //!< BC3 SRGB UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC3_UNORM               = 36,   //!< BC3 UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC4_UNORM               = 37,   //!< BC4 UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC4_SNORM               = 38,   //!< BC4 SNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC5_UNORM               = 39,   //!< BC5 UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC5_SNORM               = 40,   //!< BC5 SNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC6H_UF16               = 41,   //!< BC6H 符号なし16bit浮動小数ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC6H_SF16               = 42,   //!< BC6H 符号つき16bit浮動小数ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC7_UNORM_SRGB          = 43,   //!< BC7 SRGB UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC7_UNORN               = 44,   //!< BC7 UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_4X4_UNORM_SRGB     = 45,   //!< ASTC SRGB 4X4ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_4X4_UNORM          = 46,   //!< ASTC 4X4ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB     = 47,   //!< ASTC SRGB 5X4ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_5X4_UNORM          = 48,   //!< ASTC 5X4 ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_5X5_UNORM_SRGB     = 49,   //!< ASTC SRGB 5X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_5X5_UNORM          = 50,   //!< ASTC 5X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_6X5_UNORM_SRGB     = 51,   //!< ASTC SRGB 6X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_6X5_UNORM          = 52,   //!< ASTC 6X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_6X6_UNORM_SRGB     = 53,   //!< ASTC SRGB 6X6ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_6X6_UNORM          = 54,   //!< ASTC 6X6ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_8X5_UNORM_SRGB     = 55,   //!< ASTC SRGB 8X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_8X5_UNORM          = 56,   //!< ASTC 8X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_8X6_UNORM_SRGB     = 57,   //!< ASTC SRGB 8X6ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_8X6_UNORM          = 58,   //!< ASTC 8X6ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_8X8_UNORM_SRGB     = 59,   //!< ASTC SRGB 8X8ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_8X8_UNORM          = 60,   //!< ASTC 8X8ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X5_UNORM_SRGB    = 61,   //!< ASTC SRGB 10X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X5_UNORM         = 62,   //!< ASTC 10X5ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X6_UNORM_SRGB    = 63,   //!< ASTC SRGB 10X6ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X6_UNORM         = 64,   //!< ASTC 10X6ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X8_UNORM_SRGB    = 65,   //!< ASTC SRGB 10X8ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X8_UNORM         = 66,   //!< ASTC 10X8ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X10_UNORM_SRGB   = 67,   //!< ASTC SRGB 10X10ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_10X10_UNORM        = 68,   //!< ASTC 10X10ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_12X10_UNORM_SRGB   = 69,   //!< ASTC SRGB 12X10ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_12X10_UNORM        = 70,   //!< ASTC 12X10ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB   = 71,   //!< ASTC SRGB 12X12ブロック圧縮形式です.
+    RESOURCE_FORMAT_ASTC_12X12_UNORM        = 72,   //!< ASTC 12X12ブロック圧縮形式です.
+    RESOURCE_FORMAT_R10G10B10A2_UNORM       = 73,   //!< RGBA 10bit, 10bit, 10bit, 2bit UNORM形式です.
+    RESOURCE_FORMAT_R10G10B10A2_UINT        = 74,   //!< RGBA 10bit, 10bit, 10bit, 2bit 符号なし整数形式です.
+    RESOURCE_FORMAT_R11G11B10_FLOAT         = 75,   //!< RGB 11bit, 11bit, 11bit 浮動小数形式です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -589,12 +599,8 @@ enum COLOR_SPACE_TYPE
     COLOR_SPACE_UNKNOWN = 0,        //!< 未知の形式です.
     COLOR_SPACE_SRGB,               //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.709
     COLOR_SPACE_SCRGB,              //!< ColorSpace:RGB,   Range:0-255, Gamma:1.0,  Primaries:BT.709
-    COLOR_SPACE_YCBCR_BT601,        //!< ColorSpace:YCbCr, Range:0-255, Gamma:2.2,  Primaries:BT.601
-    COLOR_SPACE_YCBCR_BT709,        //!< ColorSpace:YCbCr, Range:0-255, Gamma:2.2,  Primaries:BT.709
     COLOR_SPACE_RGB_BT2020,         //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.2020
     COLOR_SPACE_RGB_BT2020_PQ,      //!< ColorSpace:RGB,   Range:0-255, Gamma:2084, Primaries:BT.2020
-    COLOR_SPACE_YCBCR_BT2020,       //!< ColorSpace:YCbCr, Range:0-255, Gamma:2.2,  Primaries:BT.2020
-    COLOR_SPACE_YCBCR_BT2020_PQ,    //!< ColorSpace:YCbCr, Range:0-255, Gamma:2084, Primaries:BT.2020
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1070,6 +1076,7 @@ struct SwapChainDesc
     void*               InstanceHandle;     //!< インスタンスハンドルです.
     void*               WindowHandle;       //!< ウィンドウハンドルです.
     bool                EnableFullScreen;   //!< フルスクリーン化する場合は true を指定.
+    COLOR_SPACE_TYPE    ColorSpace;         //!< 色空間です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1157,11 +1164,12 @@ struct DeviceDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct SystemDesc
 {
-    IAllocator*     pAllocator;
-    uint32_t        OptionType;
-    size_t          OptionSize;
-    void*           pOption;
+    IAllocator*     pAllocator;     //!< システムアロケータです.
+    uint32_t        OptionType;     //!< オプションタイプです.
+    size_t          OptionSize;     //!< オプションサイズです.
+    void*           pOption;        //!< オプションデータです.
 };
+
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      指定された数値の倍数に切り上げます.
@@ -2372,6 +2380,5 @@ struct A3D_API IDevice : IReference
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY WaitIdle() = 0;
 };
-
 
 } // namespace a3d

@@ -77,6 +77,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
     { return false; }
 
     Term();
+
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
