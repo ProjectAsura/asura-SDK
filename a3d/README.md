@@ -2,8 +2,8 @@
 Asura Rendering Hardware Interface Library  
 This project is WIP.  
 
-VS2015 [![Build status](https://ci.appveyor.com/api/projects/status/19xhfhxly7bthnvh?svg=true)](https://ci.appveyor.com/project/ProjectAsura/asura-sdk)
-VS2017 [![Build status](https://ci.appveyor.com/api/projects/status/87v880ck9olcspjy?svg=true)](https://ci.appveyor.com/project/ProjectAsura/asura-sdk-6x1dn)
+VS2015 [![Build status](https://ci.appveyor.com/api/projects/status/19xhfhxly7bthnvh?svg=true)](https://ci.appveyor.com/project/ProjectAsura/asura-sdk)  
+VS2017 [![Build status](https://ci.appveyor.com/api/projects/status/87v880ck9olcspjy?svg=true)](https://ci.appveyor.com/project/ProjectAsura/asura-sdk-6x1dn)  
 
 ## About
 a3d is an abstraction 3D graphics library for wrapping Direct3D12 and Vulkan.  
