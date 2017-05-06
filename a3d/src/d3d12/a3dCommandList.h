@@ -169,21 +169,25 @@ public:
     //! @brief      リソースバリアを設定します.
     //!
     //! @param[in]      pResource       リソースです.
-    //! @param[in]      NextState       次の状態です.
+    //! @param[in]      prevState       変更前の状態です.
+    //! @param[in]      nextState       変更後の状態です.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY TextureBarrier(
         ITexture*       pResource,
-        RESOURCE_STATE  NextState) override;
+        RESOURCE_STATE  prevState,
+        RESOURCE_STATE  nextState) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースバリアを設定します.
     //!
     //! @param[in]      pResource       リソースです.
-    //! @param[in]      NextState       次の状態です.
+    //! @param[in]      prevState       変更前の状態です.
+    //! @param[in]      nextState       変更後の状態です.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY BufferBarrier(
         IBuffer*        pResource,
-        RESOURCE_STATE  NextState) override;
+        RESOURCE_STATE  prevState,
+        RESOURCE_STATE  nextState) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      インスタンス描画します.
@@ -276,9 +280,15 @@ public:
     //! @brief      テクスチャをコピーします.
     //!
     //! @param[in]      pDstResource        コピー先のリソースです.
+    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです.
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY CopyTexture(ITexture* pDstResource, ITexture* pSrcResource) override;
+    void A3D_APIENTRY CopyTexture(
+        ITexture*       pDstResource,
+        RESOURCE_STATE  dstState,
+        ITexture*       pSrcResource,
+        RESOURCE_STATE  srcState) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファをコピーします.
@@ -294,18 +304,22 @@ public:
     //! @param[in]      pDstResource        コピー先のテクスチャです.
     //! @param[in]      dstSubresource      コピー先のサブリソースです.
     //! @param[in]      dstOffset           コピー先の領域です.
+    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のテクスチャです.
     //! @param[in]      srcSubresource      コピー元のサブリソースです.
     //! @param[in]      srcOffset           コピー元の領域です.
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY CopyTextureRegion(
-        ITexture*   pDstResource,
-        uint32_t    dstSubresource,
-        Offset3D    dstOffset,
-        ITexture*   pSrcResource,
-        uint32_t    srcSubresource,
-        Offset3D    srcOffset,
-        Extent3D    srcExtent) override;
+        ITexture*       pDstResource,
+        uint32_t        dstSubresource,
+        Offset3D        dstOffset,
+        RESOURCE_STATE  dstState,
+        ITexture*       pSrcResource,
+        uint32_t        srcSubresource,
+        Offset3D        srcOffset,
+        Extent3D        srcExtent,
+        RESOURCE_STATE  srcState) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してバッファをコピーします.
@@ -329,16 +343,18 @@ public:
     //! @param[in]      pDstTexture         コピー先のテクスチャです.
     //! @param[in]      dstSubresource      コピー先のサブリソースです.
     //! @param[in]      dstOffset           コピー先のオフセットです
+    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcBuffer          コピー元のバッファです.
     //! @param[in]      srcOffset           コピー元のオフセットです
-    //! @param[in]      byteCount           コピーするバイト数です
+    //! @param[in]      byteCount           コピーするバイト数です.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY CopyBufferToTexture(
-        ITexture*   pDstTexture,
-        uint32_t    dstSubresource,
-        Offset3D    dstOffset,
-        IBuffer*    pSrcBuffer,
-        uint64_t    srcOffset) override;
+        ITexture*       pDstTexture,
+        uint32_t        dstSubresource,
+        Offset3D        dstOffset,
+        RESOURCE_STATE  dstState,
+        IBuffer*        pSrcBuffer,
+        uint64_t        srcOffset) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してテクスチャからバッファにコピーします.
@@ -348,29 +364,35 @@ public:
     //! @param[in]      pSrcTexture         コピー元のテクスチャです
     //! @param[in]      srcSubresource      コピー元のサブリソースです
     //! @param[in]      srcOffset           コピー元のオフセットです
-    //! @param[in]      srcExtent           コピーする大きさです
+    //! @param[in]      srcExtent           コピー元の大きさです.
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY CopyTextureToBuffer(
-        IBuffer*    pDstBuffer,
-        uint64_t    dstOffset,
-        ITexture*   pSrcTexture,
-        uint32_t    srcSubresource,
-        Offset3D    srcOffset,
-        Extent3D    srcExtent) override;
+        IBuffer*        pDstBuffer,
+        uint64_t        dstOffset,
+        ITexture*       pSrcTexture,
+        uint32_t        srcSubresource,
+        Offset3D        srcOffset,
+        Extent3D        srcExtent,
+        RESOURCE_STATE  srcState) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
     //!
     //! @param[in]      pDstResource        コピー先のリソースです
     //! @param[in]      dstSubresource      コピー先のサブリソースです.
+    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです。マルチサンプリングされている必要があります.
     //! @param[in]      srcSubresource      コピー元のサブリソースです.
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY ResolveSubresource(
-        ITexture*   pDstResource,
-        uint32_t    dstSubresource,
-        ITexture*   pSrcResource,
-        uint32_t    srcSubresource) override;
+        ITexture*       pDstResource,
+        uint32_t        dstSubresource,
+        RESOURCE_STATE  dstState,
+        ITexture*       pSrcResource,
+        uint32_t        srcSubresource,
+        RESOURCE_STATE  srcState) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バンドルを実行します.
@@ -390,22 +412,6 @@ public:
     //! @brief      デバッグマーカーをポップします.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY PopMarker();
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      定数バッファを更新します.
-    //!
-    //! @param[in]      pBuffer     更新するバッファです.
-    //! @param[in]      offset      バッファのオフセットです(バイト単位).
-    //! @param[in]      size        書き込みサイズです(バイト単位).
-    //! @param[in]      pData       書き込みデータです.
-    //! @retval true    更新に成功.
-    //! @retval false   更新に失敗.
-    //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY UpdateConstantBuffer(
-        IBuffer*    pBuffer,
-        size_t      offset,
-        size_t      size,
-        const void* pData) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの記録を終了します.

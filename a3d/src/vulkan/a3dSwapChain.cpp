@@ -354,8 +354,6 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
                 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 0, 0, nullptr, 0, nullptr, 1, &barrier );
-
-            m_pBuffers[i]->SetState( RESOURCE_STATE_PRESENT );
         }
 
         pWrapCmdList->End();
@@ -800,8 +798,6 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
                 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 0, 0, nullptr, 0, nullptr, 1, &barrier );
-
-            m_pBuffers[i]->SetState( RESOURCE_STATE_PRESENT );
         }
 
         pWrapCmdList->End();

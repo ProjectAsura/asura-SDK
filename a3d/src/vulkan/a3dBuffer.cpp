@@ -56,7 +56,6 @@ namespace a3d {
 Buffer::Buffer()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
-, m_State       (RESOURCE_STATE_UNKNOWN)
 , m_Buffer      (null_handle)
 , m_DeviceMemory(null_handle)
 { memset(&m_MemoryRequirements, 0, sizeof(m_MemoryRequirements)); }
@@ -125,8 +124,6 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
         if ( ret != VK_SUCCESS )
         { return false; }
     }
-
-    m_State = pDesc->InitState;
 
     return true;
 }
@@ -197,18 +194,6 @@ void Buffer::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 BufferDesc Buffer::GetDesc() const 
 { return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_STATE Buffer::GetState() const
-{ return m_State; }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを設定します.
-//-------------------------------------------------------------------------------------------------
-void Buffer::SetState(RESOURCE_STATE state)
-{ m_State = state; }
 
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.

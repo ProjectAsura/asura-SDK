@@ -410,7 +410,12 @@ void CommandList::SetIndexBuffer
 //--------------------------------------------------------------------------------------------------
 //      リソースバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
+void CommandList::TextureBarrier
+(
+    ITexture*       pResource,
+    RESOURCE_STATE  prevState,
+    RESOURCE_STATE  nextState
+)
 {
     if (pResource == nullptr)
     { return; }
@@ -420,8 +425,6 @@ void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
 
     auto pNativeImage = pWrapResource->GetVulkanImage();
     A3D_ASSERT( pNativeImage != null_handle );
-
-    auto prevState =  pWrapResource->GetState();
 
     auto oldLayout = ToNativeImageLayout( prevState );
     auto newLayout = ToNativeImageLayout( nextState );
@@ -499,14 +502,17 @@ void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
             newLayout,
             range );
     }
-
-    pWrapResource->SetState( nextState );
 }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
+void CommandList::BufferBarrier
+(
+    IBuffer*        pResource,
+    RESOURCE_STATE  prevState,
+    RESOURCE_STATE  nextState
+)
 {
     if (pResource == nullptr)
     { return; }
@@ -517,7 +523,7 @@ void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
     auto pNativeBuffer = pWrapResource->GetVulkanBuffer();
     A3D_ASSERT( pNativeBuffer != null_handle );
 
-    auto srcAccess = ToNativeAccessFlags( pWrapResource->GetState() );
+    auto srcAccess = ToNativeAccessFlags( prevState );
     auto dstAccess = ToNativeAccessFlags( nextState );
 
     VkBufferMemoryBarrier barrier = {};
@@ -540,8 +546,6 @@ void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
         1, &barrier,
         0, nullptr
     );
-
-    pWrapResource->SetState( nextState );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -717,64 +721,41 @@ void CommandList::ResolveQuery
     if (pQuery == nullptr || queryCount == 0)
     { return; }
 
-    #if 0
-        auto pNativeDevice = m_pDevice->GetVulkanDevice();
-        A3D_ASSERT(pNativeDevice != null_handle);
+    auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
+    A3D_ASSERT(pWrapQueryPool != nullptr);
 
-        auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
-        A3D_ASSERT(pWrapQueryPool != nullptr);
+    auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+    A3D_ASSERT(pNativeQueryPool != null_handle);
 
-        auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
-        A3D_ASSERT(pNativeQueryPool != null_handle);
+    auto pWrapBuffer = static_cast<Buffer*>(pDstBuffer);
+    A3D_ASSERT(pWrapBuffer != nullptr);
 
-        void* ptr = pDstBuffer->Map();
-        if (ptr == nullptr)
-        { return; }
+    auto pNativeBuffer = pWrapBuffer->GetVulkanBuffer();
+    A3D_ASSERT(pNativeBuffer != null_handle);
 
-        VkQueryResultFlags flags = 0; // TODO : 実装チェック.
+    VkQueryResultFlags flags = 0; // TODO : 実装チェック.
 
-        vkGetQueryPoolResults(
-            pNativeDevice,
-            pNativeQueryPool,
-            startIndex,
-            queryCount,
-            size_t(pDstBuffer->GetDesc().Size),
-            ptr,
-            pDstBuffer->GetDesc().Stride,
-            flags );
-
-        pDstBuffer->Unmap();
-    #else
-        auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
-        A3D_ASSERT(pWrapQueryPool != nullptr);
-
-        auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
-        A3D_ASSERT(pNativeQueryPool != null_handle);
-
-        auto pWrapBuffer = static_cast<Buffer*>(pDstBuffer);
-        A3D_ASSERT(pWrapBuffer != nullptr);
-
-        auto pNativeBuffer = pWrapBuffer->GetVulkanBuffer();
-        A3D_ASSERT(pNativeBuffer != null_handle);
-
-        VkQueryResultFlags flags = 0; // TODO : 実装チェック.
-
-        vkCmdCopyQueryPoolResults(
-            m_CommandBuffer,
-            pNativeQueryPool,
-            startIndex,
-            queryCount,
-            pNativeBuffer,
-            dstOffset,
-            pDstBuffer->GetDesc().Size,
-            flags );
-    #endif
+    vkCmdCopyQueryPoolResults(
+        m_CommandBuffer,
+        pNativeQueryPool,
+        startIndex,
+        queryCount,
+        pNativeBuffer,
+        dstOffset,
+        pDstBuffer->GetDesc().Size,
+        flags );
 }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyTexture(ITexture* pDst, ITexture* pSrc)
+void CommandList::CopyTexture
+(
+    ITexture*       pDst,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrc,
+    RESOURCE_STATE  srcState
+)
 {
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
@@ -785,7 +766,7 @@ void CommandList::CopyTexture(ITexture* pDst, ITexture* pSrc)
     extent.Width    = desc.Width;
     extent.Height   = desc.Height;
     extent.Depth    = desc.DepthOrArraySize;
-    CopyTextureRegion( pDst, 0, offset, pSrc, 0, offset, extent );
+    CopyTextureRegion( pDst, 0, offset, dstState, pSrc, 0, offset, extent, srcState );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -804,13 +785,15 @@ void CommandList::CopyBuffer(IBuffer* pDst, IBuffer* pSrc)
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyTextureRegion
 (
-    ITexture*   pDstResource,
-    uint32_t    dstSubResource,
-    Offset3D    dstOffset,
-    ITexture*   pSrcResource,
-    uint32_t    srcSubResource,
-    Offset3D    srcOffset,
-    Extent3D    srcExtent
+    ITexture*       pDstResource,
+    uint32_t        dstSubResource,
+    Offset3D        dstOffset,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrcResource,
+    uint32_t        srcSubResource,
+    Offset3D        srcOffset,
+    Extent3D        srcExtent,
+    RESOURCE_STATE  srcState
 )
 {
     if (pDstResource == nullptr || pSrcResource == nullptr)
@@ -826,8 +809,8 @@ void CommandList::CopyTextureRegion
     A3D_ASSERT( pNativeSrc != null_handle );
     A3D_ASSERT( pNativeDst != null_handle );
 
-    auto srcLayout = ToNativeImageLayout(pWrapSrc->GetState());
-    auto dstLayout = ToNativeImageLayout(pWrapDst->GetState());
+    auto srcLayout = ToNativeImageLayout(srcState);
+    auto dstLayout = ToNativeImageLayout(dstState);
 
     const auto& srcDesc = pWrapSrc->GetDesc();
     const auto& dstDesc = pWrapDst->GetDesc();
@@ -906,11 +889,12 @@ void CommandList::CopyBufferRegion
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyBufferToTexture
 (
-    ITexture*   pDstTexture,
-    uint32_t    dstSubresource,
-    Offset3D    dstOffset,
-    IBuffer*    pSrcBuffer,
-    uint64_t    srcOffset
+    ITexture*       pDstTexture,
+    uint32_t        dstSubresource,
+    Offset3D        dstOffset,
+    RESOURCE_STATE  dstState,
+    IBuffer*        pSrcBuffer,
+    uint64_t        srcOffset
 )
 {
     if (pDstTexture == nullptr || pSrcBuffer == nullptr)
@@ -923,7 +907,7 @@ void CommandList::CopyBufferToTexture
 
     const auto& dstDesc = pWrapDst->GetDesc();
 
-    auto nativeState = ToNativeImageLayout(pWrapDst->GetState());
+    auto nativeState = ToNativeImageLayout(dstState);
 
     VkBufferImageCopy region = {};
     region.imageSubresource.aspectMask  = pWrapDst->GetVulkanImageAspectFlags();
@@ -958,12 +942,13 @@ void CommandList::CopyBufferToTexture
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyTextureToBuffer
 (
-    IBuffer*    pDstBuffer,
-    uint64_t    dstOffset,
-    ITexture*   pSrcTexture,
-    uint32_t    srcSubresource,
-    Offset3D    srcOffset,
-    Extent3D    srcExtent
+    IBuffer*        pDstBuffer,
+    uint64_t        dstOffset,
+    ITexture*       pSrcTexture,
+    uint32_t        srcSubresource,
+    Offset3D        srcOffset,
+    Extent3D        srcExtent,
+    RESOURCE_STATE  srcState
 )
 {
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
@@ -1001,7 +986,7 @@ void CommandList::CopyTextureToBuffer
     vkCmdCopyImageToBuffer(
         m_CommandBuffer,
         pWrapSrc->GetVulkanImage(),
-        ToNativeImageLayout(pWrapSrc->GetState()),
+        ToNativeImageLayout(srcState),
         pWrapDst->GetVulkanBuffer(),
         1, &region);
 }
@@ -1013,8 +998,10 @@ void CommandList::ResolveSubresource
 (
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
+    RESOURCE_STATE  dstState,
     ITexture*       pSrcResource,
-    uint32_t        srcSubresource
+    uint32_t        srcSubresource,
+    RESOURCE_STATE  srcState
 )
 {
     if (pDstResource == nullptr || pSrcResource == nullptr)
@@ -1030,8 +1017,8 @@ void CommandList::ResolveSubresource
     A3D_ASSERT( pNativeSrc != null_handle );
     A3D_ASSERT( pNativeDst != null_handle );
 
-    auto srcLayout = ToNativeImageLayout(pWrapSrc->GetState());
-    auto dstLayout = ToNativeImageLayout(pWrapDst->GetState());
+    auto srcLayout = ToNativeImageLayout(srcState);
+    auto dstLayout = ToNativeImageLayout(dstState);
 
     const auto &dstDesc = pWrapDst->GetDesc();
     const auto &srcDesc = pWrapSrc->GetDesc();

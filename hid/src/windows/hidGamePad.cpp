@@ -14,8 +14,16 @@
 
 namespace {
 
-hid::GamePadState g_PadState[4] = {};
+//-------------------------------------------------------------------------------------------------
+// Global Variables.
+//-------------------------------------------------------------------------------------------------
+static const uint32_t    MaxPadCount                = 8;
+static hid::GamePadState g_PadState[MaxPadCount]    = {};
 
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      最大値を取得します.
+//-------------------------------------------------------------------------------------------------
 inline float Max(float a, float b)
 { return (a > b) ? a : b; }
 
@@ -24,9 +32,26 @@ inline float Max(float a, float b)
 
 namespace hid {
 
+//-------------------------------------------------------------------------------------------------
+//      ゲームパッドを震わせます.
+//-------------------------------------------------------------------------------------------------
+void SetGamePadVibrate(uint32_t index, float leftMoter, float rightMoter)
+{
+    XINPUT_VIBRATION vibrate;
+    ZeroMemory( &vibrate, sizeof(vibrate) );
+
+    vibrate.wLeftMotorSpeed  = int( leftMoter  * 65535.0f );
+    vibrate.wRightMotorSpeed = int( rightMoter * 65535.0f );
+
+    XInputSetState( index, &vibrate );
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ゲームパッドの状態を取得します.
+//-------------------------------------------------------------------------------------------------
 bool GetGamePadState(uint32_t index, IGamePadState** ppGamePad)
 {
-    if (index >= 4)
+    if (index >= MaxPadCount)
     { return false; }
 
     XINPUT_STATE state;

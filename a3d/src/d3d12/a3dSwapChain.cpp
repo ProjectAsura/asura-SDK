@@ -153,7 +153,6 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
             }
 
             SafeRelease(pBuffer);
-            m_pBuffers[i]->SetState(a3d::RESOURCE_STATE_PRESENT);
         }
     }
 
@@ -343,7 +342,6 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
             }
 
             SafeRelease(pBuffer);
-            m_pBuffers[i]->SetState(a3d::RESOURCE_STATE_PRESENT);
         }
     }
 

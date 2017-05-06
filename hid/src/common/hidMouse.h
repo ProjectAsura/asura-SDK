@@ -55,31 +55,31 @@ public:
     ~MouseState()
     { /* DO_NOTHING */ }
 
-    int GetCursorX() const
+    int GetCursorX() const override
     { return m_CursorX; }
 
-    int GetCursorY() const
+    int GetCursorY() const override
     { return m_CursorY; }
 
-    int GetPrevCursorX() const
+    int GetPrevCursorX() const override
     { return m_PrevCursorX; }
 
-    int GetPrevCursorY() const
+    int GetPrevCursorY() const override
     { return m_PrevCursorY; }
 
-    int GetCursorDiffX() const
+    int GetCursorDiffX() const override
     { return m_CursorX - m_PrevCursorX; }
 
-    int GetCursorDiffY() const
+    int GetCursorDiffY() const override
     { return m_CursorY - m_PrevCursorY; }
 
-    bool IsDown( MOUSE_BUTTON value ) const
+    bool IsDown( MOUSE_BUTTON value ) const override
     { return  m_Button[ m_BufferIndex ][ value ] & ( !m_Button[ 1 - m_BufferIndex ][ value ] ); }
 
-    bool IsPush( MOUSE_BUTTON value ) const
+    bool IsPush( MOUSE_BUTTON value ) const override
     { return m_Button[m_BufferIndex][value]; }
 
-    bool IsDrag( MOUSE_BUTTON value ) const
+    bool IsDrag( MOUSE_BUTTON value ) const override
     { return m_Button[ m_BufferIndex ][ value ] & m_Button[ 1 - m_BufferIndex ][ value ]; }
 };
 

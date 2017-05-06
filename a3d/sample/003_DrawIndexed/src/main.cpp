@@ -554,7 +554,10 @@ void DrawA3D()
     pCmd->Begin();
 
     // 書き込み用のバリアを設定します.
-    pCmd->TextureBarrier(g_pColorBuffer[idx], a3d::RESOURCE_STATE_COLOR_WRITE);
+    pCmd->TextureBarrier(
+        g_pColorBuffer[idx],
+        a3d::RESOURCE_STATE_PRESENT,
+        a3d::RESOURCE_STATE_COLOR_WRITE);
 
     // フレームバッファを設定します.
     pCmd->SetFrameBuffer(g_pFrameBuffer[idx]);
@@ -588,7 +591,10 @@ void DrawA3D()
     pCmd->SetFrameBuffer(nullptr);
 
     // 表示用にバリアを設定します.
-    pCmd->TextureBarrier(g_pColorBuffer[idx], a3d::RESOURCE_STATE_PRESENT);
+    pCmd->TextureBarrier(
+        g_pColorBuffer[idx],
+        a3d::RESOURCE_STATE_COLOR_WRITE,
+        a3d::RESOURCE_STATE_PRESENT);
 
     // コマンドリストへの記録を終了します.
     pCmd->End();

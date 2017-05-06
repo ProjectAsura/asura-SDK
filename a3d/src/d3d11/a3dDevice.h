@@ -99,6 +99,13 @@ public:
     void A3D_APIENTRY GetCopyQueue(IQueue** ppQueue) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      GPUタイムスタンプが増分する頻度(Hz単位)を取得します.
+    //!
+    //! @return     GPUタイムスタンプが増分する頻度を返却します.
+    //---------------------------------------------------------------------------------------------
+    uint64_t A3D_APIENTRY GetTimeStampFrequency() const override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストを生成します.
     //!
     //! @param[in]      commandListType     コマンドリストタイプです.
@@ -347,6 +354,7 @@ private:
     ID3D11Device*           m_pDevice;              //!< デバイスです.
     ID3D11DeviceContext*    m_pDeviceContext;       //!< デバイスコンテキストです.
     D3D_FEATURE_LEVEL       m_FeatureLevel;         //!< 機能レベル.
+    uint64_t                m_TimeStampFrequency;   //!< GPUタイムスタンプの更新頻度(Hz単位)です.
 #if defined(A3D_FOR_WINDOWS10)
     IDXGIFactory5*          m_pFactory5;            //!< ファクトリ5です.
     IDXGIAdapter3*          m_pAdapter3;            //!< アダプター3です.

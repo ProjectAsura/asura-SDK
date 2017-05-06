@@ -17,7 +17,6 @@ namespace a3d {
 Texture::Texture()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
-, m_State       (RESOURCE_STATE_UNKNOWN)
 , m_pResource   (nullptr)
 { /* DO_NOTIHNG */ }
 
@@ -95,8 +94,6 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
-    m_State = pDesc->InitState;
-
     return true;
 }
 
@@ -108,7 +105,6 @@ void Texture::Term()
     SafeRelease(m_pResource);
     SafeRelease(m_pDevice);
 
-    m_State = RESOURCE_STATE_UNKNOWN;
     memset(&m_Desc, 0, sizeof(m_Desc));
 }
 
@@ -149,12 +145,6 @@ void Texture::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 TextureDesc Texture::GetDesc() const
 { return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_STATE Texture::GetState() const
-{ return m_State; }
 
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
@@ -209,12 +199,6 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
     result.Size         = size;
     return result;
 }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを設定します.
-//-------------------------------------------------------------------------------------------------
-void Texture::SetState(RESOURCE_STATE state)
-{ m_State = state; }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースを取得します.
@@ -293,8 +277,6 @@ bool Texture::CreateFromNative
 
     instance->m_Desc.HeapProperty.Type            = static_cast<HEAP_TYPE>(prop.Type);
     instance->m_Desc.HeapProperty.CpuPageProperty = static_cast<CPU_PAGE_PROPERTY>(prop.CPUPageProperty);
-
-    instance->m_State = RESOURCE_STATE_UNKNOWN;
 
     *ppResource = instance;
     return true;

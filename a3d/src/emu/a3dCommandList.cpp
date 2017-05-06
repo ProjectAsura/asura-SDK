@@ -220,11 +220,17 @@ void CommandList::SetIndexBuffer(IBuffer* pResource, uint64_t offset)
 //-------------------------------------------------------------------------------------------------
 //      テクスチャバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
+void CommandList::TextureBarrier
+(
+    ITexture*       pResource,
+    RESOURCE_STATE  prevState,
+    RESOURCE_STATE  nextState
+)
 {
     ImCmdTextureBarrier cmd = {};
     cmd.Type        = CMD_TEXTURE_BARRIER;
     cmd.pResource   = pResource;
+    cmd.PrevState   = prevState;
     cmd.NextState   = nextState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -233,11 +239,17 @@ void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
 //-------------------------------------------------------------------------------------------------
 //      バッファバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
+void CommandList::BufferBarrier
+(
+    IBuffer*        pResource,
+    RESOURCE_STATE  prevState,
+    RESOURCE_STATE  nextState
+)
 {
     ImCmdBufferBarrier cmd = {};
     cmd.Type        = CMD_BUFFER_BARRIER;
     cmd.pResource   = pResource;
+    cmd.PrevState   = prevState;
     cmd.NextState   = nextState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -377,12 +389,20 @@ void CommandList::ResolveQuery
 //-------------------------------------------------------------------------------------------------
 //      テクスチャをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyTexture(ITexture* pDstResource, ITexture* pSrcResource)
+void CommandList::CopyTexture
+(
+    ITexture*       pDstResource,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrcResource,
+    RESOURCE_STATE  srcState
+)
 {
     ImCmdCopyTexture cmd = {};
     cmd.Type        = CMD_COPY_TEXTURE;
     cmd.pDstTexture = pDstResource;
+    cmd.DstState    = dstState;
     cmd.pSrcTexture = pSrcResource;
+    cmd.SrcState    = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -405,13 +425,15 @@ void CommandList::CopyBuffer(IBuffer* pDstResource, IBuffer* pSrcResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyTextureRegion
 (
-    ITexture*   pDstResource,
-    uint32_t    dstSubresource,
-    Offset3D    dstOffset,
-    ITexture*   pSrcResource,
-    uint32_t    srcSubresource,
-    Offset3D    srcOffset,
-    Extent3D    srcExtent
+    ITexture*       pDstResource,
+    uint32_t        dstSubresource,
+    Offset3D        dstOffset,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrcResource,
+    uint32_t        srcSubresource,
+    Offset3D        srcOffset,
+    Extent3D        srcExtent,
+    RESOURCE_STATE  srcState
 )
 {
     ImCmdCopyTextureRegion cmd = {};
@@ -419,10 +441,12 @@ void CommandList::CopyTextureRegion
     cmd.pDstResource    = pDstResource;
     cmd.DstSubresource  = dstSubresource;
     cmd.DstOffset       = dstOffset;
+    cmd.DstState        = dstState;
     cmd.pSrcResource    = pSrcResource;
     cmd.SrcSubresource  = srcSubresource;
     cmd.SrcOffset       = srcOffset;
     cmd.SrcExtent       = srcExtent;
+    cmd.SrcState        = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -455,11 +479,12 @@ void CommandList::CopyBufferRegion
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyBufferToTexture
 (
-    ITexture*   pDstTexture,
-    uint32_t    dstSubresource,
-    Offset3D    dstOffset,
-    IBuffer*    pSrcBuffer,
-    uint64_t    srcOffset
+    ITexture*       pDstTexture,
+    uint32_t        dstSubresource,
+    Offset3D        dstOffset,
+    RESOURCE_STATE  dstState,
+    IBuffer*        pSrcBuffer,
+    uint64_t        srcOffset
 )
 {
     ImCmdCopyBufferToTexture cmd = {};
@@ -467,6 +492,7 @@ void CommandList::CopyBufferToTexture
     cmd.pDstTexture     = pDstTexture;
     cmd.DstSubresource  = dstSubresource;
     cmd.DstOffset       = dstOffset;
+    cmd.DstState        = dstState;
     cmd.pSrcBuffer      = pSrcBuffer;
     cmd.SrcOffset       = srcOffset;
 
@@ -478,12 +504,13 @@ void CommandList::CopyBufferToTexture
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyTextureToBuffer
 (
-    IBuffer*    pDstBuffer,
-    uint64_t    dstOffset,
-    ITexture*   pSrcTexture,
-    uint32_t    srcSubresource,
-    Offset3D    srcOffset,
-    Extent3D    srcExtent
+    IBuffer*        pDstBuffer,
+    uint64_t        dstOffset,
+    ITexture*       pSrcTexture,
+    uint32_t        srcSubresource,
+    Offset3D        srcOffset,
+    Extent3D        srcExtent,
+    RESOURCE_STATE  srcState
 )
 {
     ImCmdCopyTextureToBuffer cmd = {};
@@ -494,6 +521,7 @@ void CommandList::CopyTextureToBuffer
     cmd.SrcSubresource  = srcSubresource;
     cmd.SrcOffset       = srcOffset;
     cmd.SrcExtent       = srcExtent;
+    cmd.SrcState        = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -503,18 +531,22 @@ void CommandList::CopyTextureToBuffer
 //-------------------------------------------------------------------------------------------------
 void CommandList::ResolveSubresource
 (
-    ITexture*   pDstResource,
-    uint32_t    dstSubresource,
-    ITexture*   pSrcResource,
-    uint32_t    srcSubresource
+    ITexture*       pDstResource,
+    uint32_t        dstSubresource,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrcResource,
+    uint32_t        srcSubresource,
+    RESOURCE_STATE  srcState
 )
 {
     ImCmdResolveSubresource cmd = {};
     cmd.Type            = CMD_RESOLVE_SUBRESOURCE;
     cmd.pDstResource    = pDstResource;
     cmd.DstSubresource  = dstSubresource;
+    cmd.DstState        = dstState;
     cmd.pSrcResource    = pSrcResource;
     cmd.SrcSubresource  = srcSubresource;
+    cmd.SrcState        = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }

@@ -878,11 +878,11 @@ bool InitA3D()
     #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(2, g_pOffScreenView);
+        g_pDescriptorSet[i]->SetTexture(2, g_pOffScreenView, a3d::RESOURCE_STATE_SHADER_READ);
     #else
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(1, g_pOffScreenView);
+        g_pDescriptorSet[i]->SetTexture(1, g_pOffScreenView, a3d::RESOURCE_STATE_SHADER_READ);
     #endif
         g_pDescriptorSet[i]->Update();
     }
@@ -1017,7 +1017,10 @@ void DrawA3D()
     pCmd->Begin();
 
     // 書き込み用のバリアを設定します.
-    pCmd->TextureBarrier(g_pOffScreenBuffer, a3d::RESOURCE_STATE_COLOR_WRITE);
+    pCmd->TextureBarrier(
+        g_pOffScreenBuffer,
+        a3d::RESOURCE_STATE_SHADER_READ,
+        a3d::RESOURCE_STATE_COLOR_WRITE);
 
     // フレームバッファをクリアします.
     a3d::ClearColorValue clearColor = {};
@@ -1053,10 +1056,16 @@ void DrawA3D()
     pCmd->SetFrameBuffer(nullptr);
 
     // 読み込み用にバリアを設定します.
-    pCmd->TextureBarrier(g_pOffScreenBuffer, a3d::RESOURCE_STATE_SHADER_READ);
+    pCmd->TextureBarrier(
+        g_pOffScreenBuffer,
+        a3d::RESOURCE_STATE_COLOR_WRITE,
+        a3d::RESOURCE_STATE_SHADER_READ);
 
     // 書き込み用のバリアを設定します.
-    pCmd->TextureBarrier(g_pColorBuffer[idx], a3d::RESOURCE_STATE_COLOR_WRITE);
+    pCmd->TextureBarrier(
+        g_pColorBuffer[idx],
+        a3d::RESOURCE_STATE_PRESENT,
+        a3d::RESOURCE_STATE_COLOR_WRITE);
 
     // フレームバッファを設定します.
     pCmd->SetFrameBuffer(g_pFrameBuffer[idx]);
@@ -1118,7 +1127,10 @@ void DrawA3D()
     pCmd->SetFrameBuffer(nullptr);
 
     // 表示用にバリアを設定します.
-    pCmd->TextureBarrier(g_pColorBuffer[idx], a3d::RESOURCE_STATE_PRESENT);
+    pCmd->TextureBarrier(
+        g_pColorBuffer[idx],
+        a3d::RESOURCE_STATE_COLOR_WRITE,
+        a3d::RESOURCE_STATE_PRESENT);
 
     // コマンドリストへの記録を終了します.
     pCmd->End();

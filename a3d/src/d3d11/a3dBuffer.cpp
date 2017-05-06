@@ -17,7 +17,6 @@ namespace a3d {
 Buffer::Buffer()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
-, m_State       (RESOURCE_STATE_UNKNOWN)
 { /* DO_NOTIHNG */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -38,8 +37,6 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     m_pDevice->AddRef();
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
-
-    m_State = pDesc->InitState;
 
     auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
@@ -114,7 +111,6 @@ void Buffer::Term()
     SafeRelease(m_pBuffer);
     SafeRelease(m_pDevice);
 
-    m_State = RESOURCE_STATE_UNKNOWN;
     memset(&m_Desc, 0, sizeof(m_Desc));
 }
 
@@ -157,12 +153,6 @@ BufferDesc Buffer::GetDesc() const
 { return m_Desc; }
 
 //-------------------------------------------------------------------------------------------------
-//      リソースステートを取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_STATE Buffer::GetState() const
-{ return m_State; }
-
-//-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
 //-------------------------------------------------------------------------------------------------
 void* Buffer::Map()
@@ -200,12 +190,6 @@ void Buffer::Unmap()
 //-------------------------------------------------------------------------------------------------
 RESOURCE_KIND Buffer::GetKind() const
 { return RESOURCE_KIND_BUFFER; }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを設定します.
-//-------------------------------------------------------------------------------------------------
-void Buffer::SetState(RESOURCE_STATE state)
-{ m_State = state; }
 
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.

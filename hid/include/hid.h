@@ -19,22 +19,22 @@ namespace hid {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum PAD_BUTTON
 {
-    PAD_UP          = 0x00001,    //!< 方向パッド上.
-    PAD_DOWN        = 0x00002,    //!< 方向パッド下.
-    PAD_LEFT        = 0x00004,    //!< 方向パッド左.
-    PAD_RIGHT       = 0x00008,    //!< 方向パッド右.
-    PAD_STAR        = 0x00010,    //!< メニューボタン.
-    PAD_BACK        = 0x00020,    //!< ビューボタン.
-    PAD_THUMB_L     = 0x00040,    //!< 左サムスティックボタン.
-    PAD_THUMB_R     = 0x00080,    //!< 右サムスティックボタン.
-    PAD_SHOULDER_L  = 0x00100,    //!< LBボタン.
-    PAD_SHOULDER_R  = 0x00200,    //!< RBボタン.
-    PAD_A           = 0x01000,    //!< Aボタン
-    PAD_B           = 0x02000,    //!< Bボタン
-    PAD_X           = 0x04000,    //!< Xボタン.
-    PAD_Y           = 0x08000,    //!< Yボタン.
-    PAD_TRIGGER_L   = 0x10000,    //!< 左トリガー.
-    PAD_TRIGGER_R   = 0x20000,    //!< 右トリガー.
+    PAD_DIR_UP      = 0x00001,    //!< 方向パッド上.
+    PAD_DIR_DOWN    = 0x00002,    //!< 方向パッド下.
+    PAD_DIR_LEFT    = 0x00004,    //!< 方向パッド左.
+    PAD_DIR_RIGHT   = 0x00008,    //!< 方向パッド右.
+    PAD_CENTER_R    = 0x00010,    //!< XInput:STARTボタン, NX:Homeボタン,        PS4:Optionボタン.
+    PAD_CENTER_L    = 0x00020,    //!< XInput:BACKボタン,  NX:キャプチャーボタン, PS4:Shareボタン.
+    PAD_THUMB_L     = 0x00040,    //!< 左アナログスティックボタン.
+    PAD_THUMB_R     = 0x00080,    //!< 右アナログスティックボタン.
+    PAD_SHOULDER_L  = 0x00100,    //!< XInput:LBボタン,   NX:Lボタン,  PS4:L1ボタン.
+    PAD_SHOULDER_R  = 0x00200,    //!< XInput:RBボタン,   NX:Rボタン,  PS4:R1ボタン.
+    PAD_BTN_DOWN    = 0x01000,    //!< XInput:Aボタン,    NX:Bボタン,  PS4:×ボタン.
+    PAD_BTN_RIGHT   = 0x02000,    //!< XInput:Bボタン,    NX:Aボタン,  PS4:〇ボタン.
+    PAD_BTN_LEFT    = 0x04000,    //!< XInput:Xボタン,    NX:Yボタン,  PS4:□ボタン.
+    PAD_BTN_UP      = 0x08000,    //!< XInput:Yボタン,    NX:Xボタン,  PS4:△ボタン.
+    PAD_TRIGGER_L   = 0x10000,    //!< XInput:左トリガー, NX:ZLボタン, PS4:L2ボタン.
+    PAD_TRIGGER_R   = 0x20000,    //!< XInput:右トリガー, NX:ZRボタン, PS4:R2ボタン.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -289,6 +289,15 @@ struct IMouseState
 };
 
 //-------------------------------------------------------------------------------------------------
+//! @brief      指定されたパッドを震わせます.
+//!
+//! @param[in]      index       プレイヤー番号.
+//! @param[in]      leftMoter   左のモーターの振動量(有効値:0.0 ～ 1.0).
+//! @param[in]      rightMoter  右のモーターの振動量(有効値:0.0 ～ 1.0).
+//-------------------------------------------------------------------------------------------------
+void SetGamePadVibrate(uint32_t index, float leftMoter, float rightMoter);
+
+//-------------------------------------------------------------------------------------------------
 //! @brief      ゲームパッドステートを取得します.
 //!
 //! @param[in]      index           プレイヤー番号です.
@@ -305,7 +314,7 @@ bool GetGamePadState(uint32_t index, IGamePadState** ppGamePad);
 //! @retval true    取得に成功.
 //! @retval false   取得に失敗.
 //-------------------------------------------------------------------------------------------------
-bool GetMouseState(IMouseState** ppMouse);
+bool GetMouseState(IMouseState** ppMouse, void* pWindowHandle = nullptr);
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      キーボードステートを取得します.

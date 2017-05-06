@@ -770,6 +770,14 @@ bool Device::Init(const DeviceDesc* pDesc)
         m_Info.MaxColorSampleCount              = static_cast<uint32_t>(limits.framebufferColorSampleCounts);
         m_Info.MaxDepthSampleCount              = static_cast<uint32_t>(limits.framebufferDepthSampleCounts);
         m_Info.MaxStencilSampleCount            = static_cast<uint32_t>(limits.framebufferStencilSampleCounts);
+
+        if (limits.timestampComputeAndGraphics)
+        {
+            auto nanoToSec = 1000 * 1000 * 1000;
+            m_TimeStampFrequency = static_cast<uint64_t>(limits.timestampPeriod * nanoToSec);
+        }
+        else
+        { m_TimeStampFrequency = 1; }
     }
 
     return true;
@@ -905,6 +913,12 @@ void Device::GetCopyQueue(IQueue** ppQueue)
     if (m_pCopyQueue != nullptr)
     { m_pCopyQueue->AddRef(); }
 }
+
+//-------------------------------------------------------------------------------------------------
+//      GPUタイムスタンプの更新頻度を取得します.
+//-------------------------------------------------------------------------------------------------
+uint64_t Device::GetTimeStampFrequency() const 
+{ return m_TimeStampFrequency; }
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.

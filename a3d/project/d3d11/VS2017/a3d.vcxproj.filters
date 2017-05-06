@@ -22,6 +22,9 @@
     <Filter Include="ソース ファイル\misc">
       <UniqueIdentifier>{8f7f9613-814c-4875-91e9-45f02a63e2ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\emu">
+      <UniqueIdentifier>{8450182f-cbfb-4730-91e3-57e5349d3147}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
@@ -80,6 +83,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
       <Filter>ソース ファイル\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\emu\a3dCommandBuffer.cpp">
+      <Filter>ソース ファイル\emu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\emu\a3dCommandList.cpp">
+      <Filter>ソース ファイル\emu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +163,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h">
       <Filter>ソース ファイル\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\emu\a3dCommandBuffer.h">
+      <Filter>ソース ファイル\emu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\emu\a3dCommandList.h">
+      <Filter>ソース ファイル\emu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\emu\a3dImCmd.h">
+      <Filter>ソース ファイル\emu</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

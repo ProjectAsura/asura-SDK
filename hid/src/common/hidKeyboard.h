@@ -47,10 +47,10 @@ public:
     ~KeyboardState()
     { /* DO_NOTHING */ }
 
-    bool IsPush(uint32_t value) const
+    bool IsPush(uint32_t value) const override
     { return m_Keys[m_BuffferIndex][value]; }
 
-    bool IsDown(uint32_t value) const
+    bool IsDown(uint32_t value) const override
     { return m_Keys[m_BuffferIndex][value] & (!m_Keys[1 - m_BuffferIndex][value]); }
 };
 

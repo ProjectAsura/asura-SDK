@@ -202,7 +202,6 @@ namespace a3d {
 Texture::Texture()
 : m_RefCount        (1)
 , m_pDevice         (nullptr)
-, m_State           (RESOURCE_STATE_UNKNOWN)
 , m_Image           (null_handle)
 , m_DeviceMemory    (null_handle)
 , m_ImageAspectFlags(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -235,7 +234,6 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
     auto imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    m_State = a3d::RESOURCE_STATE_UNKNOWN;
 
     // イメージを生成します.
     {
@@ -301,7 +299,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     }
 
     // イメージレイアウトを変更
-    if (m_State != pDesc->InitState)
+    if (a3d::RESOURCE_STATE_UNKNOWN != pDesc->InitState)
     {
         ICommandList* pCmdList;
         if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, &pCmdList))
@@ -311,7 +309,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         A3D_ASSERT(pWrapCmdList != nullptr);
 
         pWrapCmdList->Begin();
-        pWrapCmdList->TextureBarrier(this, pDesc->InitState);
+        pWrapCmdList->TextureBarrier(this, a3d::RESOURCE_STATE_UNKNOWN, pDesc->InitState);
         pWrapCmdList->End();
         pWrapCmdList->Flush();
 
@@ -397,18 +395,6 @@ void Texture::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 TextureDesc Texture::GetDesc() const
 { return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_STATE Texture::GetState() const
-{ return m_State; }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを設定します.
-//-------------------------------------------------------------------------------------------------
-void Texture::SetState(RESOURCE_STATE state)
-{ m_State = state; }
 
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
@@ -591,7 +577,6 @@ bool Texture::Create
     instance->m_Image                               = image;
     instance->m_ImageAspectFlags                    = (isDepth) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     instance->m_DeviceMemory                        = null_handle;
-    instance->m_State                               = RESOURCE_STATE_UNKNOWN;
     instance->m_Desc.Dimension                      = RESOURCE_DIMENSION_TEXTURE2D;
     instance->m_Desc.Width                          = pDesc->Extent.Width;
     instance->m_Desc.Height                         = pDesc->Extent.Height;

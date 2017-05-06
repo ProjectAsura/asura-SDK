@@ -102,7 +102,7 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 enum SYSTEM_OPTION_TYPE
 {
     SYSTEM_OPTION_NONE = 0,     //!< PC向けオプションです.
-    SYSTEM_OPTION_CONSOLE,      //!< コンソール向けオプションです.
+    SYSTEM_OPTION_GNM,          //!< Gnm向けオプションです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -267,6 +267,9 @@ enum RESOURCE_FORMAT
     RESOURCE_FORMAT_R10G10B10A2_UNORM       = 73,   //!< RGBA 10bit, 10bit, 10bit, 2bit UNORM形式です.
     RESOURCE_FORMAT_R10G10B10A2_UINT        = 74,   //!< RGBA 10bit, 10bit, 10bit, 2bit 符号なし整数形式です.
     RESOURCE_FORMAT_R11G11B10_FLOAT         = 75,   //!< RGB 11bit, 11bit, 11bit 浮動小数形式です.
+    RESOURCE_FORMAT_B16G16R16A16_FLOAT      = 76,   //!< BGRA 16bit, 16bit, 16bit, 16bit 浮動小数形式です.
+    RESOURCE_FORMAT_B10G10R10A2_UNORM       = 77,   //!< BGRA 10bit, 10bit, 10bit, 2bit UNORM形式です.
+    RESOURCE_FORMAT_B10G10R10A2_UINT        = 78,   //!< BGRA 10bit, 10bit, 10bit, 2bit 符号なし整数形式です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -598,7 +601,6 @@ enum COLOR_SPACE_TYPE
 {
     COLOR_SPACE_UNKNOWN = 0,        //!< 未知の形式です.
     COLOR_SPACE_SRGB,               //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.709
-    COLOR_SPACE_SCRGB,              //!< ColorSpace:RGB,   Range:0-255, Gamma:1.0,  Primaries:BT.709
     COLOR_SPACE_RGB_BT2020,         //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.2020
     COLOR_SPACE_RGB_BT2020_PQ,      //!< ColorSpace:RGB,   Range:0-255, Gamma:2084, Primaries:BT.2020
 };
@@ -772,6 +774,7 @@ struct BufferDesc
     uint32_t            Usage;              //!< 使用用途です.
     RESOURCE_STATE      InitState;          //!< 初期状態です.
     HeapProperty        HeapProperty;       //!< ヒーププロパティです.
+    uint32_t            Option;             //!< オプションデータです. 通常は 0 を設定します.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1405,13 +1408,6 @@ struct A3D_API IResource : IDeviceChild
     { /* DO_NOTHING */ }
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      リソースステートを取得します.
-    //!
-    //! @return     リソースステートを返却します.
-    //---------------------------------------------------------------------------------------------
-    virtual RESOURCE_STATE A3D_APIENTRY GetState() const = 0;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      メモリマッピングを行います.
     //!
     //! @return     マッピングしたメモリです.
@@ -1558,7 +1554,10 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      pResource   設定するリソースです.
     //! @note       設定したテクスチャは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) = 0;
+    virtual void A3D_APIENTRY SetTexture(
+        uint32_t        index,
+        ITextureView*   pResource,
+        RESOURCE_STATE  state) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -1790,20 +1789,24 @@ struct A3D_API ICommandList : IDeviceChild
     //! @brief      リソースバリアを設定します.
     //!
     //! @param[in]      pResource       リソースです.
-    //! @param[in]      nextState       次の状態です.
+    //! @param[in]      prevState       変更前の状態です.
+    //! @param[in]      nextState       変更後の状態です.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY TextureBarrier(
         ITexture*       pResource,
+        RESOURCE_STATE  prevState,
         RESOURCE_STATE  nextState) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースバリアを設定します.
     //!
     //! @param[in]      pResource       リソースです.
-    //! @param[in]      nextState       次の状態です.
+    //! @param[in]      prevState       変更前の状態です.
+    //! @param[in]      nextState       変更後の状態です.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY BufferBarrier(
         IBuffer*        pResource,
+        RESOURCE_STATE  prevState,
         RESOURCE_STATE  nextState) = 0;
 
     //---------------------------------------------------------------------------------------------
@@ -1899,9 +1902,15 @@ struct A3D_API ICommandList : IDeviceChild
     //! @brief      テクスチャをコピーします.
     //!
     //! @param[in]      pDstResource        コピー先のリソースです.
+    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです.
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyTexture(ITexture* pDstResource, ITexture* pSrcResource) = 0;
+    virtual void A3D_APIENTRY CopyTexture(
+        ITexture*       pDstResource,
+        RESOURCE_STATE  dstState,
+        ITexture*       pSrcResource,
+        RESOURCE_STATE  srcState) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファをコピーします.
@@ -1917,18 +1926,22 @@ struct A3D_API ICommandList : IDeviceChild
     //! @param[in]      pDstResource        コピー先のテクスチャです.
     //! @param[in]      dstSubresource      コピー先のサブリソースです.
     //! @param[in]      dstOffset           コピー先の領域です.
+    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のテクスチャです.
     //! @param[in]      srcSubresource      コピー元のサブリソースです.
     //! @param[in]      srcOffset           コピー元の領域です.
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY CopyTextureRegion(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
+        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent) = 0;
+        Extent3D        srcExtent,
+        RESOURCE_STATE  srcState) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してバッファをコピーします.
@@ -1956,11 +1969,12 @@ struct A3D_API ICommandList : IDeviceChild
     //! @param[in]      srcOffset           コピー元のオフセットです
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY CopyBufferToTexture(
-        ITexture*   pDstTexture,
-        uint32_t    dstSubresource,
-        Offset3D    dstOffset,
-        IBuffer*    pSrcBuffer,
-        uint64_t    srcOffset) = 0;
+        ITexture*       pDstTexture,
+        uint32_t        dstSubresource,
+        Offset3D        dstOffset,
+        RESOURCE_STATE  dstState,
+        IBuffer*        pSrcBuffer,
+        uint64_t        srcOffset) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してテクスチャからバッファにコピーします.
@@ -1970,29 +1984,35 @@ struct A3D_API ICommandList : IDeviceChild
     //! @param[in]      pSrcTexture         コピー元のテクスチャです
     //! @param[in]      srcSubresource      コピー元のサブリソースです
     //! @param[in]      srcOffset           コピー元のオフセットです
-    //! @param[in]      srcExtent           コピーする大きさです
+    //! @param[in]      srcExtent           コピー元の大きさです
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY CopyTextureToBuffer(
-        IBuffer*    pDstBuffer,
-        uint64_t    dstOffset,
-        ITexture*   pSrcTexture,
-        uint32_t    srcSubresource,
-        Offset3D    srcOffset,
-        Extent3D    srcExtent) = 0;
+        IBuffer*        pDstBuffer,
+        uint64_t        dstOffset,
+        ITexture*       pSrcTexture,
+        uint32_t        srcSubresource,
+        Offset3D        srcOffset,
+        Extent3D        srcExtent,
+        RESOURCE_STATE  srcState) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
     //!
     //! @param[in]      pDstResource        コピー先のリソースです
     //! @param[in]      dstSubresource      コピー先のサブリソースを特定するための、ゼロから始まるインデックスです.
+    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです。マルチサンプリングされている必要があります.
     //! @param[in]      srcSubresource      コピー元リソース内のコピー元サブリソースです.
+    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY ResolveSubresource(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
+        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
-        uint32_t        srcSubresource) = 0;
+        uint32_t        srcSubresource,
+        RESOURCE_STATE  srcState) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バンドルを実行します.
@@ -2012,23 +2032,6 @@ struct A3D_API ICommandList : IDeviceChild
     //! @brief      デバッグマーカーをポップします.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY PopMarker() = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      定数バッファを更新します.
-    //!
-    //! @param[in]      pBuffer     更新するバッファです.
-    //! @param[in]      offset      バッファのオフセットです(バイト単位).
-    //! @param[in]      size        書き込みサイズです(バイト単位).
-    //! @param[in]      pData       書き込みデータです.
-    //! @retval true    更新に成功.
-    //! @retval false   更新に失敗.
-    //! @note       D3D12環境のみ対応APIが無いためサポートされません.そのため常に false を返却します.
-    //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY UpdateConstantBuffer(
-        IBuffer*    pBuffer,
-        size_t      offset,
-        size_t      size,
-        const void* pData) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの記録を終了します.
@@ -2205,6 +2208,13 @@ struct A3D_API IDevice : IReference
     //! @param[out]     ppQueue     コピーキューの格納先です.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY GetCopyQueue(IQueue** ppQueue) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      GPUタイムスタンプが増分する頻度(Hz単位)を取得します.
+    //!
+    //! @return     GPUタイムスタンプが増分する頻度を返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual uint64_t A3D_APIENTRY GetTimeStampFrequency() const = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストを生成します.

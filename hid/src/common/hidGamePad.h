@@ -55,28 +55,28 @@ public:
     ~GamePadState()
     { /* DO_NOTHING */ }
 
-    uint32_t GetIndex() const
+    uint32_t GetIndex() const override
     { return m_Index; }
 
-    bool IsConnected() const
+    bool IsConnected() const override
     { return m_IsConnected; }
 
-    bool IsDown( PAD_BUTTON value ) const 
+    bool IsDown( PAD_BUTTON value ) const override
     { return ( m_PressedButtons & value ) > 0; }
 
-    bool IsPush( PAD_BUTTON value ) const
+    bool IsPush( PAD_BUTTON value ) const override
     { return ( m_CurrButtons & value ) > 0; }
 
-    float GetStickLX() const
+    float GetStickLX() const override
     { return m_StickLX; }
 
-    float GetStickLY() const
+    float GetStickLY() const override
     { return m_StickLY; }
 
-    float GetStickRX() const
+    float GetStickRX() const override
     { return m_StickRX; }
 
-    float GetStickRY() const
+    float GetStickRY() const override
     { return m_StickRY; }
 };
 

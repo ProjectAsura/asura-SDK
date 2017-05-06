@@ -410,7 +410,6 @@ void Queue::ParseCmd()
                     A3D_ASSERT(cmd != nullptr);
 
                     auto pTexture = static_cast<Texture*>(cmd->pResource);
-                    pTexture->SetState(cmd->NextState);
 
                     pDeviceContext->Flush();
 
@@ -424,7 +423,6 @@ void Queue::ParseCmd()
                     A3D_ASSERT(cmd != nullptr);
 
                     auto pBuffer = reinterpret_cast<Buffer*>(cmd->pResource);
-                    pBuffer->SetState(cmd->NextState);
 
                     pDeviceContext->Flush();
 

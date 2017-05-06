@@ -700,9 +700,9 @@ bool InitA3D()
 
         // テクスチャにコピーする.
         g_pCommandList[0]->Begin();
-        g_pCommandList[0]->TextureBarrier(g_pTexture, a3d::RESOURCE_STATE_COPY_DST);
-        g_pCommandList[0]->CopyBufferToTexture(g_pTexture, 0, offset, pImmediate, 0);
-        g_pCommandList[0]->TextureBarrier(g_pTexture, a3d::RESOURCE_STATE_SHADER_READ);
+        g_pCommandList[0]->TextureBarrier(g_pTexture, a3d::RESOURCE_STATE_GENERAL, a3d::RESOURCE_STATE_COPY_DST);
+        g_pCommandList[0]->CopyBufferToTexture(g_pTexture, 0, offset, a3d::RESOURCE_STATE_COPY_DST, pImmediate, 0);
+        g_pCommandList[0]->TextureBarrier(g_pTexture, a3d::RESOURCE_STATE_COPY_DST, a3d::RESOURCE_STATE_SHADER_READ);
         g_pCommandList[0]->End();
         g_pGraphicsQueue->Submit(g_pCommandList[0]);
         g_pGraphicsQueue->Execute(nullptr);
@@ -754,12 +754,12 @@ bool InitA3D()
     #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(2, g_pTextureView);
+        g_pDescriptorSet[i]->SetTexture(2, g_pTextureView, a3d::RESOURCE_STATE_SHADER_READ);
         g_pDescriptorSet[i]->Update();
     #else
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(1, g_pTextureView);
+        g_pDescriptorSet[i]->SetTexture(1, g_pTextureView, a3d::RESOURCE_STATE_SHADER_READ);
         g_pDescriptorSet[i]->Update();
     #endif
     }
@@ -882,7 +882,10 @@ void DrawA3D()
     pCmd->Begin();
 
     // 書き込み用のバリアを設定します.
-    pCmd->TextureBarrier(g_pColorBuffer[idx], a3d::RESOURCE_STATE_COLOR_WRITE);
+    pCmd->TextureBarrier(
+        g_pColorBuffer[idx],
+        a3d::RESOURCE_STATE_PRESENT,
+        a3d::RESOURCE_STATE_COLOR_WRITE);
 
     // フレームバッファを設定します.
     pCmd->SetFrameBuffer(g_pFrameBuffer[idx]);
@@ -947,7 +950,10 @@ void DrawA3D()
     pCmd->SetFrameBuffer(nullptr);
 
     // 表示用にバリアを設定します.
-    pCmd->TextureBarrier(g_pColorBuffer[idx], a3d::RESOURCE_STATE_PRESENT);
+    pCmd->TextureBarrier(
+        g_pColorBuffer[idx],
+        a3d::RESOURCE_STATE_COLOR_WRITE,
+        a3d::RESOURCE_STATE_PRESENT);
 
     // コマンドリストへの記録を終了します.
     pCmd->End();

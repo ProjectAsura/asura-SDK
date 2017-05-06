@@ -17,7 +17,6 @@ namespace a3d {
 Texture::Texture()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
-, m_State       (RESOURCE_STATE_UNKNOWN)
 { /* DO_NOTIHNG */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -38,8 +37,6 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     m_pDevice->AddRef();
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
-
-    m_State = pDesc->InitState;
 
     auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
@@ -174,7 +171,6 @@ void Texture::Term()
     SafeRelease(m_pResource);
     SafeRelease(m_pDevice);
 
-    m_State = RESOURCE_STATE_UNKNOWN;
     memset(&m_Desc, 0, sizeof(m_Desc));
 }
 
@@ -217,12 +213,6 @@ TextureDesc Texture::GetDesc() const
 { return m_Desc; }
 
 //-------------------------------------------------------------------------------------------------
-//      リソースステートを取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_STATE Texture::GetState() const
-{ return m_State; }
-
-//-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
 //-------------------------------------------------------------------------------------------------
 void* Texture::Map()
@@ -261,12 +251,6 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subResource) const
         m_Desc.Height,
         m_Desc.DepthOrArraySize);
 }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースステートを設定します.
-//-------------------------------------------------------------------------------------------------
-void Texture::SetState(RESOURCE_STATE state)
-{ m_State = state; }
 
 //-------------------------------------------------------------------------------------------------
 //      リソース種別を取得します.
@@ -360,8 +344,6 @@ bool Texture::CreateFromNative
 
     instance->m_Desc.HeapProperty.Type            = HEAP_TYPE_DEFAULT;
     instance->m_Desc.HeapProperty.CpuPageProperty = CPU_PAGE_PROPERTY_DEFAULT;
-
-    instance->m_State = RESOURCE_STATE_UNKNOWN;
 
     bool writable = false;
     bool readable = false;

@@ -151,6 +151,28 @@ bool Device::Init(const DeviceDesc* pDesc)
         m_Info.MaxStencilSampleCount            = D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT;
     }
 
+    {
+        D3D11_QUERY_DESC desc = {};
+        desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+
+        ID3D11Query* pQuery = nullptr;
+        auto hr = m_pDevice->CreateQuery(&desc, &pQuery);
+        if (FAILED(hr))
+        {
+            SafeRelease(pQuery);
+            return false;
+        }
+
+        D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data = {};
+        m_pDeviceContext->Begin(pQuery);
+        m_pDeviceContext->End(pQuery);
+        while(m_pDeviceContext->GetData(pQuery, &data, sizeof(data), 0) != S_OK);
+
+        m_TimeStampFrequency = data.Frequency;
+
+        SafeRelease(pQuery);
+    }
+
     return true;
 }
 
@@ -245,6 +267,12 @@ void Device::GetCopyQueue(IQueue** ppQueue)
     if (m_pCopyQueue != nullptr)
     { m_pCopyQueue->AddRef(); }
 }
+
+//-------------------------------------------------------------------------------------------------
+//      GPUタイムスタンプの更新頻度を取得します.
+//-------------------------------------------------------------------------------------------------
+uint64_t Device::GetTimeStampFrequency() const
+{ return m_TimeStampFrequency; }
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.

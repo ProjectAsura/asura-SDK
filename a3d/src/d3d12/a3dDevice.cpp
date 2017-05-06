@@ -169,6 +169,10 @@ bool Device::Init(const DeviceDesc* pDesc)
         m_Info.MaxStencilSampleCount            = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
     }
 
+    hr = m_pGraphicsQueue->GetD3D12Queue()->GetTimestampFrequency(&m_TimeStampFrequency);
+    if (FAILED(hr))
+    { return false; }
+
     return true;
 }
 
@@ -253,6 +257,12 @@ void Device::GetCopyQueue(IQueue** ppQueue)
     if (m_pCopyQueue != nullptr)
     { m_pCopyQueue->AddRef(); }
 }
+
+//-------------------------------------------------------------------------------------------------
+//      GPUタイムスタンプの更新頻度を取得します.
+//-------------------------------------------------------------------------------------------------
+uint64_t Device::GetTimeStampFrequency() const
+{ return m_TimeStampFrequency; }
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.

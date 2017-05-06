@@ -225,9 +225,21 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         m_pDevice->GetGraphicsQueue(&pGraphicsQueue);
 
         pCommandList->Begin();
-        pCommandList->TextureBarrier(m_pTexture, a3d::RESOURCE_STATE_COPY_DST);
-        pCommandList->CopyBufferToTexture(m_pTexture, 0, offset, pImmediate, 0);
-        pCommandList->TextureBarrier(m_pTexture, a3d::RESOURCE_STATE_SHADER_READ);
+        pCommandList->TextureBarrier(
+            m_pTexture,
+            a3d::RESOURCE_STATE_GENERAL,
+            a3d::RESOURCE_STATE_COPY_DST);
+        pCommandList->CopyBufferToTexture(
+            m_pTexture,
+            0,
+            offset,
+            a3d::RESOURCE_STATE_COPY_DST,
+            pImmediate,
+            0);
+        pCommandList->TextureBarrier(
+            m_pTexture,
+            a3d::RESOURCE_STATE_COPY_DST,
+            a3d::RESOURCE_STATE_SHADER_READ);
         pCommandList->End();
         pGraphicsQueue->Submit(pCommandList);
         pGraphicsQueue->Execute(nullptr);
@@ -292,7 +304,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
 
             m_pDescriptorSet[i]->SetBuffer (0, m_pCBV[i]);
             m_pDescriptorSet[i]->SetSampler(1, m_pSampler);
-            m_pDescriptorSet[i]->SetTexture(2, m_pTextureView);
+            m_pDescriptorSet[i]->SetTexture(2, m_pTextureView, a3d::RESOURCE_STATE_SHADER_READ);
 
         #if 1
             // DescriptorSet::Update()‚Ííœ‚³‚ê‚é—\’è‚Å‚·.
@@ -324,7 +336,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
 
             m_pDescriptorSet[i]->SetBuffer (0, m_pCBV[i]);
             m_pDescriptorSet[i]->SetSampler(1, m_pSampler);
-            m_pDescriptorSet[i]->SetTexture(1, m_pTextureView);
+            m_pDescriptorSet[i]->SetTexture(1, m_pTextureView, a3d::RESOURCE_STATE_SHADER_READ);
         }
     #endif
     }

@@ -105,6 +105,9 @@ FormatConvertTable g_FormatTable[] = {
     { DXGI_FORMAT_R10G10B10A2_UNORM         , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 32    , a3d::RESOURCE_FORMAT_R10G10B10A2_UNORM     , false },  // 73
     { DXGI_FORMAT_R10G10B10A2_UINT          , DXGI_FORMAT_R10G10B10A2_TYPELESS      , 32    , a3d::RESOURCE_FORMAT_R10G10B10A2_UINT      , false },  // 74
     { DXGI_FORMAT_R11G11B10_FLOAT           , DXGI_FORMAT_R11G11B10_FLOAT           , 32    , a3d::RESOURCE_FORMAT_R11G11B10_FLOAT       , false },  // 75
+    { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 64    , a3d::RESOURCE_FORMAT_B16G16R16A16_FLOAT    , false },  // 76
+    { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 32    , a3d::RESOURCE_FORMAT_B10G10R10A2_UNORM     , false },  // 77
+    { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 32    , a3d::RESOURCE_FORMAT_B10G10R10A2_UINT      , false },  // 78
 };
 
 StateConvertTable g_StateTable[] = {
@@ -594,7 +597,6 @@ DXGI_COLOR_SPACE_TYPE ToNativeColorSpace(COLOR_SPACE_TYPE value)
     static const DXGI_COLOR_SPACE_TYPE table[] = {
         DXGI_COLOR_SPACE_CUSTOM,                        // COLOR_SPACE_UNKNOWN
         DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709,        // COLOR_SPACE_SRGB
-        DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709,        // COLOR_SPACE_SCRGB
         DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020,       // COLOR_SPACE_RGB_BT2020
         DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020,     // COLOR_SPACE_RGB_BT2020_PQ
     };

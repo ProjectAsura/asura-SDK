@@ -342,7 +342,12 @@ void CommandList::SetIndexBuffer
 //-------------------------------------------------------------------------------------------------
 //      リソースバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
+void CommandList::TextureBarrier
+(
+    ITexture*       pResource,
+    RESOURCE_STATE  prevState,
+    RESOURCE_STATE  nextState
+)
 {
     if (pResource == nullptr)
     { return; }
@@ -353,19 +358,22 @@ void CommandList::TextureBarrier(ITexture* pResource, RESOURCE_STATE nextState)
     D3D12_RESOURCE_BARRIER barrier = {};
     barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Transition.pResource   = pWrapResource->GetD3D12Resource();
-    barrier.Transition.StateBefore = ToNativeState(pWrapResource->GetState());
+    barrier.Transition.StateBefore = ToNativeState(prevState);
     barrier.Transition.StateAfter  = ToNativeState(nextState);
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
     m_pCommandList->ResourceBarrier(1, &barrier);
-
-    pWrapResource->SetState(nextState);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
+void CommandList::BufferBarrier
+(
+    IBuffer*        pResource,
+    RESOURCE_STATE  prevState,
+    RESOURCE_STATE  nextState
+)
 {
     if (pResource == nullptr)
     { return; }
@@ -383,13 +391,11 @@ void CommandList::BufferBarrier(IBuffer* pResource, RESOURCE_STATE nextState)
     D3D12_RESOURCE_BARRIER barrier = {};
     barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Transition.pResource   = pWrapResource->GetD3D12Resource();
-    barrier.Transition.StateBefore = ToNativeState(pWrapResource->GetState());
+    barrier.Transition.StateBefore = ToNativeState(prevState);
     barrier.Transition.StateAfter  = ToNativeState(nextState);
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
     m_pCommandList->ResourceBarrier(1, &barrier);
-
-    pWrapResource->SetState(nextState);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -564,8 +570,18 @@ void CommandList::CopyBuffer(IBuffer* pDst, IBuffer* pSrc)
 //-------------------------------------------------------------------------------------------------
 //      テクスチャをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyTexture(ITexture* pDst, ITexture* pSrc)
+void CommandList::CopyTexture
+(
+    ITexture*       pDst,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrc,
+    RESOURCE_STATE  srcState
+)
 {
+    // Vulkan用の引数なのでD3D12では使いません.
+    A3D_UNUSED(dstState);
+    A3D_UNUSED(srcState);
+
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
 
@@ -582,15 +598,21 @@ void CommandList::CopyTexture(ITexture* pDst, ITexture* pSrc)
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyTextureRegion
 (
-    ITexture*   pDstResource,
-    uint32_t    dstSubresource,
-    Offset3D    dstOffset,
-    ITexture*   pSrcResource,
-    uint32_t    srcSubresource,
-    Offset3D    srcOffset,
-    Extent3D    srcExtent
+    ITexture*       pDstResource,
+    uint32_t        dstSubresource,
+    Offset3D        dstOffset,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrcResource,
+    uint32_t        srcSubresource,
+    Offset3D        srcOffset,
+    Extent3D        srcExtent,
+    RESOURCE_STATE  srcState
 )
 {
+    // Vulkan用の引数なのでD3D12では使いません.
+    A3D_UNUSED(dstState);
+    A3D_UNUSED(srcState);
+
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
@@ -655,13 +677,17 @@ void CommandList::CopyBufferRegion
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyBufferToTexture
 (
-    ITexture*   pDstTexture,
-    uint32_t    dstSubresource,
-    Offset3D    dstOffset,
-    IBuffer*    pSrcBuffer,
-    uint64_t    srcOffset
+    ITexture*       pDstTexture,
+    uint32_t        dstSubresource,
+    Offset3D        dstOffset,
+    RESOURCE_STATE  dstState,
+    IBuffer*        pSrcBuffer,
+    uint64_t        srcOffset
 )
 {
+    // Vulkan用の引数なのでD3D12では使いません.
+    A3D_UNUSED(dstState);
+
     if (pDstTexture == nullptr || pSrcBuffer == nullptr)
     { return; }
 
@@ -707,14 +733,18 @@ void CommandList::CopyBufferToTexture
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyTextureToBuffer
 (
-    IBuffer*    pDstBuffer,
-    uint64_t    dstOffset,
-    ITexture*   pSrcTexture,
-    uint32_t    srcSubresource,
-    Offset3D    srcOffset,
-    Extent3D    srcExtent
+    IBuffer*        pDstBuffer,
+    uint64_t        dstOffset,
+    ITexture*       pSrcTexture,
+    uint32_t        srcSubresource,
+    Offset3D        srcOffset,
+    Extent3D        srcExtent,
+    RESOURCE_STATE  srcState
 )
 {
+    // Vulkan用の引数なのでD3D12では使いません.
+    A3D_UNUSED(srcState);
+
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
     { return; }
 
@@ -748,12 +778,18 @@ void CommandList::CopyTextureToBuffer
 //-------------------------------------------------------------------------------------------------
 void CommandList::ResolveSubresource
 (
-    ITexture*   pDstResource,
-    uint32_t    dstSubresource,
-    ITexture*   pSrcResource,
-    uint32_t    srcSubresource
+    ITexture*       pDstResource,
+    uint32_t        dstSubresource,
+    RESOURCE_STATE  dstState,
+    ITexture*       pSrcResource,
+    uint32_t        srcSubresource,
+    RESOURCE_STATE  srcState
 )
 {
+    // Vulkan用の引数なのでD3D12は使いません.
+    A3D_UNUSED(dstState);
+    A3D_UNUSED(srcState);
+
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
@@ -802,20 +838,6 @@ void CommandList::PushMarker(const char* tag)
 //-------------------------------------------------------------------------------------------------
 void CommandList::PopMarker()
 { PIXEndEvent(); }
-
-//-------------------------------------------------------------------------------------------------
-//      定数バッファを更新します.
-//-------------------------------------------------------------------------------------------------
-bool CommandList::UpdateConstantBuffer(IBuffer* pBuffer, size_t offset, size_t size, const void* pData)
-{
-    A3D_UNUSED(pBuffer);
-    A3D_UNUSED(offset);
-    A3D_UNUSED(size);
-    A3D_UNUSED(pData);
-
-    // D3D12ではバッファの更新をスケジューリングする方法が提供されないため，常にfalseを返します.
-    return false;
-}
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を終了します.

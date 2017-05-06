@@ -13,15 +13,26 @@
 
 namespace {
 
+//-------------------------------------------------------------------------------------------------
+// Global Variables.
+//-------------------------------------------------------------------------------------------------
 hid::MouseState g_MouseState = {};
 
-}
+} // namespace
+
 
 namespace hid {
 
-bool GetMouseState(void* pWindowHandle, IMouseState** ppMouseState)
+//-------------------------------------------------------------------------------------------------
+//      マウスの状態を取得します.
+//-------------------------------------------------------------------------------------------------
+bool GetMouseState(IMouseState** ppMouseState, void* pWindowHandle)
 {
-    auto hWnd = static_cast<HWND>(pWindowHandle);
+    HWND hWnd;
+    if (pWindowHandle != nullptr)
+    { hWnd = static_cast<HWND>(pWindowHandle); }
+    else
+    { hWnd = GetTopWindow(nullptr); }
     g_MouseState.m_BufferIndex = 1 - g_MouseState.m_BufferIndex;
     g_MouseState.m_PrevCursorX = g_MouseState.m_CursorX;
     g_MouseState.m_PrevCursorY = g_MouseState.m_CursorY;
