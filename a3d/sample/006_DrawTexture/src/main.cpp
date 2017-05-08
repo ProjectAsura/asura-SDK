@@ -557,7 +557,7 @@ bool InitA3D()
         desc.RasterizerState.DepthBias                  = 0;
         desc.RasterizerState.DepthBiasClamp             = 0.0f;
         desc.RasterizerState.SlopeScaledDepthBias       = 0;
-        desc.RasterizerState.DepthClipEnable            = true;
+        desc.RasterizerState.DepthClipEnable            = false;
         desc.RasterizerState.EnableConservativeRaster   = false;
         
         // マルチサンプルステートの設定.
@@ -703,7 +703,6 @@ bool InitA3D()
             g_pTexture,
             0,
             offset,
-            a3d::RESOURCE_STATE_COPY_DST,
             pImmediate,
             0);
         g_pCommandList[0]->TextureBarrier(
@@ -730,7 +729,7 @@ bool InitA3D()
         desc.AddressW           = a3d::TEXTURE_ADDRESS_MODE_CLAMP;
         desc.MinLod             = 0.0f;
         desc.AnisotropyEnable   = false;
-        desc.MaxAnisotropy      = 16;
+        desc.MaxAnisotropy      = 1;
         desc.CompareEnable      = false;
         desc.CompareOp          = a3d::COMPARE_OP_NEVER;
         desc.MinLod             = 0.0f;
@@ -761,12 +760,12 @@ bool InitA3D()
     #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(2, g_pTextureView, a3d::RESOURCE_STATE_SHADER_READ);
+        g_pDescriptorSet[i]->SetTexture(2, g_pTextureView);
         g_pDescriptorSet[i]->Update();
     #else
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(1, g_pTextureView, a3d::RESOURCE_STATE_SHADER_READ);
+        g_pDescriptorSet[i]->SetTexture(1, g_pTextureView);
         g_pDescriptorSet[i]->Update();
     #endif
     }

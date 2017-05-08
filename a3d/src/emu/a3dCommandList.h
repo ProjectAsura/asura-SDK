@@ -266,15 +266,9 @@ public:
     //! @brief      テクスチャをコピーします.
     //!
     //! @param[in]      pDstResource        コピー先のリソースです.
-    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY CopyTexture(
-        ITexture*       pDstResource,
-        RESOURCE_STATE  dstState,
-        ITexture*       pSrcResource,
-        RESOURCE_STATE  srcState) override;
+    void A3D_APIENTRY CopyTexture(ITexture* pDstResource, ITexture* pSrcResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファをコピーします.
@@ -290,22 +284,18 @@ public:
     //! @param[in]      pDstResource        コピー先のテクスチャです.
     //! @param[in]      dstSubresource      コピー先のサブリソースです.
     //! @param[in]      dstOffset           コピー先の領域です.
-    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のテクスチャです.
     //! @param[in]      srcSubresource      コピー元のサブリソースです.
     //! @param[in]      srcOffset           コピー元の領域です.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY CopyTextureRegion(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
-        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent,
-        RESOURCE_STATE  srcState) override;
+        Extent3D        srcExtent) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してバッファをコピーします.
@@ -329,7 +319,6 @@ public:
     //! @param[in]      pDstTexture         コピー先のテクスチャです.
     //! @param[in]      dstSubresource      コピー先のサブリソースです.
     //! @param[in]      dstOffset           コピー先のオフセットです
-    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcBuffer          コピー元のバッファです.
     //! @param[in]      srcOffset           コピー元のオフセットです
     //---------------------------------------------------------------------------------------------
@@ -337,7 +326,6 @@ public:
         ITexture*       pDstTexture,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
-        RESOURCE_STATE  dstState,
         IBuffer*        pSrcBuffer,
         uint64_t        srcOffset) override;
 
@@ -350,7 +338,6 @@ public:
     //! @param[in]      srcSubresource      コピー元のサブリソースです
     //! @param[in]      srcOffset           コピー元のオフセットです
     //! @param[in]      srcExtent           コピー元の大きさです.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY CopyTextureToBuffer(
         IBuffer*        pDstBuffer,
@@ -358,8 +345,7 @@ public:
         ITexture*       pSrcTexture,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent,
-        RESOURCE_STATE  srcState) override;
+        Extent3D        srcExtent) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
@@ -369,15 +355,12 @@ public:
     //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです。マルチサンプリングされている必要があります.
     //! @param[in]      srcSubresource      コピー元リソース内のコピー元サブリソースです.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY ResolveSubresource(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
-        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
-        uint32_t        srcSubresource,
-        RESOURCE_STATE  srcState) override;
+        uint32_t        srcSubresource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バンドルを実行します.

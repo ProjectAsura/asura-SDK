@@ -391,7 +391,7 @@ bool InitA3D()
         desc.RasterizerState.DepthBias                  = 0;
         desc.RasterizerState.DepthBiasClamp             = 0.0f;
         desc.RasterizerState.SlopeScaledDepthBias       = 0;
-        desc.RasterizerState.DepthClipEnable            = true;
+        desc.RasterizerState.DepthClipEnable            = false;
         desc.RasterizerState.EnableConservativeRaster   = false;
         
         // マルチサンプルステートの設定.

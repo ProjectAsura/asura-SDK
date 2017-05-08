@@ -250,11 +250,8 @@ void DescriptorSet::Term()
 //-------------------------------------------------------------------------------------------------
 //      テクスチャを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource, RESOURCE_STATE state)
+void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 {
-    // Vulkan用の引数のためD3D11では使いません.
-    A3D_UNUSED(state);
-
     auto pWrapTextureView = static_cast<TextureView*>(pResource);
     A3D_ASSERT(pWrapTextureView != nullptr);
 

@@ -74,7 +74,7 @@ public:
     //! @param[in]      pResource   設定するリソースです.
     //! @param[in]      state       リソースステートです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource, RESOURCE_STATE state) override;
+    void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.

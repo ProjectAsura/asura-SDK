@@ -1554,10 +1554,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      pResource   設定するリソースです.
     //! @note       設定したテクスチャは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetTexture(
-        uint32_t        index,
-        ITextureView*   pResource,
-        RESOURCE_STATE  state) = 0;
+    virtual void A3D_APIENTRY SetTexture(uint32_t index, ITextureView*   pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -1902,15 +1899,9 @@ struct A3D_API ICommandList : IDeviceChild
     //! @brief      テクスチャをコピーします.
     //!
     //! @param[in]      pDstResource        コピー先のリソースです.
-    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyTexture(
-        ITexture*       pDstResource,
-        RESOURCE_STATE  dstState,
-        ITexture*       pSrcResource,
-        RESOURCE_STATE  srcState) = 0;
+    virtual void A3D_APIENTRY CopyTexture(ITexture* pDstResource, ITexture* pSrcResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファをコピーします.
@@ -1926,22 +1917,18 @@ struct A3D_API ICommandList : IDeviceChild
     //! @param[in]      pDstResource        コピー先のテクスチャです.
     //! @param[in]      dstSubresource      コピー先のサブリソースです.
     //! @param[in]      dstOffset           コピー先の領域です.
-    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のテクスチャです.
     //! @param[in]      srcSubresource      コピー元のサブリソースです.
     //! @param[in]      srcOffset           コピー元の領域です.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY CopyTextureRegion(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
-        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent,
-        RESOURCE_STATE  srcState) = 0;
+        Extent3D        srcExtent) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してバッファをコピーします.
@@ -1972,7 +1959,6 @@ struct A3D_API ICommandList : IDeviceChild
         ITexture*       pDstTexture,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
-        RESOURCE_STATE  dstState,
         IBuffer*        pSrcBuffer,
         uint64_t        srcOffset) = 0;
 
@@ -1993,26 +1979,21 @@ struct A3D_API ICommandList : IDeviceChild
         ITexture*       pSrcTexture,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent,
-        RESOURCE_STATE  srcState) = 0;
+        Extent3D        srcExtent) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
     //!
     //! @param[in]      pDstResource        コピー先のリソースです
     //! @param[in]      dstSubresource      コピー先のサブリソースを特定するための、ゼロから始まるインデックスです.
-    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです。マルチサンプリングされている必要があります.
     //! @param[in]      srcSubresource      コピー元リソース内のコピー元サブリソースです.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY ResolveSubresource(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
-        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
-        uint32_t        srcSubresource,
-        RESOURCE_STATE  srcState) = 0;
+        uint32_t        srcSubresource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バンドルを実行します.

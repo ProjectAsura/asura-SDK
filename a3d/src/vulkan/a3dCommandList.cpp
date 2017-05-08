@@ -749,13 +749,7 @@ void CommandList::ResolveQuery
 //-------------------------------------------------------------------------------------------------
 //      リソースをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyTexture
-(
-    ITexture*       pDst,
-    RESOURCE_STATE  dstState,
-    ITexture*       pSrc,
-    RESOURCE_STATE  srcState
-)
+void CommandList::CopyTexture( ITexture* pDst, ITexture* pSrc)
 {
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
@@ -766,7 +760,7 @@ void CommandList::CopyTexture
     extent.Width    = desc.Width;
     extent.Height   = desc.Height;
     extent.Depth    = desc.DepthOrArraySize;
-    CopyTextureRegion( pDst, 0, offset, dstState, pSrc, 0, offset, extent, srcState );
+    CopyTextureRegion( pDst, 0, offset, pSrc, 0, offset, extent );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -788,12 +782,10 @@ void CommandList::CopyTextureRegion
     ITexture*       pDstResource,
     uint32_t        dstSubResource,
     Offset3D        dstOffset,
-    RESOURCE_STATE  dstState,
     ITexture*       pSrcResource,
     uint32_t        srcSubResource,
     Offset3D        srcOffset,
-    Extent3D        srcExtent,
-    RESOURCE_STATE  srcState
+    Extent3D        srcExtent
 )
 {
     if (pDstResource == nullptr || pSrcResource == nullptr)
@@ -809,8 +801,8 @@ void CommandList::CopyTextureRegion
     A3D_ASSERT( pNativeSrc != null_handle );
     A3D_ASSERT( pNativeDst != null_handle );
 
-    auto srcLayout = ToNativeImageLayout(srcState);
-    auto dstLayout = ToNativeImageLayout(dstState);
+    auto srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    auto dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
     const auto& srcDesc = pWrapSrc->GetDesc();
     const auto& dstDesc = pWrapDst->GetDesc();
@@ -892,7 +884,6 @@ void CommandList::CopyBufferToTexture
     ITexture*       pDstTexture,
     uint32_t        dstSubresource,
     Offset3D        dstOffset,
-    RESOURCE_STATE  dstState,
     IBuffer*        pSrcBuffer,
     uint64_t        srcOffset
 )
@@ -907,7 +898,7 @@ void CommandList::CopyBufferToTexture
 
     const auto& dstDesc = pWrapDst->GetDesc();
 
-    auto nativeState = ToNativeImageLayout(dstState);
+    auto nativeState = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
     VkBufferImageCopy region = {};
     region.imageSubresource.aspectMask  = pWrapDst->GetVulkanImageAspectFlags();
@@ -947,8 +938,7 @@ void CommandList::CopyTextureToBuffer
     ITexture*       pSrcTexture,
     uint32_t        srcSubresource,
     Offset3D        srcOffset,
-    Extent3D        srcExtent,
-    RESOURCE_STATE  srcState
+    Extent3D        srcExtent
 )
 {
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
@@ -986,7 +976,7 @@ void CommandList::CopyTextureToBuffer
     vkCmdCopyImageToBuffer(
         m_CommandBuffer,
         pWrapSrc->GetVulkanImage(),
-        ToNativeImageLayout(srcState),
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         pWrapDst->GetVulkanBuffer(),
         1, &region);
 }
@@ -998,10 +988,8 @@ void CommandList::ResolveSubresource
 (
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
-    RESOURCE_STATE  dstState,
     ITexture*       pSrcResource,
-    uint32_t        srcSubresource,
-    RESOURCE_STATE  srcState
+    uint32_t        srcSubresource
 )
 {
     if (pDstResource == nullptr || pSrcResource == nullptr)
@@ -1017,8 +1005,8 @@ void CommandList::ResolveSubresource
     A3D_ASSERT( pNativeSrc != null_handle );
     A3D_ASSERT( pNativeDst != null_handle );
 
-    auto srcLayout = ToNativeImageLayout(srcState);
-    auto dstLayout = ToNativeImageLayout(dstState);
+    auto srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    auto dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
     const auto &dstDesc = pWrapDst->GetDesc();
     const auto &srcDesc = pWrapSrc->GetDesc();

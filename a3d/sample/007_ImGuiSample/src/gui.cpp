@@ -233,7 +233,6 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
             m_pTexture,
             0,
             offset,
-            a3d::RESOURCE_STATE_COPY_DST,
             pImmediate,
             0);
         pCommandList->TextureBarrier(
@@ -261,7 +260,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.MipMapMode         = a3d::MIPMAP_MODE_LINEAR;
         desc.MinLod             = 0.0f;
         desc.AnisotropyEnable   = false;
-        desc.MaxAnisotropy      = 16;
+        desc.MaxAnisotropy      = 1;
         desc.CompareEnable      = false;
         desc.CompareOp          = a3d::COMPARE_OP_NEVER;
         desc.MinLod             = 0.0f;
@@ -304,7 +303,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
 
             m_pDescriptorSet[i]->SetBuffer (0, m_pCBV[i]);
             m_pDescriptorSet[i]->SetSampler(1, m_pSampler);
-            m_pDescriptorSet[i]->SetTexture(2, m_pTextureView, a3d::RESOURCE_STATE_SHADER_READ);
+            m_pDescriptorSet[i]->SetTexture(2, m_pTextureView);
 
         #if 1
             // DescriptorSet::Update()は削除される予定です.
@@ -441,7 +440,7 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.RasterizerState.DepthBias                  = 0;
         desc.RasterizerState.DepthBiasClamp             = 0.0f;
         desc.RasterizerState.SlopeScaledDepthBias       = 0;
-        desc.RasterizerState.DepthClipEnable            = true;
+        desc.RasterizerState.DepthClipEnable            = false;
         desc.RasterizerState.EnableConservativeRaster   = false;
         
         // マルチサンプルステートの設定.

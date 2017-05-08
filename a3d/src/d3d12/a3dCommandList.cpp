@@ -573,15 +573,9 @@ void CommandList::CopyBuffer(IBuffer* pDst, IBuffer* pSrc)
 void CommandList::CopyTexture
 (
     ITexture*       pDst,
-    RESOURCE_STATE  dstState,
-    ITexture*       pSrc,
-    RESOURCE_STATE  srcState
+    ITexture*       pSrc
 )
 {
-    // Vulkan用の引数なのでD3D12では使いません.
-    A3D_UNUSED(dstState);
-    A3D_UNUSED(srcState);
-
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
 
@@ -601,18 +595,12 @@ void CommandList::CopyTextureRegion
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
     Offset3D        dstOffset,
-    RESOURCE_STATE  dstState,
     ITexture*       pSrcResource,
     uint32_t        srcSubresource,
     Offset3D        srcOffset,
-    Extent3D        srcExtent,
-    RESOURCE_STATE  srcState
+    Extent3D        srcExtent
 )
 {
-    // Vulkan用の引数なのでD3D12では使いません.
-    A3D_UNUSED(dstState);
-    A3D_UNUSED(srcState);
-
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
@@ -680,14 +668,10 @@ void CommandList::CopyBufferToTexture
     ITexture*       pDstTexture,
     uint32_t        dstSubresource,
     Offset3D        dstOffset,
-    RESOURCE_STATE  dstState,
     IBuffer*        pSrcBuffer,
     uint64_t        srcOffset
 )
 {
-    // Vulkan用の引数なのでD3D12では使いません.
-    A3D_UNUSED(dstState);
-
     if (pDstTexture == nullptr || pSrcBuffer == nullptr)
     { return; }
 
@@ -738,13 +722,9 @@ void CommandList::CopyTextureToBuffer
     ITexture*       pSrcTexture,
     uint32_t        srcSubresource,
     Offset3D        srcOffset,
-    Extent3D        srcExtent,
-    RESOURCE_STATE  srcState
+    Extent3D        srcExtent
 )
 {
-    // Vulkan用の引数なのでD3D12では使いません.
-    A3D_UNUSED(srcState);
-
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
     { return; }
 
@@ -780,16 +760,10 @@ void CommandList::ResolveSubresource
 (
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
-    RESOURCE_STATE  dstState,
     ITexture*       pSrcResource,
-    uint32_t        srcSubresource,
-    RESOURCE_STATE  srcState
+    uint32_t        srcSubresource
 )
 {
-    // Vulkan用の引数なのでD3D12は使いません.
-    A3D_UNUSED(dstState);
-    A3D_UNUSED(srcState);
-
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 

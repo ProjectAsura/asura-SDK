@@ -282,15 +282,9 @@ public:
     //! @brief      テクスチャをコピーします.
     //!
     //! @param[in]      pDstResource        コピー先のリソースです.
-    //! @param[in]      dstState            コピー先のリソースステートです.
     //! @param[in]      pSrcResource        コピー元のリソースです.
-    //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY CopyTexture(
-        ITexture*       pDstResource,
-        RESOURCE_STATE  dstState,
-        ITexture*       pSrcResource,
-        RESOURCE_STATE  srcState) override;
+    void A3D_APIENTRY CopyTexture(ITexture* pDstResource, ITexture* pSrcResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファをコピーします.
@@ -314,12 +308,10 @@ public:
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
-        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent,
-        RESOURCE_STATE  srcState) override;
+        Extent3D        srcExtent) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してバッファをコピーします.
@@ -350,7 +342,6 @@ public:
         ITexture*       pDstTexture,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
-        RESOURCE_STATE  dstState,
         IBuffer*        pSrcBuffer,
         uint64_t        srcOffset) override;
 
@@ -370,8 +361,7 @@ public:
         ITexture*       pSrcTexture,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent,
-        RESOURCE_STATE  srcState) override;
+        Extent3D        srcExtent) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
@@ -384,10 +374,8 @@ public:
     void A3D_APIENTRY ResolveSubresource(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
-        RESOURCE_STATE  dstState,
         ITexture*       pSrcResource,
-        uint32_t        srcSubresource,
-        RESOURCE_STATE  srcState) override;
+        uint32_t        srcSubresource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バンドルを実行します.

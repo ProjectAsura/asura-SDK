@@ -192,14 +192,18 @@ void DescriptorSet::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      テクスチャを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource, RESOURCE_STATE state)
+void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
     auto pWrapResource = static_cast<TextureView*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
-    m_pInfos[index].Image.imageLayout = ToNativeImageLayout(state);
+    auto layout = (pWrapResource->GetVulkanImageAspectFlags() == VK_IMAGE_ASPECT_COLOR_BIT)
+        ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+    m_pInfos[index].Image.imageLayout = layout;
     m_pInfos[index].Image.imageView   = pWrapResource->GetVulkanImageView();
 }
 

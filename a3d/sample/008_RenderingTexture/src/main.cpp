@@ -572,7 +572,7 @@ bool InitA3D()
         desc.RasterizerState.DepthBias                  = 0;
         desc.RasterizerState.DepthBiasClamp             = 0.0f;
         desc.RasterizerState.SlopeScaledDepthBias       = 0;
-        desc.RasterizerState.DepthClipEnable            = true;
+        desc.RasterizerState.DepthClipEnable            = false;
         desc.RasterizerState.EnableConservativeRaster   = false;
         
         // マルチサンプルステートの設定.
@@ -631,7 +631,7 @@ bool InitA3D()
         desc.AddressW           = a3d::TEXTURE_ADDRESS_MODE_CLAMP;
         desc.MinLod             = 0.0f;
         desc.AnisotropyEnable   = false;
-        desc.MaxAnisotropy      = 16;
+        desc.MaxAnisotropy      = 1;
         desc.CompareEnable      = false;
         desc.CompareOp          = a3d::COMPARE_OP_NEVER;
         desc.MinLod             = 0.0f;
@@ -712,6 +712,22 @@ bool InitA3D()
 
         if (!g_pDevice->CreateFrameBuffer(&frameBufferDesc, &g_pOffScreenFrameBuffer))
         { return false; }
+
+        a3d::ICommandList* pCommandList;
+        if (!g_pDevice->CreateCommandList(a3d::COMMANDLIST_TYPE_DIRECT, &pCommandList))
+        { return false; }
+        pCommandList->Begin();
+        pCommandList->TextureBarrier(g_pOffScreenBuffer, a3d::RESOURCE_STATE_GENERAL, a3d::RESOURCE_STATE_SHADER_READ);
+        pCommandList->End();
+
+        a3d::IQueue* pQueue;
+        g_pDevice->GetGraphicsQueue(&pQueue);
+        pQueue->Submit(pCommandList);
+        pQueue->Execute(nullptr);
+        pQueue->WaitIdle();
+
+        a3d::SafeRelease(pCommandList);
+        a3d::SafeRelease(pQueue);
     }
 
     // オフスクリーン用ディスクリプタセットレイアウトを生成.
@@ -810,7 +826,7 @@ bool InitA3D()
         desc.RasterizerState.DepthBias                  = 0;
         desc.RasterizerState.DepthBiasClamp             = 0.0f;
         desc.RasterizerState.SlopeScaledDepthBias       = 0;
-        desc.RasterizerState.DepthClipEnable            = true;
+        desc.RasterizerState.DepthClipEnable            = false;
         desc.RasterizerState.EnableConservativeRaster   = false;
         
         // マルチサンプルステートの設定.
@@ -878,11 +894,11 @@ bool InitA3D()
     #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(2, g_pOffScreenView, a3d::RESOURCE_STATE_SHADER_READ);
+        g_pDescriptorSet[i]->SetTexture(2, g_pOffScreenView);
     #else
         g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(1, g_pOffScreenView, a3d::RESOURCE_STATE_SHADER_READ);
+        g_pDescriptorSet[i]->SetTexture(1, g_pOffScreenView);
     #endif
         g_pDescriptorSet[i]->Update();
     }

@@ -392,17 +392,13 @@ void CommandList::ResolveQuery
 void CommandList::CopyTexture
 (
     ITexture*       pDstResource,
-    RESOURCE_STATE  dstState,
-    ITexture*       pSrcResource,
-    RESOURCE_STATE  srcState
+    ITexture*       pSrcResource
 )
 {
     ImCmdCopyTexture cmd = {};
     cmd.Type        = CMD_COPY_TEXTURE;
     cmd.pDstTexture = pDstResource;
-    cmd.DstState    = dstState;
     cmd.pSrcTexture = pSrcResource;
-    cmd.SrcState    = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -428,12 +424,10 @@ void CommandList::CopyTextureRegion
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
     Offset3D        dstOffset,
-    RESOURCE_STATE  dstState,
     ITexture*       pSrcResource,
     uint32_t        srcSubresource,
     Offset3D        srcOffset,
-    Extent3D        srcExtent,
-    RESOURCE_STATE  srcState
+    Extent3D        srcExtent
 )
 {
     ImCmdCopyTextureRegion cmd = {};
@@ -441,12 +435,10 @@ void CommandList::CopyTextureRegion
     cmd.pDstResource    = pDstResource;
     cmd.DstSubresource  = dstSubresource;
     cmd.DstOffset       = dstOffset;
-    cmd.DstState        = dstState;
     cmd.pSrcResource    = pSrcResource;
     cmd.SrcSubresource  = srcSubresource;
     cmd.SrcOffset       = srcOffset;
     cmd.SrcExtent       = srcExtent;
-    cmd.SrcState        = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -482,7 +474,6 @@ void CommandList::CopyBufferToTexture
     ITexture*       pDstTexture,
     uint32_t        dstSubresource,
     Offset3D        dstOffset,
-    RESOURCE_STATE  dstState,
     IBuffer*        pSrcBuffer,
     uint64_t        srcOffset
 )
@@ -492,7 +483,6 @@ void CommandList::CopyBufferToTexture
     cmd.pDstTexture     = pDstTexture;
     cmd.DstSubresource  = dstSubresource;
     cmd.DstOffset       = dstOffset;
-    cmd.DstState        = dstState;
     cmd.pSrcBuffer      = pSrcBuffer;
     cmd.SrcOffset       = srcOffset;
 
@@ -509,8 +499,7 @@ void CommandList::CopyTextureToBuffer
     ITexture*       pSrcTexture,
     uint32_t        srcSubresource,
     Offset3D        srcOffset,
-    Extent3D        srcExtent,
-    RESOURCE_STATE  srcState
+    Extent3D        srcExtent
 )
 {
     ImCmdCopyTextureToBuffer cmd = {};
@@ -521,7 +510,6 @@ void CommandList::CopyTextureToBuffer
     cmd.SrcSubresource  = srcSubresource;
     cmd.SrcOffset       = srcOffset;
     cmd.SrcExtent       = srcExtent;
-    cmd.SrcState        = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -533,20 +521,16 @@ void CommandList::ResolveSubresource
 (
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
-    RESOURCE_STATE  dstState,
     ITexture*       pSrcResource,
-    uint32_t        srcSubresource,
-    RESOURCE_STATE  srcState
+    uint32_t        srcSubresource
 )
 {
     ImCmdResolveSubresource cmd = {};
     cmd.Type            = CMD_RESOLVE_SUBRESOURCE;
     cmd.pDstResource    = pDstResource;
     cmd.DstSubresource  = dstSubresource;
-    cmd.DstState        = dstState;
     cmd.pSrcResource    = pSrcResource;
     cmd.SrcSubresource  = srcSubresource;
-    cmd.SrcState        = srcState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }

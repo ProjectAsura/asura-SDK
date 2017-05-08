@@ -256,9 +256,7 @@ struct ImCmdResolveQuery : ImCmdBase
 struct ImCmdCopyTexture : ImCmdBase
 {
     ITexture*       pDstTexture;
-    RESOURCE_STATE  DstState;
     ITexture*       pSrcTexture;
-    RESOURCE_STATE  SrcState;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -278,12 +276,10 @@ struct ImCmdCopyTextureRegion : ImCmdBase
     ITexture*       pDstResource;
     uint32_t        DstSubresource;
     Offset3D        DstOffset;
-    RESOURCE_STATE  DstState;
     ITexture*       pSrcResource;
     uint32_t        SrcSubresource;
     Offset3D        SrcOffset;
     Extent3D        SrcExtent;
-    RESOURCE_STATE  SrcState;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,7 +302,6 @@ struct ImCmdCopyBufferToTexture : ImCmdBase
     ITexture*       pDstTexture;
     uint32_t        DstSubresource;
     Offset3D        DstOffset;
-    RESOURCE_STATE  DstState;
     IBuffer*        pSrcBuffer;
     uint64_t        SrcOffset;
 };
@@ -322,7 +317,6 @@ struct ImCmdCopyTextureToBuffer : ImCmdBase
     uint32_t        SrcSubresource;
     Offset3D        SrcOffset;
     Extent3D        SrcExtent;
-    RESOURCE_STATE  SrcState;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -332,10 +326,8 @@ struct ImCmdResolveSubresource : ImCmdBase
 {
     ITexture*       pDstResource;
     uint32_t        DstSubresource;
-    RESOURCE_STATE  DstState;
     ITexture*       pSrcResource;
     uint32_t        SrcSubresource;
-    RESOURCE_STATE  SrcState;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
