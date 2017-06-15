@@ -101,8 +101,14 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum SYSTEM_OPTION_TYPE
 {
-    SYSTEM_OPTION_NONE = 0,     //!< PC向けオプションです.
-    SYSTEM_OPTION_GNM,          //!< Gnm向けオプションです.
+    SYSTEM_OPTION_NONE = 0,     //!< オプション無しです.
+    SYSTEM_OPTION_RESERVE1,     //!< システム予約1
+    SYSTEM_OPTION_RESERVE2,     //!< システム予約2
+    SYSTEM_OPTION_RESERVE3,     //!< システム予約3
+    SYSTEM_OPTION_RESERVE4,     //!< システム予約4
+    SYSTEM_OPTION_RESERVE5,     //!< システム予約5
+    SYSTEM_OPTION_RESERVE6,     //!< システム予約6
+    SYSTEM_OPTION_RESERVE7,     //!< システム予約7
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -872,10 +878,10 @@ struct RasterizerState
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// StencilState structure
-//! @brief  ステンシルステートの設定です.
+// StencilTestDesc structure
+//! @brief  ステンシルテストの設定です.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct StencilState
+struct StencilTestDesc
 {
     STENCIL_OP      StencilFailOp;              //!< ステンシル テストで不合格となったときに実行するステンシル処理です.
     STENCIL_OP      StencilDepthFailOp;         //!< ステンシル テストに合格し、深度テストで不合格となったときに実行するステンシル処理です.
@@ -884,19 +890,27 @@ struct StencilState
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// DepthStencilState structure
-//! @brief  深度ステンシルステートの設定.
+// StencilStateDesc structure
+//! @brief  ステンシルステートの設定です.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct DepthStencilState
+struct StencilState
+{
+    bool            StencilTestEnable;          //!< ステンシルテストを使用可能にします.
+    uint8_t         StencllReadMask;            //!< 深度ステンシル バッファーの中で、ステンシル データを読み取る部分を識別します.
+    uint8_t         StencilWriteMask;           //!< 深度ステンシル バッファーの中で、ステンシル データを書き込む部分を識別します.
+    StencilTestDesc FrontFace;                  //!< 法線がカメラの方向を向いているサーフェスを持つピクセルの深度テストとステンシル テストの結果を使用する方法を識別します.
+    StencilTestDesc BackFace;                   //!< 法線がカメラと逆方向を向いているサーフェスを持つピクセルの深度テストとステンシル テストの結果を使用する方法を識別します.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// DepthStencilState structure
+//! @brief  深度ステートの設定.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct DepthState
 {
     bool            DepthTestEnable;            //!< 深度テストを使用可能にします.
     bool            DepthWriteEnable;           //!< 深度書き込みを可能にします.
     COMPARE_OP      DepthCompareOp;             //!< 深度データの比較操作です.
-    bool            StencilTestEnable;          //!< ステンシルテストを使用可能にします.
-    uint8_t         StencllReadMask;            //!< 深度ステンシル バッファーの中で、ステンシル データを読み取る部分を識別します.
-    uint8_t         StencilWriteMask;           //!< 深度ステンシル バッファーの中で、ステンシル データを書き込む部分を識別します.
-    StencilState    FrontFace;                  //!< 法線がカメラの方向を向いているサーフェスを持つピクセルの深度テストとステンシル テストの結果を使用する方法を識別します.
-    StencilState    BackFace;                   //!< 法線がカメラと逆方向を向いているサーフェスを持つピクセルの深度テストとステンシル テストの結果を使用する方法を識別します.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1035,7 +1049,8 @@ struct GraphicsPipelineStateDesc
     BlendState              BlendState;             //!< ブレンドステートです.
     RasterizerState         RasterizerState;        //!< ラスタライザ―ステートです.
     MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.
-    DepthStencilState       DepthStencilState;      //!< 深度ステンシルステートです.
+    DepthState              DepthState;             //!< 深度ステートです.
+    StencilState            StencilState;           //!< ステンシルステートです.
     TessellationState       TessellationState;      //!< テッセレーションステートです.
     InputLayoutDesc         InputLayout;            //!< 入力レイアウトステートです.
     PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.

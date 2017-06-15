@@ -182,7 +182,7 @@ D3D11_STENCIL_OP ToNativeStencilOp( const a3d::STENCIL_OP& operation )
 //-------------------------------------------------------------------------------------------------
 //      ステンシルステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeDepthStencilOpDesc( const a3d::StencilState& state, D3D11_DEPTH_STENCILOP_DESC& result )
+void ToNativeDepthStencilOpDesc( const a3d::StencilTestDesc& state, D3D11_DEPTH_STENCILOP_DESC& result )
 {
     result.StencilFailOp      = ToNativeStencilOp( state.StencilFailOp );
     result.StencilDepthFailOp = ToNativeStencilOp( state.StencilDepthFailOp );
@@ -191,13 +191,20 @@ void ToNativeDepthStencilOpDesc( const a3d::StencilState& state, D3D11_DEPTH_STE
 }
 
 //-------------------------------------------------------------------------------------------------
-//      深度ステンシルステートをネイティブ形式に変換します.
+//      深度ステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeDepthStencilDesc( const a3d::DepthStencilState& state, D3D11_DEPTH_STENCIL_DESC& result )
+void ToNativeDepthDesc( const a3d::DepthState& state, D3D11_DEPTH_STENCIL_DESC& result )
 {
     result.DepthEnable      = ( state.DepthTestEnable ) ? TRUE : FALSE;
     result.DepthWriteMask   = ( state.DepthWriteEnable ) ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     result.DepthFunc        = a3d::ToNativeComparisonFunc( state.DepthCompareOp );
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ステンシルステートをネイティブ形式に変換します.
+//-------------------------------------------------------------------------------------------------
+void ToNativeStencilDesc(const a3d::StencilState& state, D3D11_DEPTH_STENCIL_DESC& result)
+{
     result.StencilEnable    = ( state.StencilTestEnable ) ? TRUE : FALSE;
     result.StencilReadMask  = state.StencllReadMask;
     result.StencilWriteMask = state.StencilWriteMask;
@@ -454,7 +461,8 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     // 深度ステンシルステート.
     {
         D3D11_DEPTH_STENCIL_DESC desc = {};
-        ToNativeDepthStencilDesc(pDesc->DepthStencilState, desc);
+        ToNativeDepthDesc  (pDesc->DepthState,   desc);
+        ToNativeStencilDesc(pDesc->StencilState, desc);
 
         auto hr = pD3D11Device->CreateDepthStencilState(&desc, &m_pDSS);
         if (FAILED(hr))

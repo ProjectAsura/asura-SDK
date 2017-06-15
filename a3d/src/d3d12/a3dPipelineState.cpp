@@ -186,7 +186,7 @@ D3D12_STENCIL_OP ToNativeStencilOp( const a3d::STENCIL_OP& operation )
 //-------------------------------------------------------------------------------------------------
 //      ステンシルステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeDepthStencilOpDesc( const a3d::StencilState& state, D3D12_DEPTH_STENCILOP_DESC& result )
+void ToNativeDepthStencilOpDesc( const a3d::StencilTestDesc& state, D3D12_DEPTH_STENCILOP_DESC& result )
 {
     result.StencilFailOp      = ToNativeStencilOp( state.StencilFailOp );
     result.StencilDepthFailOp = ToNativeStencilOp( state.StencilDepthFailOp );
@@ -195,18 +195,25 @@ void ToNativeDepthStencilOpDesc( const a3d::StencilState& state, D3D12_DEPTH_STE
 }
 
 //-------------------------------------------------------------------------------------------------
-//      深度ステンシルステートをネイティブ形式に変換します.
+//      深度ステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeDepthStencilDesc( const a3d::DepthStencilState& state, D3D12_DEPTH_STENCIL_DESC& result )
+void ToNativeDepthDesc( const a3d::DepthState& ds, D3D12_DEPTH_STENCIL_DESC& result )
 {
-    result.DepthEnable      = ( state.DepthTestEnable ) ? TRUE : FALSE;
-    result.DepthWriteMask   = ( state.DepthWriteEnable ) ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
-    result.DepthFunc        = a3d::ToNativeComparisonFunc( state.DepthCompareOp );
-    result.StencilEnable    = ( state.StencilTestEnable ) ? TRUE : FALSE;
-    result.StencilReadMask  = state.StencllReadMask;
-    result.StencilWriteMask = state.StencilWriteMask;
-    ToNativeDepthStencilOpDesc( state.FrontFace, result.FrontFace );
-    ToNativeDepthStencilOpDesc( state.BackFace,  result.BackFace );
+    result.DepthEnable      = ( ds.DepthTestEnable ) ? TRUE : FALSE;
+    result.DepthWriteMask   = ( ds.DepthWriteEnable ) ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    result.DepthFunc        = a3d::ToNativeComparisonFunc( ds.DepthCompareOp );
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ステンシルステートをネイティブ形式に変換します.
+//-------------------------------------------------------------------------------------------------
+void ToNativeStencilDesc(const a3d::StencilState& ss, D3D12_DEPTH_STENCIL_DESC& result)
+{
+    result.StencilEnable    = ( ss.StencilTestEnable ) ? TRUE : FALSE;
+    result.StencilReadMask  = ss.StencllReadMask;
+    result.StencilWriteMask = ss.StencilWriteMask;
+    ToNativeDepthStencilOpDesc( ss.FrontFace, result.FrontFace );
+    ToNativeDepthStencilOpDesc( ss.BackFace,  result.BackFace );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -405,7 +412,8 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     ToNativeShaderByteCode  ( pDesc->GeometryShader    , desc.GS );
     ToNativeBlendDesc       ( pDesc->BlendState        , desc.BlendState );
     ToNativeRasterizerDesc  ( pDesc->RasterizerState   , desc.RasterizerState );
-    ToNativeDepthStencilDesc( pDesc->DepthStencilState , desc.DepthStencilState );
+    ToNativeDepthDesc       ( pDesc->DepthState        , desc.DepthStencilState );
+    ToNativeStencilDesc     ( pDesc->StencilState      , desc.DepthStencilState );
     ToNativeSampleDesc      ( pDesc->MultiSampleState  , desc.SampleDesc );
     desc.BlendState.AlphaToCoverageEnable = (pDesc->MultiSampleState.EnableAlphaToCoverage) ? TRUE : FALSE;
     desc.SampleMask                       = UINT32_MAX;

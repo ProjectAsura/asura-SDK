@@ -325,7 +325,7 @@ VkStencilOp ToNativeStencilOp(a3d::STENCIL_OP value)
 //-------------------------------------------------------------------------------------------------
 //      ステンシル操作ステートに変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeStencilOpState(const a3d::StencilState& state, VkStencilOpState* pState)
+void ToNativeStencilOpState(const a3d::StencilTestDesc& state, VkStencilOpState* pState)
 {
     pState->failOp      = ToNativeStencilOp(state.StencilFailOp);
     pState->passOp      = ToNativeStencilOp(state.StencilPassOp);
@@ -337,11 +337,11 @@ void ToNativeStencilOpState(const a3d::StencilState& state, VkStencilOpState* pS
 }
 
 //-------------------------------------------------------------------------------------------------
-//      深度ステンシルステートに変換します.
+//      深度ステートに変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeDepthStencilState
+void ToNativeDepthState
 (
-    const a3d::DepthStencilState&           state,
+    const a3d::DepthState&           state,
     VkPipelineDepthStencilStateCreateInfo*  pInfo
 )
 {
@@ -352,6 +352,17 @@ void ToNativeDepthStencilState
     pInfo->depthWriteEnable      = (state.DepthWriteEnable) ? VK_TRUE : VK_FALSE;
     pInfo->depthCompareOp        = a3d::ToNativeCompareOp(state.DepthCompareOp);
     pInfo->depthBoundsTestEnable = VK_FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ステンシルステートに変換します.
+//-------------------------------------------------------------------------------------------------
+void ToNativeStencilState
+(
+    const a3d::StencilState&                state,
+    VkPipelineDepthStencilStateCreateInfo*  pInfo
+)
+{
     pInfo->stencilTestEnable     = (state.StencilTestEnable) ? VK_TRUE : VK_FALSE;
     ToNativeStencilOpState(state.FrontFace, &pInfo->front);
     ToNativeStencilOpState(state.BackFace,  &pInfo->back);
@@ -364,6 +375,7 @@ void ToNativeDepthStencilState
     pInfo->back.reference        = state.StencllReadMask;
     pInfo->back.compareMask      = 0;//UINT32_MAX;
 }
+
 
 //-------------------------------------------------------------------------------------------------
 //      ブレンドファクターに変換します.
@@ -649,7 +661,8 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         ToNativeTessellationState (pDesc->TessellationState, &tessellationState);
         ToNativeRasterizationState(pDesc->RasterizerState,   &rasterizerState);
         ToNativeMultisampleState  (pDesc->MultiSampleState,  &multisampleState);
-        ToNativeDepthStencilState (pDesc->DepthStencilState, &depthStencilState);
+        ToNativeDepthState        (pDesc->DepthState,        &depthStencilState);
+        ToNativeStencilState      (pDesc->StencilState,      &depthStencilState);
         ToNativeViewportState(pDesc->pFrameBuffer, viewports, scissors, &viewportState);
         ToNativeColorBlendState(
             pDesc->BlendState,
