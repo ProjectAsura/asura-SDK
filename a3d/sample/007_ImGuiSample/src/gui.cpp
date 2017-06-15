@@ -390,11 +390,11 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         inputLayout.pStreams    = &inputStream;
 
         // ステンシルステートです.
-        a3d::StencilState stencilState = {};
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
+        a3d::StencilTestDesc stencilTest = {};
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
 
         // グラフィックスパイプラインステートを設定します.
         a3d::GraphicsPipelineStateDesc desc = {};
@@ -448,15 +448,17 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         desc.MultiSampleState.EnableMultiSample     = false;
         desc.MultiSampleState.SampleCount           = 1;
 
-        // 深度ステンシルステートの設定.
-        desc.DepthStencilState.DepthTestEnable      = false;
-        desc.DepthStencilState.DepthWriteEnable     = false;
-        desc.DepthStencilState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
-        desc.DepthStencilState.StencilTestEnable    = false;
-        desc.DepthStencilState.StencllReadMask      = 0;
-        desc.DepthStencilState.StencilWriteMask     = 0;
-        desc.DepthStencilState.FrontFace            = stencilState;
-        desc.DepthStencilState.BackFace             = stencilState;
+        // 深度ステートの設定.
+        desc.DepthState.DepthTestEnable      = false;
+        desc.DepthState.DepthWriteEnable     = false;
+        desc.DepthState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
+
+        // ステンシルステートの設定.
+        desc.StencilState.StencilTestEnable    = false;
+        desc.StencilState.StencllReadMask      = 0;
+        desc.StencilState.StencilWriteMask     = 0;
+        desc.StencilState.FrontFace            = stencilTest;
+        desc.StencilState.BackFace             = stencilTest;
 
         // テッセレーションステートの設定.
         desc.TessellationState.PatchControlCount = 0;

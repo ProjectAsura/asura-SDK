@@ -163,6 +163,7 @@ void Main()
     if (!CreateApp(960, 540, &g_pApp))
     { return; }
 
+    // リサイズ時のコールバック関数を設定.
     g_pApp->SetResizeCallback(Resize, nullptr);
 
     // A3D初期化.
@@ -470,7 +471,7 @@ bool InitA3D()
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
         desc.EntryCount                = 3;
-        
+
         desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
         desc.Entries[0].ShaderRegister = 0;
         desc.Entries[0].BindLocation   = 0;
@@ -489,7 +490,7 @@ bool InitA3D()
         a3d::DescriptorSetLayoutDesc desc = {};
         desc.MaxSetCount               = 2;
         desc.EntryCount                = 2;
-        
+
         desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
         desc.Entries[0].ShaderRegister = 0;
         desc.Entries[0].BindLocation   = 0;
@@ -532,12 +533,12 @@ bool InitA3D()
         inputLayout.StreamCount = 1;
         inputLayout.pStreams    = &inputStream;
 
-        // ステンシルステートです.
-        a3d::StencilState stencilState = {};
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
+        // ステンシルテスト設定です.
+        a3d::StencilTestDesc stencilTest = {};
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
 
         // グラフィックスパイプラインステートを設定します.
         a3d::GraphicsPipelineStateDesc desc = {};
@@ -580,15 +581,17 @@ bool InitA3D()
         desc.MultiSampleState.EnableMultiSample     = false;
         desc.MultiSampleState.SampleCount           = 1;
 
-        // 深度ステンシルステートの設定.
-        desc.DepthStencilState.DepthTestEnable      = true;
-        desc.DepthStencilState.DepthWriteEnable     = true;
-        desc.DepthStencilState.DepthCompareOp       = a3d::COMPARE_OP_LESS;
-        desc.DepthStencilState.StencilTestEnable    = false;
-        desc.DepthStencilState.StencllReadMask      = 0;
-        desc.DepthStencilState.StencilWriteMask     = 0;
-        desc.DepthStencilState.FrontFace            = stencilState;
-        desc.DepthStencilState.BackFace             = stencilState;
+        // 深度ステートの設定.
+        desc.DepthState.DepthTestEnable      = true;
+        desc.DepthState.DepthWriteEnable     = true;
+        desc.DepthState.DepthCompareOp       = a3d::COMPARE_OP_LEQUAL;
+
+        // ステンシルステートの設定.
+        desc.StencilState.StencilTestEnable    = false;
+        desc.StencilState.StencllReadMask      = 0;
+        desc.StencilState.StencilWriteMask     = 0;
+        desc.StencilState.FrontFace            = stencilTest;
+        desc.StencilState.BackFace             = stencilTest;
 
         // テッセレーションステートの設定.
         desc.TessellationState.PatchControlCount = 0;
@@ -786,12 +789,12 @@ bool InitA3D()
         inputLayout.StreamCount = 1;
         inputLayout.pStreams    = &inputStream;
 
-        // ステンシルステートです.
-        a3d::StencilState stencilState = {};
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
+        // ステンシルテスト設定です.
+        a3d::StencilTestDesc stencilTest = {};
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
 
         // グラフィックスパイプラインステートを設定します.
         a3d::GraphicsPipelineStateDesc desc = {};
@@ -834,15 +837,17 @@ bool InitA3D()
         desc.MultiSampleState.EnableMultiSample     = false;
         desc.MultiSampleState.SampleCount           = 1;
 
-        // 深度ステンシルステートの設定.
-        desc.DepthStencilState.DepthTestEnable      = false;
-        desc.DepthStencilState.DepthWriteEnable     = false;
-        desc.DepthStencilState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
-        desc.DepthStencilState.StencilTestEnable    = false;
-        desc.DepthStencilState.StencllReadMask      = 0;
-        desc.DepthStencilState.StencilWriteMask     = 0;
-        desc.DepthStencilState.FrontFace            = stencilState;
-        desc.DepthStencilState.BackFace             = stencilState;
+        // 深度ステートの設定.
+        desc.DepthState.DepthTestEnable      = false;
+        desc.DepthState.DepthWriteEnable     = false;
+        desc.DepthState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
+
+        // ステンシルステートの設定.
+        desc.StencilState.StencilTestEnable    = false;
+        desc.StencilState.StencllReadMask      = 0;
+        desc.StencilState.StencilWriteMask     = 0;
+        desc.StencilState.FrontFace            = stencilTest;
+        desc.StencilState.BackFace             = stencilTest;
 
         // テッセレーションステートの設定.
         desc.TessellationState.PatchControlCount = 0;

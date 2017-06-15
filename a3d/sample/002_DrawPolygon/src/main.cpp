@@ -351,12 +351,12 @@ bool InitA3D()
         inputLayout.StreamCount = 1;
         inputLayout.pStreams    = &inputStream;
 
-        // ステンシルステートです.
-        a3d::StencilState stencilState = {};
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilFailOp      = a3d::STENCIL_OP_KEEP;
-        stencilState.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
+        // ステンシルテスト設定です.
+        a3d::StencilTestDesc stencilTest = {};
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
 
         // グラフィックスパイプラインステートを設定します.
         a3d::GraphicsPipelineStateDesc desc = {};
@@ -399,15 +399,17 @@ bool InitA3D()
         desc.MultiSampleState.EnableMultiSample     = false;
         desc.MultiSampleState.SampleCount           = 1;
 
-        // 深度ステンシルステートの設定.
-        desc.DepthStencilState.DepthTestEnable      = false;
-        desc.DepthStencilState.DepthWriteEnable     = false;
-        desc.DepthStencilState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
-        desc.DepthStencilState.StencilTestEnable    = false;
-        desc.DepthStencilState.StencllReadMask      = 0;
-        desc.DepthStencilState.StencilWriteMask     = 0;
-        desc.DepthStencilState.FrontFace            = stencilState;
-        desc.DepthStencilState.BackFace             = stencilState;
+        // 深度ステートの設定.
+        desc.DepthState.DepthTestEnable      = false;
+        desc.DepthState.DepthWriteEnable     = false;
+        desc.DepthState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
+
+        // ステンシルステートの設定.
+        desc.StencilState.StencilTestEnable    = false;
+        desc.StencilState.StencllReadMask      = 0;
+        desc.StencilState.StencilWriteMask     = 0;
+        desc.StencilState.FrontFace            = stencilTest;
+        desc.StencilState.BackFace             = stencilTest;
 
         // テッセレーションステートの設定.
         desc.TessellationState.PatchControlCount = 0;
@@ -454,7 +456,6 @@ bool InitA3D()
     g_Scissor.Extent.Height = g_pApp->GetHeight();
 
     g_Prepare = true;
-
     return true;
 }
 
@@ -600,6 +601,10 @@ void Resize( uint32_t w, uint32_t h, void* pUser )
 
     g_Prepare = false;
 
+    // アイドル状態になるまで待つ.
+    g_pGraphicsQueue->WaitIdle();
+    g_pDevice->WaitIdle();
+
     for(auto i=0; i<2; ++i)
     {
         // フレームバッファの破棄.
@@ -611,10 +616,6 @@ void Resize( uint32_t w, uint32_t h, void* pUser )
         // カラーバッファの破棄.
         a3d::SafeRelease(g_pColorBuffer[i]);
     }
-
-    // アイドル状態になるまで待つ.
-    g_pGraphicsQueue->WaitIdle();
-    g_pDevice->WaitIdle();
 
     // スワップチェインのリサイズ処理です.
     g_pSwapChain->ResizeBuffers( w, h );
