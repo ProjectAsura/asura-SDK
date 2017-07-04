@@ -217,14 +217,14 @@ bool InitA3D()
 
     auto info = g_pDevice->GetInfo();
 
-    // スワップチェインの生成.
-    {
     #if SAMPLE_IS_VULKAN && TARGET_PC
         auto format = a3d::RESOURCE_FORMAT_B8G8R8A8_UNORM;
     #else
         auto format = a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM;
     #endif
 
+    // スワップチェインの生成.
+    {
         a3d::SwapChainDesc desc = {};
         desc.Extent.Width   = g_pApp->GetWidth();
         desc.Extent.Height  = g_pApp->GetHeight();
@@ -593,8 +593,12 @@ bool InitA3D()
         // プリミティブトポロジーの設定.
         desc.PrimitiveTopology = a3d::PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-        // フレームバッファの設定.
-        desc.pFrameBuffer = g_pFrameBuffer[0];
+        // フォーマットの設定.
+        desc.ColorCount                 = 1;
+        desc.ColorTarget[0].Format      = format;
+        desc.ColorTarget[0].SampleCount = 1;
+        desc.DepthTarget.Format         = a3d::RESOURCE_FORMAT_D32_FLOAT;
+        desc.DepthTarget.SampleCount    = 1;
 
         // キャッシュ済みパイプラインステートの設定.
         desc.pCachedPSO = nullptr;

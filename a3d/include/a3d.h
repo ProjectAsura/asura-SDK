@@ -26,27 +26,13 @@
         #endif//A3D_PLATFORM_WIN
     #endif//defined(WIN64)
 
-    #ifdef __linux__
-        #ifndef A3D_PLATFORM_LINUX
-        #define A3D_PALTFORM_LINUX  // Linuxプラットフォームです.
-        #endif//A3D_PLATFORM_LINUX
-    #endif//__linux__
-
-
     #if defined(A3D_PLATFORM_WIN)
         #define A3D_IS_WIN      (1)
-        #define A3D_IS_LINUX    (0)
-
-    #elif defined(A3D_PLATFORM_LINUX)
-        #define A3D_IS_WIN      (0)
-        #define A3D_IS_LINUX    (1)
-
     #endif
 
 #else
 
     #define A3D_IS_WIN      (0)
-    #define A3D_IS_LINUX    (0)
 
 #endif// A3D_TARGET_CONSOLE
 
@@ -1035,6 +1021,16 @@ struct ShaderBinary
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// TargetAttachmentDesc structure
+//! @brief  ターゲットアタッチメント記述子です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct TargetAttachmentDesc
+{
+    RESOURCE_FORMAT     Format;             //!< リソースフォーマットです.
+    uint32_t            SampleCount;        //!< サンプル数です.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // GraphicsPipelineStateDesc structure
 //! @brief  グラフィックスパイプラインステートの設定です.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1054,7 +1050,9 @@ struct GraphicsPipelineStateDesc
     TessellationState       TessellationState;      //!< テッセレーションステートです.
     InputLayoutDesc         InputLayout;            //!< 入力レイアウトステートです.
     PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.
-    IFrameBuffer*           pFrameBuffer;           //!< フレームバッファです.
+    uint32_t                ColorCount;             //!< カラーフォーマット数です.
+    TargetAttachmentDesc    ColorTarget[8];         //!< カラーターゲットです.
+    TargetAttachmentDesc    DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
 };
 
@@ -1480,6 +1478,13 @@ struct A3D_API IBufferView : IDeviceChild
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
     virtual BufferViewDesc A3D_APIENTRY GetDesc() const = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      リソースを取得します.
+    //!
+    //! @return     リソースを返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual IBuffer* A3D_APIENTRY GetResource() const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1528,6 +1533,13 @@ struct A3D_API ITextureView : IDeviceChild
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
     virtual TextureViewDesc A3D_APIENTRY GetDesc() const = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      リソースを取得します.
+    //!
+    //! @return     リソースを返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual ITexture* A3D_APIENTRY GetResource() const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

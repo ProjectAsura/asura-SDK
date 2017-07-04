@@ -178,29 +178,23 @@ void ToNativeTessellationState
 //-------------------------------------------------------------------------------------------------
 void ToNativeViewportState
 (
-    a3d::IFrameBuffer*                  pFrameBuffer,
     VkViewport*                         pViewport,
     VkRect2D*                           pScissor,
     VkPipelineViewportStateCreateInfo*  pInfo
 )
 {
-    auto pWrapFrameBuffer = static_cast<a3d::FrameBuffer*>(pFrameBuffer);
-    A3D_ASSERT(pWrapFrameBuffer != nullptr);
-
-    auto w = pWrapFrameBuffer->GetWidth();
-    auto h = pWrapFrameBuffer->GetHeight();
 
     pViewport->x        = 0.0f;
     pViewport->y        = 0.0f;
-    pViewport->width    = static_cast<float>(w);
-    pViewport->height   = static_cast<float>(h);
+    pViewport->width    = 1.0f;
+    pViewport->height   = 1.0f;
     pViewport->minDepth = 0.0f;
     pViewport->maxDepth = 1.0f;
 
     pScissor->offset.x      = 0;
     pScissor->offset.y      = 0;
-    pScissor->extent.width  = w;
-    pScissor->extent.height = h;
+    pScissor->extent.width  = 1;
+    pScissor->extent.height = 1;
 
     pInfo->sType            = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     pInfo->pNext            = nullptr;
@@ -519,6 +513,7 @@ PipelineState::PipelineState()
 , m_PipelineState   (null_handle)
 , m_BindPoint       (VK_PIPELINE_BIND_POINT_GRAPHICS)
 , m_PipelineCache   (null_handle)
+, m_RenderPass      (null_handle)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -535,7 +530,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    if (pDesc->pFrameBuffer == nullptr || pDesc->pLayout == nullptr)
+    if (pDesc->pLayout == nullptr)
     { return false; }
 
     m_pDevice = static_cast<Device*>(pDevice);
@@ -543,6 +538,76 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
+
+   {
+        VkAttachmentDescription attachmentDesc[9] = {};
+        VkAttachmentReference   attachmentRefs[9] = {};
+        VkAttachmentReference*  pDepthAttachmentRef = nullptr;
+
+        uint32_t attachmentCount = pDesc->ColorCount;
+
+        for (auto i = 0u; i < pDesc->ColorCount; ++i)
+        {
+            attachmentDesc[i].format            = ToNativeFormat(pDesc->ColorTarget[i].Format);
+            attachmentDesc[i].samples           = ToNativeSampleCountFlags(pDesc->ColorTarget[i].SampleCount);
+            attachmentDesc[i].loadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[i].storeOp           = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[i].stencilLoadOp     = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[i].stencilStoreOp    = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[i].initialLayout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentDesc[i].finalLayout       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentDesc[i].flags             = 0;
+
+            attachmentRefs[i].attachment    = i;
+            attachmentRefs[i].layout        = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        }
+
+        if (pDesc->DepthTarget.Format != RESOURCE_FORMAT_UNKNOWN)
+        {
+            attachmentCount++;
+
+            auto idx = pDesc->ColorCount;
+            attachmentDesc[idx].format          = ToNativeFormat(pDesc->DepthTarget.Format);
+            attachmentDesc[idx].samples         = ToNativeSampleCountFlags(pDesc->DepthTarget.SampleCount);
+            attachmentDesc[idx].loadOp          = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[idx].storeOp         = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[idx].stencilLoadOp   = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[idx].stencilStoreOp  = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[idx].initialLayout   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            attachmentDesc[idx].finalLayout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            attachmentRefs[idx].attachment  = idx;
+            attachmentRefs[idx].layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            pDepthAttachmentRef = &attachmentRefs[idx];
+        }
+
+        VkSubpassDescription subpass = {};
+        subpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.flags                   = 0;
+        subpass.inputAttachmentCount    = 0;
+        subpass.colorAttachmentCount    = pDesc->ColorCount;
+        subpass.pColorAttachments       = attachmentRefs;
+        subpass.pResolveAttachments     = nullptr;
+        subpass.pDepthStencilAttachment = pDepthAttachmentRef;
+        subpass.preserveAttachmentCount = 0;
+        subpass.pPreserveAttachments    = nullptr;
+
+
+        VkRenderPassCreateInfo info = {};
+        info.sType              = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        info.pNext              = nullptr;
+        info.flags              = 0;
+        info.attachmentCount    = attachmentCount;
+        info.pAttachments       = attachmentDesc;
+        info.subpassCount       = 1;
+        info.pSubpasses         = &subpass;
+
+
+        auto ret = vkCreateRenderPass(pNativeDevice, &info, nullptr, &m_RenderPass);
+        if (ret != VK_SUCCESS)
+        { return false;  }
+    }
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
@@ -650,9 +715,6 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         dynamicState.dynamicStateCount  = 4;
         dynamicState.pDynamicStates     = dynamicElements;
 
-        auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pDesc->pFrameBuffer);
-        A3D_ASSERT(pWrapFrameBuffer != nullptr);
-
         VkViewport viewports[16];
         VkRect2D scissors[16];
 
@@ -663,10 +725,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         ToNativeMultisampleState  (pDesc->MultiSampleState,  &multisampleState);
         ToNativeDepthState        (pDesc->DepthState,        &depthStencilState);
         ToNativeStencilState      (pDesc->StencilState,      &depthStencilState);
-        ToNativeViewportState(pDesc->pFrameBuffer, viewports, scissors, &viewportState);
+        ToNativeViewportState(viewports, scissors, &viewportState);
         ToNativeColorBlendState(
             pDesc->BlendState,
-            pWrapFrameBuffer->GetColorTargetCount(),
+            pDesc->ColorCount,
             colorAttachments,
             &colorBlendState );
 
@@ -689,7 +751,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         info.pColorBlendState       = &colorBlendState;
         info.pDynamicState          = &dynamicState;
         info.layout                 = pWrapLayout->GetVulkanPipelineLayout();
-        info.renderPass             = pWrapFrameBuffer->GetRenderPass();
+        info.renderPass             = m_RenderPass;
         info.subpass                = 0;
         info.basePipelineHandle     = null_handle;
         info.basePipelineIndex      = 0;

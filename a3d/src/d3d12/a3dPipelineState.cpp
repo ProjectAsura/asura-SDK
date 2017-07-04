@@ -382,7 +382,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    if (pDesc->pFrameBuffer == nullptr || pDesc->pLayout == nullptr)
+    if (pDesc->pLayout == nullptr)
     { return false; }
 
     Term();
@@ -397,9 +397,6 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
-
-    auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pDesc->pFrameBuffer);
-    A3D_ASSERT(pWrapFrameBuffer != nullptr);
 
     D3D12_INPUT_ELEMENT_DESC elementDesc[D3D12_COMMONSHADER_INPUT_RESOURCE_REGISTER_COUNT] = {};
 
@@ -432,11 +429,12 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     desc.InputLayout.pInputElementDescs  = elementDesc;
     desc.IBStripCutValue                 = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
     desc.PrimitiveTopologyType           = a3d::ToNativePrimitiveTopology( pDesc->PrimitiveTopology );
-    desc.NumRenderTargets                = pWrapFrameBuffer->GetColorCount();
+    desc.NumRenderTargets                = pDesc->ColorCount;
     ToNativePipelieStateCache( pDesc->pCachedPSO, desc.CachedPSO );
 
-    memcpy(desc.RTVFormats, pWrapFrameBuffer->GetD3D12RenderTargetViewFormats(), pWrapFrameBuffer->GetColorCount() );
-    desc.DSVFormat = pWrapFrameBuffer->GetD3D12DepthStencilViewFormat();
+    for (auto i=0u; i<pDesc->ColorCount; ++i)
+    { desc.RTVFormats[i] = a3d::ToNativeFormat(pDesc->ColorTarget[i].Format); }
+    desc.DSVFormat = a3d::ToNativeFormat(pDesc->DepthTarget.Format);
 
     auto hr = pNativeDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));
     if ( FAILED(hr) )

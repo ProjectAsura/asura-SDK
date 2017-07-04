@@ -472,9 +472,16 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         // プリミティブトポロジーの設定.
         desc.PrimitiveTopology = a3d::PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-        // フレームバッファの設定.
-        desc.pFrameBuffer = pFrameBuffer;
-
+        // フォーマットの設定.
+        desc.ColorCount = pFrameBuffer->GetDesc().ColorCount;
+        desc.ColorTarget[0].Format      = pFrameBuffer->GetDesc().pColorTargets[0]->GetResource()->GetDesc().Format;
+        desc.ColorTarget[0].SampleCount = pFrameBuffer->GetDesc().pColorTargets[0]->GetResource()->GetDesc().SampleCount;
+        if (pFrameBuffer->GetDesc().pDepthTarget != nullptr)
+        {
+            desc.DepthTarget.Format      = pFrameBuffer->GetDesc().pDepthTarget->GetResource()->GetDesc().Format;
+            desc.DepthTarget.SampleCount = pFrameBuffer->GetDesc().pDepthTarget->GetResource()->GetDesc().SampleCount;
+        }
+ 
         // キャッシュ済みパイプラインステートの設定.
         desc.pCachedPSO = nullptr;
 

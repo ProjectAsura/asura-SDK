@@ -112,7 +112,8 @@ private:
     VkPipeline              m_PipelineState;        //!< パイプラインステートです.
     VkPipelineBindPoint     m_BindPoint;            //!< バインドポイントです.
     VkPipelineCache         m_PipelineCache;        //!< パイプラインキャッシュです.
-                                                    
+    VkRenderPass            m_RenderPass;           //!< レンダーパスです.
+
     //=============================================================================================
     // private methods.
     //=============================================================================================

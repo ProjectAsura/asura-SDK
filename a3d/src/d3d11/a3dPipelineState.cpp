@@ -364,7 +364,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    if (pDesc->pFrameBuffer == nullptr || pDesc->pLayout == nullptr)
+    if (pDesc->pLayout == nullptr)
     { return false; }
 
     Term();
