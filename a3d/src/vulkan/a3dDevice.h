@@ -196,6 +196,20 @@ public:
         ITextureView**          ppTextureView) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      ストレージビューを生成します.
+    //!
+    //! @param[in]      pResource       リソースです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppStorageView   ストレージビューの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateStorageView(
+        IResource*              pResource,
+        const StorageViewDesc*  pDesc,
+        IStorageView**          ppStorageView) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを生成します.
     //!
     //! @param[in]      pDesc           構成設定です.

@@ -46,6 +46,7 @@
 #include "a3dBufferView.h"
 #include "a3dTexture.h"
 #include "a3dTextureView.h"
+#include "a3dStorageView.h"
 #include "a3dSampler.h"
 #include "a3dFrameBuffer.h"
 #include "a3dDescriptorSetLayout.h"

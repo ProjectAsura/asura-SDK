@@ -85,6 +85,14 @@ public:
     void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      ストレージを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetStorage(uint32_t index, IStorageView* pResource) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
@@ -93,42 +101,21 @@ public:
     void A3D_APIENTRY SetSampler(uint32_t index, ISampler* pSampler) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを関連付けます.
+    //! @brief      コマンドを生成します.
+    //!
+    //! @param[in]      pCmd        コマンドです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY Bind(ID3D11DeviceContext* pDeviceContext);
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      サブリソースを更新します.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY UpdateSubreosurce(ID3D11DeviceContext* pDeviceContext);
+    void A3D_APIENTRY MakeCommand(ImCmdSetDescriptorSet* pCmd);
 
 private:
-    //---------------------------------------------------------------------------------------------
-    // Type Definitions.
-    //---------------------------------------------------------------------------------------------
-    typedef void (*Binder) (ID3D11DeviceContext* pContext, uint32_t slot, void* pResource);
-    typedef void (*Updater)(ID3D11DeviceContext* pContext, void* pResource);
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // BindInfo structure
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    struct BindInfo
-    {
-        uint32_t    StageCount;     //!< シェーダステージ数です.
-        uint32_t    Slot;           //!< スロット番号です.
-        void*       pResource;      //!< リソースです.
-        Binder      Binder[6];      //!< バインダーです.
-        Updater     Updater;        //!< アップデータです.
-    };
-
     //=============================================================================================
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;                 //!< 参照カウントです.
     Device*                     m_pDevice;                  //!< デバイスです.
     DescriptorSetLayoutDesc*    m_pLayoutDesc;              //!< レイアウト設定です.
+    void**                      m_pDescriptors;             //!< ディスクリプタです.
     bool                        m_IsGraphicsPipeline;       //!< グラフィックスパイプラインかどうか?
-    BindInfo*                   m_pBindInfo;                //!< バインド情報です.
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コンストラクタです.

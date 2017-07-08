@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\d3d12\a3dStorageView.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dBuffer.cpp" />
@@ -179,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\a3d.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dStorageView.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />

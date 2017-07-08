@@ -102,6 +102,9 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\vulkan\a3dStorageView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
@@ -163,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
       <Filter>ソース ファイル\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\vulkan\a3dStorageView.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

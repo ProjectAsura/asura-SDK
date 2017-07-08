@@ -102,6 +102,9 @@
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h">
       <Filter>ソース ファイル\misc</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d11\a3dStorageView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\d3d11\a3dBuffer.cpp">
@@ -166,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
       <Filter>ソース ファイル\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d11\a3dStorageView.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

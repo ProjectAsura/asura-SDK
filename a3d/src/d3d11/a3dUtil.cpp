@@ -473,7 +473,7 @@ uint32_t ToNativeBindFlags(uint32_t value)
     { result |= D3D11_BIND_RENDER_TARGET; }
     if (value & RESOURCE_USAGE_DEPTH_TARGET)
     { result |= D3D11_BIND_DEPTH_STENCIL; }
-    if (value & RESOURCE_USAGE_UNORDERD_ACCESS)
+    if (value & RESOURCE_USAGE_STORAGE_TARGET)
     { result |= D3D11_BIND_UNORDERED_ACCESS; }
     if (value & RESOURCE_USAGE_INDEX_BUFFER)
     { result |= D3D11_BIND_INDEX_BUFFER; }

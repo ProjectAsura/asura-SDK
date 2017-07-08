@@ -5,46 +5,6 @@
 //-------------------------------------------------------------------------------------------------
 
 
-namespace /* anonymous */ {
-
-//-------------------------------------------------------------------------------------------------
-//      イメージビュータイプに変換します.
-//-------------------------------------------------------------------------------------------------
-VkImageViewType ToNativeImageViewType(a3d::VIEW_DIMENSION value)
-{
-    static VkImageViewType table[] = {
-        VK_IMAGE_VIEW_TYPE_1D,              // VIEW_DIMENSION_BUFFER
-        VK_IMAGE_VIEW_TYPE_1D,              // VIEW_DIMENSION_TEXTURE1D
-        VK_IMAGE_VIEW_TYPE_1D_ARRAY,        // VIEW_DIMENSION_TEXTURE1D_ARRAY
-        VK_IMAGE_VIEW_TYPE_2D,              // VIEW_DIMENSION_TEXTURE2D
-        VK_IMAGE_VIEW_TYPE_2D_ARRAY,        // VIEW_DIMENSION_TEXTURE2D_ARRAY
-        VK_IMAGE_VIEW_TYPE_CUBE,            // VIEW_DIMENSION_CUBEMAP
-        VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,      // VIEW_DIMENSION_CUBEMAP_ARRAY
-        VK_IMAGE_VIEW_TYPE_3D               // VIEW_DIMENSION_TEXTURE3D
-    };
-
-    return table[value];
-}
-
-//-------------------------------------------------------------------------------------------------
-//      コンポーネントスウィズルに変換します.
-//-------------------------------------------------------------------------------------------------
-VkComponentSwizzle ToNativeComponentSwizzle(a3d::TEXTURE_SWIZZLE value)
-{
-    static VkComponentSwizzle table[] = {
-        VK_COMPONENT_SWIZZLE_R,     // SWIZZLE_R
-        VK_COMPONENT_SWIZZLE_G,     // SWIZZLE_G
-        VK_COMPONENT_SWIZZLE_B,     // SWIZZLE_B
-        VK_COMPONENT_SWIZZLE_A,     // SWIZZLE_A
-        VK_COMPONENT_SWIZZLE_ZERO,  // SWIZZLE_ZERO
-        VK_COMPONENT_SWIZZLE_ONE    // SWIZZLE_ONE
-    };
-
-    return table[value];
-}
-
-} // namespace /* anonymous */
-
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

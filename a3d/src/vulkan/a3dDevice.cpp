@@ -967,6 +967,17 @@ bool Device::CreateTextureView
 { return TextureView::Create(this, pTexture, pDesc, ppTextureView); }
 
 //-------------------------------------------------------------------------------------------------
+//      ストレージビューを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateStorageView
+(
+    IResource*              pResource,
+    const StorageViewDesc*  pDesc,
+    IStorageView**          ppStorageView
+)
+{ return StorageView::Create(this, pResource, pDesc, ppStorageView); }
+
+//-------------------------------------------------------------------------------------------------
 //      サンプラーを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateSampler(const SamplerDesc* pDesc, ISampler** ppSampler)

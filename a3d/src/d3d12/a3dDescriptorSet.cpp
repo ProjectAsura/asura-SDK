@@ -119,6 +119,19 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      ストレージを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
+{
+    A3D_ASSERT(size_t(index) < m_Handles.size());
+
+    auto pWrapView = static_cast<StorageView*>(pResource);
+    A3D_ASSERT(pWrapView != nullptr);
+
+    m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
+}
+
+//-------------------------------------------------------------------------------------------------
 //      サンプラーを設定します.
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)

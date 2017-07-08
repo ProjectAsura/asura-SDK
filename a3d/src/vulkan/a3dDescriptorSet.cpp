@@ -205,6 +205,7 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 
     m_pInfos[index].Image.imageLayout = layout;
     m_pInfos[index].Image.imageView   = pWrapResource->GetVulkanImageView();
+    m_pInfos[index].StorageBuffer     = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -222,6 +223,35 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
     m_pInfos[index].Buffer.buffer = pWrapResource->GetVulkanBuffer();
     m_pInfos[index].Buffer.offset = desc.Offset;
     m_pInfos[index].Buffer.range  = desc.Range;
+    m_pInfos[index].StorageBuffer = false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ストレージを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
+{
+    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
+
+    auto pWrapView = static_cast<StorageView*>(pResource);
+    A3D_ASSERT(pWrapView != nullptr);
+
+    auto desc = pWrapView->GetDesc();
+
+    auto kind = pWrapView->GetResource()->GetKind();
+    if (kind == RESOURCE_KIND_BUFFER)
+    {
+        m_pInfos[index].Buffer.buffer = pWrapView->GetVulkanBuffer();
+        m_pInfos[index].Buffer.offset = desc.FirstElements;
+        m_pInfos[index].Buffer.range  = desc.ElementCount;
+        m_pInfos[index].StorageBuffer = true;
+    }
+    else if (kind == RESOURCE_KIND_TEXTURE)
+    {
+        m_pInfos[index].Image.imageLayout   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_pInfos[index].Image.imageView     = pWrapView->GetVulkanImageView();
+        m_pInfos[index].StorageBuffer       = false;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -250,17 +280,31 @@ void DescriptorSet::Update()
 
     for(auto i=0u; i<count; ++i)
     {
-        if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV ||
-            desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+        if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV)
         {
             m_pWrites[i].pBufferInfo = &m_pInfos[i].Buffer;
             m_pWrites[i].pImageInfo  = nullptr;
         }
         else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV ||
-                    desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
+                 desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
         {
             m_pWrites[i].pImageInfo  = &m_pInfos[i].Image;
             m_pWrites[i].pBufferInfo = nullptr;
+        }
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+        {
+            if (m_pInfos[i].StorageBuffer)
+            {
+                m_pWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                m_pWrites[i].pBufferInfo    = &m_pInfos[i].Buffer;
+                m_pWrites[i].pImageInfo     = nullptr;
+            }
+            else
+            {
+                m_pWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                m_pWrites[i].pBufferInfo    = nullptr;
+                m_pWrites[i].pImageInfo     = &m_pInfos[i].Image;
+            }
         }
     }
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
@@ -282,8 +326,7 @@ void DescriptorSet::Issue(ICommandList* pCommandList)
 
         for(auto i=0u; i<count; ++i)
         {
-            if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV ||
-                desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+            if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV)
             {
                 m_pWrites[i].pBufferInfo = &m_pInfos[i].Buffer;
                 m_pWrites[i].pImageInfo  = nullptr;
@@ -293,6 +336,21 @@ void DescriptorSet::Issue(ICommandList* pCommandList)
             {
                 m_pWrites[i].pImageInfo  = &m_pInfos[i].Image;
                 m_pWrites[i].pBufferInfo = nullptr;
+            }
+            else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+            {
+                if (m_pInfos[i].StorageBuffer)
+                {
+                    m_pWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    m_pWrites[i].pBufferInfo    = &m_pInfos[i].Buffer;
+                    m_pWrites[i].pImageInfo     = nullptr;
+                }
+                else
+                {
+                    m_pWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    m_pWrites[i].pImageInfo     = &m_pInfos[i].Image;
+                    m_pWrites[i].pBufferInfo    = nullptr;
+                }
             }
         }
 

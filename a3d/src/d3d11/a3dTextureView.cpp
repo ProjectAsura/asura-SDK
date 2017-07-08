@@ -302,7 +302,6 @@ TextureView::TextureView()
 , m_pSRV    (nullptr)
 , m_pRTV    (nullptr)
 , m_pDSV    (nullptr)
-, m_pUAV    (nullptr)
 { memset(&m_Desc, 0, sizeof(m_Desc)); }
 
 //-------------------------------------------------------------------------------------------------
@@ -375,19 +374,6 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
         { return false; }
     }
 
-    if (textureDesc.Usage & RESOURCE_USAGE_UNORDERD_ACCESS)
-    {
-        D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-        ToNativeUAVDesc(pDesc, uavDesc, pDesc->TextureAspect == TEXTURE_ASPECT_STENCIL);
-
-        auto hr = pD3D11Device->CreateUnorderedAccessView(
-            pWrapTexture->GetD3D11Resource(),
-            &uavDesc,
-            &m_pUAV);
-        if ( FAILED(hr) )
-        { return false; }
-    }
-
     return true;
 }
 
@@ -399,7 +385,6 @@ void TextureView::Term()
     SafeRelease( m_pSRV );
     SafeRelease( m_pRTV );
     SafeRelease( m_pDSV );
-    SafeRelease( m_pUAV );
     SafeRelease( m_pTexture );
     SafeRelease( m_pDevice );
 }
@@ -459,12 +444,6 @@ ID3D11RenderTargetView* TextureView::GetD3D11RenderTargetView() const
 //-------------------------------------------------------------------------------------------------
 ID3D11DepthStencilView* TextureView::GetD3D11DepthStencilView() const
 { return m_pDSV; }
-
-//-------------------------------------------------------------------------------------------------
-//      アンオーダードアクセスビューを取得します.
-//-------------------------------------------------------------------------------------------------
-ID3D11UnorderedAccessView* TextureView::GetD3D11UnorderedAccessView() const
-{ return m_pUAV; }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースを取得します.

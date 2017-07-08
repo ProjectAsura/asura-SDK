@@ -84,6 +84,14 @@ public:
     void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      ストレージを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetStorage(uint32_t index, IStorageView* pResource) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
@@ -105,11 +113,15 @@ private:
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // DescriptorInfo union
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    union DescriptorInfo
+    struct DescriptorInfo
     {
-        VkDescriptorImageInfo   Image;          //!< イメージ情報です.
-        VkDescriptorBufferInfo  Buffer;         //!< バッファ情報です.
-        VkBufferView            BufferView;     //!< バッファビューです.
+        union
+        {
+            VkDescriptorImageInfo   Image;          //!< イメージ情報です.
+            VkDescriptorBufferInfo  Buffer;         //!< バッファ情報です.
+            VkBufferView            BufferView;     //!< バッファビューです.
+        };
+        bool StorageBuffer;
     };
 
     //=============================================================================================

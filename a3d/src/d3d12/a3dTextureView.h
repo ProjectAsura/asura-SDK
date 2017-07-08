@@ -141,7 +141,5 @@ private:
     void operator = (const TextureView&) = delete;
 };
 
-
-
 } // namespace a3d
 

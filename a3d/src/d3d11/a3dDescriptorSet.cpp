@@ -4,152 +4,6 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
-
-namespace /* anonymous */ {
-
-void ConstantBufferBinderVS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
-    A3D_ASSERT(pBufferView != nullptr);
-    auto pBuffer = pBufferView->GetD3D11Buffer();
-    pContext->VSSetConstantBuffers(slot, 1, &pBuffer);
-}
-
-void ConstantBufferBinderDS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
-    A3D_ASSERT(pBufferView != nullptr);
-    auto pBuffer = pBufferView->GetD3D11Buffer();
-    pContext->DSSetConstantBuffers(slot, 1, &pBuffer);
-}
-
-void ConstantBufferBinderGS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
-    A3D_ASSERT(pBufferView != nullptr);
-    auto pBuffer = pBufferView->GetD3D11Buffer();
-    pContext->GSSetConstantBuffers(slot, 1, &pBuffer);
-}
-
-void ConstantBufferBinderHS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
-    A3D_ASSERT(pBufferView != nullptr);
-    auto pBuffer = pBufferView->GetD3D11Buffer();
-    pContext->HSSetConstantBuffers(slot, 1, &pBuffer);
-}
-
-void ConstantBufferBinderPS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
-    A3D_ASSERT(pBufferView != nullptr);
-    auto pBuffer = pBufferView->GetD3D11Buffer();
-    pContext->PSSetConstantBuffers(slot, 1, &pBuffer);
-}
-
-void ConstantBufferBinderCS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
-    A3D_ASSERT(pBufferView != nullptr);
-    auto pBuffer = pBufferView->GetD3D11Buffer();
-    pContext->CSSetConstantBuffers(slot, 1, &pBuffer);
-}
-
-void SamplerBinderVS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pSampler = static_cast<ID3D11SamplerState*>(pResource);
-    A3D_ASSERT(pSampler != nullptr);
-    pContext->VSSetSamplers(slot, 1, &pSampler);
-}
-
-void SamplerBinderDS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pSampler = static_cast<ID3D11SamplerState*>(pResource);
-    A3D_ASSERT(pSampler != nullptr);
-    pContext->DSSetSamplers(slot, 1, &pSampler);
-}
-
-void SamplerBinderGS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pSampler = static_cast<ID3D11SamplerState*>(pResource);
-    A3D_ASSERT(pSampler != nullptr);
-    pContext->GSSetSamplers(slot, 1, &pSampler);
-}
-
-void SamplerBinderHS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pSampler = static_cast<ID3D11SamplerState*>(pResource);
-    A3D_ASSERT(pSampler != nullptr);
-    pContext->HSSetSamplers(slot, 1, &pSampler);
-}
-
-void SamplerBinderPS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pSampler = static_cast<ID3D11SamplerState*>(pResource);
-    A3D_ASSERT(pSampler != nullptr);
-    pContext->PSSetSamplers(slot, 1, &pSampler);
-}
-
-void SamplerBinderCS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pSampler = static_cast<ID3D11SamplerState*>(pResource);
-    A3D_ASSERT(pSampler != nullptr);
-    pContext->CSSetSamplers(slot, 1, &pSampler);
-}
-
-void ShaderResourceViewBinderVS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pView = static_cast<ID3D11ShaderResourceView*>(pResource);
-    A3D_ASSERT(pView != nullptr);
-    pContext->VSSetShaderResources(slot, 1, &pView);
-}
-
-void ShaderResourceViewBinderDS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pView = static_cast<ID3D11ShaderResourceView*>(pResource);
-    A3D_ASSERT(pView != nullptr);
-    pContext->DSSetShaderResources(slot, 1, &pView);
-}
-
-void ShaderResourceViewBinderGS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pView = static_cast<ID3D11ShaderResourceView*>(pResource);
-    A3D_ASSERT(pView != nullptr);
-    pContext->GSSetShaderResources(slot, 1, &pView);
-}
-
-void ShaderResourceViewBinderHS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pView = static_cast<ID3D11ShaderResourceView*>(pResource);
-    A3D_ASSERT(pView != nullptr);
-    pContext->HSSetShaderResources(slot, 1, &pView);
-}
-
-void ShaderResourceViewBinderPS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pView = static_cast<ID3D11ShaderResourceView*>(pResource);
-    A3D_ASSERT(pView != nullptr);
-    pContext->PSSetShaderResources(slot, 1, &pView);
-}
-
-void ShaderResourceViewBinderCS(ID3D11DeviceContext* pContext, uint32_t slot, void* pResource)
-{
-    auto pView = static_cast<ID3D11ShaderResourceView*>(pResource);
-    pContext->CSSetShaderResources(slot, 1, &pView);
-}
-
-void ConstantBufferUpdater(ID3D11DeviceContext* pContext, void* pResource)
-{
-    auto pBufferView = static_cast<a3d::BufferView*>(pResource);
-    pBufferView->UpdateSubsource(pContext);
-}
-
-void EmptyUpdater(ID3D11DeviceContext*, void*)
-{ /* DO_NOTHING */ }
-
-} // namespace /* anonymous */
-
-
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,12 +74,12 @@ bool DescriptorSet::Init
     m_pDevice->AddRef();
 
     m_pLayoutDesc = pDesc;
-
-    m_pBindInfo = new BindInfo [pDesc->EntryCount];
-    if (m_pBindInfo == nullptr)
+    m_pDescriptors = new void* [pDesc->EntryCount];
+    if (m_pDescriptors == nullptr)
     { return false; }
 
-    memset( m_pBindInfo, 0, sizeof(BindInfo) * pDesc->EntryCount);
+    for(auto i=0u; i<pDesc->EntryCount; ++i)
+    { m_pDescriptors[i] = nullptr; }
 
     return true;
 }
@@ -235,10 +89,10 @@ bool DescriptorSet::Init
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Term()
 {
-    if (m_pBindInfo != nullptr)
+    if (m_pDescriptors != nullptr)
     {
-        delete [] m_pBindInfo;
-        m_pBindInfo = nullptr;
+        delete [] m_pDescriptors;
+        m_pDescriptors = nullptr;
     }
 
     if (m_pLayoutDesc != nullptr)
@@ -252,57 +106,8 @@ void DescriptorSet::Term()
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 {
-    auto pWrapTextureView = static_cast<TextureView*>(pResource);
-    A3D_ASSERT(pWrapTextureView != nullptr);
-
-    auto pD3D11ShaderResourceView = pWrapTextureView->GetD3D11ShaderResourceView();
-    A3D_ASSERT(pD3D11ShaderResourceView != nullptr);
-
-    auto& entry = m_pLayoutDesc->Entries[index];
-    auto& info  = m_pBindInfo[index];
-
-    info.Slot         = entry.ShaderRegister;
-    info.pResource    = pD3D11ShaderResourceView;
-    info.Updater      = EmptyUpdater;
-
-    auto count = 0;
-    if (entry.ShaderMask & SHADER_MASK_VERTEX)
-    {
-        info.Binder[count] = ShaderResourceViewBinderVS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_DOMAIN)
-    {
-        info.Binder[count] = ShaderResourceViewBinderDS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_GEOMETRY)
-    {
-        info.Binder[count] = ShaderResourceViewBinderGS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_HULL)
-    {
-        info.Binder[count] = ShaderResourceViewBinderHS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_PIXEL)
-    {
-        info.Binder[count] = ShaderResourceViewBinderPS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_COMPUTE)
-    {
-        info.Binder[count] = ShaderResourceViewBinderCS;
-        count++;
-    }
-
-    info.StageCount = count;
+    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+    m_pDescriptors[index] = pResource;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -310,57 +115,17 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 {
-    auto pWrapBufferView = static_cast<BufferView*>(pResource);
-    A3D_ASSERT(pWrapBufferView != nullptr);
+    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+    m_pDescriptors[index] = pResource;
+}
 
-    auto pD3D11Buffer = pWrapBufferView->GetD3D11Buffer();
-    A3D_ASSERT(pD3D11Buffer != nullptr);
-
-    auto& entry = m_pLayoutDesc->Entries[index];
-    auto& info  = m_pBindInfo[index];
-
-    info.Slot         = entry.ShaderRegister;
-    info.pResource    = pWrapBufferView;
-    info.Updater      = ConstantBufferUpdater;
-
-    auto count = 0;
-    if (entry.ShaderMask & SHADER_MASK_VERTEX)
-    {
-        info.Binder[count] = ConstantBufferBinderVS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_DOMAIN)
-    {
-        info.Binder[count] = ConstantBufferBinderDS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_GEOMETRY)
-    {
-        info.Binder[count] = ConstantBufferBinderGS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_HULL)
-    {
-        info.Binder[count] = ConstantBufferBinderHS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_PIXEL)
-    {
-        info.Binder[count] = ConstantBufferBinderPS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_COMPUTE)
-    {
-        info.Binder[count] = ConstantBufferBinderCS;
-        count++;
-    }
-
-    info.StageCount = count;
+//-------------------------------------------------------------------------------------------------
+//      ストレージを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
+{
+    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+    m_pDescriptors[index] = pResource;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -368,91 +133,19 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
 {
-    auto pWrapSampler = static_cast<Sampler*>(pSampler);
-    A3D_ASSERT(pWrapSampler != nullptr);
-
-    auto pD3D11SamplerState = pWrapSampler->GetD3D11SamplerState();
-    A3D_ASSERT(pD3D11SamplerState != nullptr);
-
-    auto& entry = m_pLayoutDesc->Entries[index];
-    auto& info  = m_pBindInfo[index];
-
-    info.Slot           = entry.ShaderRegister;
-    info.pResource      = pD3D11SamplerState;
-    info.Updater        = EmptyUpdater;
-
-    auto count = 0;
-    if (entry.ShaderMask & SHADER_MASK_VERTEX)
-    {
-        info.Binder[count] = SamplerBinderVS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_DOMAIN)
-    {
-        info.Binder[count] = SamplerBinderDS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_GEOMETRY)
-    {
-        info.Binder[count] = SamplerBinderGS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_HULL)
-    {
-        info.Binder[count] = SamplerBinderHS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_PIXEL)
-    {
-        info.Binder[count] = SamplerBinderPS;
-        count++;
-    }
-
-    if (entry.ShaderMask & SHADER_MASK_COMPUTE)
-    {
-        info.Binder[count] = SamplerBinderCS;
-        count++;
-    }
-
-    info.StageCount = count;
+    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+    m_pDescriptors[index] = pSampler;
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットを関連付けます.
+//      コマンドを生成します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::Bind(ID3D11DeviceContext* pDeviceContext)
+void DescriptorSet::MakeCommand(ImCmdSetDescriptorSet* pCmd)
 {
+    pCmd->Type = CMD_SET_DESCRIPTORSET;
+    pCmd->pDesc = m_pLayoutDesc;
     for(auto i=0u; i<m_pLayoutDesc->EntryCount; ++i)
-    {
-        auto& info = m_pBindInfo[i];
-
-        for(auto j=0u; j<info.StageCount; ++j)
-        {
-            auto binder = info.Binder[j];
-            binder(pDeviceContext, info.Slot, info.pResource);
-        }
-    }
-}
-
-//-------------------------------------------------------------------------------------------------
-//     サブリソースを更新します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::UpdateSubreosurce(ID3D11DeviceContext* pDeviceContext)
-{
-    for(auto i=0u; i<m_pLayoutDesc->EntryCount; ++i)
-    {
-        auto& info = m_pBindInfo[i];
-
-        for(auto j=0u; j<info.StageCount; ++j)
-        {
-            auto updater = info.Updater;
-            updater(pDeviceContext, info.pResource);
-        }
-    }
+    { pCmd->pDescriptor[i] = m_pDescriptors[i]; }
 }
 
 //-------------------------------------------------------------------------------------------------

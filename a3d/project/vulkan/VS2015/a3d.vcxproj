@@ -171,6 +171,7 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dQueryPool.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dQueue.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSampler.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dStorageView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSwapChain.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTextureView.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dQueryPool.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dQueue.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSampler.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dStorageView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSwapChain.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTexture.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTextureView.cpp" />

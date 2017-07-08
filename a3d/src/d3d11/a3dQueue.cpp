@@ -348,9 +348,264 @@ void Queue::ParseCmd()
                 {
                     auto cmd = reinterpret_cast<ImCmdSetDescriptorSet*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
-                    pActiveDescriptorSet = static_cast<DescriptorSet*>(cmd->pDescriptorSet);
-                    pActiveDescriptorSet->Bind(pDeviceContext);
-                    pActiveDescriptorSet->UpdateSubreosurce(pDeviceContext);
+
+                    for(auto i=0u; i<cmd->pDesc->EntryCount; ++i)
+                    {
+                        auto& entry = cmd->pDesc->Entries[i];
+
+                        if (entry.ShaderMask & SHADER_MASK_VERTEX)
+                        {
+                            switch(entry.Type)
+                            {
+                            case DESCRIPTOR_TYPE_CBV:
+                                {
+                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pCBV = pWrapView->GetD3D11Buffer();
+                                    pDeviceContext->VSSetConstantBuffers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pCBV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SRV:
+                                {
+                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                                    pDeviceContext->VSSetShaderResources(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSRV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SMP:
+                                {
+                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
+                                    pDeviceContext->VSSetSamplers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSmp);
+                                }
+                                break;
+                            }
+                        }
+                        
+                        if (entry.ShaderMask & SHADER_MASK_DOMAIN)
+                        {
+                            switch(entry.Type)
+                            {
+                            case DESCRIPTOR_TYPE_CBV:
+                                {
+                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pCBV = pWrapView->GetD3D11Buffer();
+                                    pDeviceContext->DSSetConstantBuffers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pCBV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SRV:
+                                {
+                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                                    pDeviceContext->DSSetShaderResources(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSRV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SMP:
+                                {
+                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
+                                    pDeviceContext->DSSetSamplers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSmp);
+                                }
+                                break;
+                            }
+                        }
+
+                        if (entry.ShaderMask & SHADER_MASK_GEOMETRY)
+                        {
+                            switch(entry.Type)
+                            {
+                            case DESCRIPTOR_TYPE_CBV:
+                                {
+                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pCBV = pWrapView->GetD3D11Buffer();
+                                    pDeviceContext->GSSetConstantBuffers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pCBV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SRV:
+                                {
+                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                                    pDeviceContext->GSSetShaderResources(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSRV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SMP:
+                                {
+                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
+                                    pDeviceContext->GSSetSamplers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSmp);
+                                }
+                                break;
+                            }
+                        }
+
+                        if (entry.ShaderMask & SHADER_MASK_HULL)
+                        {
+                            switch(entry.Type)
+                            {
+                            case DESCRIPTOR_TYPE_CBV:
+                                {
+                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pCBV = pWrapView->GetD3D11Buffer();
+                                    pDeviceContext->HSSetConstantBuffers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pCBV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SRV:
+                                {
+                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                                    pDeviceContext->HSSetShaderResources(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSRV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SMP:
+                                {
+                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
+                                    pDeviceContext->HSSetSamplers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSmp);
+                                }
+                                break;
+                            }
+                        }
+
+                        if (entry.ShaderMask & SHADER_MASK_PIXEL)
+                        {
+                            switch(entry.Type)
+                            {
+                            case DESCRIPTOR_TYPE_CBV:
+                                {
+                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pCBV = pWrapView->GetD3D11Buffer();
+                                    pDeviceContext->PSSetConstantBuffers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pCBV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SRV:
+                                {
+                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                                    pDeviceContext->PSSetShaderResources(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSRV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SMP:
+                                {
+                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
+                                    pDeviceContext->PSSetSamplers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSmp);
+                                }
+                                break;
+                            }
+                        }
+
+                        if (entry.ShaderMask & SHADER_MASK_COMPUTE)
+                        {
+                            switch(entry.Type)
+                            {
+                            case DESCRIPTOR_TYPE_CBV:
+                                {
+                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pCBV = pWrapView->GetD3D11Buffer();
+                                    pDeviceContext->CSSetConstantBuffers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pCBV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SRV:
+                                {
+                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                                    pDeviceContext->CSSetShaderResources(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSRV);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_SMP:
+                                {
+                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
+                                    pDeviceContext->CSSetSamplers(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pSmp);
+                                }
+                                break;
+
+                            case DESCRIPTOR_TYPE_UAV:
+                                {
+                                    auto pWrapView = static_cast<a3d::StorageView*>(cmd->pDescriptor[i]);
+                                    auto pUAV = pWrapView->GetD3D11UnorderedAccessView();
+                                    pDeviceContext->CSGetUnorderedAccessViews(
+                                        entry.ShaderRegister,
+                                        1,
+                                        &pUAV);
+                                }
+                                break;
+                            }
+                        }
+
+
+                        if (entry.Type == DESCRIPTOR_TYPE_CBV)
+                        {
+                            auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                            pWrapView->UpdateSubsource(pDeviceContext);
+                        }
+                    }
+
                     pCmd += sizeof(ImCmdSetDescriptorSet);
                 }
                 break;

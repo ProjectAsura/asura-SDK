@@ -166,7 +166,7 @@ enum RESOURCE_USAGE
 {
     RESOURCE_USAGE_COLOR_TARGET     = 0x001,   //!< カラーターゲットとして使用します.
     RESOURCE_USAGE_DEPTH_TARGET     = 0x002,   //!< 深度ステンシルターゲットとして使用します.
-    RESOURCE_USAGE_UNORDERD_ACCESS  = 0x004,   //!< アンオーダードアクセスビューとして使用します.
+    RESOURCE_USAGE_STORAGE_TARGET   = 0x004,   //!< ストレージビューとして使用します.
     RESOURCE_USAGE_INDEX_BUFFER     = 0x008,   //!< インデックスバッファとして使用します.
     RESOURCE_USAGE_VERTEX_BUFFER    = 0x010,   //!< 頂点バッファとして使用します.
     RESOURCE_USAGE_CONSTANT_BUFFER  = 0x020,   //!< 定数バッファとして使用します.
@@ -380,7 +380,7 @@ enum DESCRIPTOR_TYPE
 {
     DESCRIPTOR_TYPE_CBV = 0,        //!< 定数バッファビューです.
     DESCRIPTOR_TYPE_SRV = 1,        //!< シェーダリソースビューです.
-    DESCRIPTOR_TYPE_UAV = 2,        //!< アンオーダードアクセスビューです.
+    DESCRIPTOR_TYPE_UAV = 2,        //!< ストレージビューです.
     DESCRIPTOR_TYPE_SMP = 3,        //!< サンプラーです.
     DESCRIPTOR_TYPE_RTV = 4,        //!< カラーターゲットビューです.
     DESCRIPTOR_TYPE_DSV = 5,        //!< 深度ステンシルビューです.
@@ -812,6 +812,23 @@ struct TextureViewDesc
     uint32_t                FirstArraySlice;    //!< 配列スライスです.
     uint32_t                ArraySize;          //!< 配列数です.
     ComponentMapping        ComponentMapping;   //!< コンポーネントマッピングです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// StorageViewDesc structure
+//! @brief  ストレージビューの構成設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct StorageViewDesc
+{
+    VIEW_DIMENSION          Dimension;              //!< 次元です.
+    RESOURCE_FORMAT         Format;                 //!< フォーマットです.
+    uint32_t                MipSlice;               //!< ミップスライスです.
+    uint32_t                MipLevels;              //!< ミップレベル数です.
+    uint64_t                FirstElements;          //!< 配列スライスまたは最初の要素を設定します.
+    uint32_t                ElementCount;           //!< 配列数または要素数を設定します.
+    uint32_t                StructuredByteStride;   //!< 構造化バッファのストライドです(バイト単位).
+    bool                    IsRaw;                  //!< ローバッファとする場合は true を設定.
+    ComponentMapping        ComponentMapping;       //!< コンポーネントマッピングです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1543,6 +1560,33 @@ struct A3D_API ITextureView : IDeviceChild
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// IStorageView interface
+//! @brief      ストレージビューインタフェースです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct A3D_API IStorageView : IDeviceChild
+{
+    //---------------------------------------------------------------------------------------------
+    //! @brief      デストラクタです.
+    //---------------------------------------------------------------------------------------------
+    virtual A3D_APIENTRY ~IStorageView()
+    { /* DO_NOTHING */ }
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      構成設定を取得します.
+    //!
+    //! @return     構成設定を返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual StorageViewDesc A3D_APIENTRY GetDesc() const = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      リソースを取得します.
+    //!
+    //! @return     リソースを返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual IResource* A3D_APIENTRY GetResource() const = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // IFrameBuffer interface
 //! @brief      フレームバッファインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1581,7 +1625,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      pResource   設定するリソースです.
     //! @note       設定したテクスチャは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetTexture(uint32_t index, ITextureView*   pResource) = 0;
+    virtual void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -1591,6 +1635,15 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @note       設定したバッファは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ストレージを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //! @note       設定したストレージは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY SetStorage(uint32_t index, IStorageView* pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
@@ -2299,6 +2352,20 @@ struct A3D_API IDevice : IReference
         ITexture*               pTexture,
         const TextureViewDesc*  pDesc,
         ITextureView**          ppTextureView) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ストレージビューを生成します.
+    //!
+    //! @param[in]      pResource       リソースです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppStorageView   ストレージビューの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CreateStorageView(
+        IResource*              pResource,
+        const StorageViewDesc*  pDesc,
+        IStorageView**          ppStorageView) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを生成します.

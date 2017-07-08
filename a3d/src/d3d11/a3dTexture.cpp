@@ -43,7 +43,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 
     DXGI_FORMAT format;
     if (pDesc->Usage & RESOURCE_USAGE_SHADER_RESOURCE ||
-        pDesc->Usage & RESOURCE_USAGE_UNORDERD_ACCESS)
+        pDesc->Usage & RESOURCE_USAGE_STORAGE_TARGET)
     { format = ToNativeTypelessFormat(pDesc->Format); }
     else
     { format = ToNativeFormat(pDesc->Format); }

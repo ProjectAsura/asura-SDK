@@ -18,6 +18,7 @@ BufferView::BufferView()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
 , m_pBuffer     (nullptr)
+, m_pSRV        (nullptr)
 { memset( &m_Desc, 0, sizeof(m_Desc) ); }
 
 //-------------------------------------------------------------------------------------------------
@@ -68,17 +69,6 @@ bool BufferView::Init(IDevice* pDevice, IBuffer* pBuffer, const BufferViewDesc* 
         if ( FAILED(hr) )
         { return false; }
     }
-    if (usage & RESOURCE_USAGE_UNORDERD_ACCESS)
-    {
-        D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-        uavDesc.ViewDimension       = D3D11_UAV_DIMENSION_BUFFER;
-        uavDesc.Buffer.FirstElement = 0;
-        uavDesc.Buffer.NumElements  = static_cast<uint32_t>(desc.Size / stride);
-
-        auto hr = pD3D11Device->CreateUnorderedAccessView(pD3D11Buffer, &uavDesc, &m_pUAV);
-        if ( FAILED(hr) )
-        { return false; }
-    }
 
     return true;
 }
@@ -89,7 +79,6 @@ bool BufferView::Init(IDevice* pDevice, IBuffer* pBuffer, const BufferViewDesc* 
 void BufferView::Term()
 {
     SafeRelease(m_pSRV);
-    SafeRelease(m_pUAV);
     SafeRelease(m_pBuffer);
     SafeRelease(m_pDevice);
 }
@@ -148,12 +137,6 @@ ID3D11Buffer* BufferView::GetD3D11Buffer() const
 //-------------------------------------------------------------------------------------------------
 ID3D11ShaderResourceView* BufferView::GetD3D11ShaderResourceView() const
 { return m_pSRV; }
-
-//-------------------------------------------------------------------------------------------------
-//      アンオーダードアクセスビューを取得します.
-//-------------------------------------------------------------------------------------------------
-ID3D11UnorderedAccessView* BufferView::GetD3D11UnorderedAccessView() const
-{ return m_pUAV; }
 
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.

@@ -174,9 +174,9 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
 {
+    auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
     ImCmdSetDescriptorSet cmd = {};
-    cmd.Type            = CMD_SET_DESCRIPTORSET;
-    cmd.pDescriptorSet  = pDescriptorSet;
+    pWrapDescriptorSet->MakeCommand(&cmd);
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }

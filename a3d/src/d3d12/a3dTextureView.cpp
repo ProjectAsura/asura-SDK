@@ -212,177 +212,111 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
 
         auto viewFormat = ToNativeViewFormat(pDesc->Format, pDesc->TextureAspect == TEXTURE_ASPECT_STENCIL);
 
-        if (textureDesc.Usage & RESOURCE_USAGE_UNORDERD_ACCESS)
+        D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+        desc.Format         = viewFormat;
+        desc.ViewDimension  = ToNativeSRVDimension(pDesc->Dimension);
+        desc.Shader4ComponentMapping = D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(
+                                        pDesc->ComponentMapping.R,
+                                        pDesc->ComponentMapping.G,
+                                        pDesc->ComponentMapping.B,
+                                        pDesc->ComponentMapping.A);
+
+        switch(desc.ViewDimension)
         {
-            D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
-            desc.Format         = viewFormat;
-            desc.ViewDimension  = ToNativeUAVDimension(pDesc->Dimension);
-
-            switch(desc.ViewDimension)
+        case D3D12_SRV_DIMENSION_BUFFER:
             {
-            case D3D12_UAV_DIMENSION_BUFFER:
-                {
-                    desc.Buffer.CounterOffsetInBytes = 0;
-                    desc.Buffer.FirstElement         = pDesc->FirstArraySlice;
-                    desc.Buffer.NumElements          = pDesc->ArraySize;
-                    desc.Buffer.StructureByteStride  = 0;
-                    desc.Buffer.Flags                = D3D12_BUFFER_UAV_FLAG_NONE;
-                }
-                break;
-
-            case D3D12_UAV_DIMENSION_TEXTURE1D:
-                {
-                    desc.Texture1D.MipSlice = pDesc->MipSlice;
-                }
-                break;
-
-            case D3D12_UAV_DIMENSION_TEXTURE1DARRAY:
-                {
-                    desc.Texture1DArray.ArraySize       = pDesc->ArraySize;
-                    desc.Texture1DArray.FirstArraySlice = pDesc->FirstArraySlice;
-                    desc.Texture1DArray.MipSlice        = pDesc->MipSlice;
-                }
-                break;
-
-            case D3D12_UAV_DIMENSION_TEXTURE2D:
-                {
-                    desc.Texture2D.MipSlice     = pDesc->MipSlice;
-                    desc.Texture2D.PlaneSlice   = 0;
-                }
-                break;
-
-            case D3D12_UAV_DIMENSION_TEXTURE2DARRAY:
-                {
-                    desc.Texture2DArray.ArraySize       = pDesc->ArraySize;
-                    desc.Texture2DArray.FirstArraySlice = pDesc->FirstArraySlice;
-                    desc.Texture2DArray.MipSlice        = pDesc->MipSlice;
-                    desc.Texture2DArray.PlaneSlice      = 0;
-                }
-                break;
-
-            case D3D12_UAV_DIMENSION_TEXTURE3D:
-                {
-                    desc.Texture3D.FirstWSlice  = pDesc->FirstArraySlice;
-                    desc.Texture3D.MipSlice     = pDesc->MipSlice;
-                    desc.Texture3D.WSize        = pDesc->ArraySize;
-                }
-                break;
+                desc.Buffer.FirstElement        = pDesc->FirstArraySlice;
+                desc.Buffer.NumElements         = pDesc->ArraySize;
+                desc.Buffer.StructureByteStride = 0;
+                desc.Buffer.Flags               = D3D12_BUFFER_SRV_FLAG_NONE;
             }
+            break;
 
-            pNativeDevice->CreateUnorderedAccessView(
-                m_pTexture->GetD3D12Resource(),
-                nullptr,
-                &desc,
-                m_pShaderDescriptor->GetHandleCPU() );
-        }
-        else
-        {
-            D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
-            desc.Format         = viewFormat;
-            desc.ViewDimension  = ToNativeSRVDimension(pDesc->Dimension);
-            desc.Shader4ComponentMapping = D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(
-                                            pDesc->ComponentMapping.R,
-                                            pDesc->ComponentMapping.G,
-                                            pDesc->ComponentMapping.B,
-                                            pDesc->ComponentMapping.A);
-
-            switch(desc.ViewDimension)
+        case D3D12_SRV_DIMENSION_TEXTURE1D:
             {
-            case D3D12_SRV_DIMENSION_BUFFER:
-                {
-                    desc.Buffer.FirstElement        = pDesc->FirstArraySlice;
-                    desc.Buffer.NumElements         = pDesc->ArraySize;
-                    desc.Buffer.StructureByteStride = 0;
-                    desc.Buffer.Flags               = D3D12_BUFFER_SRV_FLAG_NONE;
-                }
-                break;
-
-            case D3D12_SRV_DIMENSION_TEXTURE1D:
-                {
-                    desc.Texture1D.MipLevels            = pDesc->MipLevels;
-                    desc.Texture1D.MostDetailedMip      = 0;
-                    desc.Texture1D.ResourceMinLODClamp  = 0.0f;
-                }
-                break;
-
-            case D3D12_SRV_DIMENSION_TEXTURE1DARRAY:
-                {
-                    desc.Texture1DArray.ArraySize           = pDesc->ArraySize;
-                    desc.Texture1DArray.FirstArraySlice     = pDesc->FirstArraySlice;
-                    desc.Texture1DArray.MipLevels           = pDesc->MipLevels;
-                    desc.Texture1DArray.MostDetailedMip     = 0;
-                    desc.Texture1DArray.ResourceMinLODClamp = 0.0f;
-                }
-                break;
-
-            case D3D12_SRV_DIMENSION_TEXTURE2D:
-                {
-                    if (textureDesc.SampleCount > 1)
-                    {
-                        desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMS;
-                    }
-                    else
-                    {
-                        desc.Texture2D.MipLevels            = pDesc->MipLevels;
-                        desc.Texture2D.MostDetailedMip      = 0;
-                        desc.Texture2D.PlaneSlice           = 0;
-                        desc.Texture2D.ResourceMinLODClamp  = 0.0f;
-                    }
-                }
-                break;
-
-            case D3D12_SRV_DIMENSION_TEXTURE2DARRAY:
-                {
-                    if (textureDesc.SampleCount > 1)
-                    {
-                        desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY;
-                        desc.Texture2DMSArray.ArraySize         = pDesc->ArraySize;
-                        desc.Texture2DMSArray.FirstArraySlice   = pDesc->FirstArraySlice;
-                    }
-                    else
-                    {
-                        desc.Texture2DArray.ArraySize           = pDesc->ArraySize;
-                        desc.Texture2DArray.FirstArraySlice     = pDesc->FirstArraySlice;
-                        desc.Texture2DArray.MipLevels           = pDesc->MipLevels;
-                        desc.Texture2DArray.MostDetailedMip     = 0;
-                        desc.Texture2DArray.PlaneSlice          = 0;
-                        desc.Texture2DArray.ResourceMinLODClamp = 0.0f;
-                    }
-                }
-                break;
-
-            case D3D12_SRV_DIMENSION_TEXTURE3D:
-                {
-                    desc.Texture3D.MipLevels            = pDesc->MipLevels;
-                    desc.Texture3D.MostDetailedMip      = 0;
-                    desc.Texture3D.ResourceMinLODClamp  = 0.0f;
-                }
-                break;
-
-            case D3D12_SRV_DIMENSION_TEXTURECUBE:
-                {
-                    desc.TextureCube.MipLevels              = pDesc->MipLevels;
-                    desc.TextureCube.MostDetailedMip        = 0;
-                    desc.TextureCube.ResourceMinLODClamp    = 0.0f;
-                }
-                break;
-
-            case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY:
-                {
-                    desc.TextureCubeArray.First2DArrayFace      = pDesc->FirstArraySlice;
-                    desc.TextureCubeArray.MipLevels             = pDesc->MipLevels;
-                    desc.TextureCubeArray.MostDetailedMip       = 0;
-                    desc.TextureCubeArray.NumCubes              = pDesc->ArraySize / 6;
-                    desc.TextureCubeArray.ResourceMinLODClamp   = 0.0f;
-                }
-                break;
+                desc.Texture1D.MipLevels            = pDesc->MipLevels;
+                desc.Texture1D.MostDetailedMip      = 0;
+                desc.Texture1D.ResourceMinLODClamp  = 0.0f;
             }
+            break;
 
-            pNativeDevice->CreateShaderResourceView(
-                m_pTexture->GetD3D12Resource(),
-                &desc,
-                m_pShaderDescriptor->GetHandleCPU() );
+        case D3D12_SRV_DIMENSION_TEXTURE1DARRAY:
+            {
+                desc.Texture1DArray.ArraySize           = pDesc->ArraySize;
+                desc.Texture1DArray.FirstArraySlice     = pDesc->FirstArraySlice;
+                desc.Texture1DArray.MipLevels           = pDesc->MipLevels;
+                desc.Texture1DArray.MostDetailedMip     = 0;
+                desc.Texture1DArray.ResourceMinLODClamp = 0.0f;
+            }
+            break;
+
+        case D3D12_SRV_DIMENSION_TEXTURE2D:
+            {
+                if (textureDesc.SampleCount > 1)
+                {
+                    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMS;
+                }
+                else
+                {
+                    desc.Texture2D.MipLevels            = pDesc->MipLevels;
+                    desc.Texture2D.MostDetailedMip      = 0;
+                    desc.Texture2D.PlaneSlice           = 0;
+                    desc.Texture2D.ResourceMinLODClamp  = 0.0f;
+                }
+            }
+            break;
+
+        case D3D12_SRV_DIMENSION_TEXTURE2DARRAY:
+            {
+                if (textureDesc.SampleCount > 1)
+                {
+                    desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY;
+                    desc.Texture2DMSArray.ArraySize         = pDesc->ArraySize;
+                    desc.Texture2DMSArray.FirstArraySlice   = pDesc->FirstArraySlice;
+                }
+                else
+                {
+                    desc.Texture2DArray.ArraySize           = pDesc->ArraySize;
+                    desc.Texture2DArray.FirstArraySlice     = pDesc->FirstArraySlice;
+                    desc.Texture2DArray.MipLevels           = pDesc->MipLevels;
+                    desc.Texture2DArray.MostDetailedMip     = 0;
+                    desc.Texture2DArray.PlaneSlice          = 0;
+                    desc.Texture2DArray.ResourceMinLODClamp = 0.0f;
+                }
+            }
+            break;
+
+        case D3D12_SRV_DIMENSION_TEXTURE3D:
+            {
+                desc.Texture3D.MipLevels            = pDesc->MipLevels;
+                desc.Texture3D.MostDetailedMip      = 0;
+                desc.Texture3D.ResourceMinLODClamp  = 0.0f;
+            }
+            break;
+
+        case D3D12_SRV_DIMENSION_TEXTURECUBE:
+            {
+                desc.TextureCube.MipLevels              = pDesc->MipLevels;
+                desc.TextureCube.MostDetailedMip        = 0;
+                desc.TextureCube.ResourceMinLODClamp    = 0.0f;
+            }
+            break;
+
+        case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY:
+            {
+                desc.TextureCubeArray.First2DArrayFace      = pDesc->FirstArraySlice;
+                desc.TextureCubeArray.MipLevels             = pDesc->MipLevels;
+                desc.TextureCubeArray.MostDetailedMip       = 0;
+                desc.TextureCubeArray.NumCubes              = pDesc->ArraySize / 6;
+                desc.TextureCubeArray.ResourceMinLODClamp   = 0.0f;
+            }
+            break;
         }
+
+        pNativeDevice->CreateShaderResourceView(
+            m_pTexture->GetD3D12Resource(),
+            &desc,
+            m_pShaderDescriptor->GetHandleCPU() );
     }
 
     return true;

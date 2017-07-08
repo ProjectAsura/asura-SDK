@@ -1,6 +1,6 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : a3dBufferView.h
-// Desc : BufferView Module.
+// File : a3dStorageView.h
+// Desc : Storage View Module.
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 #pragma once
@@ -9,9 +9,9 @@
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// BufferView class
+// StorageView class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class A3D_API BufferView : public IBufferView, public BaseAllocator
+class StorageView : public IStorageView, public BaseAllocator
 {
     //=============================================================================================
     // list of friend classes and methods.
@@ -31,21 +31,21 @@ public:
     //---------------------------------------------------------------------------------------------
     //! @brief      生成処理を行います.
     //!
-    //! @param[in]      pDevice         デバイスです.
-    //! @param[in]      pBuffer         バッファです.
+    //! @param[in]      pDevice         デバイス.
+    //! @param[in]      pResource       リソースです.
     //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppBufferView    バッファビューの格納先です.
+    //! @param[out]     pStorageView    ストレージビューの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
         IDevice*                pDevice,
-        IBuffer*                pBuffer,
-        const BufferViewDesc*   pDesc,
-        IBufferView**           ppBufferView);
+        IResource*              pResource,
+        const StorageViewDesc*  pDesc,
+        IStorageView**          ppStorageView);
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      参照カウントを増やします.
+    //! @brief      参照カウンタを増やします.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY AddRef() override;
 
@@ -55,9 +55,9 @@ public:
     void A3D_APIENTRY Release() override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      参照カウンタを取得します.
+    //! @brief      参照カウントを取得します.
     //!
-    //! @return     参照カウンタを返却します.
+    //! @return     参照カウントを返却します.
     //---------------------------------------------------------------------------------------------
     uint32_t A3D_APIENTRY GetCount() const override;
 
@@ -73,43 +73,31 @@ public:
     //!
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    BufferViewDesc A3D_APIENTRY GetDesc() const override;
+    StorageViewDesc A3D_APIENTRY GetDesc() const override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを取得します.
+    //! @brief      リソースを取得します.
     //!
-    //! @return     バッファを返却します.
+    //! @return     リソースを返却します.
     //---------------------------------------------------------------------------------------------
-    ID3D11Buffer* A3D_APIENTRY GetD3D11Buffer() const;
+    IResource* A3D_APIENTRY GetResource() const override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      シェーダリソースビューを取得します.
+    //! @brief      ディスクリプタを取得します.
     //!
-    //! @return     シェーダリソースビューを返却します.
+    //! @return     ディスクリプタを返却します.
     //---------------------------------------------------------------------------------------------
-    ID3D11ShaderResourceView* A3D_APIENTRY GetD3D11ShaderResourceView() const;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを取得します.
-    //!
-    //! @return     バッファを返却します.
-    //---------------------------------------------------------------------------------------------
-    IBuffer* A3D_APIENTRY GetResource() const override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      サブリソースを更新します.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY UpdateSubsource(ID3D11DeviceContext* pDeviceContext);
+    const Descriptor* A3D_APIENTRY GetDescriptor() const;
 
 private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>       m_RefCount;     //!< 参照カウンタです.
-    Device*                     m_pDevice;      //!< デバイスです.
-    Buffer*                     m_pBuffer;      //!< バッファです.
-    BufferViewDesc              m_Desc;         //!< 構成設定です.
-    ID3D11ShaderResourceView*   m_pSRV;         //!< シェーダリソースビューです.
+    std::atomic<uint32_t>   m_RefCount;     //!< 参照カウントです.
+    Device*                 m_pDevice;      //!< デバイスです.
+    StorageViewDesc         m_Desc;         //!< 構成設定です.
+    IResource*              m_pResource;    //!< リソースです.
+    Descriptor*             m_pDescriptor;  //!< ディスクリプタです.
 
     //=============================================================================================
     // private methods.
@@ -118,32 +106,31 @@ private:
     //---------------------------------------------------------------------------------------------
     //! @brief      コンストラクタです.
     //---------------------------------------------------------------------------------------------
-    A3D_APIENTRY BufferView();
+    A3D_APIENTRY StorageView();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    A3D_APIENTRY ~BufferView();
+    A3D_APIENTRY ~StorageView();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      初期化処理を行います.
     //!
-    //! @param[in]      pDevice         デバイスです.
-    //! @param[in]      pBuffer         バッファです.
-    //! @param[in]      pDesc           構成設定です.
+    //! @param[in]      pDevice     デバイスです.
+    //! @param[in]      pTexture    テクスチャです.
+    //! @param[in]      pDesc       構成設定です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY Init(IDevice* pDevice, IBuffer* pBuffer, const BufferViewDesc* pDesc);
+    bool A3D_APIENTRY Init(IDevice* pDevice, IResource* pResource, const StorageViewDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Term();
 
-    BufferView      (const BufferView&) = delete;
-    void operator = (const BufferView&) = delete;
-
+    StorageView     (const StorageView&) = delete;
+    void operator = (const StorageView&) = delete;
 };
 
 } // namespace a3d

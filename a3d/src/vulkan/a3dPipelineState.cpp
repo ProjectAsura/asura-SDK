@@ -858,6 +858,12 @@ void PipelineState::Term()
         m_PipelineCache = null_handle;
     }
 
+    if (m_RenderPass != null_handle)
+    {
+        vkDestroyRenderPass( pNativeDevice, m_RenderPass, nullptr );
+        m_RenderPass = null_handle;
+    }
+
     SafeRelease(m_pDevice);
 }
 

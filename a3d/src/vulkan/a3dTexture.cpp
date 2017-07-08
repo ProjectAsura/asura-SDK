@@ -20,7 +20,7 @@ VkImageUsageFlags ToNativeImageUsage(uint32_t usage)
     if (usage & a3d::RESOURCE_USAGE_DEPTH_TARGET)
     { result |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; }
 
-    if (usage & a3d::RESOURCE_USAGE_UNORDERD_ACCESS)
+    if (usage & a3d::RESOURCE_USAGE_STORAGE_TARGET)
     {
         // TODO : 要確認.
         result |= VK_IMAGE_USAGE_STORAGE_BIT;
@@ -147,7 +147,7 @@ bool IsSupportFormat(a3d::Device* pDevice, const a3d::TextureDesc* pDesc)
         }
     }
 
-    if (pDesc->Usage & a3d::RESOURCE_USAGE_UNORDERD_ACCESS)
+    if (pDesc->Usage & a3d::RESOURCE_USAGE_STORAGE_TARGET)
     {
         if (pDesc->Layout == a3d::RESOURCE_LAYOUT_LINEAR)
         {

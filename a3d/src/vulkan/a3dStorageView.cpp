@@ -1,6 +1,6 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// File : a3dBuffer.cpp
-// Desc : Buffer Implementation.
+// File : a3dStorageView.cpp
+// Desc : Storage View Module.
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
@@ -8,89 +8,87 @@
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Buffer class
+// StorageView class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 //-------------------------------------------------------------------------------------------------
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
-Buffer::Buffer()
+StorageView::StorageView()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
-{ /* DO_NOTIHNG */ }
+, m_pResource   (nullptr)
+, m_ImageView   (null_handle)
+, m_Buffer      (null_handle)
+{ memset(&m_Desc, 0, sizeof(m_Desc)); }
 
 //-------------------------------------------------------------------------------------------------
 //      デストラクタです.
 //-------------------------------------------------------------------------------------------------
-Buffer::~Buffer()
+StorageView::~StorageView()
 { Term(); }
 
 //-------------------------------------------------------------------------------------------------
-//      初期化処理です.
+//      初期化処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
+bool StorageView::Init(IDevice* pDevice, IResource* pResource, const StorageViewDesc* pDesc)
 {
-    if (pDevice == nullptr || pDesc == nullptr)
+    if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr)
     { return false; }
+
+    Term();
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
-    auto pD3D11Device = m_pDevice->GetD3D11Device();
-    A3D_ASSERT(pD3D11Device != nullptr);
+    m_pResource = pResource;
+    m_pResource->AddRef();
 
-    switch(pDesc->HeapProperty.Type)
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+    if (pResource->GetKind() == RESOURCE_KIND_BUFFER)
     {
-    case HEAP_TYPE_DEFAULT:
-        { m_MapType = D3D11_MAP_READ_WRITE; }
-        break;
+        auto pWrapBuffer = static_cast<Buffer*>(pResource);
+        A3D_ASSERT(pWrapBuffer != nullptr);
 
-    case HEAP_TYPE_UPLOAD:
-        { m_MapType = D3D11_MAP_WRITE_DISCARD; }
-        break;
-
-    case HEAP_TYPE_READBACK:
-        { m_MapType = D3D11_MAP_READ; }
-        break;
-    }
-
-    auto size = static_cast<size_t>(pDesc->Size);
-
-    if (pDesc->Usage == RESOURCE_USAGE_COPY_SRC ||
-        pDesc->Usage == RESOURCE_USAGE_COPY_DST)
-    {
-        m_pSubresource = new uint8_t [size];
-        if (m_pSubresource == nullptr)
+        auto bufferDesc = pWrapBuffer->GetDesc();
+        if ((bufferDesc.Usage & RESOURCE_USAGE_STORAGE_TARGET) != RESOURCE_USAGE_STORAGE_TARGET)
         { return false; }
 
-        memset(m_pSubresource, 0, size);
+        m_Buffer = pWrapBuffer->GetVulkanBuffer();
     }
-    else
+
+    if (pResource->GetKind() == RESOURCE_KIND_TEXTURE)
     {
-        D3D11_BUFFER_DESC desc = {};
-        desc.ByteWidth      = static_cast<uint32_t>(size);
-        desc.Usage          = ToNativeUsage(pDesc->HeapProperty.Type);
-        desc.BindFlags      = ToNativeBindFlags(pDesc->Usage);
-        desc.CPUAccessFlags = ToNativeCpuAccessFlags(
-                                pDesc->HeapProperty.Type,
-                                pDesc->HeapProperty.CpuPageProperty);
+        auto pWrapTexture = static_cast<Texture*>(pResource);
+        A3D_ASSERT(pWrapTexture != nullptr);
 
-        if (pDesc->Usage & RESOURCE_USAGE_STORAGE_TARGET)
-        { desc.StructureByteStride = pDesc->Stride; }
+        auto textureDesc = pWrapTexture->GetDesc();
+        if ((textureDesc.Usage & RESOURCE_USAGE_STORAGE_TARGET) != RESOURCE_USAGE_STORAGE_TARGET)
+        { return false; }
 
-        if (pDesc->Usage == RESOURCE_USAGE_CONSTANT_BUFFER)
-        {
-            m_pSubresource = new uint8_t [size];
-            memset(m_pSubresource, 0, size);
-            desc.Usage          = D3D11_USAGE_DEFAULT;
-            desc.CPUAccessFlags = 0;
-            m_MapType           = D3D11_MAP_WRITE;
-        }
-    
-        auto hr = pD3D11Device->CreateBuffer(&desc, nullptr, &m_pBuffer);
-        if ( FAILED(hr) )
+        VkImageViewCreateInfo info = {};
+        info.sType                              = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        info.pNext                              = nullptr;
+        info.flags                              = 0;
+        info.format                             = ToNativeFormat(pDesc->Format);
+        info.image                              = pWrapTexture->GetVulkanImage();
+        info.viewType                           = ToNativeImageViewType(pDesc->Dimension);
+        info.components.r                       = VK_COMPONENT_SWIZZLE_R;
+        info.components.g                       = VK_COMPONENT_SWIZZLE_G;
+        info.components.b                       = VK_COMPONENT_SWIZZLE_B;
+        info.components.a                       = VK_COMPONENT_SWIZZLE_A;
+        info.subresourceRange.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
+        info.subresourceRange.baseMipLevel      = pDesc->MipSlice;
+        info.subresourceRange.levelCount        = pDesc->MipLevels;
+        info.subresourceRange.baseArrayLayer    = uint32_t(pDesc->FirstElements);
+        info.subresourceRange.layerCount        = pDesc->ElementCount;
+
+        auto ret = vkCreateImageView(pNativeDevice, &info, nullptr, &m_ImageView);
+        if (ret != VK_SUCCESS)
         { return false; }
     }
 
@@ -98,32 +96,36 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      終了処理です.
+//      終了処理を行います.
 //-------------------------------------------------------------------------------------------------
-void Buffer::Term()
+void StorageView::Term()
 {
-    if (m_pSubresource != nullptr)
+    if (m_pDevice == nullptr)
+    { return; }
+
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    A3D_ASSERT( pNativeDevice != null_handle );
+
+    if (m_ImageView != null_handle)
     {
-        delete [] m_pSubresource;
-        m_pSubresource = nullptr;
+        vkDestroyImageView( pNativeDevice, m_ImageView, nullptr );
+        m_ImageView = null_handle;
     }
 
-    SafeRelease(m_pBuffer);
-    SafeRelease(m_pDevice);
-
-    memset(&m_Desc, 0, sizeof(m_Desc));
+    SafeRelease( m_pResource );
+    SafeRelease( m_pDevice );
 }
 
 //-------------------------------------------------------------------------------------------------
 //      参照カウンタを増やします.
 //-------------------------------------------------------------------------------------------------
-void Buffer::AddRef()
+void StorageView::AddRef()
 { m_RefCount++; }
 
 //-------------------------------------------------------------------------------------------------
-//      解法処理を行います.
+//      解放処理を行います.
 //-------------------------------------------------------------------------------------------------
-void Buffer::Release()
+void StorageView::Release()
 {
     m_RefCount--;
     if (m_RefCount == 0)
@@ -133,13 +135,13 @@ void Buffer::Release()
 //-------------------------------------------------------------------------------------------------
 //      参照カウンタを取得します.
 //-------------------------------------------------------------------------------------------------
-uint32_t Buffer::GetCount() const
+uint32_t StorageView::GetCount() const
 { return m_RefCount; }
 
 //-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
-void Buffer::GetDevice(IDevice** ppDevice)
+void StorageView::GetDevice(IDevice** ppDevice)
 {
     *ppDevice = m_pDevice;
     if (m_pDevice != nullptr)
@@ -149,79 +151,52 @@ void Buffer::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
 //-------------------------------------------------------------------------------------------------
-BufferDesc Buffer::GetDesc() const
+StorageViewDesc StorageView::GetDesc() const
 { return m_Desc; }
 
 //-------------------------------------------------------------------------------------------------
-//      メモリマッピングします.
+//      リソースを取得します.
 //-------------------------------------------------------------------------------------------------
-void* Buffer::Map()
-{
-    if (m_pSubresource != nullptr)
-    { return m_pSubresource; }
-
-    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pDeviceContext != nullptr);
-
-    D3D11_MAPPED_SUBRESOURCE subresource;
-    auto hr = pDeviceContext->Map(m_pBuffer, 0, m_MapType, 0, &subresource);
-    if ( FAILED(hr) )
-    { return nullptr; }
-
-    return subresource.pData;
-}
+IResource* StorageView::GetResource() const
+{ return m_pResource; }
 
 //-------------------------------------------------------------------------------------------------
-//      メモリマッピングを解除します.
+//      イメージビューを取得します.
 //-------------------------------------------------------------------------------------------------
-void Buffer::Unmap()
-{
-    if (m_pSubresource != nullptr)
-    { return; }
-
-    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pDeviceContext != nullptr);
-
-    pDeviceContext->Unmap(m_pBuffer, 0);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      リソース種別を取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_KIND Buffer::GetKind() const
-{ return RESOURCE_KIND_BUFFER; }
+VkImageView StorageView::GetVulkanImageView() const
+{ return m_ImageView; }
 
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
-ID3D11Buffer* Buffer::GetD3D11Buffer() const
-{ return m_pBuffer; }
-
-//-------------------------------------------------------------------------------------------------
-//      サブリソースへのポインタを取得します.
-//-------------------------------------------------------------------------------------------------
-void* Buffer::GetSubresourcePointer() const
-{ return m_pSubresource; }
+VkBuffer StorageView::GetVulkanBuffer() const
+{ return m_Buffer; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
 //-------------------------------------------------------------------------------------------------
-bool Buffer::Create(IDevice* pDevice, const BufferDesc* pDesc, IBuffer** ppResource)
+bool StorageView::Create
+(
+    IDevice*                pDevice,
+    IResource*              pResource,
+    const StorageViewDesc*  pDesc,
+    IStorageView**          ppStorageView
+)
 {
-    if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
+    if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppStorageView == nullptr)
     { return false; }
 
-    auto instance = new Buffer;
+    auto instance = new StorageView();
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDevice, pDesc))
+    if (!instance->Init(pDevice, pResource, pDesc))
     {
         SafeRelease(instance);
         return false;
     }
 
-    *ppResource = instance;
+    *ppStorageView = instance;
     return true;
 }
 
