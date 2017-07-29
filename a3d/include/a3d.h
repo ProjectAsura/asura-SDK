@@ -28,7 +28,7 @@
 
     #if defined(A3D_PLATFORM_WIN)
         #define A3D_IS_WIN      (1)
-    #endif
+    #endif//defined(A3D_PLATFORM_WIN)
 
 #else
 
@@ -1038,10 +1038,10 @@ struct ShaderBinary
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// TargetAttachmentDesc structure
-//! @brief  ターゲットアタッチメント記述子です.
+// TargetFormat structure
+//! @brief  描画ターゲットフォーマットです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct TargetAttachmentDesc
+struct TargetFormat
 {
     RESOURCE_FORMAT     Format;             //!< リソースフォーマットです.
     uint32_t            SampleCount;        //!< サンプル数です.
@@ -1068,8 +1068,8 @@ struct GraphicsPipelineStateDesc
     InputLayoutDesc         InputLayout;            //!< 入力レイアウトステートです.
     PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.
     uint32_t                ColorCount;             //!< カラーフォーマット数です.
-    TargetAttachmentDesc    ColorTarget[8];         //!< カラーターゲットです.
-    TargetAttachmentDesc    DepthTarget;            //!< 深度ターゲットです
+    TargetFormat            ColorTarget[8];         //!< カラーターゲットです.
+    TargetFormat            DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
 };
 

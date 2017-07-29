@@ -20,10 +20,10 @@ goto :END
 exit /b
 
 :BUILD
-%MSBUILD% %1 /t:build /p:Configuration=Debug;Platform=x86 /m
-%MSBUILD% %1 /t:build /p:Configuration=Debug;Platform=x64 /m
-%MSBUILD% %1 /t:build /p:Configuration=Release;Platform=x86 /m
-%MSBUILD% %1 /t:build /p:Configuration=Release;Platform=x64 /m
+%MSBUILD% %1 /t:rebuild /p:Configuration=Debug;Platform=x86 /m
+%MSBUILD% %1 /t:rebuild /p:Configuration=Debug;Platform=x64 /m
+%MSBUILD% %1 /t:rebuild /p:Configuration=Release;Platform=x86 /m
+%MSBUILD% %1 /t:rebuild /p:Configuration=Release;Platform=x64 /m
 exit /b
 
 :END
