@@ -22,7 +22,7 @@ bool ToNativeShaderStageInfo
     info.sType      = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     info.pNext      = nullptr;
     info.flags      = 0;
-    info.pCode      = static_cast<uint32_t*>(binary.pByteCode);
+    info.pCode      = static_cast<const uint32_t*>(binary.pByteCode);
     info.codeSize   = binary.ByteCodeSize;
 
     auto ret = vkCreateShaderModule(device, &info, nullptr, &pInfo->module);

@@ -79,7 +79,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         }
     }
 
-    // IDXGIAdapter3に変換
+    // IDXGIAdapter4に変換
     hr = pAdapter->QueryInterface( IID_PPV_ARGS(&m_pAdapter));
     SafeRelease(pAdapter);
     if ( FAILED(hr) )
@@ -91,7 +91,7 @@ bool Device::Init(const DeviceDesc* pDesc)
     if ( FAILED(hr) )
     { return false; }
 
-    // IDXGOutput4に変換.
+    // IDXGOutput6に変換.
     hr = pOutput->QueryInterface( IID_PPV_ARGS(&m_pOutput) );
     SafeRelease(pOutput);
     if ( FAILED(hr) )
@@ -388,13 +388,13 @@ IDXGIFactory5* Device::GetDXGIFactory() const
 //-------------------------------------------------------------------------------------------------
 //      デフォルトアダプターを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIAdapter3* Device::GetDXGIAdapter() const
+IDXGIAdapter4* Device::GetDXGIAdapter() const
 { return m_pAdapter; }
 
 //-------------------------------------------------------------------------------------------------
 //      デフォルトディスプレイを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIOutput4* Device::GetDXGIOutput() const
+IDXGIOutput6* Device::GetDXGIOutput() const
 { return m_pOutput; }
 
 //-------------------------------------------------------------------------------------------------

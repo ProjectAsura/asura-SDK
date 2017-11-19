@@ -120,6 +120,14 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         hr = m_pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain4));
         if (FAILED(hr))
         { SafeRelease(m_pSwapChain4); }
+
+        if (pDesc->ColorSpace != COLOR_SPACE_SRGB)
+        {
+            auto color_space = ToNativeColorSpace(pDesc->ColorSpace);
+            auto hr = m_pSwapChain4->SetColorSpace1(color_space);
+            if (FAILED(hr))
+            { return false; }
+        }
     }
 
     {
@@ -483,13 +491,14 @@ bool SwapChain::SetFullScreenMode(bool enable)
 //-------------------------------------------------------------------------------------------------
 //      色空間がサポートされているかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags)
+bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 {
-    auto hr = m_pSwapChain->CheckColorSpaceSupport(ToNativeColorSpace(type), pFlags);
+    uint32_t flags;
+    auto hr = m_pSwapChain->CheckColorSpaceSupport(ToNativeColorSpace(type), &flags);
     if (FAILED(hr))
     { return false; }
 
-    return true;
+    return flags & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT;
 }
 
 //-------------------------------------------------------------------------------------------------

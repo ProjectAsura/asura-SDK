@@ -1,0 +1,9 @@
+[submodule "a3d/sample/common/external/imgui"]
+	path = a3d/sample/common/external/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "a3d/sample/common/external/stb"]
+	path = a3d/sample/common/external/stb
+	url = https://github.com/nothings/stb
+[submodule "external/imgui"]
+	path = external/imgui
+	url = https://github.com/ocornut/imgui

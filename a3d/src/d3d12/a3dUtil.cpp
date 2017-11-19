@@ -73,7 +73,7 @@ FormatConvertTable g_FormatTable[] = {
     { DXGI_FORMAT_BC6H_UF16                 , DXGI_FORMAT_BC6H_TYPELESS             , 16    , a3d::RESOURCE_FORMAT_BC6H_UF16             , true  },  // 41
     { DXGI_FORMAT_BC6H_SF16                 , DXGI_FORMAT_BC6H_TYPELESS             , 16    , a3d::RESOURCE_FORMAT_BC6H_SF16             , true  },  // 42
     { DXGI_FORMAT_BC7_UNORM_SRGB            , DXGI_FORMAT_BC7_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_BC7_UNORM_SRGB        , true  },  // 43
-    { DXGI_FORMAT_BC7_UNORM                 , DXGI_FORMAT_BC7_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_BC7_UNORN             , true  },  // 44
+    { DXGI_FORMAT_BC7_UNORM                 , DXGI_FORMAT_BC7_TYPELESS              , 16    , a3d::RESOURCE_FORMAT_BC7_UNORM             , true  },  // 44
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 16    , a3d::RESOURCE_FORMAT_ASTC_4X4_UNORM_SRGB   , true  },  // 45
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 16    , a3d::RESOURCE_FORMAT_ASTC_4X4_UNORM        , true  },  // 46
     { DXGI_FORMAT_UNKNOWN                   , DXGI_FORMAT_UNKNOWN                   , 16    , a3d::RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB   , true  },  // 47
@@ -594,14 +594,25 @@ D3D12_UAV_DIMENSION ToNativeUAVDimension(VIEW_DIMENSION value)
 //-------------------------------------------------------------------------------------------------
 DXGI_COLOR_SPACE_TYPE ToNativeColorSpace(COLOR_SPACE_TYPE value)
 {
-    static const DXGI_COLOR_SPACE_TYPE table[] = {
-        DXGI_COLOR_SPACE_CUSTOM,                        // COLOR_SPACE_UNKNOWN
-        DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709,        // COLOR_SPACE_SRGB
-        DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020,       // COLOR_SPACE_RGB_BT2020
-        DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020,     // COLOR_SPACE_RGB_BT2020_PQ
-    };
+    switch(value)
+    {
+    case COLOR_SPACE_SRGB:
+        return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
 
-    return table[value];
+    case COLOR_SPACE_BT709_LINEAR:
+        return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
+
+    case COLOR_SPACE_BT709_NONLINEAR:
+        return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+
+    case COLOR_SPACE_BT2020_PQ:
+        return DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+
+    case COLOR_SPACE_BT2020_HLG:
+        return DXGI_COLOR_SPACE_YCBCR_FULL_GHLG_TOPLEFT_P2020;
+    }
+
+    return DXGI_COLOR_SPACE_CUSTOM;
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -111,6 +111,11 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         hr = m_pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain4));
         if (FAILED(hr))
         { SafeRelease(m_pSwapChain4); }
+
+        auto color_space = ToNativeColorSpace(pDesc->ColorSpace);
+        hr = m_pSwapChain4->SetColorSpace1(color_space);
+        if (FAILED(hr))
+        { return false; }
     #endif
     }
 
@@ -386,18 +391,19 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
 //-------------------------------------------------------------------------------------------------
 //      色空間がサポートされているかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags)
+bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 {
     #if defined(A3D_FOR_WINDOWS10)
     {
         if (m_pSwapChain4 == nullptr)
         { return false; }
 
-        auto hr = m_pSwapChain4->CheckColorSpaceSupport(ToNativeColorSpace(type), pFlags);
+        uint32_t flags;
+        auto hr = m_pSwapChain4->CheckColorSpaceSupport(ToNativeColorSpace(type), &flags);
         if (FAILED(hr))
         { return false; }
 
-        return true;
+        return flags & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT;
     }
     #else
     {

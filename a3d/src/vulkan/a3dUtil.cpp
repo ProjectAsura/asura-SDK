@@ -63,7 +63,7 @@ FormatConvertTable g_FormatTable[] = {
     { VK_FORMAT_BC6H_UFLOAT_BLOCK       , 16    , a3d::RESOURCE_FORMAT_BC6H_UF16             , true  },
     { VK_FORMAT_BC6H_SFLOAT_BLOCK       , 16    , a3d::RESOURCE_FORMAT_BC6H_SF16             , true  },
     { VK_FORMAT_BC7_SRGB_BLOCK          , 16    , a3d::RESOURCE_FORMAT_BC7_UNORM_SRGB        , true  },
-    { VK_FORMAT_BC7_UNORM_BLOCK         , 16    , a3d::RESOURCE_FORMAT_BC7_UNORN             , true  },
+    { VK_FORMAT_BC7_UNORM_BLOCK         , 16    , a3d::RESOURCE_FORMAT_BC7_UNORM             , true  },
     { VK_FORMAT_ASTC_4x4_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_4X4_UNORM_SRGB   , true  },
     { VK_FORMAT_ASTC_4x4_UNORM_BLOCK    , 16    , a3d::RESOURCE_FORMAT_ASTC_4X4_UNORM        , true  },
     { VK_FORMAT_ASTC_5x4_SRGB_BLOCK     , 16    , a3d::RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB   , true  },
@@ -709,6 +709,32 @@ VkComponentSwizzle ToNativeComponentSwizzle(a3d::TEXTURE_SWIZZLE value)
     };
 
     return table[value];
+}
+
+//-------------------------------------------------------------------------------------------------
+//      色空間を変換します.
+//-------------------------------------------------------------------------------------------------
+VkColorSpaceKHR ToNativeColorSpace(a3d::COLOR_SPACE_TYPE value)
+{
+    switch(value)
+    {
+    case COLOR_SPACE_SRGB:
+        return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+    case COLOR_SPACE_BT709_LINEAR:
+        return VK_COLOR_SPACE_BT709_LINEAR_EXT;
+
+    case COLOR_SPACE_BT709_NONLINEAR:
+        return VK_COLOR_SPACE_BT709_NONLINEAR_EXT;
+
+    case COLOR_SPACE_BT2020_PQ:
+        return VK_COLOR_SPACE_HDR10_ST2084_EXT;
+
+    case COLOR_SPACE_BT2020_HLG:
+        return VK_COLOR_SPACE_HDR10_HLG_EXT;
+    }
+
+    return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 }
 
 } // namespace a3d

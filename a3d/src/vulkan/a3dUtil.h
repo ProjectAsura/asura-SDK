@@ -192,4 +192,9 @@ VkImageViewType ToNativeImageViewType(a3d::VIEW_DIMENSION value);
 //-------------------------------------------------------------------------------------------------
 VkComponentSwizzle ToNativeComponentSwizzle(a3d::TEXTURE_SWIZZLE value);
 
+//-------------------------------------------------------------------------------------------------
+//! @brief      色空間を変換します.
+//-------------------------------------------------------------------------------------------------
+VkColorSpaceKHR ToNativeColorSpace(a3d::COLOR_SPACE_TYPE value);
+
 } // namespace a3d

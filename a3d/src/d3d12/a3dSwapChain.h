@@ -126,11 +126,10 @@ public:
     //! @brief      色空間がサポートされているかチェックします.
     //!
     //! @param[in]      type        色空間タイプです.
-    //! @param[out]     pFlags      サポートフラグ(マスクビット)の格納先です(COLOR_SPACE_SUPPROT_FLAG参照).
     //! @retval true    サポートされます.
     //! @retval false   非サポートです.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags) override;
+    bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フルスクリーンモードかどうかチェックします.

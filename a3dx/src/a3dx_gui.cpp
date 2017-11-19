@@ -1,0 +1,799 @@
+//-------------------------------------------------------------------------------------------------
+// File : a3dx_gui.cpp
+// Desc : Gui Renderer.
+// Copyright(c) Project Asura. All right reserved.
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
+// Includes
+//-------------------------------------------------------------------------------------------------
+#include <a3dx_gui.h>
+
+
+namespace {
+
+#if defined(A3D_IS_GLSL)
+
+const uint8_t g_BinaryVS[] = {
+    #include "imguiVS_spv.h"
+};
+uint8_t g_BinaryPS[] = {
+    #include "imguiPS_spv.h"
+};
+
+#elif defined(A3D_IS_HLSL)
+
+const uint8_t g_BinaryVS[] = {
+    #include "imguiVS_cso.h"
+};
+
+const uint8_t g_BinaryPS[] = {
+    #include "imguiPS_cso.h"
+};
+#endif
+
+} // namespace 
+
+namespace a3d {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// GuiRenderer class
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+//-------------------------------------------------------------------------------------------------
+//      コンストラクタです.
+//-------------------------------------------------------------------------------------------------
+GuiRenderer::GuiRenderer()
+: m_pDevice             (nullptr)
+, m_pConstantBuffer     (nullptr)
+, m_pConstantView       (nullptr)
+, m_pSampler            (nullptr)
+, m_pTexture            (nullptr)
+, m_pTextureView        (nullptr)
+, m_pDescriptorSetLayout(nullptr)
+, m_pDescriptorSet      (nullptr)
+, m_pPipelineState      (nullptr)
+, m_pCommandList        (nullptr)
+, m_BufferIndex         (0)
+{
+    for(auto i=0; i<2; ++i)
+    {
+        m_pVB[i]    = nullptr;
+        m_pIB[i]    = nullptr;
+        m_SizeVB[i] = 0;
+        m_SizeIB[i] = 0;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デストラクタです.
+//-------------------------------------------------------------------------------------------------
+GuiRenderer::~GuiRenderer()
+{ Term(); }
+
+//-------------------------------------------------------------------------------------------------
+//      シングルトンインスタンスを取得します.
+//-------------------------------------------------------------------------------------------------
+GuiRenderer& GuiRenderer::Instance()
+{ return s_Instance; }
+
+//-------------------------------------------------------------------------------------------------
+//      初期化処理を行います.
+//-------------------------------------------------------------------------------------------------
+bool GuiRenderer::Init
+(
+    IDevice*        pDevice,
+    void*           pWindowHandle,
+    uint32_t        width,
+    uint32_t        height,
+    TargetFormat    color_format,
+    TargetFormat    depth_format,
+    const char*     font_path
+)
+{
+   if (pDevice == nullptr)
+    { return false; }
+
+    m_pDevice = pDevice;
+    m_pDevice->AddRef();
+
+    // 頂点バッファを生成.
+    {
+        a3d::BufferDesc desc = {};
+        desc.Size                           = MaxPrimitiveCount * sizeof(ImDrawVert) * 4;
+        desc.Stride                         = sizeof(ImDrawVert);
+        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
+        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
+        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+
+        for(auto i=0; i<2; ++i)
+        {
+            if ( !m_pDevice->CreateBuffer(&desc, &m_pVB[i]) )
+            { return false; }
+        }
+    }
+
+    // インデックスバッファを生成.
+    {
+        a3d::BufferDesc desc = {};
+        desc.Size                           = MaxPrimitiveCount * sizeof(ImDrawIdx) * 6;
+        desc.Stride                         = sizeof(ImDrawIdx);
+        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage                          = a3d::RESOURCE_USAGE_INDEX_BUFFER;
+        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
+        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+
+        for(auto i=0; i<2; ++i)
+        {
+            if ( !m_pDevice->CreateBuffer(&desc, &m_pIB[i]))
+            { return false; }
+        }
+    }
+
+    // 定数バッファを生成.
+    {
+        auto info = m_pDevice->GetInfo();
+
+        a3d::BufferDesc desc = {};
+        desc.Size                           = a3d::RoundUp<uint64_t>( sizeof(float) * 16, info.ConstantBufferMemoryAlignment );
+        desc.Stride                         = a3d::RoundUp<uint32_t>( sizeof(float) * 16, info.ConstantBufferMemoryAlignment );
+        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage                          = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
+        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
+        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+
+        if ( !m_pDevice->CreateBuffer(&desc, &m_pConstantBuffer) )
+        { return false; }
+
+        a3d::BufferViewDesc viewDesc = {};
+        viewDesc.Offset = 0;
+        viewDesc.Range  = desc.Stride;
+
+        if ( !m_pDevice->CreateBufferView(m_pConstantBuffer, &viewDesc, &m_pConstantView) )
+        { return false; }
+
+        m_pMappedCB = static_cast<float*>(m_pConstantBuffer->Map());
+    }
+
+    // フォントテクスチャを生成.
+    {
+        uint8_t* pPixels;
+        int width;
+        int height;
+        int bytePerPixel;
+        
+        ImGuiIO& io = ImGui::GetIO();
+        io.Fonts->GetTexDataAsRGBA32(&pPixels, &width, &height, &bytePerPixel);
+
+        auto rowPitch = width * bytePerPixel;
+        auto size = rowPitch * height;
+
+        a3d::BufferDesc bufDesc = {};
+        bufDesc.Size                            = size;
+        bufDesc.InitState                       = a3d::RESOURCE_STATE_GENERAL;
+        bufDesc.Usage                           = a3d::RESOURCE_USAGE_COPY_SRC;
+        bufDesc.HeapProperty.Type               = a3d::HEAP_TYPE_UPLOAD;
+        bufDesc.HeapProperty.CpuPageProperty    = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+
+        a3d::IBuffer* pImmediate = nullptr;
+        if (!m_pDevice->CreateBuffer(&bufDesc, &pImmediate))
+        { return false; }
+
+        a3d::TextureDesc desc = {};
+        desc.Dimension                      = a3d::RESOURCE_DIMENSION_TEXTURE2D;
+        desc.Width                          = width;
+        desc.Height                         = height;
+        desc.DepthOrArraySize               = 1;
+        desc.MipLevels                      = 1;
+        desc.Format                         = a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleCount                    = 1;
+        desc.Layout                         = a3d::RESOURCE_LAYOUT_OPTIMAL;
+        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage                          = a3d::RESOURCE_USAGE_SHADER_RESOURCE | a3d::RESOURCE_USAGE_COPY_DST;
+        desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
+        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+
+        if (!m_pDevice->CreateTexture(&desc, &m_pTexture))
+        {
+            a3d::SafeRelease(pImmediate);
+            return false;
+        }
+
+        a3d::TextureViewDesc viewDesc = {};
+        viewDesc.Dimension          = a3d::VIEW_DIMENSION_TEXTURE2D;
+        viewDesc.Format             = desc.Format;
+        viewDesc.TextureAspect      = a3d::TEXTURE_ASPECT_COLOR;
+        viewDesc.MipSlice           = 0;
+        viewDesc.MipLevels          = desc.MipLevels;
+        viewDesc.FirstArraySlice    = 0;
+        viewDesc.ArraySize          = desc.DepthOrArraySize;
+        viewDesc.ComponentMapping.R = a3d::TEXTURE_SWIZZLE_R;
+        viewDesc.ComponentMapping.G = a3d::TEXTURE_SWIZZLE_G;
+        viewDesc.ComponentMapping.B = a3d::TEXTURE_SWIZZLE_B;
+        viewDesc.ComponentMapping.A = a3d::TEXTURE_SWIZZLE_A;
+
+        if (!m_pDevice->CreateTextureView(m_pTexture, &viewDesc, &m_pTextureView))
+        {
+            a3d::SafeRelease(pImmediate);
+            return false;
+        }
+
+        auto layout = m_pTexture->GetSubresourceLayout(0);
+
+        auto dstPtr = static_cast<uint8_t*>(pImmediate->Map());
+        assert( dstPtr != nullptr );
+
+        auto srcPtr = pPixels;
+        assert( srcPtr != nullptr );
+
+        for(auto i=0; i<layout.RowCount; ++i)
+        {
+            memcpy(dstPtr, srcPtr, rowPitch);
+            srcPtr += rowPitch;
+            dstPtr += layout.RowPitch;
+        }
+        pImmediate->Unmap();
+
+        a3d::Offset3D offset = {0, 0, 0};
+
+        a3d::ICommandList* pCommandList;
+        if (!m_pDevice->CreateCommandList(a3d::COMMANDLIST_TYPE_DIRECT, &pCommandList))
+        { return false; }
+
+        a3d::IQueue* pGraphicsQueue;
+        m_pDevice->GetGraphicsQueue(&pGraphicsQueue);
+
+        pCommandList->Begin();
+        pCommandList->TextureBarrier(
+            m_pTexture,
+            a3d::RESOURCE_STATE_GENERAL,
+            a3d::RESOURCE_STATE_COPY_DST);
+        pCommandList->CopyBufferToTexture(
+            m_pTexture,
+            0,
+            offset,
+            pImmediate,
+            0);
+        pCommandList->TextureBarrier(
+            m_pTexture,
+            a3d::RESOURCE_STATE_COPY_DST,
+            a3d::RESOURCE_STATE_SHADER_READ);
+        pCommandList->End();
+        pGraphicsQueue->Submit(pCommandList);
+        pGraphicsQueue->Execute(nullptr);
+        pGraphicsQueue->WaitIdle();
+
+        a3d::SafeRelease(pCommandList);
+        a3d::SafeRelease(pImmediate);
+        a3d::SafeRelease(pGraphicsQueue);
+    }
+
+    // サンプラーを生成.
+    {
+        a3d::SamplerDesc desc = {};
+        desc.AddressU           = a3d::TEXTURE_ADDRESS_MODE_CLAMP;
+        desc.AddressV           = a3d::TEXTURE_ADDRESS_MODE_CLAMP;
+        desc.AddressW           = a3d::TEXTURE_ADDRESS_MODE_CLAMP;
+        desc.MinFilter          = a3d::FILTER_MODE_LINEAR;
+        desc.MagFilter          = a3d::FILTER_MODE_LINEAR;
+        desc.MipMapMode         = a3d::MIPMAP_MODE_LINEAR;
+        desc.MinLod             = 0.0f;
+        desc.AnisotropyEnable   = false;
+        desc.MaxAnisotropy      = 1;
+        desc.CompareEnable      = false;
+        desc.CompareOp          = a3d::COMPARE_OP_NEVER;
+        desc.MinLod             = 0.0f;
+        desc.MaxLod             = FLT_MAX;
+        desc.BorderColor        = a3d::BORDER_COLOR_TRANSPARENT_BLACK;
+
+        if (!m_pDevice->CreateSampler(&desc, &m_pSampler))
+        { return false; }
+    }
+
+    // ディスクリプタセットレイアウトを生成.
+    {
+    #if defined(A3D_IS_VULKAN) || defined(A3D_IS_D3D)
+        a3d::DescriptorSetLayoutDesc desc = {};
+        desc.MaxSetCount               = 2;
+        desc.EntryCount                = 3;
+        
+        desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
+        desc.Entries[0].ShaderRegister = 0;
+        desc.Entries[0].BindLocation   = 0;
+        desc.Entries[0].Type           = a3d::DESCRIPTOR_TYPE_CBV;
+
+        desc.Entries[1].ShaderMask     = a3d::SHADER_MASK_PIXEL;
+        desc.Entries[1].ShaderRegister = 0;
+        desc.Entries[1].BindLocation   = 1;
+        desc.Entries[1].Type           = a3d::DESCRIPTOR_TYPE_SMP;
+
+        desc.Entries[2].ShaderMask     = a3d::SHADER_MASK_PIXEL;
+        desc.Entries[2].ShaderRegister = 0;
+        desc.Entries[2].BindLocation   = 2;
+        desc.Entries[2].Type           = a3d::DESCRIPTOR_TYPE_SRV;
+    #else
+        a3d::DescriptorSetLayoutDesc desc = {};
+        desc.MaxSetCount               = 2;
+        desc.EntryCount                = 2;
+        
+        desc.Entries[0].ShaderMask     = a3d::SHADER_MASK_VERTEX;
+        desc.Entries[0].ShaderRegister = 0;
+        desc.Entries[0].BindLocation   = 0;
+        desc.Entries[0].Type           = a3d::DESCRIPTOR_TYPE_CBV;
+
+        desc.Entries[1].ShaderMask     = a3d::SHADER_MASK_PIXEL;
+        desc.Entries[1].ShaderRegister = 0;
+        desc.Entries[1].BindLocation   = 0;
+        desc.Entries[1].Type           = a3d::DESCRIPTOR_TYPE_SRV;
+    #endif
+
+        if (!m_pDevice->CreateDescriptorSetLayout(&desc, &m_pDescriptorSetLayout))
+        { return false; }
+
+        if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet))
+        { return false; }
+
+    #if defined(A3D_IS_VULKAN) || defined(A3D_IS_D3D)
+        m_pDescriptorSet->SetBuffer (0, m_pConstantView);
+        m_pDescriptorSet->SetSampler(1, m_pSampler);
+        m_pDescriptorSet->SetTexture(2, m_pTextureView);
+    #else
+        m_pDescriptorSet->SetBuffer (0, m_pConstantView);
+        m_pDescriptorSet->SetSampler(1, m_pSampler);
+        m_pDescriptorSet->SetTexture(1, m_pTextureView);
+    #endif
+
+    #if 1
+        // DescriptorSet::Update()は削除される予定です.
+        m_pDescriptorSet->Update();
+    #endif
+    }
+
+    // パイプラインステートの生成.
+    {
+        // シェーダバイナリを読み込みます.
+        a3d::ShaderBinary vs = {};
+        a3d::ShaderBinary ps = {};
+
+        vs.pByteCode    = static_cast<const void*>(g_BinaryVS);
+        vs.ByteCodeSize = sizeof(g_BinaryVS);
+        vs.EntryPoint   = "main";
+
+        ps.pByteCode    = static_cast<const void*>(g_BinaryPS);
+        ps.ByteCodeSize = sizeof(g_BinaryPS);
+        ps.EntryPoint   = "main";
+
+        // 入力要素です.
+        a3d::InputElementDesc inputElements[] = {
+            { "POSITION", 0, 0, a3d::RESOURCE_FORMAT_R32G32_FLOAT   , 0  },
+            { "TEXCOORD", 0, 1, a3d::RESOURCE_FORMAT_R32G32_FLOAT   , 8  },
+            { "COLOR"   , 0, 2, a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM , 16 }
+        };
+
+        // 入力ストリームです.
+        a3d::InputStreamDesc inputStream = {};
+        inputStream.ElementCount    = 3;
+        inputStream.pElements       = inputElements;
+        inputStream.StreamIndex     = 0;
+        inputStream.StrideInBytes   = sizeof(ImDrawVert);
+        inputStream.InputClass      = a3d::INPUT_CLASSIFICATION_PER_VERTEX;
+
+        // 入力レイアウトです.
+        a3d::InputLayoutDesc inputLayout = {};
+        inputLayout.StreamCount = 1;
+        inputLayout.pStreams    = &inputStream;
+
+        // ステンシルテスト設定です.
+        a3d::StencilTestDesc stencilTest = {};
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilDepthFailOp = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilFailOp      = a3d::STENCIL_OP_KEEP;
+        stencilTest.StencilCompareOp   = a3d::COMPARE_OP_NEVER;
+
+        // グラフィックスパイプラインステートを設定します.
+        a3d::GraphicsPipelineStateDesc desc = {};
+
+        // シェーダの設定.
+        desc.VertexShader = vs;
+        desc.PixelShader  = ps;
+
+        // ブレンドステートの設定.
+        desc.BlendState.IndependentBlendEnable          = false;
+        desc.BlendState.LogicOpEnable                   = false;
+        desc.BlendState.LogicOp                         = a3d::LOGIC_OP_NOOP;
+        desc.BlendState.ColorTarget[0].BlendEnable      = true;
+        desc.BlendState.ColorTarget[0].SrcBlend         = a3d::BLEND_FACTOR_SRC_ALPHA;
+        desc.BlendState.ColorTarget[0].DstBlend         = a3d::BLEND_FACTOR_INV_SRC_ALPHA;
+        desc.BlendState.ColorTarget[0].BlendOp          = a3d::BLEND_OP_ADD;
+        desc.BlendState.ColorTarget[0].SrcBlendAlpha    = a3d::BLEND_FACTOR_INV_SRC_ALPHA;
+        desc.BlendState.ColorTarget[0].DstBlendAlpha    = a3d::BLEND_FACTOR_ZERO;
+        desc.BlendState.ColorTarget[0].BlendOpAlpha     = a3d::BLEND_OP_ADD;
+        desc.BlendState.ColorTarget[0].EnableWriteR     = true;
+        desc.BlendState.ColorTarget[0].EnableWriteG     = true;
+        desc.BlendState.ColorTarget[0].EnableWriteB     = true;
+        desc.BlendState.ColorTarget[0].EnableWriteA     = true;
+        for(auto i=1; i<8; ++i)
+        {
+            desc.BlendState.ColorTarget[i].BlendEnable      = false;
+            desc.BlendState.ColorTarget[i].SrcBlend         = a3d::BLEND_FACTOR_ONE;
+            desc.BlendState.ColorTarget[i].DstBlend         = a3d::BLEND_FACTOR_ZERO;
+            desc.BlendState.ColorTarget[i].BlendOp          = a3d::BLEND_OP_ADD;
+            desc.BlendState.ColorTarget[i].SrcBlendAlpha    = a3d::BLEND_FACTOR_ONE;
+            desc.BlendState.ColorTarget[i].DstBlendAlpha    = a3d::BLEND_FACTOR_ZERO;
+            desc.BlendState.ColorTarget[i].BlendOpAlpha     = a3d::BLEND_OP_ADD;
+            desc.BlendState.ColorTarget[i].EnableWriteR     = true;
+            desc.BlendState.ColorTarget[i].EnableWriteG     = true;
+            desc.BlendState.ColorTarget[i].EnableWriteB     = true;
+            desc.BlendState.ColorTarget[i].EnableWriteA     = true;
+        }
+
+        // ラスタライザ―ステートの設定.
+        desc.RasterizerState.PolygonMode                = a3d::POLYGON_MODE_SOLID;
+        desc.RasterizerState.CullMode                   = a3d::CULL_MODE_NONE;
+        desc.RasterizerState.FrontCounterClockWise      = false;
+        desc.RasterizerState.DepthBias                  = 0;
+        desc.RasterizerState.DepthBiasClamp             = 0.0f;
+        desc.RasterizerState.SlopeScaledDepthBias       = 0;
+        desc.RasterizerState.DepthClipEnable            = false;
+        desc.RasterizerState.EnableConservativeRaster   = false;
+        
+        // マルチサンプルステートの設定.
+        desc.MultiSampleState.EnableAlphaToCoverage = false;
+        desc.MultiSampleState.EnableMultiSample     = false;
+        desc.MultiSampleState.SampleCount           = 1;
+
+        // 深度ステートの設定.
+        desc.DepthState.DepthTestEnable      = false;
+        desc.DepthState.DepthWriteEnable     = false;
+        desc.DepthState.DepthCompareOp       = a3d::COMPARE_OP_NEVER;
+
+        // ステンシルステートの設定.
+        desc.StencilState.StencilTestEnable    = false;
+        desc.StencilState.StencllReadMask      = 0;
+        desc.StencilState.StencilWriteMask     = 0;
+        desc.StencilState.FrontFace            = stencilTest;
+        desc.StencilState.BackFace             = stencilTest;
+
+        // テッセレーションステートの設定.
+        desc.TessellationState.PatchControlCount = 0;
+
+        // 入力アウトの設定.
+        desc.InputLayout = inputLayout;
+
+        // ディスクリプタセットレイアウトの設定.
+        desc.pLayout = m_pDescriptorSetLayout;
+        
+        // プリミティブトポロジーの設定.
+        desc.PrimitiveTopology = a3d::PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+        // フォーマットの設定.
+        desc.ColorCount = 1;
+        desc.ColorTarget[0] = color_format;
+        desc.DepthTarget    = depth_format;
+
+        // キャッシュ済みパイプラインステートの設定.
+        desc.pCachedPSO = nullptr;
+
+        // グラフィックスパイプラインステートの生成.
+        if (!m_pDevice->CreateGraphicsPipeline(&desc, &m_pPipelineState))
+        { return false; }
+    }
+
+    // ImGuiの初期化.
+    {
+        auto& io = ImGui::GetIO();
+        io.KeyMap[ImGuiKey_Tab]         = KEY_TAB;
+        io.KeyMap[ImGuiKey_LeftArrow]   = KEY_LEFT;
+        io.KeyMap[ImGuiKey_RightArrow]  = KEY_RIGHT;
+        io.KeyMap[ImGuiKey_UpArrow]     = KEY_UP;
+        io.KeyMap[ImGuiKey_DownArrow]   = KEY_DOWN;
+        io.KeyMap[ImGuiKey_PageUp]      = KEY_PAGE_UP;
+        io.KeyMap[ImGuiKey_PageDown]    = KEY_PAGE_DOWN;
+        io.KeyMap[ImGuiKey_Home]        = KEY_HOME;
+        io.KeyMap[ImGuiKey_End]         = KEY_END;
+        io.KeyMap[ImGuiKey_Delete]      = KEY_DELETE;
+        io.KeyMap[ImGuiKey_Backspace]   = KEY_BACK;
+        io.KeyMap[ImGuiKey_Enter]       = KEY_RETURN;
+        io.KeyMap[ImGuiKey_Escape]      = KEY_ESC;
+        io.KeyMap[ImGuiKey_A]           = 'A';
+        io.KeyMap[ImGuiKey_C]           = 'C';
+        io.KeyMap[ImGuiKey_V]           = 'V';
+        io.KeyMap[ImGuiKey_X]           = 'X';
+        io.KeyMap[ImGuiKey_Y]           = 'Y';
+        io.KeyMap[ImGuiKey_Z]           = 'Z';
+
+        io.RenderDrawListsFn  = Draw;
+        io.SetClipboardTextFn = nullptr;
+        io.GetClipboardTextFn = nullptr;
+        io.ImeWindowHandle    = pWindowHandle;
+        io.DisplaySize.x      = float(width);
+        io.DisplaySize.y      = float(height);
+
+        io.Fonts->TexID = reinterpret_cast<void*>(m_pTextureView);
+        io.IniFilename = nullptr;
+        io.LogFilename = nullptr;
+        io.Framerate   = 0.5f;
+
+        if (font_path != nullptr)
+        { io.Fonts->AddFontFromFileTTF(font_path, 14.0f, nullptr, io.Fonts->GetGlyphRangesJapanese()); }
+
+        auto& style = ImGui::GetStyle();
+        style.WindowRounding      = 2.0f;
+        style.ChildWindowRounding = 2.0f;
+
+        #if (!SAMPLE_IS_VULKAN && !SAMPLE_IS_D3D12 && !SAMPLE_IS_D3D11)
+            // マウスカーソル描画.
+            io.MouseDrawCursor = true;
+        #endif
+
+        style.Colors[ImGuiCol_Text]                 = ImVec4(1.000000f, 1.000000f, 1.000000f, 1.000000f);
+        style.Colors[ImGuiCol_TextDisabled]         = ImVec4(0.400000f, 0.400000f, 0.400000f, 1.000000f);
+        style.Colors[ImGuiCol_WindowBg]             = ImVec4(0.060000f, 0.060000f, 0.060000f, 0.752000f);
+        style.Colors[ImGuiCol_ChildWindowBg]        = ImVec4(1.000000f, 1.000000f, 1.000000f, 0.000000f);
+        style.Colors[ImGuiCol_PopupBg]              = ImVec4(0.000000f, 0.000000f, 0.000000f, 0.752000f);
+        style.Colors[ImGuiCol_Border]               = ImVec4(1.000000f, 1.000000f, 1.000000f, 0.312000f);
+        style.Colors[ImGuiCol_BorderShadow]         = ImVec4(0.000000f, 0.000000f, 0.000000f, 0.080000f);
+        style.Colors[ImGuiCol_FrameBg]              = ImVec4(0.800000f, 0.800000f, 0.800000f, 0.300000f);
+        style.Colors[ImGuiCol_FrameBgHovered]       = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.320000f);
+        style.Colors[ImGuiCol_FrameBgActive]        = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.536000f);
+        style.Colors[ImGuiCol_TitleBg]              = ImVec4(0.000000f, 0.250000f, 0.500000f, 0.500000f);
+        style.Colors[ImGuiCol_TitleBgCollapsed]     = ImVec4(0.000000f, 0.000000f, 0.500000f, 0.500000f);
+        style.Colors[ImGuiCol_TitleBgActive]        = ImVec4(0.000000f, 0.500000f, 1.000000f, 0.800000f);
+        style.Colors[ImGuiCol_MenuBarBg]            = ImVec4(0.140000f, 0.140000f, 0.140000f, 1.000000f);
+        style.Colors[ImGuiCol_ScrollbarBg]          = ImVec4(0.020000f, 0.020000f, 0.020000f, 0.424000f);
+        style.Colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.310000f, 0.310000f, 0.310000f, 1.000000f);
+        style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.410000f, 0.410000f, 0.410000f, 1.000000f);
+        style.Colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.510000f, 0.510000f, 0.510000f, 1.000000f);
+        style.Colors[ImGuiCol_ComboBg]              = ImVec4(0.140000f, 0.140000f, 0.140000f, 0.792000f);
+        style.Colors[ImGuiCol_CheckMark]            = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
+        style.Colors[ImGuiCol_SliderGrab]           = ImVec4(0.240000f, 0.520000f, 0.880000f, 1.000000f);
+        style.Colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
+        style.Colors[ImGuiCol_Button]               = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.320000f);
+        style.Colors[ImGuiCol_ButtonHovered]        = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
+        style.Colors[ImGuiCol_ButtonActive]         = ImVec4(0.060000f, 0.530000f, 0.980000f, 1.000000f);
+        style.Colors[ImGuiCol_Header]               = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.248000f);
+        style.Colors[ImGuiCol_HeaderHovered]        = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.640000f);
+        style.Colors[ImGuiCol_HeaderActive]         = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
+        style.Colors[ImGuiCol_Column]               = ImVec4(0.610000f, 0.610000f, 0.610000f, 1.000000f);
+        style.Colors[ImGuiCol_ColumnHovered]        = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.624000f);
+        style.Colors[ImGuiCol_ColumnActive]         = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
+        style.Colors[ImGuiCol_ResizeGrip]           = ImVec4(0.000000f, 0.000000f, 0.000000f, 0.400000f);
+        style.Colors[ImGuiCol_ResizeGripHovered]    = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.536000f);
+        style.Colors[ImGuiCol_ResizeGripActive]     = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.760000f);
+        style.Colors[ImGuiCol_CloseButton]          = ImVec4(0.410000f, 0.410000f, 0.410000f, 0.400000f);
+        style.Colors[ImGuiCol_CloseButtonHovered]   = ImVec4(0.980000f, 0.390000f, 0.360000f, 1.000000f);
+        style.Colors[ImGuiCol_CloseButtonActive]    = ImVec4(0.980000f, 0.390000f, 0.360000f, 1.000000f);
+        style.Colors[ImGuiCol_PlotLines]            = ImVec4(0.610000f, 0.610000f, 0.610000f, 1.000000f);
+        style.Colors[ImGuiCol_PlotLinesHovered]     = ImVec4(1.000000f, 0.430000f, 0.350000f, 1.000000f);
+        style.Colors[ImGuiCol_PlotHistogram]        = ImVec4(0.900000f, 0.700000f, 0.000000f, 1.000000f);
+        style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.000000f, 0.600000f, 0.000000f, 1.000000f);
+        style.Colors[ImGuiCol_TextSelectedBg]       = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.280000f);
+        style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.800000f, 0.800000f, 0.800000f, 0.280000f);
+
+        ImGui::NewFrame();
+    }
+
+    m_LastTime = std::chrono::system_clock::now();
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      終了処理を行います.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::Term()
+{
+    for(auto i=0; i<2; ++i)
+    {
+        SafeRelease(m_pVB[i]);
+        SafeRelease(m_pIB[i]);
+        m_SizeVB[i] = 0;
+        m_SizeIB[i] = 0;
+    }
+
+    SafeRelease(m_pConstantView);
+    SafeRelease(m_pConstantBuffer);
+    SafeRelease(m_pSampler);
+    SafeRelease(m_pTextureView);
+    SafeRelease(m_pTexture);
+    SafeRelease(m_pDescriptorSet);
+    SafeRelease(m_pDescriptorSetLayout);
+    SafeRelease(m_pPipelineState);
+    m_pCommandList = nullptr;
+    SafeRelease(m_pDevice);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      バッファを入れ替えます.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::SwapBuffers()
+{
+    auto time = std::chrono::system_clock::now();
+    auto elapsedMilliSec = std::chrono::duration_cast<std::chrono::milliseconds>(time - m_LastTime).count();
+    auto elapsedSec = float(elapsedMilliSec / 1000.0);
+
+    auto& io = ImGui::GetIO();
+    io.DeltaTime = elapsedSec;    
+    m_BufferIndex = (m_BufferIndex + 1) % 2;
+    ImGui::NewFrame();
+
+    m_LastTime = time;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      コマンドを生成します.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::MakeCmd(ICommandList* pCmdList)
+{
+    m_pCommandList = pCmdList;
+    ImGui::Render();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      キーの処理です.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::OnKey(const KeyEventArg& arg)
+{
+    auto& io = ImGui::GetIO();
+
+    io.KeysDown[arg.KeyCode] = arg.IsKeyDown;
+    io.KeyAlt   = arg.IsAltDown;
+    io.KeyCtrl  = false;
+    io.KeyShift = false;
+    io.KeySuper = false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      マウスの処理です.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::OnMouse(const MouseEventArg& arg)
+{
+    auto& io = ImGui::GetIO();
+
+    io.MousePosPrev = io.MousePos;
+    io.MousePos = ImVec2( float(arg.CursorX), float(arg.CursorY) );
+    io.MouseDown[0] = arg.IsDownL;
+    io.MouseDown[1] = arg.IsDownR;
+    io.MouseDown[2] = arg.IsDownM;
+    io.MouseDown[3] = false;
+    io.MouseDown[4] = false;
+    io.MouseWheel   += (arg.WheelDelta > 0) ? 1.0f : -1.0f;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      タイピング時の処理です.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::OnTyping(uint32_t keyCode)
+{
+    if (keyCode > 0 && keyCode < 0x10000)
+    {
+        auto& io = ImGui::GetIO();
+        io.AddInputCharacter(ImWchar(keyCode));
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      リサイズ時の処理です.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::OnResize(const ResizeEventArg& arg)
+{
+    auto& io = ImGui::GetIO();
+    io.DisplaySize.x = float(arg.Width);
+    io.DisplaySize.y = float(arg.Height);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      描画時の処理です.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::OnDraw(ImDrawData* pData)
+{
+    auto& io = ImGui::GetIO();
+    auto width  = static_cast<int>(io.DisplaySize.x * io.DisplayFramebufferScale.x);
+    auto height = static_cast<int>(io.DisplaySize.y * io.DisplayFramebufferScale.y);
+    if ( width == 0 || height == 0 )
+    { return; }
+
+    size_t vtxSize = pData->TotalVtxCount * sizeof(ImDrawVert);
+    size_t idxSize = pData->TotalIdxCount * sizeof(ImDrawIdx);
+
+    // 最大サイズを超える場合は描画せずに終了.
+    if (vtxSize >= MaxPrimitiveCount * sizeof(ImDrawVert) * 4 ||
+        idxSize >= MaxPrimitiveCount * sizeof(ImDrawIdx) * 6)
+    { return; }
+
+    // 頂点とインデックスの更新.
+    {
+        auto pVtxDst = static_cast<ImDrawVert*>(m_pVB[m_BufferIndex]->Map());
+        auto pIdxDst = static_cast<ImDrawIdx*> (m_pIB[m_BufferIndex]->Map());
+
+        for(auto n=0; n<pData->CmdListsCount; ++n)
+        {
+            const auto pList = pData->CmdLists[n];
+            memcpy(pVtxDst, &pList->VtxBuffer[0], pList->VtxBuffer.size() * sizeof(ImDrawVert));
+            memcpy(pIdxDst, &pList->IdxBuffer[0], pList->IdxBuffer.size() * sizeof(ImDrawIdx));
+            pVtxDst += pList->VtxBuffer.size();
+            pIdxDst += pList->IdxBuffer.size();
+        }
+
+        m_pVB[m_BufferIndex]->Unmap();
+        m_pIB[m_BufferIndex]->Unmap();
+    }
+
+    // パイプラインステートとディスクリプタセット・ディスクリプタセットレイアウトを設定.
+    {
+        m_pCommandList->SetPipelineState(m_pPipelineState);
+        m_pCommandList->SetDescriptorSet(m_pDescriptorSet);
+    }
+
+    // 頂点バッファとインデックスバッファを設定.
+    {
+        uint64_t offset = 0;
+        m_pCommandList->SetVertexBuffers(0, 1, &m_pVB[m_BufferIndex], &offset);
+        m_pCommandList->SetIndexBuffer(m_pIB[m_BufferIndex], 0);
+    }
+
+    // ビューポートを設定.
+    {
+        a3d::Viewport viewport = {};
+        viewport.X          = 0;
+        viewport.Y          = 0;
+        viewport.Width      = io.DisplaySize.x;
+        viewport.Height     = io.DisplaySize.y;
+        viewport.MinDepth   = 0.0f;
+        viewport.MaxDepth   = 1.0f;
+        m_pCommandList->SetViewports(1, &viewport);
+    }
+
+    // 定数バッファを更新.
+    {
+        float L = 0.0f;
+        float R = ImGui::GetIO().DisplaySize.x;
+        float B = ImGui::GetIO().DisplaySize.y;
+        float T = 0.0f;
+        float mvp[4][4] =
+        {
+            { 2.0f/(R-L),   0.0f,           0.0f,       0.0f },
+            { 0.0f,         2.0f/(T-B),     0.0f,       0.0f },
+            { 0.0f,         0.0f,           0.5f,       0.0f },
+            { (R+L)/(L-R),  (T+B)/(B-T),    0.5f,       1.0f },
+        };
+        memcpy( m_pMappedCB, mvp, sizeof(float) * 16 );
+    }
+
+    // 描画コマンドを生成.
+    {
+        int vtxOffset = 0;
+        int idxOffset = 0;
+        for(auto n=0; n<pData->CmdListsCount; ++n)
+        {
+            const auto pList = pData->CmdLists[n];
+            for(auto i =0; i<pList->CmdBuffer.size(); ++i)
+            {
+                auto pCmd = &pList->CmdBuffer[i];
+                if (pCmd->UserCallback)
+                { pCmd->UserCallback(pList, pCmd); }
+                else
+                {
+                    a3d::Rect scissor = {};
+                    scissor.Offset.X      = static_cast<int>(pCmd->ClipRect.x);
+                    scissor.Offset.Y      = static_cast<int>(pCmd->ClipRect.y);
+                    scissor.Extent.Width  = static_cast<uint32_t>(pCmd->ClipRect.z - pCmd->ClipRect.x);
+                    scissor.Extent.Height = static_cast<uint32_t>(pCmd->ClipRect.w - pCmd->ClipRect.y);
+                    m_pCommandList->SetScissors(1, &scissor);
+                    m_pCommandList->DrawIndexedInstanced(pCmd->ElemCount, 1, idxOffset, vtxOffset, 0);
+                }
+                idxOffset += pCmd->ElemCount;
+            }
+            vtxOffset += pList->VtxBuffer.size();
+        }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      描画処理を行います.
+//-------------------------------------------------------------------------------------------------
+void GuiRenderer::Draw(ImDrawData* pData)
+{ s_Instance.OnDraw(pData); }
+
+} // namespace a3d

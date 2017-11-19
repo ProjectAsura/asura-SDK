@@ -227,7 +227,7 @@ enum RESOURCE_FORMAT
     RESOURCE_FORMAT_BC6H_UF16               = 41,   //!< BC6H 符号なし16bit浮動小数ブロック圧縮形式です.
     RESOURCE_FORMAT_BC6H_SF16               = 42,   //!< BC6H 符号つき16bit浮動小数ブロック圧縮形式です.
     RESOURCE_FORMAT_BC7_UNORM_SRGB          = 43,   //!< BC7 SRGB UNORM ブロック圧縮形式です.
-    RESOURCE_FORMAT_BC7_UNORN               = 44,   //!< BC7 UNORM ブロック圧縮形式です.
+    RESOURCE_FORMAT_BC7_UNORM               = 44,   //!< BC7 UNORM ブロック圧縮形式です.
     RESOURCE_FORMAT_ASTC_4X4_UNORM_SRGB     = 45,   //!< ASTC SRGB 4X4ブロック圧縮形式です.
     RESOURCE_FORMAT_ASTC_4X4_UNORM          = 46,   //!< ASTC 4X4ブロック圧縮形式です.
     RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB     = 47,   //!< ASTC SRGB 5X4ブロック圧縮形式です.
@@ -591,10 +591,11 @@ enum META_DATA_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum COLOR_SPACE_TYPE
 {
-    COLOR_SPACE_UNKNOWN = 0,        //!< 未知の形式です.
-    COLOR_SPACE_SRGB,               //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.709
-    COLOR_SPACE_RGB_BT2020,         //!< ColorSpace:RGB,   Range:0-255, Gamma:2.2,  Primaries:BT.2020
-    COLOR_SPACE_RGB_BT2020_PQ,      //!< ColorSpace:RGB,   Range:0-255, Gamma:2084, Primaries:BT.2020
+    COLOR_SPACE_SRGB = 0,           //!< sRGB.
+    COLOR_SPACE_BT709_LINEAR,       //!< BT.709, 　OETF:Linear.
+    COLOR_SPACE_BT709_NONLINEAR,    //!< BT.709, 　OETF:Gamma 2.2
+    COLOR_SPACE_BT2020_PQ,          //!< BT.2020,  OETF:SMPTE ST2084 Perceptual Quantizer
+    COLOR_SPACE_BT2020_HLG,         //!< BT.2020,  OETF:Hybrid Log Gamma.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1032,7 +1033,7 @@ struct DescriptorSetLayoutDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ShaderBinary
 {
-    void*           pByteCode;              //!< バイトコードです.
+    const void*     pByteCode;              //!< バイトコードです.
     uint32_t        ByteCodeSize;           //!< バイトコードのサイズです(バイト単位).
     const char*     EntryPoint;             //!< エントリーポイント名です.
 };
@@ -2216,11 +2217,10 @@ struct A3D_API ISwapChain : IDeviceChild
     //! @brief      色空間がサポートされているかチェックします.
     //!
     //! @param[in]      type        色空間タイプです.
-    //! @param[out]     pFlags      サポートフラグ(マスクビット)の格納先です(COLOR_SPACE_SUPPROT_FLAG参照).
     //! @retval true    チェックに成功.
     //! @retval false   チェックに失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags) = 0;
+    virtual bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

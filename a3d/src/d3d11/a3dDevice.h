@@ -371,8 +371,8 @@ private:
     uint64_t                m_TimeStampFrequency;   //!< GPUタイムスタンプの更新頻度(Hz単位)です.
 #if defined(A3D_FOR_WINDOWS10)
     IDXGIFactory5*          m_pFactory5;            //!< ファクトリ5です.
-    IDXGIAdapter3*          m_pAdapter3;            //!< アダプター3です.
-    IDXGIOutput4*           m_pOutput4;             //!< アウトプット4です.
+    IDXGIAdapter4*          m_pAdapter3;            //!< アダプター3です.
+    IDXGIOutput6*           m_pOutput4;             //!< アウトプット4です.
 #endif
 
     //=============================================================================================

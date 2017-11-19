@@ -21,6 +21,7 @@
 #if defined(A3D_FOR_WINDOWS10)
 #include <d3d11_4.h>
 #include <dxgi1_5.h>
+#include <dxgi1_6.h>
 #else
 #include <d3d11_2.h>
 #include <dxgi1_3.h>

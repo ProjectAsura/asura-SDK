@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8F8911F9-69DA-4B58-B8ED-24F1AED2F488}</ProjectGuid>
     <RootNamespace>a3d</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -205,7 +205,6 @@
     <ClInclude Include="..\..\..\src\d3d11\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dTextureView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dUtil.h" />
-    <ClInclude Include="..\..\..\src\null\a3dTextureView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

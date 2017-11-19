@@ -173,9 +173,6 @@
     <ClInclude Include="..\..\..\src\emu\a3dImCmd.h">
       <Filter>ソース ファイル\emu</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\null\a3dTextureView.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dStorageView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>

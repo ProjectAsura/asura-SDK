@@ -20,15 +20,17 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 SwapChain::SwapChain()
-: m_RefCount    (1)
-, m_pDevice     (nullptr)
-, m_pQueue      (nullptr)
-, m_Surface     (null_handle)
-, m_SwapChain   (null_handle)
-, m_pBuffers    (nullptr)
-, m_pImages     (nullptr)
-, m_pImageViews (nullptr)
-, m_IsFullScreen(false)
+: m_RefCount            (1)
+, m_pDevice             (nullptr)
+, m_pQueue              (nullptr)
+, m_Surface             (null_handle)
+, m_SwapChain           (null_handle)
+, m_pBuffers            (nullptr)
+, m_pImages             (nullptr)
+, m_pImageViews         (nullptr)
+, m_IsFullScreen        (false)
+, m_SurfaceFormatCount  (0)
+, m_pSurfaceFormats     (nullptr)
 { memset( &m_Desc, 0, sizeof(m_Desc) ); }
 
 //-------------------------------------------------------------------------------------------------
@@ -71,9 +73,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         }
     }
     #elif A3D_IS_LINUX
-    {
-        // TODO : Implement.
-    }
+    { /* TODO : Implement. */ }
     #elif A3D_IS_ANDROID
     { /* DO_NOTHING */ }
     #elif A3D_IS_NX
@@ -99,40 +99,38 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         if ( ret != VK_SUCCESS || support == VK_FALSE )
         { return false; }
 
-        uint32_t count = 0;
-        ret = vkGetPhysicalDeviceSurfaceFormatsKHR(pNativePhysicalDevice, m_Surface, &count, nullptr);
+        ret = vkGetPhysicalDeviceSurfaceFormatsKHR(pNativePhysicalDevice, m_Surface, &m_SurfaceFormatCount, nullptr);
         if ( ret != VK_SUCCESS )
         { return false; }
 
-        auto pFormats = new (std::nothrow) VkSurfaceFormatKHR [count];
-        if (pFormats == nullptr)
+        m_pSurfaceFormats = new (std::nothrow) VkSurfaceFormatKHR [m_SurfaceFormatCount];
+        if (m_pSurfaceFormats == nullptr)
         { return false; }
 
-        ret = vkGetPhysicalDeviceSurfaceFormatsKHR(pNativePhysicalDevice, m_Surface, &count, pFormats);
+        ret = vkGetPhysicalDeviceSurfaceFormatsKHR(pNativePhysicalDevice, m_Surface, &m_SurfaceFormatCount, m_pSurfaceFormats);
         if ( ret != VK_SUCCESS )
         {
-            delete [] pFormats;
+            delete [] m_pSurfaceFormats;
+            m_SurfaceFormatCount = 0;
             return false;
         }
 
         bool isFind = false;
 
         auto nativeFormat     = ToNativeFormat(pDesc->Format);
-        auto nativeColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        auto nativeColorSpace = ToNativeColorSpace(pDesc->ColorSpace);
 
-        for(auto i=0u; i<count; ++i)
+        for(auto i=0u; i<m_SurfaceFormatCount; ++i)
         {
-            if (nativeFormat     == pFormats[i].format &&
-                nativeColorSpace == pFormats[i].colorSpace)
+            if (nativeFormat     == m_pSurfaceFormats[i].format &&
+                nativeColorSpace == m_pSurfaceFormats[i].colorSpace)
             {
-                m_ImageFormat   = pFormats[i].format;
-                m_ColorSpace    = pFormats[i].colorSpace;
+                m_ImageFormat   = m_pSurfaceFormats[i].format;
+                m_ColorSpace    = m_pSurfaceFormats[i].colorSpace;
                 isFind          = true;
                 break;
             }
         }
-
-        delete [] pFormats;
 
         if (!isFind)
         { return false; }
@@ -463,6 +461,9 @@ void SwapChain::Term()
         vkDestroySurfaceKHR( pNativeInstance, m_Surface, nullptr );
         m_Surface = null_handle;
     }
+
+    SafeDeleteArray(m_pSurfaceFormats);
+    m_SurfaceFormatCount = 0;
 
     SafeRelease( m_pQueue );
     SafeRelease( m_pDevice );
@@ -883,12 +884,27 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
 //-------------------------------------------------------------------------------------------------
 //      色空間がサポートされているかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type, uint32_t* pFlags)
+bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 {
-    /* NOT SUPPROT */
-    A3D_UNUSED(type);
-    A3D_UNUSED(pFlags);
-    return false;
+    if (m_pSurfaceFormats == nullptr || m_SurfaceFormatCount == 0)
+    { return false; }
+
+    bool isFind = false;
+
+    auto nativeFormat     = ToNativeFormat(m_Desc.Format);
+    auto nativeColorSpace = ToNativeColorSpace(type);
+
+    for(auto i=0u; i<m_SurfaceFormatCount; ++i)
+    {
+        if (nativeFormat     == m_pSurfaceFormats[i].format &&
+            nativeColorSpace == m_pSurfaceFormats[i].colorSpace)
+        {
+            isFind = true;
+            break;
+        }
+    }
+
+    return isFind;
 }
 
 //-------------------------------------------------------------------------------------------------
