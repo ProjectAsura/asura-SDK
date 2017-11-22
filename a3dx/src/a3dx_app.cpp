@@ -14,7 +14,6 @@
 #include <Windows.h>
 
 
-
 namespace {
 
 //-------------------------------------------------------------------------------------------------
@@ -117,12 +116,12 @@ public:
     //---------------------------------------------------------------------------------------------
     bool Init
     (
-        uint32_t        width,
-        uint32_t        height,
-        a3d::OnMouse    mouseFunc,
-        a3d::OnKey      keyFunc,
-        a3d::OnResize   resizeFunc,
-        a3d::OnTyping   typingFunc
+        uint32_t                width,
+        uint32_t                height,
+        a3d::IMouseHandler*     pMouseHandler,
+        a3d::IKeyHandler*       pKeyHandler,
+        a3d::IResizeHandler*    pResizeHandler,
+        a3d::ITypingHandler*    pTypingHandler
     )
     {
         // インスタンスハンドルを取得.
@@ -181,17 +180,17 @@ public:
         if ( !m_hWnd )
         { return false; }
 
-        m_OnKey     = keyFunc;
-        m_OnMouse   = mouseFunc;
-        m_OnResize  = resizeFunc;
-        m_OnTyping  = typingFunc;
+        m_pKeyHandler     = pKeyHandler;
+        m_pMouseHandler   = pMouseHandler;
+        m_pResizeHandler  = pResizeHandler;
+        m_pTypingHandler  = pTypingHandler;
 
         // ウィンドウを表示します.
         ShowWindow( m_hWnd, SW_SHOWNORMAL );
         UpdateWindow( m_hWnd );
 
         // フォーカスを設定します.
-        SetFocus( m_hWnd );
+        ::SetFocus( m_hWnd );
 
         return true;
     }
@@ -260,21 +259,26 @@ public:
     void* GetWindowHandle() const override
     { return reinterpret_cast<void*>(m_hWnd); }
 
+    //---------------------------------------------------------------------------------------------
+    //      ウィンドウフォーカスを設定します.
+    //---------------------------------------------------------------------------------------------
+    void SetFocus()
+    { ::SetFocus(m_hWnd); }
 
 private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    HINSTANCE           m_hInst         = nullptr;  //!< インスタンスハンドルです.
-    HWND                m_hWnd          = nullptr;  //!< ウィンドウハンドルです.
-    MSG                 m_Msg           = {};       //!< メッセージです.
-    uint32_t            m_Width         = 0;        //!< ウィンドウの横幅です.
-    uint32_t            m_Height        = 0;        //!< ウィンドウの縦幅です.
-    a3d::OnKey          m_OnKey         = nullptr;  //!< キーボードコールバック.
-    a3d::OnMouse        m_OnMouse       = nullptr;  //!< マウスコールバック.
-    a3d::OnResize       m_OnResize      = nullptr;  //!< リサイズコールバック.
-    a3d::OnTyping       m_OnTyping      = nullptr;  //!< タイピングコールバック.
-    a3d::IAllocator*    m_pAllocator    = nullptr;  
+    HINSTANCE               m_hInst             = nullptr;  //!< インスタンスハンドルです.
+    HWND                    m_hWnd              = nullptr;  //!< ウィンドウハンドルです.
+    MSG                     m_Msg               = {};       //!< メッセージです.
+    uint32_t                m_Width             = 0;        //!< ウィンドウの横幅です.
+    uint32_t                m_Height            = 0;        //!< ウィンドウの縦幅です.
+    a3d::IKeyHandler*       m_pKeyHandler       = nullptr;  //!< キーボードコールバック.
+    a3d::IMouseHandler*     m_pMouseHandler     = nullptr;  //!< マウスコールバック.
+    a3d::IResizeHandler*    m_pResizeHandler    = nullptr;  //!< リサイズコールバック.
+    a3d::ITypingHandler*    m_pTypingHandler    = nullptr;  //!< タイピングコールバック.
+    a3d::IAllocator*        m_pAllocator        = nullptr;  //!< アロケータ.
 
     //=============================================================================================
     // private methods.
@@ -301,7 +305,7 @@ private:
                 return 0;
             }
 
-            if ( instance->m_OnKey == nullptr)
+            if ( instance->m_pKeyHandler == nullptr)
             { return 0; }
 
             auto isKeyDown = ( msg == WM_KEYDOWN ) || ( msg == WM_SYSKEYDOWN );
@@ -313,7 +317,7 @@ private:
             arg.IsAltDown = isAltDown;
             arg.KeyCode   = ConvertKey( uint32_t(wp) );
 
-            instance->m_OnKey(arg);
+            instance->m_pKeyHandler->OnEvent(arg);
         }
 
         if (msg == WM_LBUTTONDOWN   ||
@@ -331,7 +335,7 @@ private:
             msg == WM_XBUTTONUP     ||
             msg == WM_XBUTTONDBLCLK)
         {
-            if ( instance->m_OnMouse == nullptr )
+            if ( instance->m_pKeyHandler == nullptr )
             { return 0; }
 
             auto x = static_cast<int>( (int16_t)LOWORD( lp ) );
@@ -358,7 +362,7 @@ private:
             arg.IsDownM     = isDownM;
             arg.IsDownR     = isDownR;
 
-            instance->m_OnMouse(arg);
+            instance->m_pMouseHandler->OnEvent(arg);
         }
 
         switch( msg )
@@ -380,11 +384,11 @@ private:
 
         case WM_CHAR:
             {
-                if ( instance->m_OnTyping == nullptr )
+                if ( instance->m_pTypingHandler == nullptr )
                 { return 0; }
 
                 auto keyCode = ConvertKey( uint32_t(wp) );
-                instance->m_OnTyping( keyCode );
+                instance->m_pTypingHandler->OnEvent( keyCode );
             }
             break;
 
@@ -396,7 +400,7 @@ private:
                 instance->m_Width  = w;
                 instance->m_Height = h;
                 
-                if ( instance->m_OnResize == nullptr )
+                if ( instance->m_pResizeHandler == nullptr )
                 { return 0; }
 
                 a3d::ResizeEventArg arg = {};
@@ -404,7 +408,7 @@ private:
                 arg.Height      = h;
                 arg.AspectRatio = float(w) / float(h);
 
-                instance->m_OnResize( arg );
+                instance->m_pResizeHandler->OnEvent( arg );
             }
             break;
 
@@ -425,14 +429,14 @@ namespace a3d {
 //-------------------------------------------------------------------------------------------------
 bool CreateApp
 (
-    IAllocator* pAllocator,
-    uint32_t    width,
-    uint32_t    height,
-    OnMouse     mouseFunc,
-    OnKey       keyFunc,
-    OnResize    resizeFunc,
-    OnTyping    typingFunc,
-    IApp**      ppApp
+    IAllocator*     pAllocator,
+    uint32_t        width,
+    uint32_t        height,
+    IMouseHandler*  pMouseHandler,
+    IKeyHandler*    pKeyHandler,
+    IResizeHandler* pResizeHandler,
+    ITypingHandler* pTypingHandler,
+    IApp**          ppApp
 )
 {
     if (width == 0 && height == 0)
@@ -443,7 +447,7 @@ bool CreateApp
 
     auto buf = pAllocator->Alloc(sizeof(WinApp), alignof(WinApp));
     auto instance = new(buf) WinApp();
-    if (!instance->Init(width, height, mouseFunc, keyFunc, resizeFunc, typingFunc))
+    if (!instance->Init(width, height, pMouseHandler, pKeyHandler, pResizeHandler, pTypingHandler))
     {
         instance->Release();
         return false;

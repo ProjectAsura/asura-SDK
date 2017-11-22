@@ -8,8 +8,5 @@ VS2017 [![Build status](https://ci.appveyor.com/api/projects/status/87v880ck9olc
 
 ## Modules
 
-* fnd  : ファンデーションライブラリ.
 * a3d  : 抽象化グラフィックスライブラリ.
-* rs   : レンダリングシステムライブラリ.
-* hid  : ヒューマンインターフェイスデバイスライブラリ.
-* wnd  : ウィンドウライブラリ.
+* a3dx : 抽象化グラフィックス補助ライブラリ.

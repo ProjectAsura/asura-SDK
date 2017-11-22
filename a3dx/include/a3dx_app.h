@@ -70,30 +70,35 @@ struct IApp
     //! @return     ウィンドウハンドルを返却します.
     //---------------------------------------------------------------------------------------------
     virtual void* GetWindowHandle() const = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ウィンドウフォーカスを設定します.
+    //---------------------------------------------------------------------------------------------
+    virtual void SetFocus() = 0;
 };
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      アプリケーションを生成します.
 //!
-//! @param[in]      pAllocator  アロケータです.
-//! @param[in]      width       ウィンドウの横幅です.
-//! @param[in]      height      ウィンドウの縦幅です.
-//! @param[in]      mouseFunc   マウスコールバック関数です.
-//! @param[in]      keyFunc     キーボードコールバック関数です.
-//! @param[in]      resizeFunc  リサイズコールバック関数です.
-//! @param[in]      typingFunc  タイピングコールバック関数です.
-//! @param[out]     ppApp       アプリケーションの格納先です.
+//! @param[in]      pAllocator      アロケータです.
+//! @param[in]      width           ウィンドウの横幅です.
+//! @param[in]      height          ウィンドウの縦幅です.
+//! @param[in]      mouseHandler    マウスハンドラーです.
+//! @param[in]      keyHandler      キーボードハンドラーです.
+//! @param[in]      resizeHandler   リサイズハンドラーです.
+//! @param[in]      typingHandler   タイピングハンドラーです.
+//! @param[out]     ppApp           アプリケーションの格納先です.
 //! @retval true    生成に成功.
 //! @retval false   生成に失敗.
 //-------------------------------------------------------------------------------------------------
 bool CreateApp(
-    IAllocator* pAlloator,
-    uint32_t    width,
-    uint32_t    height,
-    OnMouse     mouseFunc,
-    OnKey       keyFunc,
-    OnResize    resizeFunc,
-    OnTyping    typingFunc,
-    IApp**      ppApp);
+    IAllocator*     pAlloator,
+    uint32_t        width,
+    uint32_t        height,
+    IMouseHandler*  mouseHandler,
+    IKeyHandler*    keyHandler,
+    IResizeHandler* resizeHandler,
+    ITypingHandler* typingHandler,
+    IApp**          ppApp);
 
 } // namespace a3d
