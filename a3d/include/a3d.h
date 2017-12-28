@@ -591,11 +591,10 @@ enum META_DATA_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum COLOR_SPACE_TYPE
 {
-    COLOR_SPACE_SRGB = 0,           //!< sRGB.
-    COLOR_SPACE_BT709_LINEAR,       //!< BT.709, 　OETF:Linear.
-    COLOR_SPACE_BT709_NONLINEAR,    //!< BT.709, 　OETF:Gamma 2.2
-    COLOR_SPACE_BT2020_PQ,          //!< BT.2020,  OETF:SMPTE ST2084 Perceptual Quantizer
-    COLOR_SPACE_BT2020_HLG,         //!< BT.2020,  OETF:Hybrid Log Gamma.
+    COLOR_SPACE_SRGB = 0,       //!< sRGB.
+    COLOR_SPACE_BT709_170M,     //!< BT.709  SMPTE 170M
+    COLOR_SPACE_BT2020_PQ,      //!< BT.2020 SMPTE ST2084
+    COLOR_SPACE_BT2020_HLG,     //!< BT.2020 Hybrid Log Gamma
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1110,7 +1109,6 @@ struct SwapChainDesc
     void*               InstanceHandle;     //!< インスタンスハンドルです.
     void*               WindowHandle;       //!< ウィンドウハンドルです.
     bool                EnableFullScreen;   //!< フルスクリーン化する場合は true を指定.
-    COLOR_SPACE_TYPE    ColorSpace;         //!< 色空間です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2221,6 +2219,16 @@ struct A3D_API ISwapChain : IDeviceChild
     //! @retval false   チェックに失敗.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      色空間を設定します.
+    //!
+    //! @param[in]      type        色空間タイプです.
+    //! @retval true    設定に成功.
+    //! @retval false   設定に失敗.
+    //! @note       この関数は D3D11(Windows10), D3D12のみサポートされます.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY SetColorSpace(COLOR_SPACE_TYPE type) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

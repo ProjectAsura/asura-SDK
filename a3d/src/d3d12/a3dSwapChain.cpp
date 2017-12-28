@@ -120,14 +120,6 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         hr = m_pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain4));
         if (FAILED(hr))
         { SafeRelease(m_pSwapChain4); }
-
-        if (pDesc->ColorSpace != COLOR_SPACE_SRGB)
-        {
-            auto color_space = ToNativeColorSpace(pDesc->ColorSpace);
-            auto hr = m_pSwapChain4->SetColorSpace1(color_space);
-            if (FAILED(hr))
-            { return false; }
-        }
     }
 
     {
@@ -384,9 +376,9 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
             meta.WhitePoint[0]              = GetCoord(pData->WhitePoint[0]);
             meta.WhitePoint[1]              = GetCoord(pData->WhitePoint[1]);
             meta.MaxMasteringLuminance      = static_cast<UINT>(pData->MaxMasteringLuminance / 10000.0);
-            meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 100000.0);
-            meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
-            meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
+            meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 10000.0);
+            meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 10000.0);
+            meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 10000.0);
 
             auto hr = m_pSwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
             if (FAILED(hr))
@@ -493,12 +485,47 @@ bool SwapChain::SetFullScreenMode(bool enable)
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 {
+    auto colorSpace = ToNativeColorSpace(type);
+
+    // HDRディスプレイをサポートしているかどうかチェックする.
+    if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+    {
+        RECT region;
+        GetWindowRect(m_hWnd, &region);
+
+        if (!m_pDevice->CheckDisplayHDRSupport(region))
+        { return false; }
+    }
+
     uint32_t flags;
-    auto hr = m_pSwapChain->CheckColorSpaceSupport(ToNativeColorSpace(type), &flags);
+    auto hr = m_pSwapChain->CheckColorSpaceSupport(colorSpace, &flags);
     if (FAILED(hr))
     { return false; }
 
     return flags & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+//      色空間を設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
+{
+    if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+    {
+        RECT region;
+        GetWindowRect(m_hWnd, &region);
+
+        if (!m_pDevice->CheckDisplayHDRSupport(region))
+        { return false; }
+    }
+
+    auto color_space = ToNativeColorSpace(type);
+    auto hr = m_pSwapChain->SetColorSpace1(color_space);
+    if (FAILED(hr))
+    { return false; }
+
+    return true;
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -118,7 +118,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         bool isFind = false;
 
         auto nativeFormat     = ToNativeFormat(pDesc->Format);
-        auto nativeColorSpace = ToNativeColorSpace(pDesc->ColorSpace);
+        auto nativeColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
         for(auto i=0u; i<m_SurfaceFormatCount; ++i)
         {
@@ -905,6 +905,15 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
     }
 
     return isFind;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      色空間を設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
+{
+    // Vulkanは対応するメソッドがないため非サポートです.
+    return false;
 }
 
 //-------------------------------------------------------------------------------------------------

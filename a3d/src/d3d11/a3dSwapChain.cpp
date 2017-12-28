@@ -111,11 +111,6 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         hr = m_pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain4));
         if (FAILED(hr))
         { SafeRelease(m_pSwapChain4); }
-
-        auto color_space = ToNativeColorSpace(pDesc->ColorSpace);
-        hr = m_pSwapChain4->SetColorSpace1(color_space);
-        if (FAILED(hr))
-        { return false; }
     #endif
     }
 
@@ -398,6 +393,16 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
         if (m_pSwapChain4 == nullptr)
         { return false; }
 
+        // HDRディスプレイをサポートしているかどうかチェックする.
+        if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+        {
+            RECT region;
+            GetWindowRect(m_hWnd, &region);
+
+            if (!m_pDevice->CheckDisplayHDRSupport(region))
+            { return false; }
+        }
+
         uint32_t flags;
         auto hr = m_pSwapChain4->CheckColorSpaceSupport(ToNativeColorSpace(type), &flags);
         if (FAILED(hr))
@@ -410,6 +415,36 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
         /* NOT SUPPORT */
         A3D_UNUSED(type);
         A3D_UNUSED(pFlags);
+        return false;
+    }
+    #endif
+}
+
+//-------------------------------------------------------------------------------------------------
+//      色空間を設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
+{
+    #if defined(A3D_FOR_WINDOWS10)
+    {
+        if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+        {
+            RECT region;
+            GetWindowRect(m_hWnd, &region);
+
+            if (!m_pDevice->CheckDisplayHDRSupport(region))
+            { return false; }
+        }
+
+        auto color_space = ToNativeColorSpace(type);
+        auto hr = m_pSwapChain4->SetColorSpace1(color_space);
+        if (FAILED(hr))
+        { return false; }
+
+        return true;
+    }
+    #else
+    {
         return false;
     }
     #endif

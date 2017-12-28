@@ -92,7 +92,7 @@ bool LoadShaderBinary(const char* filename, a3d::ShaderBinary& result )
 void DisposeShaderBinary(a3d::ShaderBinary& binary)
 {
     if (binary.pByteCode != nullptr)
-    { free(binary.pByteCode); }
+    { free(const_cast<void*>(binary.pByteCode)); }
 
     memset(&binary, 0, sizeof(binary));
 }

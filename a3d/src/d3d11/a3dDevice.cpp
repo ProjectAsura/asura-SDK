@@ -5,6 +5,19 @@
 //-------------------------------------------------------------------------------------------------
 
 
+namespace {
+
+inline int Max(int a, int b)
+{ return (a > b) ? a : b; }
+
+inline int Min(int a, int b)
+{ return (a < b) ? a : b; }
+
+inline int ComputeIntersectionArea(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2)
+{ return Max(0, Min(ax2, bx2) - Max(ax1, bx1)) * Max(0, Min(ay2, by2) - Max(ay1, by1)); }
+
+} // namespace 
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -441,6 +454,76 @@ IDXGIAdapter3* Device::GetDXGIAdapter3() const
 //-------------------------------------------------------------------------------------------------
 IDXGIOutput4* Device::GetDXGIOutput4() const
 { return m_pOutput4; }
+
+//-------------------------------------------------------------------------------------------------
+//      HDRディスプレイをサポートしているかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool Device::CheckDisplayHDRSupport(RECT region)
+{
+    if (m_pFactory5->IsCurrent() == false)
+    { CreateDXGIFactory2(0, IID_PPV_ARGS(&m_pFactory5)); }
+
+    IDXGIAdapter1* pAdapter = nullptr;
+    auto hr = m_pFactory5->EnumAdapters1(0, &pAdapter);
+    if (FAILED(hr))
+    { return false; }
+
+    UINT i=0;
+    IDXGIOutput* pCurrentOutput = nullptr;
+    IDXGIOutput* pBestOutput    = nullptr;
+    int          bestIntersectArea = -1;
+
+    auto ax1 = region.left;
+    auto ay1 = region.top;
+    auto ax2 = region.right;
+    auto ay2 = region.bottom;
+
+    while(pAdapter->EnumOutputs(i, &pCurrentOutput) != DXGI_ERROR_NOT_FOUND)
+    {
+        DXGI_OUTPUT_DESC desc;
+        hr = pCurrentOutput->GetDesc(&desc);
+        if (FAILED(hr))
+        {
+            SafeRelease(pCurrentOutput);
+            SafeRelease(pBestOutput);
+            return false;
+        }
+
+        auto bx1 = desc.DesktopCoordinates.left;
+        auto by1 = desc.DesktopCoordinates.top;
+        auto bx2 = desc.DesktopCoordinates.right;
+        auto by2 = desc.DesktopCoordinates.bottom;
+
+        auto intersectArea = ComputeIntersectionArea(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2);
+        if (intersectArea > bestIntersectArea)
+        {
+            SafeRelease(pBestOutput);
+            pBestOutput       = pCurrentOutput;
+            bestIntersectArea = intersectArea;
+        }
+
+        i++;
+    }
+
+    IDXGIOutput6* pOutput6 = nullptr;
+    hr = pBestOutput->QueryInterface(IID_PPV_ARGS(&pOutput6));
+    if (FAILED(hr))
+    {
+        SafeRelease(pBestOutput);
+        SafeRelease(pCurrentOutput);
+        return false;
+    }
+
+    DXGI_OUTPUT_DESC1 desc1 = {};
+    hr = pOutput6->GetDesc1(&desc1);
+    if (FAILED(hr))
+    {
+        SafeRelease(pBestOutput);
+        SafeRelease(pCurrentOutput);
+    }
+
+    return desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020;
+}
 
 #endif// defined(A3D_FOR_WINDOWS10)
 
