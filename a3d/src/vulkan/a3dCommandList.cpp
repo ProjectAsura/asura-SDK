@@ -436,8 +436,8 @@ void CommandList::TextureBarrier
     range.layerCount     = pWrapResource->GetDesc().DepthOrArraySize;
     range.levelCount     = pWrapResource->GetDesc().MipLevels;
 
-    VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
     if ( prevState == RESOURCE_STATE_PRESENT && nextState == RESOURCE_STATE_COLOR_WRITE )
     {

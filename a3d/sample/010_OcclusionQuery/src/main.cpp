@@ -543,7 +543,8 @@ bool InitA3D()
             return false;
         }
     }
-     // 不要になったので破棄します.
+    
+    // 不要になったので破棄します.
     DisposeShaderBinary(vs);
     DisposeShaderBinary(ps);
 

@@ -57,7 +57,7 @@ bool DescriptorSet::Init
 
     // ディスクリプタセットを生成します.
     {
-        auto pNativeDescriptorPool = pLayout->GetVulkanDescriptorPool();
+        auto pNativeDescriptorPool   = pLayout->GetVulkanDescriptorPool();
         auto pNativeDescriptorLayout = pLayout->GetVulkanDescriptorSetLayout();
 
         VkDescriptorSetAllocateInfo info = {};
@@ -72,6 +72,7 @@ bool DescriptorSet::Init
         { return false; }
     }
 
+    if (pLayout->GetDesc().EntryCount > 0)
     {
         const auto& desc = pLayout->GetDesc();
         auto count       = desc.EntryCount;

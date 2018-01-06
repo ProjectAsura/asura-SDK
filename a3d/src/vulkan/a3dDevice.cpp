@@ -1083,40 +1083,40 @@ bool Device::CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool
 {
     VkDescriptorPoolSize poolSize[10] = {};
     poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize[0].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[0].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    poolSize[1].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[1].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-    poolSize[2].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[2].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSize[3].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[3].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-    poolSize[4].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[4].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[5].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-    poolSize[5].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[5].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[6].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-    poolSize[6].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[6].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[7].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    poolSize[7].descriptorCount = m_Desc.MaxShaderResourceCount;
+    poolSize[7].descriptorCount = Max(1u, m_Desc.MaxShaderResourceCount);
 
     poolSize[8].type = VK_DESCRIPTOR_TYPE_SAMPLER;
-    poolSize[8].descriptorCount = m_Desc.MaxSamplerCount;
+    poolSize[8].descriptorCount = Max(1u, m_Desc.MaxSamplerCount);
 
     poolSize[9].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize[9].descriptorCount = m_Desc.MaxSamplerCount;
+    poolSize[9].descriptorCount = Max(1u, m_Desc.MaxSamplerCount);
 
     VkDescriptorPoolCreateInfo info = {};
     info.sType          = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     info.pNext          = nullptr;
     info.flags          = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    info.maxSets        = maxSet;
+    info.maxSets        = Max(1u, maxSet);
     info.poolSizeCount  = 10;
     info.pPoolSizes     = poolSize;
 

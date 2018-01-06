@@ -288,14 +288,13 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 
     // イメージアスペクトフラグの設定.
     {
-       
-            if (pDesc->Format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
-            { m_ImageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT; }
-            else if (pDesc->Format == RESOURCE_FORMAT_D16_UNORM
-                  || pDesc->Format == RESOURCE_FORMAT_D32_FLOAT )
-            { m_ImageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT; }
-            else
-            { m_ImageAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT; }
+        if (pDesc->Format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
+        { m_ImageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT; }
+        else if (pDesc->Format == RESOURCE_FORMAT_D16_UNORM
+              || pDesc->Format == RESOURCE_FORMAT_D32_FLOAT )
+        { m_ImageAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT; }
+        else
+        { m_ImageAspectFlags = VK_IMAGE_ASPECT_COLOR_BIT; }
     }
 
     // イメージレイアウトを変更
