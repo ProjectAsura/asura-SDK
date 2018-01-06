@@ -724,10 +724,10 @@ VkColorSpaceKHR ToNativeColorSpace(a3d::COLOR_SPACE_TYPE value)
     case COLOR_SPACE_BT709_170M:
         return VK_COLOR_SPACE_BT709_NONLINEAR_EXT;
 
-    case COLOR_SPACE_BT2020_PQ:
+    case COLOR_SPACE_BT2100_PQ:
         return VK_COLOR_SPACE_HDR10_ST2084_EXT;
 
-    case COLOR_SPACE_BT2020_HLG:
+    case COLOR_SPACE_BT2100_HLG:
         return VK_COLOR_SPACE_HDR10_HLG_EXT;
     }
 

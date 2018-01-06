@@ -394,7 +394,7 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
         { return false; }
 
         // HDRディスプレイをサポートしているかどうかチェックする.
-        if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+        if (type == COLOR_SPACE_BT2100_PQ || type == COLOR_SPACE_BT2100_HLG)
         {
             RECT region;
             GetWindowRect(m_hWnd, &region);
@@ -427,7 +427,7 @@ bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
 {
     #if defined(A3D_FOR_WINDOWS10)
     {
-        if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+        if (type == COLOR_SPACE_BT2100_PQ || type == COLOR_SPACE_BT2100_HLG)
         {
             RECT region;
             GetWindowRect(m_hWnd, &region);

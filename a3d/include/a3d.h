@@ -593,8 +593,8 @@ enum COLOR_SPACE_TYPE
 {
     COLOR_SPACE_SRGB = 0,       //!< sRGB.
     COLOR_SPACE_BT709_170M,     //!< BT.709  SMPTE 170M
-    COLOR_SPACE_BT2020_PQ,      //!< BT.2020 SMPTE ST2084
-    COLOR_SPACE_BT2020_HLG,     //!< BT.2020 Hybrid Log Gamma
+    COLOR_SPACE_BT2100_PQ,      //!< BT.2100 PQ System
+    COLOR_SPACE_BT2100_HLG,     //!< BT.2100 HLG System
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -488,7 +488,7 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
     auto colorSpace = ToNativeColorSpace(type);
 
     // HDRディスプレイをサポートしているかどうかチェックする.
-    if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+    if (type == COLOR_SPACE_BT2100_PQ || type == COLOR_SPACE_BT2100_HLG)
     {
         RECT region;
         GetWindowRect(m_hWnd, &region);
@@ -511,7 +511,7 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
 {
-    if (type == COLOR_SPACE_BT2020_PQ || type == COLOR_SPACE_BT2020_HLG)
+    if (type == COLOR_SPACE_BT2100_PQ || type == COLOR_SPACE_BT2100_HLG)
     {
         RECT region;
         GetWindowRect(m_hWnd, &region);
