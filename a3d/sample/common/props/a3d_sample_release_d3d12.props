@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\code;$(ProjectDir)..\..\common\externals\imgui-1.49;$(ProjectDir)..\..\common\helpers;$(ProjectDir)..\..\..\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\code;$(ProjectDir)..\..\common\external\imgui;$(ProjectDir)..\..\common\helpers;$(ProjectDir)..\..\..\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SAMPLE_IS_D3D12;TARGET_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
