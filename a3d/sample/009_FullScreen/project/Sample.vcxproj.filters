@@ -19,7 +19,7 @@
     <Filter Include="externals">
       <UniqueIdentifier>{6b975d4a-e7db-4750-875a-ccaedf220e1c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="externals\imgui-1.49">
+    <Filter Include="externals\imgui">
       <UniqueIdentifier>{5765e865-b95d-4b22-9c36-b319c27660f7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -33,17 +33,17 @@
     <ClCompile Include="..\..\common\helpers\SampleUtil.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui.cpp">
-      <Filter>externals\imgui-1.49</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui_draw.cpp">
-      <Filter>externals\imgui-1.49</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\common\helpers\SampleGui.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\main.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\external\imgui\imgui.cpp">
+      <Filter>externals\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\external\imgui\imgui_draw.cpp">
+      <Filter>externals\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,17 +59,11 @@
     <ClInclude Include="..\..\common\helpers\SampleUtil.h">
       <Filter>helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\common\externals\imgui-1.49\imconfig.h">
-      <Filter>externals\imgui-1.49</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\externals\imgui-1.49\imgui.h">
-      <Filter>externals\imgui-1.49</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\externals\imgui-1.49\imgui_internal.h">
-      <Filter>externals\imgui-1.49</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\common\helpers\SampleGui.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\external\imgui\imgui.h">
+      <Filter>externals\imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

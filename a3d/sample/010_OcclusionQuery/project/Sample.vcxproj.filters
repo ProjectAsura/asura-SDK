@@ -16,7 +16,7 @@
     <Filter Include="helpers">
       <UniqueIdentifier>{ac4e85fe-8fe2-42f5-aac9-3b395d31df90}</UniqueIdentifier>
     </Filter>
-    <Filter Include="imgui-1.49">
+    <Filter Include="imgui">
       <UniqueIdentifier>{785387a9-abe3-41b2-9dd8-c7ae07da03ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -30,14 +30,14 @@
     <ClCompile Include="..\..\common\helpers\SampleGui.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui.cpp">
-      <Filter>imgui-1.49</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui_draw.cpp">
-      <Filter>imgui-1.49</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\main.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\external\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\external\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +52,9 @@
     </ClInclude>
     <ClInclude Include="..\..\common\helpers\SampleGui.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\external\imgui\imgui.h">
+      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

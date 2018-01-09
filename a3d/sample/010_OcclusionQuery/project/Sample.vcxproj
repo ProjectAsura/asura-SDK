@@ -51,14 +51,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui.cpp" />
-    <ClCompile Include="..\..\common\externals\imgui-1.49\imgui_draw.cpp" />
+    <ClCompile Include="..\..\common\external\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\common\external\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\..\common\helpers\SampleAppWin.cpp" />
     <ClCompile Include="..\..\common\helpers\SampleGui.cpp" />
     <ClCompile Include="..\..\common\helpers\SampleUtil.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\common\external\imgui\imgui.h" />
     <ClInclude Include="..\..\common\helpers\SampleApp.h" />
     <ClInclude Include="..\..\common\helpers\SampleGui.h" />
     <ClInclude Include="..\..\common\helpers\SampleMath.h" />
@@ -67,7 +68,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8E782F2C-D185-47C5-BDE7-19078E96B16A}</ProjectGuid>
     <RootNamespace>Sample</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_D3D12|Win32'" Label="Configuration">
