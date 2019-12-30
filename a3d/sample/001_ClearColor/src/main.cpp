@@ -136,8 +136,7 @@ bool InitA3D()
     // グラフィックスシステムの初期化.
     {
         a3d::SystemDesc desc = {};
-        desc.pAllocator = &g_Allocator;
-        desc.pOption    = g_pApp->GetWindowHandle();
+        desc.pSystemAllocator = &g_Allocator;
 
         if (!a3d::InitSystem(&desc))
         { return false; }
@@ -311,7 +310,7 @@ void DrawA3D()
         a3d::RESOURCE_STATE_COLOR_WRITE);
 
     // フレームバッファを設定します.
-    pCmd->SetFrameBuffer(g_pFrameBuffer[idx]);
+    pCmd->BeginFrameBuffer(g_pFrameBuffer[idx]);
 
     // フレームバッファをクリアします.
     a3d::ClearColorValue clearColor = {};
@@ -325,7 +324,7 @@ void DrawA3D()
         /* TODO */
     }
 
-    pCmd->SetFrameBuffer(nullptr);
+    pCmd->EndFrameBuffer();
 
     // 表示用にバリアを設定します.
     pCmd->TextureBarrier(

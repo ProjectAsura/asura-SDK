@@ -188,10 +188,7 @@ void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
 //-------------------------------------------------------------------------------------------------
 void CommandList::EndFrameBuffer()
 {
-    D3D12_CPU_DESCRIPTOR_HANDLE RTVHandles[8] = {};
-    D3D12_CPU_DESCRIPTOR_HANDLE DSVHandle = {};
-
-    m_pCommandList->OMSetRenderTargets(8, RTVHandles, FALSE, &DSVHandle);
+    m_pCommandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
 }
 
 //-------------------------------------------------------------------------------------------------
