@@ -90,7 +90,7 @@
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
       <Filter>ソース ファイル\misc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\d3d12\a3dStorageView.cpp">
+    <ClCompile Include="..\..\..\src\d3d12\a3dUnorderedAccessView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -179,7 +179,7 @@
     <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h">
       <Filter>ソース ファイル\misc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\d3d12\a3dStorageView.h">
+    <ClInclude Include="..\..\..\src\d3d12\a3dUnorderedAccessView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>

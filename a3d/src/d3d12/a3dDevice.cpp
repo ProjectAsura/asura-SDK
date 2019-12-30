@@ -324,15 +324,15 @@ bool Device::CreateTextureView
 { return TextureView::Create(this, pTexture, pDesc, ppTextureView); }
 
 //-------------------------------------------------------------------------------------------------
-//      ストレージビューを生成します.
+//      アンオーダードアクセスビューを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateStorageView
+bool Device::CreateUnorderedAccessView
 (
-    IResource*              pResource,
-    const StorageViewDesc*  pDesc,
-    IStorageView**          ppStorageView
+    IResource*                      pResource,
+    const UnorderedAccessViewDesc*  pDesc,
+    IUnorderedAccessView**          ppStorageView
 )
-{ return StorageView::Create(this, pResource, pDesc, ppStorageView); }
+{ return UnorderedAccessView::Create(this, pResource, pDesc, ppStorageView); }
 
 //-------------------------------------------------------------------------------------------------
 //      サンプラーを生成します.
@@ -538,7 +538,7 @@ bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
 //      グラフィックスシステムを初期化します.
 //-------------------------------------------------------------------------------------------------
 bool A3D_APIENTRY InitSystem(const SystemDesc* pDesc)
-{ return InitSystemAllocator(pDesc->pAllocator); }
+{ return InitSystemAllocator(pDesc->pSystemAllocator); }
 
 //-------------------------------------------------------------------------------------------------
 //      グラフィクスシステムが初期化済みかどうかチェックします.

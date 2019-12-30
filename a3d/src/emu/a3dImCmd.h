@@ -16,7 +16,8 @@ enum CMD_TYPE
 {
     CMD_BEGIN = 0,                      //!< ICommandList::Begin() For COMMANDLIST_TYPE_DIRECT
     CMD_SUB_BEGIN,                      //!< ICommandList::Begin() For COMMANDLIST_TYPE_BUNDLE
-    CMD_SET_FRAME_BUFFER,               //!< ICommandList::SetFrameBuffer()
+    CMD_BEGIN_FRAME_BUFFER,             //!< ICommandList::BginFrameBuffer()
+    CMD_END_FRAME_BUFFER,               //!< ICommandList::EndFrameBuffer()
     CMD_CLEAR_FRAME_BUFFER,             //!< ICommandList::ClearFrameBuffer()
     CMD_SET_BLEND_CONSTANT,             //!< ICommandList::SetBlendConstant()
     CMD_SET_STENCIL_REFERENCE,          //!< ICommandList::SetStencilReference()
@@ -65,9 +66,9 @@ struct ImCmdBegin : ImCmdBase
 { /* NOTHING */ };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ImCmdSetFrameBuffer structure
+// ImCmdBeginFrameBuffer structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ImCmdSetFrameBuffer : ImCmdBase
+struct ImCmdBeginFrameBuffer : ImCmdBase
 {
     IFrameBuffer*   pFrameBuffer;
 };

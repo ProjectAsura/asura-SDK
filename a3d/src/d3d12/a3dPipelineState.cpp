@@ -7,6 +7,43 @@
 
 namespace /* anonymous */ {
 
+struct NativeSemantics
+{
+    const char* Name;
+    uint32_t    Index;
+};
+
+static const NativeSemantics kSemantics[] = {
+    { "POSITION", 0 },
+    { "COLOR", 0 },
+    { "COLOR", 1 },
+    { "COLOR", 2 },
+    { "COLOR", 3 },
+    { "TEXCOORD", 0 },
+    { "TEXCOORD", 1 },
+    { "TEXCOORD", 2 },
+    { "TEXCOORD", 3 },
+    { "TEXCOORD", 4 },
+    { "TEXCOORD", 5 },
+    { "TEXCOORD", 6 },
+    { "TEXCOORD", 7 },
+    { "NORMAL", 0 },
+    { "TANGENT", 0 },
+    { "BITANGENT", 0 },
+    { "BONEINDEX", 0 },
+    { "BONEWEIGHT", 0 },
+    { "LIGHTMAP_UV", 0 },
+    { "LIGHTMAP_UV", 1 },
+    { "CUSTOM", 0 },
+    { "CUSTOM", 1 },
+    { "CUSTOM", 2 },
+    { "CUSTOM", 3 },
+    { "CUSTOM", 4 },
+    { "CUSTOM", 5 },
+    { "CUSTOM", 6 },
+    { "CUSTOM", 7 },
+};
+
 //-------------------------------------------------------------------------------------------------
 //      シェーダバイナリをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
@@ -242,8 +279,8 @@ void ToNativeInputElementDesc
     A3D_ASSERT( index < state.ElementCount );
     auto &element = state.pElements[index];
 
-    result.SemanticName         = element.SemanticName;
-    result.SemanticIndex        = element.SemanticIndex;
+    result.SemanticName         = kSemantics[element.Semantics].Name;
+    result.SemanticIndex        = kSemantics[element.Semantics].Index;
     result.Format               = a3d::ToNativeFormat( element.Format );
     result.InputSlot            = state.StreamIndex;
     result.AlignedByteOffset    = element.OffsetInBytes;
@@ -402,11 +439,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
     desc.pRootSignature     = m_pLayout->GetD3D12RootSignature();
-    ToNativeShaderByteCode  ( pDesc->VertexShader      , desc.VS );
-    ToNativeShaderByteCode  ( pDesc->PixelShader       , desc.PS );
-    ToNativeShaderByteCode  ( pDesc->DomainShader      , desc.DS );
-    ToNativeShaderByteCode  ( pDesc->HullShader        , desc.HS );
-    ToNativeShaderByteCode  ( pDesc->GeometryShader    , desc.GS );
+    ToNativeShaderByteCode  ( pDesc->VS                , desc.VS );
+    ToNativeShaderByteCode  ( pDesc->PS                , desc.PS );
+    ToNativeShaderByteCode  ( pDesc->DS                , desc.DS );
+    ToNativeShaderByteCode  ( pDesc->HS                , desc.HS );
+    ToNativeShaderByteCode  ( pDesc->GS                , desc.GS );
     ToNativeBlendDesc       ( pDesc->BlendState        , desc.BlendState );
     ToNativeRasterizerDesc  ( pDesc->RasterizerState   , desc.RasterizerState );
     ToNativeDepthDesc       ( pDesc->DepthState        , desc.DepthStencilState );
@@ -470,7 +507,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
     desc.pRootSignature = pWrapDescriptorLayout->GetD3D12RootSignature();
-    ToNativeShaderByteCode   ( pDesc->ComputeShader, desc.CS );
+    ToNativeShaderByteCode   ( pDesc->CS, desc.CS );
     ToNativePipelieStateCache( pDesc->pCachedPSO, desc.CachedPSO );
 
     auto hr = pNativeDevice->CreateComputePipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));

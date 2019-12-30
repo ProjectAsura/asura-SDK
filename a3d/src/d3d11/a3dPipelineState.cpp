@@ -8,6 +8,43 @@
 
 namespace /* anonymous */ {
 
+struct NativeSemantics
+{
+    const char* Name;
+    uint32_t    Index;
+};
+
+static const NativeSemantics kSemantics[] = {
+    { "POSITION", 0 },
+    { "COLOR", 0 },
+    { "COLOR", 1 },
+    { "COLOR", 2 },
+    { "COLOR", 3 },
+    { "TEXCOORD", 0 },
+    { "TEXCOORD", 1 },
+    { "TEXCOORD", 2 },
+    { "TEXCOORD", 3 },
+    { "TEXCOORD", 4 },
+    { "TEXCOORD", 5 },
+    { "TEXCOORD", 6 },
+    { "TEXCOORD", 7 },
+    { "NORMAL", 0 },
+    { "TANGENT", 0 },
+    { "BITANGENT", 0 },
+    { "BONEINDEX", 0 },
+    { "BONEWEIGHT", 0 },
+    { "LIGHTMAP_UV", 0 },
+    { "LIGHTMAP_UV", 1 },
+    { "CUSTOM", 0 },
+    { "CUSTOM", 1 },
+    { "CUSTOM", 2 },
+    { "CUSTOM", 3 },
+    { "CUSTOM", 4 },
+    { "CUSTOM", 5 },
+    { "CUSTOM", 6 },
+    { "CUSTOM", 7 },
+};
+
 //-------------------------------------------------------------------------------------------------
 //      ブレンドファクターをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
@@ -238,8 +275,8 @@ void ToNativeInputElementDesc
     A3D_ASSERT( index < state.ElementCount );
     auto &element = state.pElements[index];
 
-    result.SemanticName         = element.SemanticName;
-    result.SemanticIndex        = element.SemanticIndex;
+    result.SemanticName         = kSemantics[element.Semantics].Name;
+    result.SemanticIndex        = kSemantics[element.Semantics].Index;
     result.Format               = a3d::ToNativeFormat( element.Format );
     result.InputSlot            = state.StreamIndex;
     result.AlignedByteOffset    = element.OffsetInBytes;
@@ -378,11 +415,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     A3D_ASSERT(pD3D11Device != nullptr);
 
     // 頂点シェーダ.
-    if (pDesc->VertexShader.pByteCode != nullptr && pDesc->VertexShader.ByteCodeSize > 0)
+    if (pDesc->VS.pByteCode != nullptr && pDesc->VS.ByteCodeSize > 0)
     {
         auto hr = pD3D11Device->CreateVertexShader(
-            pDesc->VertexShader.pByteCode,
-            pDesc->VertexShader.ByteCodeSize,
+            pDesc->VS.pByteCode,
+            pDesc->VS.ByteCodeSize,
             nullptr,
             &m_pVS);
         if (FAILED(hr))
@@ -390,11 +427,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     }
  
     // ピクセルシェーダ.
-    if (pDesc->PixelShader.pByteCode != nullptr && pDesc->PixelShader.ByteCodeSize > 0)
+    if (pDesc->PS.pByteCode != nullptr && pDesc->PS.ByteCodeSize > 0)
     {
         auto hr = pD3D11Device->CreatePixelShader(
-            pDesc->PixelShader.pByteCode,
-            pDesc->PixelShader.ByteCodeSize,
+            pDesc->PS.pByteCode,
+            pDesc->PS.ByteCodeSize,
             nullptr,
             &m_pPS);
         if (FAILED(hr))
@@ -402,11 +439,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     }
 
     // ドメインシェーダ.
-    if (pDesc->DomainShader.pByteCode != nullptr && pDesc->DomainShader.ByteCodeSize > 0)
+    if (pDesc->DS.pByteCode != nullptr && pDesc->DS.ByteCodeSize > 0)
     {
         auto hr = pD3D11Device->CreateDomainShader(
-            pDesc->DomainShader.pByteCode,
-            pDesc->DomainShader.ByteCodeSize,
+            pDesc->DS.pByteCode,
+            pDesc->DS.ByteCodeSize,
             nullptr,
             &m_pDS);
         if (FAILED(hr))
@@ -414,11 +451,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     }
 
     // ハルシェーダ.
-    if (pDesc->HullShader.pByteCode != nullptr && pDesc->HullShader.ByteCodeSize > 0)
+    if (pDesc->HS.pByteCode != nullptr && pDesc->HS.ByteCodeSize > 0)
     {
         auto hr = pD3D11Device->CreateHullShader(
-            pDesc->HullShader.pByteCode,
-            pDesc->HullShader.ByteCodeSize,
+            pDesc->HS.pByteCode,
+            pDesc->HS.ByteCodeSize,
             nullptr,
             &m_pHS);
         if (FAILED(hr))
@@ -426,11 +463,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     }
 
     // ジオメトリシェーダ
-    if (pDesc->GeometryShader.pByteCode != nullptr && pDesc->GeometryShader.ByteCodeSize > 0)
+    if (pDesc->GS.pByteCode != nullptr && pDesc->GS.ByteCodeSize > 0)
     {
         auto hr = pD3D11Device->CreateGeometryShader(
-            pDesc->GeometryShader.pByteCode,
-            pDesc->GeometryShader.ByteCodeSize,
+            pDesc->GS.pByteCode,
+            pDesc->GS.ByteCodeSize,
             nullptr,
             &m_pGS);
         if (FAILED(hr))
@@ -470,7 +507,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     }
 
     // 入力レイアウト.
-    if (pDesc->VertexShader.pByteCode != nullptr && pDesc->VertexShader.ByteCodeSize > 0)
+    if (pDesc->VS.pByteCode != nullptr && pDesc->VS.ByteCodeSize > 0)
     {
         D3D11_INPUT_ELEMENT_DESC elementDesc[D3D11_COMMONSHADER_INPUT_RESOURCE_REGISTER_COUNT];
         memset( elementDesc, 0, sizeof(elementDesc) );
@@ -488,8 +525,8 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         auto hr = pD3D11Device->CreateInputLayout(
             elementDesc,
             idx,
-            pDesc->VertexShader.pByteCode,
-            pDesc->VertexShader.ByteCodeSize,
+            pDesc->VS.pByteCode,
+            pDesc->VS.ByteCodeSize,
             &m_pIL);
         if ( FAILED(hr) )
         { return false; }
@@ -508,8 +545,8 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     A3D_UNUSED(pDesc);
 
     if (pDevice == nullptr || pDesc == nullptr ||
-        pDesc->ComputeShader.pByteCode == nullptr ||
-        pDesc->ComputeShader.ByteCodeSize == 0)
+        pDesc->CS.pByteCode == nullptr ||
+        pDesc->CS.ByteCodeSize == 0)
     { return false; }
 
     Term();
@@ -524,8 +561,8 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     {
         auto hr = pD3D11Device->CreateComputeShader(
-            pDesc->ComputeShader.pByteCode,
-            pDesc->ComputeShader.ByteCodeSize,
+            pDesc->CS.pByteCode,
+            pDesc->CS.ByteCodeSize,
             nullptr,
             &m_pCS);
         if (FAILED(hr))

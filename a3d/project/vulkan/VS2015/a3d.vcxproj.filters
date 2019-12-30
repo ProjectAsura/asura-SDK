@@ -102,7 +102,7 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\vulkan\a3dStorageView.h">
+    <ClInclude Include="..\..\..\src\vulkan\a3dUnorderedAccessView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -167,7 +167,7 @@
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
       <Filter>ソース ファイル\misc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\vulkan\a3dStorageView.cpp">
+    <ClCompile Include="..\..\..\src\vulkan\a3dUnorderedAccessView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

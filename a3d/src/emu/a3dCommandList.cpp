@@ -75,12 +75,22 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetFrameBuffer(IFrameBuffer* pBuffer)
+void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
 {
-    ImCmdSetFrameBuffer cmd = {};
-    cmd.Type         = CMD_SET_FRAME_BUFFER;
+    ImCmdBeginFrameBuffer cmd = {};
+    cmd.Type         = CMD_BEGIN_FRAME_BUFFER;
     cmd.pFrameBuffer = pBuffer;
 
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フレームバッファを解除します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::EndFrameBuffer()
+{
+    ImCmdBase cmd = {};
+    cmd.Type = CMD_END_FRAME_BUFFER;
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
 

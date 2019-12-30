@@ -232,9 +232,9 @@ void Queue::ParseCmd()
                 }
                 break;
 
-            case CMD_SET_FRAME_BUFFER:
+            case CMD_BEGIN_FRAME_BUFFER:
                 {
-                    auto cmd = reinterpret_cast<ImCmdSetFrameBuffer*>(pCmd);
+                    auto cmd = reinterpret_cast<ImCmdBeginFrameBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
                     pActiveFrameBuffer = static_cast<FrameBuffer*>(cmd->pFrameBuffer);
@@ -242,11 +242,26 @@ void Queue::ParseCmd()
                     { pActiveFrameBuffer->Bind(pDeviceContext); }
                     else
                     {
-                        pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+                        ID3D11RenderTargetView* pNullRTVs[] = {
+                            nullptr, nullptr, nullptr, nullptr,
+                            nullptr, nullptr, nullptr, nullptr
+                        };
+                        pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
                         pActiveFrameBuffer = nullptr;
                     }
 
-                    pCmd += sizeof(ImCmdSetFrameBuffer);
+                    pCmd += sizeof(ImCmdBeginFrameBuffer);
+                }
+                break;
+
+            case CMD_END_FRAME_BUFFER:
+                {
+                    ID3D11RenderTargetView* pNullRTVs[] = {
+                        nullptr, nullptr, nullptr, nullptr,
+                        nullptr, nullptr, nullptr, nullptr
+                    };
+                    pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
+                    pCmd += sizeof(ImCmdBase);
                 }
                 break;
 
@@ -587,7 +602,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_UAV:
                                 {
-                                    auto pWrapView = static_cast<a3d::StorageView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<a3d::UnorderedAccessView*>(cmd->pDescriptor[i]);
                                     auto pUAV = pWrapView->GetD3D11UnorderedAccessView();
                                     pDeviceContext->CSGetUnorderedAccessViews(
                                         entry.ShaderRegister,
@@ -848,17 +863,17 @@ void Queue::ParseCmd()
                                 while( pDeviceContext->GetData(pWrapQuery->GetD3D11Query(i), &data, sizeof(data), 0) != S_OK);
 
                                 PipelineStatistics convert = {};
-                                convert.IAVertices      = data.IAVertices;
-                                convert.IAPrimitives    = data.IAPrimitives;
-                                convert.VSInvocations   = data.VSInvocations;
-                                convert.GSInvocations   = data.GSInvocations;
-                                convert.GSPrimitives    = data.GSPrimitives;
-                                convert.CInvocations    = data.CInvocations;
-                                convert.CPrimitives     = data.CPrimitives;
-                                convert.PSInvocations   = data.PSInvocations;
-                                convert.HSInvocations   = data.HSInvocations;
-                                convert.DSInvocations   = data.DSInvocations;
-                                convert.CSInvocations   = data.CSInvocations;
+                                convert.IAVertices              = data.IAVertices;
+                                convert.IAPrimitives            = data.IAPrimitives;
+                                convert.VSInvocations           = data.VSInvocations;
+                                convert.GSInvocations           = data.GSInvocations;
+                                convert.GSPrimitives            = data.GSPrimitives;
+                                convert.RasterizerInvocations   = data.CInvocations;
+                                convert.RenderedPrimitives      = data.CPrimitives;
+                                convert.PSInvocations           = data.PSInvocations;
+                                convert.HSInvocations           = data.HSInvocations;
+                                convert.DSInvocations           = data.DSInvocations;
+                                convert.CSInvocations           = data.CSInvocations;
 
                                 memcpy(pDstPtr, &convert, sizeof(convert));
                                 pDstPtr += sizeof(convert);

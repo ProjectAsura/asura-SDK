@@ -376,7 +376,7 @@ D3D12_RESOURCE_FLAGS ToNativeResourceFlags(uint32_t usage)
     if (usage & RESOURCE_USAGE_DEPTH_TARGET)
     { result |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL; }
 
-    if (usage & RESOURCE_USAGE_STORAGE_TARGET)
+    if (usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
     { result |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS; }
 
     return result;

@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -21,33 +13,20 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7C988A41-DD13-43EC-B344-B83D8CCBF140}</ProjectGuid>
     <RootNamespace>a3d</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>a3d</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -56,12 +35,6 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -69,18 +42,8 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>a3d_vkd</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>a3d_vkd</TargetName>
-    <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)obj\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>a3d_vk</TargetName>
     <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -89,18 +52,6 @@
     <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
-      <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -112,24 +63,6 @@
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include</AdditionalIncludeDirectories>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
-      <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
-      <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -171,10 +104,10 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dQueryPool.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dQueue.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSampler.h" />
-    <ClInclude Include="..\..\..\src\vulkan\a3dStorageView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSwapChain.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTextureView.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h" />
   </ItemGroup>
@@ -191,8 +124,6 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dFence.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dFrameBuffer.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dPCH.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
@@ -200,10 +131,10 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dQueryPool.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dQueue.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSampler.cpp" />
-    <ClCompile Include="..\..\..\src\vulkan\a3dStorageView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSwapChain.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTexture.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTextureView.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dUnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dUtil.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

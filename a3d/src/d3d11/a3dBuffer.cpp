@@ -77,7 +77,7 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
                                 pDesc->HeapProperty.Type,
                                 pDesc->HeapProperty.CpuPageProperty);
 
-        if (pDesc->Usage & RESOURCE_USAGE_STORAGE_TARGET)
+        if (pDesc->Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
         { desc.StructureByteStride = pDesc->Stride; }
 
         if (pDesc->Usage == RESOURCE_USAGE_CONSTANT_BUFFER)

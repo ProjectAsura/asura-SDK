@@ -14,7 +14,7 @@ VkBufferUsageFlags ToNativeBufferUsage(uint32_t usage)
 {
     VkBufferUsageFlags result = 0;
 
-    if (usage & a3d::RESOURCE_USAGE_STORAGE_TARGET)
+    if (usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
     { result |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
 
     if (usage & a3d::RESOURCE_USAGE_INDEX_BUFFER)

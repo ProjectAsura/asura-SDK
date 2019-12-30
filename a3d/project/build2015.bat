@@ -13,16 +13,12 @@ call :BUILD "vulkan/VS2015/a3d.sln"
 goto :END
 
 :CLEAN
-%MSBUILD% %1 /t:clean /p:Configuration=Debug;Platform=x86
 %MSBUILD% %1 /t:clean /p:Configuration=Debug;Platform=x64
-%MSBUILD% %1 /t:clean /p:Configuration=Release;Platform=x86
 %MSBUILD% %1 /t:clean /p:Configuration=Release;Platform=x64
 exit /b
 
 :BUILD
-%MSBUILD% %1 /t:rebuild /p:Configuration=Debug;Platform=x86 /m
 %MSBUILD% %1 /t:rebuild /p:Configuration=Debug;Platform=x64 /m
-%MSBUILD% %1 /t:rebuild /p:Configuration=Release;Platform=x86 /m
 %MSBUILD% %1 /t:rebuild /p:Configuration=Release;Platform=x64 /m
 exit /b
 

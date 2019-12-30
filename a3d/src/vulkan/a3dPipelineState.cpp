@@ -33,7 +33,7 @@ bool ToNativeShaderStageInfo
     pInfo->pNext                = nullptr;
     pInfo->flags                = 0;
     pInfo->stage                = stage;
-    pInfo->pName                = binary.EntryPoint;
+//    pInfo->pName                = binary.EntryPoint;
     pInfo->pSpecializationInfo  = nullptr;
 
     return true;
@@ -76,7 +76,7 @@ void ToNativeVertexAttribute
     VkVertexInputAttributeDescription*  pDesc
 )
 {
-    pDesc->location = stream.pElements[elementIndex].BindLocation;
+    pDesc->location = stream.pElements[elementIndex].Semantics;
     pDesc->binding  = stream.StreamIndex;
     pDesc->format   = ToNativeFormat(stream.pElements[elementIndex].Format);
     pDesc->offset   = stream.pElements[elementIndex].OffsetInBytes;
@@ -641,11 +641,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         VkPipelineColorBlendStateCreateInfo     colorBlendState      = {};
 
         auto shaderCount = 0;
-        if (pDesc->VertexShader.pByteCode != nullptr && pDesc->VertexShader.ByteCodeSize != 0)
+        if (pDesc->VS.pByteCode != nullptr && pDesc->VS.ByteCodeSize != 0)
         {
             auto ret = ToNativeShaderStageInfo(
                 pNativeDevice,
-                pDesc->VertexShader,
+                pDesc->VS,
                 VK_SHADER_STAGE_VERTEX_BIT,
                 &shaderInfos[shaderCount]);
             A3D_ASSERT(ret == true);
@@ -653,11 +653,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             shaderCount++;
         }
 
-        if (pDesc->DomainShader.pByteCode != nullptr && pDesc->DomainShader.ByteCodeSize != 0)
+        if (pDesc->DS.pByteCode != nullptr && pDesc->DS.ByteCodeSize != 0)
         {
             auto ret = ToNativeShaderStageInfo(
                 pNativeDevice,
-                pDesc->DomainShader,
+                pDesc->DS,
                 VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
                 &shaderInfos[shaderCount]);
             A3D_ASSERT(ret == true);
@@ -665,11 +665,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             shaderCount++;
         }
 
-        if (pDesc->HullShader.pByteCode != nullptr && pDesc->HullShader.ByteCodeSize != 0)
+        if (pDesc->HS.pByteCode != nullptr && pDesc->HS.ByteCodeSize != 0)
         {
             auto ret = ToNativeShaderStageInfo(
                 pNativeDevice,
-                pDesc->HullShader,
+                pDesc->HS,
                 VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
                 &shaderInfos[shaderCount]);
             A3D_ASSERT(ret == true);
@@ -677,11 +677,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             shaderCount++;
         }
 
-        if (pDesc->GeometryShader.pByteCode != nullptr && pDesc->GeometryShader.ByteCodeSize != 0)
+        if (pDesc->GS.pByteCode != nullptr && pDesc->GS.ByteCodeSize != 0)
         {
             auto ret = ToNativeShaderStageInfo(
                 pNativeDevice,
-                pDesc->GeometryShader,
+                pDesc->GS,
                 VK_SHADER_STAGE_GEOMETRY_BIT,
                 &shaderInfos[shaderCount]);
             A3D_ASSERT(ret == true);
@@ -689,11 +689,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             shaderCount++;
         }
 
-        if (pDesc->PixelShader.pByteCode != nullptr && pDesc->PixelShader.ByteCodeSize != 0)
+        if (pDesc->PS.pByteCode != nullptr && pDesc->PS.ByteCodeSize != 0)
         {
             auto ret = ToNativeShaderStageInfo(
                 pNativeDevice,
-                pDesc->PixelShader,
+                pDesc->PS,
                 VK_SHADER_STAGE_FRAGMENT_BIT,
                 &shaderInfos[shaderCount]);
             A3D_ASSERT(ret == true);
@@ -786,9 +786,9 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
 
-    if (pDesc->pLayout                   == nullptr
-    || pDesc->ComputeShader.ByteCodeSize == 0 
-    || pDesc->ComputeShader.pByteCode    == nullptr)
+    if (pDesc->pLayout         == nullptr
+     || pDesc->CS.ByteCodeSize == 0 
+     || pDesc->CS.pByteCode    == nullptr)
     { return false;}
 
     m_pDevice = static_cast<Device*>(pDevice);
@@ -825,7 +825,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
         info.layout             = pWrapLayout->GetVulkanPipelineLayout();
         info.basePipelineHandle = null_handle;
         info.basePipelineIndex  = 0;
-        ToNativeShaderStageInfo(pNativeDevice, pDesc->ComputeShader, VK_SHADER_STAGE_COMPUTE_BIT, &info.stage);
+        ToNativeShaderStageInfo(pNativeDevice, pDesc->CS, VK_SHADER_STAGE_COMPUTE_BIT, &info.stage);
 
         auto ret = vkCreateComputePipelines(pNativeDevice, m_PipelineCache, 1, &info, nullptr, &m_PipelineState);
         if ( ret != VK_SUCCESS )

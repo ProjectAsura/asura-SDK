@@ -193,7 +193,7 @@ void DescriptorSet::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      テクスチャを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
+void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
@@ -212,7 +212,7 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 //-------------------------------------------------------------------------------------------------
 //      バッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
+void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
@@ -230,11 +230,11 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 //-------------------------------------------------------------------------------------------------
 //      ストレージを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
+void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
-    auto pWrapView = static_cast<StorageView*>(pResource);
+    auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
     auto desc = pWrapView->GetDesc();

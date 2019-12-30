@@ -104,7 +104,7 @@ void DescriptorSet::Term()
 //-------------------------------------------------------------------------------------------------
 //      テクスチャを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
+void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
 {
     A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
     m_pDescriptors[index] = pResource;
@@ -113,16 +113,16 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 //-------------------------------------------------------------------------------------------------
 //      バッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
+void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
 {
     A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
     m_pDescriptors[index] = pResource;
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ストレージを設定します.
+//      アンオーダードアクセスを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
+void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {
     A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
     m_pDescriptors[index] = pResource;
@@ -131,7 +131,7 @@ void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
 //-------------------------------------------------------------------------------------------------
 //      サンプラーを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
+void DescriptorSet::SetSampler(uint32_t index, ISampler* const pSampler)
 {
     A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
     m_pDescriptors[index] = pSampler;

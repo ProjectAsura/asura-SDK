@@ -184,7 +184,7 @@ public:
         ITextureView**          ppTextureView) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ストレージビューを生成します.
+    //! @brief      アンオーダードアクセスビューを生成します.
     //!
     //! @param[in]      pResource       リソースです.
     //! @param[in]      pDesc           構成設定です.
@@ -192,10 +192,10 @@ public:
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateStorageView(
-        IResource*              pResource,
-        const StorageViewDesc*  pDesc,
-        IStorageView**          ppStorageView) override;
+    bool A3D_APIENTRY CreateUnorderedAccessView(
+        IResource*                      pResource,
+        const UnorderedAccessViewDesc*  pDesc,
+        IUnorderedAccessView**          ppStorageView) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを生成します.

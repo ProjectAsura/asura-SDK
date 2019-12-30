@@ -90,7 +90,7 @@
     <ClCompile Include="..\..\..\src\emu\a3dCommandList.cpp">
       <Filter>ソース ファイル\emu</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\d3d11\a3dStorageView.cpp">
+    <ClCompile Include="..\..\..\src\d3d11\a3dUnorderedAccessView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -173,7 +173,7 @@
     <ClInclude Include="..\..\..\src\emu\a3dImCmd.h">
       <Filter>ソース ファイル\emu</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\d3d11\a3dStorageView.h">
+    <ClInclude Include="..\..\..\src\d3d11\a3dUnorderedAccessView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>

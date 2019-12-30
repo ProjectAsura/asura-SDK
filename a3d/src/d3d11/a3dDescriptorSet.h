@@ -74,7 +74,7 @@ public:
     //! @param[in]      pResource   設定するリソースです.
     //! @param[in]      state       リソースステートです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) override;
+    void A3D_APIENTRY SetView(uint32_t index, ITextureView* const pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -82,7 +82,7 @@ public:
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) override;
+    void A3D_APIENTRY SetView(uint32_t index, IBufferView* const pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ストレージを設定します.
@@ -90,7 +90,7 @@ public:
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetStorage(uint32_t index, IStorageView* pResource) override;
+    void A3D_APIENTRY SetView(uint32_t index, IUnorderedAccessView* const pResource) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
@@ -98,7 +98,7 @@ public:
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pSampler    設定するサンプラーです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetSampler(uint32_t index, ISampler* pSampler) override;
+    void A3D_APIENTRY SetSampler(uint32_t index, ISampler* const pSampler) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドを生成します.

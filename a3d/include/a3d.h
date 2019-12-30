@@ -82,19 +82,38 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//! @enum   SYSTEM_OPTION_TYPE
-//! @brief  システムオプションタイプです.
+// SEMANTICS_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-enum SYSTEM_OPTION_TYPE
+enum SEMANTICS_TYPE
 {
-    SYSTEM_OPTION_NONE = 0,     //!< オプション無しです.
-    SYSTEM_OPTION_RESERVE1,     //!< システム予約1
-    SYSTEM_OPTION_RESERVE2,     //!< システム予約2
-    SYSTEM_OPTION_RESERVE3,     //!< システム予約3
-    SYSTEM_OPTION_RESERVE4,     //!< システム予約4
-    SYSTEM_OPTION_RESERVE5,     //!< システム予約5
-    SYSTEM_OPTION_RESERVE6,     //!< システム予約6
-    SYSTEM_OPTION_RESERVE7,     //!< システム予約7
+    SEMANTICS_POSITION      = 0,        // "POSITION"   , Binding = 0
+    SEMANTICS_COLOR0        = 1,        // "COLOR"      , Binding = 1
+    SEMANTICS_COLOR1        = 2,        // "COLOR"      , Binding = 2
+    SEMANTICS_COLOR2        = 3,        // "COLOR"      , Binding = 3
+    SEMANTICS_COLOR3        = 4,        // "COLOR"      , Binding = 4
+    SEMANTICS_TEXCOORD0     = 5,        // "TEXCOORD"   , Binding = 5
+    SEMANTICS_TEXCOORD1     = 6,        // "TEXCOORD"   , Binding = 6
+    SEMANTICS_TEXCOORD2     = 7,        // "TEXCOORD"   , Binding = 7
+    SEMANTICS_TEXCOORD3     = 8,        // "TEXCOORD"   , Binding = 8
+    SEMANTICS_TEXCOORD4     = 9,        // "TEXCOORD"   , Binding = 9
+    SEMANTICS_TEXCOORD5     = 10,       // "TEXCOORD"   , Binding = 10
+    SEMANTICS_TEXCOORD6     = 11,       // "TEXCOORD"   , Binding = 11
+    SEMANTICS_TEXCOORD7     = 12,       // "TEXCOORD"   , Binding = 12
+    SEMANTICS_NORMAL        = 13,       // "NORMAL"     , Binding = 13
+    SEMANTICS_TANGENT       = 14,       // "TANGENT"    , Binding = 14
+    SEMANTICS_BITANGENT     = 15,       // "BITANGENT"  , Binding = 15
+    SEMANTICS_BONEINDEX     = 16,       // "BONEINDEX"  , Binding = 16
+    SEMANTICS_BONEWEIGHT    = 17,       // "BONEWEIGHT" , Binding = 17
+    SEMANTICS_LIGHTMAP_UV0  = 18,       // "LIGHTMAP_UV", Binding = 18
+    SEMANTICS_LIGHTMAP_UV1  = 19,       // "LIGHTMAP_UV", Binding = 19
+    SEMANTICS_CUSTOM0       = 20,       // "CUSOM"      , Binding = 20
+    SEMANTICS_CUSTOM1       = 21,       // "CUSOM"      , Binding = 21
+    SEMANTICS_CUSTOM2       = 22,       // "CUSOM"      , Binding = 22
+    SEMANTICS_CUSTOM3       = 23,       // "CUSOM"      , Binding = 23
+    SEMANTICS_CUSTOM4       = 24,       // "CUSOM"      , Binding = 24
+    SEMANTICS_CUSTOM5       = 25,       // "CUSOM"      , Binding = 25
+    SEMANTICS_CUSTOM6       = 26,       // "CUSOM"      , Binding = 26
+    SEMANTICS_CUSTOM7       = 27,       // "CUSOM"      , Binding = 27
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,9 +122,10 @@ enum SYSTEM_OPTION_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum INDIRECT_ARGUMENT_TYPE
 {
-    INDIRECT_ARGUMENT_TYPE_DRAW         = 0,    //!< 描画用引数です.
-    INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED = 1,    //!< インデックス付き描画用引数です.
-    INDIRECT_ARGUMENT_TYPE_DISPATCH     = 2,    //!< ディスパッチ用引数です.
+    INDIRECT_ARGUMENT_TYPE_DRAW             = 0,    //!< 描画用引数です.
+    INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED     = 1,    //!< インデックス付き描画用引数です.
+    INDIRECT_ARGUMENT_TYPE_DISPATCH         = 2,    //!< ディスパッチ用引数です.
+    INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH    = 3,    //!< メッシュディスパッチ用引数です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,17 +184,17 @@ enum RESOURCE_LAYOUT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum RESOURCE_USAGE
 {
-    RESOURCE_USAGE_COLOR_TARGET     = 0x001,   //!< カラーターゲットとして使用します.
-    RESOURCE_USAGE_DEPTH_TARGET     = 0x002,   //!< 深度ステンシルターゲットとして使用します.
-    RESOURCE_USAGE_STORAGE_TARGET   = 0x004,   //!< ストレージビューとして使用します.
-    RESOURCE_USAGE_INDEX_BUFFER     = 0x008,   //!< インデックスバッファとして使用します.
-    RESOURCE_USAGE_VERTEX_BUFFER    = 0x010,   //!< 頂点バッファとして使用します.
-    RESOURCE_USAGE_CONSTANT_BUFFER  = 0x020,   //!< 定数バッファとして使用します.
-    RESOURCE_USAGE_INDIRECT_BUFFER  = 0x040,   //!< インダイレクトバッファとして使用します.
-    RESOURCE_USAGE_SHADER_RESOURCE  = 0x080,   //!< シェーダリソースとして使用します.
-    RESOURCE_USAGE_COPY_SRC         = 0x100,   //!< コピー元として使用します.
-    RESOURCE_USAGE_COPY_DST         = 0x200,   //!< コピー先として使用します.
-    RESOURCE_USAGE_QUERY_BUFFER     = 0x300,   //!< クエリバッファとして使用します.
+    RESOURCE_USAGE_COLOR_TARGET             = 0x001,   //!< カラーターゲットとして使用します.
+    RESOURCE_USAGE_DEPTH_TARGET             = 0x002,   //!< 深度ステンシルターゲットとして使用します.
+    RESOURCE_USAGE_UNORDERED_ACCESS_VIEW    = 0x004,   //!< アンオーダードアクセスビューとして使用します.
+    RESOURCE_USAGE_INDEX_BUFFER             = 0x008,   //!< インデックスバッファとして使用します.
+    RESOURCE_USAGE_VERTEX_BUFFER            = 0x010,   //!< 頂点バッファとして使用します.
+    RESOURCE_USAGE_CONSTANT_BUFFER          = 0x020,   //!< 定数バッファとして使用します.
+    RESOURCE_USAGE_INDIRECT_BUFFER          = 0x040,   //!< インダイレクトバッファとして使用します.
+    RESOURCE_USAGE_SHADER_RESOURCE          = 0x080,   //!< シェーダリソースとして使用します.
+    RESOURCE_USAGE_COPY_SRC                 = 0x100,   //!< コピー元として使用します.
+    RESOURCE_USAGE_COPY_DST                 = 0x200,   //!< コピー先として使用します.
+    RESOURCE_USAGE_QUERY_BUFFER             = 0x300,   //!< クエリバッファとして使用します.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -364,12 +384,14 @@ enum PRIMITIVE_TOPOLOGY
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum SHADER_MASK
 {
-    SHADER_MASK_VERTEX   = 0x1,        //!< 頂点シェーダステージです.
-    SHADER_MASK_DOMAIN   = 0x2,        //!< ドメインシェーダステージです.
-    SHADER_MASK_HULL     = 0x4,        //!< ハルシェーダシェーダステージです.
-    SHADER_MASK_GEOMETRY = 0x8,        //!< ジオメトリシェーダステージです.
-    SHADER_MASK_PIXEL    = 0x10,       //!< ピクセルシェーダステージです.
-    SHADER_MASK_COMPUTE  = 0x20,       //!< コンピュートシェーダステージです.
+    SHADER_MASK_VERTEX        = 0x1,        //!< 頂点シェーダステージです.
+    SHADER_MASK_DOMAIN        = 0x2,        //!< ドメインシェーダステージです.
+    SHADER_MASK_HULL          = 0x4,        //!< ハルシェーダシェーダステージです.
+    SHADER_MASK_GEOMETRY      = 0x8,        //!< ジオメトリシェーダステージです.
+    SHADER_MASK_PIXEL         = 0x10,       //!< ピクセルシェーダステージです.
+    SHADER_MASK_COMPUTE       = 0x20,       //!< コンピュートシェーダステージです.
+    SHADER_MASK_AMPLIFICATION = 0x30,       //!< アンプリフィケーションシェーダステージです.
+    SHADER_MASK_MESH          = 0x40,       //!< メッシュシェーダステージです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -815,10 +837,10 @@ struct TextureViewDesc
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// StorageViewDesc structure
+// UnorderedAccessViewDesc structure
 //! @brief  ストレージビューの構成設定です.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct StorageViewDesc
+struct UnorderedAccessViewDesc
 {
     VIEW_DIMENSION          Dimension;              //!< 次元です.
     RESOURCE_FORMAT         Format;                 //!< フォーマットです.
@@ -973,9 +995,7 @@ struct TessellationState
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct InputElementDesc
 {
-    const char*         SemanticName;   //!< セマンティックです.
-    uint32_t            SemanticIndex;  //!< セマンティックインデックスです.
-    uint32_t            BindLocation;   //!< バインドロケーションです.
+    SEMANTICS_TYPE      Semantics;      //!< セマンティクス.
     RESOURCE_FORMAT     Format;         //!< リソースフォーマットです.
     uint32_t            OffsetInBytes;  //!< 先頭要素からオフセットです.
 };
@@ -1034,7 +1054,6 @@ struct ShaderBinary
 {
     const void*     pByteCode;              //!< バイトコードです.
     uint32_t        ByteCodeSize;           //!< バイトコードのサイズです(バイト単位).
-    const char*     EntryPoint;             //!< エントリーポイント名です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1054,11 +1073,11 @@ struct TargetFormat
 struct GraphicsPipelineStateDesc
 {
     IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
-    ShaderBinary            VertexShader;           //!< 頂点シェーダです.
-    ShaderBinary            PixelShader;            //!< ピクセルシェーダです.
-    ShaderBinary            DomainShader;           //!< ドメインシェーダです.
-    ShaderBinary            HullShader;             //!< ハルシェーダです.
-    ShaderBinary            GeometryShader;         //!< ジオメトリシェーダです.
+    ShaderBinary            VS;                     //!< 頂点シェーダです.
+    ShaderBinary            PS;                     //!< ピクセルシェーダです.
+    ShaderBinary            DS;                     //!< ドメインシェーダです.
+    ShaderBinary            HS;                     //!< ハルシェーダです.
+    ShaderBinary            GS;                     //!< ジオメトリシェーダです.
     BlendState              BlendState;             //!< ブレンドステートです.
     RasterizerState         RasterizerState;        //!< ラスタライザ―ステートです.
     MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.
@@ -1080,7 +1099,29 @@ struct GraphicsPipelineStateDesc
 struct ComputePipelineStateDesc
 {
     IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
-    ShaderBinary            ComputeShader;          //!< コンピュートシェーダです.
+    ShaderBinary            CS;                     //!< コンピュートシェーダです.
+    IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// MeshPipelineStateDesc structure
+//! @brief メッシュパイプラインステートの設定.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct MeshPipelineStateDesc
+{
+    IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
+    ShaderBinary            AS;                     //!< アンプリフィケーションシェーダです.
+    ShaderBinary            MS;                     //!< メッシュシェーダです.
+    ShaderBinary            PS;                     //!< ピクセルシェーダです.
+    BlendState              BlendState;             //!< ブレンドステートです.
+    RasterizerState         RasterizerState;        //!< ラスタライザ―ステートです.
+    MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.
+    DepthState              DepthState;             //!< 深度ステートです.
+    StencilState            StencilState;           //!< ステンシルステートです.
+    PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.
+    uint32_t                ColorCount;             //!< カラーフォーマット数です.
+    TargetFormat            ColorTarget[8];         //!< カラーターゲットです.
+    TargetFormat            DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
 };
 
@@ -1151,8 +1192,8 @@ struct PipelineStatistics
     uint64_t    VSInvocations;         //!< 頂点シェーダが呼び出された回数です.
     uint64_t    GSInvocations;         //!< ジオメトリシェーダが呼び出された回数です.
     uint64_t    GSPrimitives;          //!< ジオメトリシェーダによって出力されたプリミティブ数です.
-    uint64_t    CInvocations;          //!< ラスタライザに送信されたプリミティブ数です.
-    uint64_t    CPrimitives;           //!< レンダリングされたプリミティブ数です.
+    uint64_t    RasterizerInvocations; //!< ラスタライザに送信されたプリミティブ数です.
+    uint64_t    RenderedPrimitives;    //!< レンダリングされたプリミティブ数です.
     uint64_t    PSInvocations;         //!< ピクセルシェーダが呼び出された回数です.
     uint64_t    HSInvocations;         //!< ハルシェーダが呼び出された回数です.
     uint64_t    DSInvocations;         //!< ドメインシェーダが呼び出された回数です.
@@ -1196,10 +1237,8 @@ struct DeviceDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct SystemDesc
 {
-    IAllocator*     pAllocator;     //!< システムアロケータです.
-    uint32_t        OptionType;     //!< オプションタイプです.
-    size_t          OptionSize;     //!< オプションサイズです.
-    void*           pOption;        //!< オプションデータです.
+    IAllocator*     pSystemAllocator;   //!< システムアロケータです.
+    IAllocator*     pDeviceAllocator;   //!< デバイスアロケータです(通常は nullptrを指定).
 };
 
 
@@ -1355,7 +1394,7 @@ struct A3D_API IReference
 // IBlob interface
 //! @brief      バイナリラージオブジェクトインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IBlob : IReference
+struct A3D_API IBlob : public IReference
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1382,7 +1421,7 @@ struct A3D_API IBlob : IReference
 // IDeviceChild interface
 //! @brief      デバイスチャイルドインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IDeviceChild : IReference
+struct A3D_API IDeviceChild : public IReference
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1402,7 +1441,7 @@ struct A3D_API IDeviceChild : IReference
 // ICommandSet interface
 //! @brief      コマンドセットインターフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API ICommandSet : IDeviceChild
+struct A3D_API ICommandSet : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1415,7 +1454,7 @@ struct A3D_API ICommandSet : IDeviceChild
 // ISampler interface
 //! @brief      サンプラーインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API ISampler : IDeviceChild
+struct A3D_API ISampler : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1428,7 +1467,7 @@ struct A3D_API ISampler : IDeviceChild
 // IResource interface 
 //! @brief      リソースインターフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IResource : IDeviceChild
+struct A3D_API IResource : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1460,7 +1499,7 @@ struct A3D_API IResource : IDeviceChild
 // IBuffer interface 
 //! @brief      バッファインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IBuffer : IResource
+struct A3D_API IBuffer : public IResource
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1480,7 +1519,7 @@ struct A3D_API IBuffer : IResource
 // IBufferView interface
 //! @brief      バッファビューインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IBufferView : IDeviceChild
+struct A3D_API IBufferView : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1507,7 +1546,7 @@ struct A3D_API IBufferView : IDeviceChild
 // ITexture interface 
 //! @brief      テクスチャインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API ITexture : IResource
+struct A3D_API ITexture : public IResource
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1535,7 +1574,7 @@ struct A3D_API ITexture : IResource
 // ITextureView interface
 //! @brief      テクスチャビューインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API ITextureView : IDeviceChild
+struct A3D_API ITextureView : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1559,15 +1598,15 @@ struct A3D_API ITextureView : IDeviceChild
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// IStorageView interface
+// IUnorderedAccessView interface
 //! @brief      ストレージビューインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IStorageView : IDeviceChild
+struct A3D_API IUnorderedAccessView : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IStorageView()
+    virtual A3D_APIENTRY ~IUnorderedAccessView()
     { /* DO_NOTHING */ }
 
     //---------------------------------------------------------------------------------------------
@@ -1575,7 +1614,7 @@ struct A3D_API IStorageView : IDeviceChild
     //!
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual StorageViewDesc A3D_APIENTRY GetDesc() const = 0;
+    virtual UnorderedAccessViewDesc A3D_APIENTRY GetDesc() const = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースを取得します.
@@ -1589,7 +1628,7 @@ struct A3D_API IStorageView : IDeviceChild
 // IFrameBuffer interface
 //! @brief      フレームバッファインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IFrameBuffer : IDeviceChild
+struct A3D_API IFrameBuffer : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1609,7 +1648,7 @@ struct A3D_API IFrameBuffer : IDeviceChild
 // IDescriptorSet interface
 //! @brief      ディスクリプタセットインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IDescriptorSet : IDeviceChild
+struct A3D_API IDescriptorSet : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1624,7 +1663,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      pResource   設定するリソースです.
     //! @note       設定したテクスチャは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetTexture(uint32_t index, ITextureView* pResource) = 0;
+    virtual void A3D_APIENTRY SetView(uint32_t index, ITextureView* const pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを設定します.
@@ -1633,7 +1672,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      pResource   設定するリソースです.
     //! @note       設定したバッファは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetBuffer(uint32_t index, IBufferView* pResource) = 0;
+    virtual void A3D_APIENTRY SetView(uint32_t index, IBufferView* const pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ストレージを設定します.
@@ -1642,7 +1681,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
     //! @param[in]      pResource   設定するリソースです.
     //! @note       設定したストレージは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetStorage(uint32_t index, IStorageView* pResource) = 0;
+    virtual void A3D_APIENTRY SetView(uint32_t index, IUnorderedAccessView* const pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
@@ -1666,7 +1705,7 @@ struct A3D_API IDescriptorSet : IDeviceChild
 // IDescriptorSetLayout interface
 //! @brief      ディスクリプタセットインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IDescriptorSetLayout : IDeviceChild
+struct A3D_API IDescriptorSetLayout : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1688,7 +1727,7 @@ struct A3D_API IDescriptorSetLayout : IDeviceChild
 // IPipelineState interface
 //! @brief      パイプラインステートインターフェイスです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IPipelineState : IDeviceChild
+struct A3D_API IPipelineState : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1711,7 +1750,7 @@ struct A3D_API IPipelineState : IDeviceChild
 // IQeuryPool interface
 //! @brief      クエリプールインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IQueryPool : IDeviceChild
+struct A3D_API IQueryPool : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1731,7 +1770,7 @@ struct A3D_API IQueryPool : IDeviceChild
 // IFence interface
 //! @brief      フェンスインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IFence : IDeviceChild
+struct A3D_API IFence : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1761,7 +1800,7 @@ struct A3D_API IFence : IDeviceChild
 // ICommandList interface
 //! @brief      コマンドリストインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API ICommandList : IDeviceChild
+struct A3D_API ICommandList : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -1779,7 +1818,12 @@ struct A3D_API ICommandList : IDeviceChild
     //!
     //! @param[in]      pBuffer     設定するフレームバッファです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetFrameBuffer(IFrameBuffer* pBuffer) = 0;
+    virtual void A3D_APIENTRY BeginFrameBuffer(IFrameBuffer* pBuffer) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      フレームバッファを解除します.
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY EndFrameBuffer() = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファをクリアします.
@@ -2137,7 +2181,7 @@ struct A3D_API IQueue : IDeviceChild
 // ISwapChain interface
 //! @brief      スワップチェインインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API ISwapChain : IDeviceChild
+struct A3D_API ISwapChain : public IDeviceChild
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -2235,7 +2279,7 @@ struct A3D_API ISwapChain : IDeviceChild
 // IDevice interface
 //! @brief      デバイスインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IDevice : IReference
+struct A3D_API IDevice : public IReference
 {
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
@@ -2370,10 +2414,10 @@ struct A3D_API IDevice : IReference
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CreateStorageView(
-        IResource*              pResource,
-        const StorageViewDesc*  pDesc,
-        IStorageView**          ppStorageView) = 0;
+    virtual bool A3D_APIENTRY CreateUnorderedAccessView(
+        IResource*                      pResource,
+        const UnorderedAccessViewDesc*  pDesc,
+        IUnorderedAccessView**          ppStorageView) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを生成します.

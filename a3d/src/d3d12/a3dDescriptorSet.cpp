@@ -95,7 +95,7 @@ void DescriptorSet::Term()
 //-------------------------------------------------------------------------------------------------
 //      テクスチャを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
+void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
 {
     A3D_ASSERT(size_t(index) < m_Handles.size());
 
@@ -108,7 +108,7 @@ void DescriptorSet::SetTexture(uint32_t index, ITextureView* pResource)
 //-------------------------------------------------------------------------------------------------
 //      バッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
+void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
 {
     A3D_ASSERT(size_t(index) < m_Handles.size());
 
@@ -121,11 +121,11 @@ void DescriptorSet::SetBuffer(uint32_t index, IBufferView* pResource)
 //-------------------------------------------------------------------------------------------------
 //      ストレージを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
+void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {
     A3D_ASSERT(size_t(index) < m_Handles.size());
 
-    auto pWrapView = static_cast<StorageView*>(pResource);
+    auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
     m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
@@ -134,7 +134,7 @@ void DescriptorSet::SetStorage(uint32_t index, IStorageView* pResource)
 //-------------------------------------------------------------------------------------------------
 //      サンプラーを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
+void DescriptorSet::SetSampler(uint32_t index, ISampler* const pSampler)
 {
     A3D_ASSERT(size_t(index) < m_Handles.size());
 

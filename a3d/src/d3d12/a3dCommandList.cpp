@@ -167,7 +167,7 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetFrameBuffer(IFrameBuffer* pBuffer)
+void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
 {
     if (pBuffer == nullptr)
     { return; }
@@ -181,6 +181,17 @@ void CommandList::SetFrameBuffer(IFrameBuffer* pBuffer)
 
     pWrapFrameBuffer->Bind(this);
     m_pFrameBuffer = pWrapFrameBuffer;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フレームバッファを解除します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::EndFrameBuffer()
+{
+    D3D12_CPU_DESCRIPTOR_HANDLE RTVHandles[8] = {};
+    D3D12_CPU_DESCRIPTOR_HANDLE DSVHandle = {};
+
+    m_pCommandList->OMSetRenderTargets(8, RTVHandles, FALSE, &DSVHandle);
 }
 
 //-------------------------------------------------------------------------------------------------

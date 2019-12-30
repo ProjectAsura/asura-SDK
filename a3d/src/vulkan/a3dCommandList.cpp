@@ -214,19 +214,10 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetFrameBuffer(IFrameBuffer* pBuffer)
+void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
 {
     if (pBuffer == nullptr)
-    {
-        // フレームバッファがバインド済みであればレンダーパスを終わらせる.
-        if (m_pFrameBuffer != nullptr)
-        {
-            vkCmdEndRenderPass(m_CommandBuffer);
-            m_pFrameBuffer = nullptr;
-        }
-
-        return;
-    }
+    { return; }
 
     auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pBuffer);
     A3D_ASSERT(pWrapFrameBuffer != nullptr);
@@ -235,12 +226,20 @@ void CommandList::SetFrameBuffer(IFrameBuffer* pBuffer)
     if (m_pFrameBuffer == pWrapFrameBuffer)
     { return; }
 
-    // フレームバッファがバインド済みであればレンダーパスを終わらせる.
-    if (m_pFrameBuffer != nullptr)
-    { vkCmdEndRenderPass(m_CommandBuffer); }
-
     pWrapFrameBuffer->Bind( this );
     m_pFrameBuffer = pWrapFrameBuffer;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フレームバッファを解除します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::EndFrameBuffer()
+{
+    // フレームバッファがバインド済みであればレンダーパスを終わらせる.
+    if (m_pFrameBuffer != nullptr)
+    { m_pFrameBuffer = nullptr; }
+
+    vkCmdEndRenderPass(m_CommandBuffer);
 }
 
 //-------------------------------------------------------------------------------------------------
