@@ -753,7 +753,7 @@ void Queue::ParseCmd()
                     auto pWrapCommandSet = static_cast<CommandSet*>(cmd->pCommandSet);
                     A3D_ASSERT(pWrapCommandSet != nullptr);
 
-                    auto& desc = pWrapCommandSet->GetDesc();
+                    auto desc = pWrapCommandSet->GetDesc();
 
                     auto pWrapArgumentBuffer = static_cast<Buffer*>(cmd->pArgumentBuffer);
                     A3D_ASSERT(pWrapArgumentBuffer != nullptr);
@@ -993,7 +993,7 @@ void Queue::ParseCmd()
                     A3D_ASSERT(pDstTexture != nullptr);
                     A3D_ASSERT(pSrcBuffer  != nullptr);
 
-                    auto& dstDesc = pDstTexture->GetDesc();
+                    auto dstDesc = pDstTexture->GetDesc();
 
                     auto subResourceLayout = pDstTexture->GetSubresourceLayout(cmd->DstSubresource);
                     auto pSrcPtr = static_cast<uint8_t*>(pSrcBuffer->Map()) + cmd->SrcOffset;

@@ -333,7 +333,7 @@ bool TextureView::Init(IDevice* pDevice, ITexture* pTexture, const TextureViewDe
 
     auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
-    auto& textureDesc = m_pTexture->GetDesc();
+    auto textureDesc = m_pTexture->GetDesc();
  
     if (textureDesc.Usage & RESOURCE_USAGE_COLOR_TARGET)
     {

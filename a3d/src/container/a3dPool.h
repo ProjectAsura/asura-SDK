@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <mutex>
 #include <cstdlib>
+#include <functional>
 
 
 namespace a3d {
@@ -256,4 +257,4 @@ private:
     void operator = (const Pool&) = delete;
 };
 
-}
+} // namespace a3d

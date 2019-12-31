@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ソース ファイル\allocator">
+      <UniqueIdentifier>{1409d281-1205-4315-ae02-e376523f6665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\container">
+      <UniqueIdentifier>{d217877c-345e-4dd5-bce1-735d5f10bea6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\misc">
+      <UniqueIdentifier>{172c75e4-0061-4b0b-ab17-1b3cf9074978}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h">
+      <Filter>ソース ファイル\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h">
+      <Filter>ソース ファイル\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h">
+      <Filter>ソース ファイル\allocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\container\a3dDynamicArray.h">
+      <Filter>ソース ファイル\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\container\a3dList.h">
+      <Filter>ソース ファイル\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\container\a3dPool.h">
+      <Filter>ソース ファイル\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\a3d.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\misc\a3dBlob.h">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\misc\a3dInlines.h">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dBuffer.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dBufferView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dCommandList.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dCommandSet.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptor.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorHeap.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorSet.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorSetLayout.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dDevice.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dFence.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dFrameBuffer.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dPCH.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dPipelineState.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dQueryPool.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dQueue.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dSampler.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dSwapChain.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dTexture.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dTextureView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dUnorderedAccessView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
+      <Filter>ソース ファイル\allocator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dBuffer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dBufferView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dCommandList.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dCommandSet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorHeap.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorSet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorSetLayout.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dDevice.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dFence.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dFrameBuffer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dPCH.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dPipelineState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dQueryPool.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dQueue.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dSampler.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dSwapChain.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dTexture.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dTextureView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dUnorderedAccessView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dUtil.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

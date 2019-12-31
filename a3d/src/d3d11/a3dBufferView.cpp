@@ -52,7 +52,7 @@ bool BufferView::Init(IDevice* pDevice, IBuffer* pBuffer, const BufferViewDesc* 
     auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
-    auto& desc = m_pBuffer->GetDesc();
+    auto desc   = m_pBuffer->GetDesc();
     auto usage  = desc.Usage;
     auto stride = static_cast<uint32_t>((desc.Stride == 0) ? 1 : desc.Stride);
 

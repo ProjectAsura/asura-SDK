@@ -322,7 +322,7 @@ void DescriptorSet::Issue(ICommandList* pCommandList)
 #if defined(VK_KHR_PUSH_DESCRIPTOR_SPEC_VERSION)
     if (m_pDevice->IsSupportExtension(Device::EXT_KHR_PUSH_DESCRIPTOR))
     {
-        auto& desc = m_pLayout->GetDesc();
+        auto desc  = m_pLayout->GetDesc();
         auto count = desc.EntryCount;
 
         for(auto i=0u; i<count; ++i)

@@ -741,7 +741,7 @@ void CommandList::CopyTextureToBuffer
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
-    auto& srcDesc = pWrapSrc->GetDesc();
+    auto srcDesc = pWrapSrc->GetDesc();
 
     auto rowPitch   = static_cast<uint64_t>(srcDesc.Width * ToByte(srcDesc.Format));
     auto slicePitch = rowPitch * srcDesc.Height;
