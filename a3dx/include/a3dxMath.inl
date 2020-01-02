@@ -5,7 +5,7 @@
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
-namespace a3dx {
+namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -614,8 +614,8 @@ inline
 Vector2 Vector2::Clamp( const Vector2& value, const Vector2& a, const Vector2& b )
 {
     return Vector2(
-        asdx::Clamp( value.x, a.x, b.x ),
-        asdx::Clamp( value.y, a.y, b.y )
+        a3d::Clamp( value.x, a.x, b.x ),
+        a3d::Clamp( value.y, a.y, b.y )
     );
 }
 
@@ -625,8 +625,8 @@ Vector2 Vector2::Clamp( const Vector2& value, const Vector2& a, const Vector2& b
 inline
 void Vector2::Clamp( const Vector2& value, const Vector2& a, const Vector2& b, Vector2 &result )
 {
-    result.x = asdx::Clamp( value.x, a.x, b.x );
-    result.y = asdx::Clamp( value.y, a.y, b.y );
+    result.x = a3d::Clamp( value.x, a.x, b.x );
+    result.y = a3d::Clamp( value.y, a.y, b.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -636,8 +636,8 @@ inline
 Vector2 Vector2::Saturate( const Vector2& value )
 {
     return Vector2(
-        asdx::Saturate( value.x ),
-        asdx::Saturate( value.y )
+        a3d::Saturate( value.x ),
+        a3d::Saturate( value.y )
     );
 }
 
@@ -647,8 +647,8 @@ Vector2 Vector2::Saturate( const Vector2& value )
 inline
 void Vector2::Saturate( const Vector2& value, Vector2& result )
 {
-    result.x = asdx::Saturate( value.x );
-    result.y = asdx::Saturate( value.y );
+    result.x = a3d::Saturate( value.x );
+    result.y = a3d::Saturate( value.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -820,8 +820,8 @@ inline
 Vector2 Vector2::Min( const Vector2& a, const Vector2& b )
 { 
     return Vector2(
-        asdx::Min( a.x, b.x ),
-        asdx::Min( a.y, b.y )
+        a3d::Min( a.x, b.x ),
+        a3d::Min( a.y, b.y )
     );
 }
 
@@ -831,8 +831,8 @@ Vector2 Vector2::Min( const Vector2& a, const Vector2& b )
 inline
 void Vector2::Min( const Vector2 &a, const Vector2 &b, Vector2 &result )
 {
-    result.x = asdx::Min( a.x, b.x );
-    result.y = asdx::Min( a.y, b.y );
+    result.x = a3d::Min( a.x, b.x );
+    result.y = a3d::Min( a.y, b.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -842,8 +842,8 @@ inline
 Vector2 Vector2::Max( const Vector2& a, const Vector2& b )
 {
     return Vector2(
-        asdx::Max( a.x, b.x ),
-        asdx::Max( a.y, b.y )
+        a3d::Max( a.x, b.x ),
+        a3d::Max( a.y, b.y )
     );
 }
 
@@ -853,8 +853,8 @@ Vector2 Vector2::Max( const Vector2& a, const Vector2& b )
 inline
 void Vector2::Max( const Vector2 &a, const Vector2 &b, Vector2 &result )
 {
-    result.x = asdx::Max( a.x, b.x );
-    result.y = asdx::Max( a.y, b.y );
+    result.x = a3d::Max( a.x, b.x );
+    result.y = a3d::Max( a.y, b.y );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1092,7 +1092,7 @@ void Vector2::Lerp( const Vector2 &a, const Vector2 &b, float amount, Vector2 &r
 inline
 Vector2 Vector2::SmoothStep( const Vector2& a, const Vector2& b, float amount )
 {
-    auto s = asdx::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3d::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     return Vector2(
         a.x + u * ( b.x - a.x ),
@@ -1106,7 +1106,7 @@ Vector2 Vector2::SmoothStep( const Vector2& a, const Vector2& b, float amount )
 inline
 void Vector2::SmoothStep( const Vector2 &a, const Vector2 &b, float t, Vector2 &result )
 {
-    auto s = asdx::Clamp( t, 0.0f, 1.0f );
+    auto s = a3d::Clamp( t, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     result.x = a.x + u * ( b.x - a.x );
     result.y = a.y + u * ( b.y - a.y );
@@ -1461,9 +1461,9 @@ inline
 Vector3 Vector3::Clamp( const Vector3& value, const Vector3& a, const Vector3& b )
 {
     return Vector3( 
-        asdx::Clamp( value.x, a.x, b.x ),
-        asdx::Clamp( value.y, a.y, b.y ),
-        asdx::Clamp( value.z, a.z, b.z )
+        a3d::Clamp( value.x, a.x, b.x ),
+        a3d::Clamp( value.y, a.y, b.y ),
+        a3d::Clamp( value.z, a.z, b.z )
     );
 }
 
@@ -1473,9 +1473,9 @@ Vector3 Vector3::Clamp( const Vector3& value, const Vector3& a, const Vector3& b
 inline
 void Vector3::Clamp( const Vector3 &value, const Vector3 &a, const Vector3 &b, Vector3 &result )
 {
-    result.x = asdx::Clamp( value.x, a.x, b.x );
-    result.y = asdx::Clamp( value.y, a.y, b.y );
-    result.z = asdx::Clamp( value.z, a.z, b.z );
+    result.x = a3d::Clamp( value.x, a.x, b.x );
+    result.y = a3d::Clamp( value.y, a.y, b.y );
+    result.z = a3d::Clamp( value.z, a.z, b.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1485,9 +1485,9 @@ inline
 Vector3 Vector3::Saturate( const Vector3& value )
 {
     return Vector3(
-        asdx::Saturate( value.x ),
-        asdx::Saturate( value.y ),
-        asdx::Saturate( value.z )
+        a3d::Saturate( value.x ),
+        a3d::Saturate( value.y ),
+        a3d::Saturate( value.z )
     );
 }
 
@@ -1497,9 +1497,9 @@ Vector3 Vector3::Saturate( const Vector3& value )
 inline
 void Vector3::Saturate( const Vector3& value, Vector3& result )
 {
-    result.x = asdx::Saturate( value.x );
-    result.y = asdx::Saturate( value.y );
-    result.z = asdx::Saturate( value.z );
+    result.x = a3d::Saturate( value.x );
+    result.y = a3d::Saturate( value.y );
+    result.z = a3d::Saturate( value.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1785,9 +1785,9 @@ inline
 Vector3 Vector3::Min( const Vector3& a, const Vector3& b )
 { 
     return Vector3( 
-        asdx::Min( a.x, b.x ),
-        asdx::Min( a.y, b.y ),
-        asdx::Min( a.z, b.z )
+        a3d::Min( a.x, b.x ),
+        a3d::Min( a.y, b.y ),
+        a3d::Min( a.z, b.z )
     );
 }
 
@@ -1797,9 +1797,9 @@ Vector3 Vector3::Min( const Vector3& a, const Vector3& b )
 inline
 void Vector3::Min( const Vector3 &a, const Vector3 &b, Vector3 &result )
 {
-    result.x = asdx::Min( a.x, b.x );
-    result.y = asdx::Min( a.y, b.y );
-    result.z = asdx::Min( a.z, b.z );
+    result.x = a3d::Min( a.x, b.x );
+    result.y = a3d::Min( a.y, b.y );
+    result.z = a3d::Min( a.z, b.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1809,9 +1809,9 @@ inline
 Vector3 Vector3::Max( const Vector3& a, const Vector3& b )
 {
     return Vector3(
-        asdx::Max( a.x, b.x ),
-        asdx::Max( a.y, b.y ),
-        asdx::Max( a.z, b.z )
+        a3d::Max( a.x, b.x ),
+        a3d::Max( a.y, b.y ),
+        a3d::Max( a.z, b.z )
     );
 }
 
@@ -1821,9 +1821,9 @@ Vector3 Vector3::Max( const Vector3& a, const Vector3& b )
 inline
 void Vector3::Max( const Vector3 &a, const Vector3 &b, Vector3 &result )
 {
-    result.x = asdx::Max( a.x, b.x );
-    result.y = asdx::Max( a.y, b.y );
-    result.z = asdx::Max( a.z, b.z );
+    result.x = a3d::Max( a.x, b.x );
+    result.y = a3d::Max( a.y, b.y );
+    result.z = a3d::Max( a.z, b.z );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2077,7 +2077,7 @@ void Vector3::Lerp( const Vector3 &a, const Vector3 &b, float amount, Vector3 &r
 inline
 Vector3 Vector3::SmoothStep( const Vector3& a, const Vector3& b, float amount )
 {
-    auto s = asdx::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3d::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     return Vector3(
         a.x + u * ( b.x - a.x ),
@@ -2092,7 +2092,7 @@ Vector3 Vector3::SmoothStep( const Vector3& a, const Vector3& b, float amount )
 inline
 void Vector3::SmoothStep( const Vector3 &a, const Vector3 &b, float amount, Vector3 &result )
 { 
-    auto s = asdx::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3d::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     result.x = a.x + u * ( b.x - a.x );
     result.y = a.y + u * ( b.y - a.y );
@@ -2598,10 +2598,10 @@ inline
 Vector4 Vector4::Clamp( const Vector4& value, const Vector4& a, const Vector4& b )
 {
     return Vector4( 
-        asdx::Clamp( value.x, a.x, b.x ),
-        asdx::Clamp( value.y, a.y, b.y ),
-        asdx::Clamp( value.z, a.z, b.z ),
-        asdx::Clamp( value.w, a.w, b.w )
+        a3d::Clamp( value.x, a.x, b.x ),
+        a3d::Clamp( value.y, a.y, b.y ),
+        a3d::Clamp( value.z, a.z, b.z ),
+        a3d::Clamp( value.w, a.w, b.w )
     );
 }
 
@@ -2611,10 +2611,10 @@ Vector4 Vector4::Clamp( const Vector4& value, const Vector4& a, const Vector4& b
 inline
 void Vector4::Clamp( const Vector4 &value, const Vector4 &a, const Vector4 &b, Vector4 &result )
 {
-    result.x = asdx::Clamp( value.x, a.x, b.x );
-    result.y = asdx::Clamp( value.y, a.y, b.y );
-    result.z = asdx::Clamp( value.z, a.z, b.z );
-    result.w = asdx::Clamp( value.w, a.w, b.w );
+    result.x = a3d::Clamp( value.x, a.x, b.x );
+    result.y = a3d::Clamp( value.y, a.y, b.y );
+    result.z = a3d::Clamp( value.z, a.z, b.z );
+    result.w = a3d::Clamp( value.w, a.w, b.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2624,10 +2624,10 @@ inline
 Vector4 Vector4::Saturate( const Vector4& value )
 {
     return Vector4(
-        asdx::Saturate( value.x ),
-        asdx::Saturate( value.y ),
-        asdx::Saturate( value.z ),
-        asdx::Saturate( value.w )
+        a3d::Saturate( value.x ),
+        a3d::Saturate( value.y ),
+        a3d::Saturate( value.z ),
+        a3d::Saturate( value.w )
     );
 }
 
@@ -2637,10 +2637,10 @@ Vector4 Vector4::Saturate( const Vector4& value )
 inline
 void Vector4::Saturate( const Vector4& value, Vector4& result )
 {
-    result.x = asdx::Saturate( value.x );
-    result.y = asdx::Saturate( value.y );
-    result.z = asdx::Saturate( value.z );
-    result.w = asdx::Saturate( value.w );
+    result.x = a3d::Saturate( value.x );
+    result.y = a3d::Saturate( value.y );
+    result.z = a3d::Saturate( value.z );
+    result.w = a3d::Saturate( value.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2826,10 +2826,10 @@ inline
 Vector4 Vector4::Min( const Vector4& a, const Vector4& b )
 { 
     return Vector4( 
-        asdx::Min( a.x, b.x ),
-        asdx::Min( a.y, b.y ),
-        asdx::Min( a.z, b.z ),
-        asdx::Min( a.w, b.w )
+        a3d::Min( a.x, b.x ),
+        a3d::Min( a.y, b.y ),
+        a3d::Min( a.z, b.z ),
+        a3d::Min( a.w, b.w )
     );
 }
 
@@ -2839,10 +2839,10 @@ Vector4 Vector4::Min( const Vector4& a, const Vector4& b )
 inline
 void Vector4::Min( const Vector4 &a, const Vector4 &b, Vector4 &result )
 {
-    result.x = asdx::Min( a.x, b.x );
-    result.y = asdx::Min( a.y, b.y );
-    result.z = asdx::Min( a.z, b.z );
-    result.w = asdx::Min( a.w, b.w );
+    result.x = a3d::Min( a.x, b.x );
+    result.y = a3d::Min( a.y, b.y );
+    result.z = a3d::Min( a.z, b.z );
+    result.w = a3d::Min( a.w, b.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2852,10 +2852,10 @@ inline
 Vector4 Vector4::Max( const Vector4& a, const Vector4& b )
 {
     return Vector4( 
-        asdx::Max( a.x, b.x ),
-        asdx::Max( a.y, b.y ),
-        asdx::Max( a.z, b.z ),
-        asdx::Max( a.w, b.w )
+        a3d::Max( a.x, b.x ),
+        a3d::Max( a.y, b.y ),
+        a3d::Max( a.z, b.z ),
+        a3d::Max( a.w, b.w )
     );
 }
 
@@ -2865,10 +2865,10 @@ Vector4 Vector4::Max( const Vector4& a, const Vector4& b )
 inline
 void Vector4::Max( const Vector4 &a, const Vector4 &b, Vector4 &result )
 {
-    result.x = asdx::Max( a.x, b.x );
-    result.y = asdx::Max( a.y, b.y );
-    result.z = asdx::Max( a.z, b.z );
-    result.w = asdx::Max( a.w, b.w );
+    result.x = a3d::Max( a.x, b.x );
+    result.y = a3d::Max( a.y, b.y );
+    result.z = a3d::Max( a.z, b.z );
+    result.w = a3d::Max( a.w, b.w );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3072,7 +3072,7 @@ void Vector4::Lerp( const Vector4 &a, const Vector4 &b, float amount, Vector4 &r
 inline
 Vector4 Vector4::SmoothStep( const Vector4& a, const Vector4& b, float amount )
 {
-    auto s = asdx::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3d::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     return Vector4(
         a.x + u * ( b.x - a.x ),
@@ -3088,7 +3088,7 @@ Vector4 Vector4::SmoothStep( const Vector4& a, const Vector4& b, float amount )
 inline
 void Vector4::SmoothStep( const Vector4 &a, const Vector4 &b, float amount, Vector4 &result )
 {
-    auto s = asdx::Clamp( amount, 0.0f, 1.0f );
+    auto s = a3d::Clamp( amount, 0.0f, 1.0f );
     auto u = ( s * s ) + ( 3.0f - ( 2.0f * s ) );
     result.x = a.x + u * ( b.x - a.x );
     result.y = a.y + u * ( b.y - a.y );
@@ -6119,5 +6119,5 @@ Vector2 Hammersley( uint32_t i, uint32_t numSamples )
     return Vector2( float(i)/float(numSamples), result );
 }
 
-} // namespace a3dx
+} // namespace a3d
 

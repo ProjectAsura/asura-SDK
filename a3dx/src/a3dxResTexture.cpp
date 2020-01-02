@@ -73,7 +73,7 @@ ResTexture::~ResTexture()
 //-----------------------------------------------------------------------------
 bool ResTexture::Load(IAllocator* pAllocator, const char* path)
 {
-    FILE* pFile;
+    FILE* pFile = nullptr;
 
     pFile = fopen(path, "rb");
     if (pFile == nullptr)
@@ -82,7 +82,7 @@ bool ResTexture::Load(IAllocator* pAllocator, const char* path)
     TexHeader header = {};
     fread(&header, sizeof(header), 1, pFile);
 
-    if (header.Magic != ' XET')
+    if (header.Magic != '\0XET')
     {
         fclose(pFile);
         return false;
@@ -140,7 +140,7 @@ bool ResTexture::Save(const char* path)
     { return false; }
 
     TexHeader header;
-    header.Magic            = ' XET';
+    header.Magic            = '\0XET';
     header.Dimension        = uint32_t(Dimension);
     header.Width            = Width;
     header.Height           = Height;
@@ -179,7 +179,7 @@ void ResTexture::Dispose()
 
     if (m_pAllocator != nullptr)
     {
-        for(auto i=0; i<SurfaceCount; ++i)
+        for(auto i=0u; i<SurfaceCount; ++i)
         {
             auto ptr = Surfaces[i].Pixels;
             Surfaces[i].Pixels = nullptr;
