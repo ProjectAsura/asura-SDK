@@ -995,23 +995,13 @@ struct TessellationState
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct InputElementDesc
 {
-    SEMANTICS_TYPE      Semantics;      //!< セマンティクス.
-    RESOURCE_FORMAT     Format;         //!< リソースフォーマットです.
-    uint32_t            OffsetInBytes;  //!< 先頭要素からオフセットです.
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// InputStreamDesc structure
-//! @brief  入力ストリームの設定です.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct InputStreamDesc
-{
-    uint32_t                ElementCount;   //!< 入力要素数です.
-    InputElementDesc*       pElements;      //!< 入力要素です.
+    SEMANTICS_TYPE          Semantics;      //!< セマンティクス.
+    RESOURCE_FORMAT         Format;         //!< リソースフォーマットです.
     uint32_t                StreamIndex;    //!< ストリーム番号です.
-    uint32_t                StrideInBytes;  //!< 1ストリーム値のデータサイズです.
+    uint32_t                OffsetInBytes;  //!< 先頭要素からオフセットです.
     INPUT_CLASSIFICATION    InputClass;     //!< 入力分類です.
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // InputLayoutDesc structure
@@ -1019,8 +1009,8 @@ struct InputStreamDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct InputLayoutDesc
 {
-    uint32_t            StreamCount;    //!< 入力ストリーム数です.
-    InputStreamDesc*    pStreams;       //!< 入力ストリームです.
+    uint32_t            ElementCount;   //!< 入力要素数です.
+    InputElementDesc*   pElements;      //!< 入力要素です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1213,6 +1203,9 @@ struct DeviceInfo
     uint32_t    MaxColorSampleCount;            //!< 最大カラーサンプル数です.
     uint32_t    MaxDepthSampleCount;            //!< 最大深度サンプル数です.
     uint32_t    MaxStencilSampleCount;          //!< 最大ステンシルサンプル数です.
+    bool        SupportAsycCompute;             //!< 非同期コンピュートのサポート.
+    bool        SupportRaytracingPipeline;      //!< レイトレーシングパイプラインのサポート.
+    bool        SupportMeshShader;              //!< メッシュシェーダのサポート.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1240,7 +1233,6 @@ struct SystemDesc
     IAllocator*     pSystemAllocator;   //!< システムアロケータです.
     IAllocator*     pDeviceAllocator;   //!< デバイスアロケータです(通常は nullptrを指定).
 };
-
 
 //-------------------------------------------------------------------------------------------------
 //! @brief      指定された数値の倍数に切り上げます.

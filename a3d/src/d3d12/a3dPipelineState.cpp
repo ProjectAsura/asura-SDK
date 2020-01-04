@@ -14,34 +14,34 @@ struct NativeSemantics
 };
 
 static const NativeSemantics kSemantics[] = {
-    { "POSITION", 0 },
-    { "COLOR", 0 },
-    { "COLOR", 1 },
-    { "COLOR", 2 },
-    { "COLOR", 3 },
-    { "TEXCOORD", 0 },
-    { "TEXCOORD", 1 },
-    { "TEXCOORD", 2 },
-    { "TEXCOORD", 3 },
-    { "TEXCOORD", 4 },
-    { "TEXCOORD", 5 },
-    { "TEXCOORD", 6 },
-    { "TEXCOORD", 7 },
-    { "NORMAL", 0 },
-    { "TANGENT", 0 },
-    { "BITANGENT", 0 },
-    { "BONEINDEX", 0 },
-    { "BONEWEIGHT", 0 },
-    { "LIGHTMAP_UV", 0 },
-    { "LIGHTMAP_UV", 1 },
-    { "CUSTOM", 0 },
-    { "CUSTOM", 1 },
-    { "CUSTOM", 2 },
-    { "CUSTOM", 3 },
-    { "CUSTOM", 4 },
-    { "CUSTOM", 5 },
-    { "CUSTOM", 6 },
-    { "CUSTOM", 7 },
+    { "POSITION",       0 },
+    { "COLOR",          0 },
+    { "COLOR",          1 },
+    { "COLOR",          2 },
+    { "COLOR",          3 },
+    { "TEXCOORD",       0 },
+    { "TEXCOORD",       1 },
+    { "TEXCOORD",       2 },
+    { "TEXCOORD",       3 },
+    { "TEXCOORD",       4 },
+    { "TEXCOORD",       5 },
+    { "TEXCOORD",       6 },
+    { "TEXCOORD",       7 },
+    { "NORMAL",         0 },
+    { "TANGENT",        0 },
+    { "BITANGENT",      0 },
+    { "BONEINDEX",      0 },
+    { "BONEWEIGHT",     0 },
+    { "LIGHTMAP_UV",    0 },
+    { "LIGHTMAP_UV",    1 },
+    { "CUSTOM",         0 },
+    { "CUSTOM",         1 },
+    { "CUSTOM",         2 },
+    { "CUSTOM",         3 },
+    { "CUSTOM",         4 },
+    { "CUSTOM",         5 },
+    { "CUSTOM",         6 },
+    { "CUSTOM",         7 },
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -271,20 +271,17 @@ D3D12_INPUT_CLASSIFICATION ToNativeInputClassification( const a3d::INPUT_CLASSIF
 //-------------------------------------------------------------------------------------------------
 void ToNativeInputElementDesc
 (
-    uint32_t                    index,
-    const a3d::InputStreamDesc& state,
-    D3D12_INPUT_ELEMENT_DESC&   result
+    const a3d::InputElementDesc&    element,
+    D3D12_INPUT_ELEMENT_DESC&       result
 )
 {
-    A3D_ASSERT( index < state.ElementCount );
-    auto &element = state.pElements[index];
-
     result.SemanticName         = kSemantics[element.Semantics].Name;
     result.SemanticIndex        = kSemantics[element.Semantics].Index;
     result.Format               = a3d::ToNativeFormat( element.Format );
-    result.InputSlot            = state.StreamIndex;
+    result.InputSlot            = element.StreamIndex;
     result.AlignedByteOffset    = element.OffsetInBytes;
-    result.InputSlotClass       = ToNativeInputClassification(state.InputClass);
+    result.InputSlotClass       = ToNativeInputClassification(element.InputClass);
+    result.InstanceDataStepRate = 0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -453,13 +450,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     desc.SampleMask                       = UINT32_MAX;
 
     auto idx = 0;
-    for(auto i=0u; i<pDesc->InputLayout.StreamCount; ++i)
+    for(auto i=0u; i<pDesc->InputLayout.ElementCount; ++i)
     {
-        for(auto j=0u; j<pDesc->InputLayout.pStreams[i].ElementCount; ++j)
-        {
-            ToNativeInputElementDesc( j, pDesc->InputLayout.pStreams[i], elementDesc[idx] );
-            idx++;
-        }
+        ToNativeInputElementDesc( pDesc->InputLayout.pElements[i], elementDesc[idx] );
+        idx++;
     }
 
     desc.InputLayout.NumElements         = idx;

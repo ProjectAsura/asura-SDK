@@ -76,7 +76,7 @@ bool LoadShaderBinary(const char* filename, a3d::ShaderBinary& result )
     // データを設定.
     result.pByteCode    = buf;
     result.ByteCodeSize = size;
-    result.EntryPoint   = "main";
+    //result.EntryPoint   = "main";
 
     // ファイルを閉じます.
     fclose( pFile );

@@ -57,13 +57,16 @@ VkVertexInputRate ToNativeVertexInputRate(a3d::INPUT_CLASSIFICATION classificati
 //-------------------------------------------------------------------------------------------------
 void ToNativeVertexInputBinding
 (
-    const a3d::InputStreamDesc&      stream,
-    VkVertexInputBindingDescription* pDesc
+    const a3d::InputElementDesc&     element,
+    VkVertexInputBindingDescription* pDesc,
+    uint32_t                         prevOffsetInBytes
 )
 {
-    pDesc->binding   = stream.StreamIndex;
-    pDesc->stride    = stream.StrideInBytes;
-    pDesc->inputRate = ToNativeVertexInputRate(stream.InputClass);
+    auto stride = element.OffsetInBytes - prevOffsetInBytes;
+
+    pDesc->binding   = element.StreamIndex;
+    pDesc->stride    = stride;
+    pDesc->inputRate = ToNativeVertexInputRate(element.InputClass);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -71,15 +74,14 @@ void ToNativeVertexInputBinding
 //-------------------------------------------------------------------------------------------------
 void ToNativeVertexAttribute
 (
-    uint32_t                            elementIndex,
-    const a3d::InputStreamDesc&         stream,
+    const a3d::InputElementDesc&        element,
     VkVertexInputAttributeDescription*  pDesc
 )
 {
-    pDesc->location = stream.pElements[elementIndex].Semantics;
-    pDesc->binding  = stream.StreamIndex;
-    pDesc->format   = ToNativeFormat(stream.pElements[elementIndex].Format);
-    pDesc->offset   = stream.pElements[elementIndex].OffsetInBytes;
+    pDesc->location = element.Semantics;
+    pDesc->binding  = element.StreamIndex;
+    pDesc->format   = ToNativeFormat(element.Format);
+    pDesc->offset   = element.OffsetInBytes;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -93,33 +95,27 @@ void ToNativeVertexInputState
     VkVertexInputAttributeDescription*      pOutAttr    // 呼び出し側で解放すること.
 )
 {
-    auto attributeCount = 0;
-    for(auto i=0u; i<desc.StreamCount; ++i)
-    { attributeCount += desc.pStreams[i].ElementCount; }
-
-    pOutBind = new VkVertexInputBindingDescription[desc.StreamCount];
+    pOutBind = new VkVertexInputBindingDescription[desc.ElementCount];
     A3D_ASSERT(pOutBind != nullptr);
 
-    pOutAttr = new VkVertexInputAttributeDescription[attributeCount];
+    pOutAttr = new VkVertexInputAttributeDescription[desc.ElementCount];
     A3D_ASSERT(pOutAttr != nullptr);
 
     auto index = 0;
-    for(auto i=0u; i<desc.StreamCount; ++i)
+    auto prevOffsetInBytes = 0u;
+    for(auto i=0u; i<desc.ElementCount; ++i)
     {
-        ToNativeVertexInputBinding(desc.pStreams[i], &pOutBind[i]);
-        for(auto j=0u; j<desc.pStreams[i].ElementCount; ++j)
-        {
-            ToNativeVertexAttribute(j, desc.pStreams[i], &pOutAttr[index]);
-            index++;
-        }
+        ToNativeVertexInputBinding(desc.pElements[i], &pOutBind[i], prevOffsetInBytes);
+        ToNativeVertexAttribute(desc.pElements[i], &pOutAttr[i]);
+        prevOffsetInBytes = desc.pElements[i].OffsetInBytes;
     }
 
     pInfo->sType                            = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     pInfo->pNext                            = nullptr;
     pInfo->flags                            = 0;
-    pInfo->vertexBindingDescriptionCount    = desc.StreamCount;
+    pInfo->vertexBindingDescriptionCount    = desc.ElementCount;
     pInfo->pVertexBindingDescriptions       = pOutBind;
-    pInfo->vertexAttributeDescriptionCount  = attributeCount;
+    pInfo->vertexAttributeDescriptionCount  = desc.ElementCount;
     pInfo->pVertexAttributeDescriptions     = pOutAttr;
 }
 

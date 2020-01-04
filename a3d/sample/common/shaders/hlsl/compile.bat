@@ -1,5 +1,5 @@
 setlocal
-set SHADER_COMPILER="C:\Program Files (x86)\Windows Kits\10\bin\x64\fxc.exe"
+set SHADER_COMPILER="C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\fxc.exe"
 
 %SHADER_COMPILER% /E main /T vs_4_0 /Fo simpleQuadVS.cso simpleQuadVS.hlsl
 %SHADER_COMPILER% /E main /T ps_4_0 /Fo simpleQuadPS.cso simpleQuadPS.hlsl
