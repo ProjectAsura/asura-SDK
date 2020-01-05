@@ -13,7 +13,7 @@
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;SAMPLE_IS_VULKAN;TARGET_PC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\Debug;$(VK_SDK_PATH)\Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\Debug;$(VULKAN_SDK)\Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>a3d_vkd.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

@@ -97,7 +97,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>DEBUG;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -109,7 +109,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>DEBUG;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -123,7 +123,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>NDEBUG;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -141,7 +141,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>NDEBUG;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

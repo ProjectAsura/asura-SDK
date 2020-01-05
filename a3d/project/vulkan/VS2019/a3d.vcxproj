@@ -45,10 +45,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_vkd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_vk</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -56,7 +58,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -74,7 +76,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>

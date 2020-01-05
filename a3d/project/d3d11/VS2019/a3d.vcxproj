@@ -45,10 +45,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_d3d11d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_d3d11</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

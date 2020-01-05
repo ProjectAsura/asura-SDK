@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -71,7 +71,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\external\vulkan\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>

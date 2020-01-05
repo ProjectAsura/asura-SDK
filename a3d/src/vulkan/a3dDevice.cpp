@@ -9,6 +9,7 @@
 //-------------------------------------------------------------------------------------------------
 #include <cstdio>
 #include <cstdarg>
+#include <allocator/a3dBaseAllocator.h>
 
 
 namespace /* anonymous */ {
@@ -254,14 +255,16 @@ void CheckDeviceExtension
     uint32_t count;
     vkEnumerateDeviceExtensionProperties(physicalDevice, layer, &count, nullptr);
 
-    a3d::dynamic_array<VkExtensionProperties> temp;
-    temp.resize(count);
-
-    vkEnumerateDeviceExtensionProperties(physicalDevice, layer, &count, temp.data());
+    VkExtensionProperties* temp;
+    temp = static_cast<VkExtensionProperties*>(a3d_alloc(count * sizeof(VkExtensionProperties), 4));
+    vkEnumerateDeviceExtensionProperties(physicalDevice, layer, &count, temp);
 
     result.reserve(count);
-    for(size_t i=0; i<temp.size(); ++i)
+    for(size_t i=0; i<count; ++i)
     {
+        if (strstr(temp[i].extensionName, "VK") == nullptr || temp[i].extensionName[0] < 0)
+        { continue; }
+
         auto extname = new char[VK_MAX_EXTENSION_NAME_SIZE];
         memset(extname, 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
         memcpy(extname, temp[i].extensionName, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
@@ -269,8 +272,7 @@ void CheckDeviceExtension
     }
 
     result.shrink_to_fit();
-
-    temp.clear();
+    a3d_free(temp);
 }
 
 } // namespace /* anonymous */
@@ -622,19 +624,19 @@ bool Device::Init(const DeviceDesc* pDesc)
         }
 
         a3d::dynamic_array<char*> deviceExtensions;
-        if (pDesc->EnableDebug)
-        {
-            deviceExtensions.resize(1);
-            deviceExtensions[0] = new char [VK_MAX_EXTENSION_NAME_SIZE];
-            memset(deviceExtensions[0], 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
+        //if (pDesc->EnableDebug)
+        //{
+        //    //deviceExtensions.resize(1);
+        //    //deviceExtensions[0] = new char [VK_MAX_EXTENSION_NAME_SIZE];
+        //    //memset(deviceExtensions[0], 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
 
-            #if A3D_IS_WIN
-                strcpy_s(deviceExtensions[0], sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-            #else
-                strcpy(deviceExtensions[0], VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-            #endif
-        }
-        else
+        //    //#if A3D_IS_WIN
+        //    //    strcpy_s(deviceExtensions[0], sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        //    //#else
+        //    //    strcpy(deviceExtensions[0], VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        //    //#endif
+        //}
+        //else
         {
             CheckDeviceExtension(
                 nullptr,
@@ -684,8 +686,8 @@ bool Device::Init(const DeviceDesc* pDesc)
         deviceInfo.pQueueCreateInfos        = pQueueInfos;
         deviceInfo.enabledLayerCount        = layerCount;
         deviceInfo.ppEnabledLayerNames      = (layerCount == 0) ? nullptr : layerNames;
-        deviceInfo.enabledExtensionCount    = uint32_t(deviceExtensions.size());
-        deviceInfo.ppEnabledExtensionNames  = deviceExtensions.data();
+        deviceInfo.enabledExtensionCount    = 0;//uint32_t(deviceExtensions.size());
+        deviceInfo.ppEnabledExtensionNames  = nullptr;//deviceExtensions.data();
         deviceInfo.pEnabledFeatures         = nullptr;
 
         auto ret = vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &m_Device);
