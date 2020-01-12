@@ -1247,7 +1247,7 @@ struct DeviceInfo
     uint32_t    MaxDepthSampleCount;            //!< 最大深度サンプル数です.
     uint32_t    MaxStencilSampleCount;          //!< 最大ステンシルサンプル数です.
     bool        SupportAsycCompute;             //!< 非同期コンピュートのサポート.
-    bool        SupportRaytracingPipeline;      //!< レイトレーシングパイプラインのサポート.
+    bool        SupportRayTracing;              //!< レイトレーシングパイプラインのサポート.
     bool        SupportMeshShader;              //!< メッシュシェーダのサポート.
 };
 

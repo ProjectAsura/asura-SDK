@@ -82,7 +82,13 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     #elif A3D_IS_ANDROID
     { /* DO_NOTHING */ }
     #elif A3D_IS_NX
-    { /* DO_NMOTHING */ }
+    { /* DO_NOTHING */ }
+    #elif A3D_IS_IOS
+    { /* DO_NOTHING */ }
+    #elif A3D_IS_MAC
+    { /* TODO : Implementation */ }
+    #elif A3D_IS_GGP
+    { /* TODO : Implementation */ }
     #endif
 
     if (!InitSurface(&m_Surface))
@@ -1175,6 +1181,104 @@ bool SwapChain::SetFullScreenMode(bool enable)
     /* DO_NOTHING */
     m_IsFullScreen = enable;
     return true;
+}
+
+#elif A3D_IS_IOS
+//-------------------------------------------------------------------------------------------------
+//      iOS 向けにサーフェイスを生成します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::InitSurface(VKSurfaceKHR* pSurface)
+{
+    VkIOSSurfaceCreateInfoMVK info = {};
+    info.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
+    info.pNext = nullptr;
+    info.flags = 0;
+    info.pView = m_Desc.WindowHandle;
+
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
+    A3D_ASSERT(pNativeInstance != null_handle);
+
+    auto ret = vkCreateIOSSurfaceMVK(pNativeInstance, &info, nullptr, pSurface);
+    if (ret != VK_SUCCESS)
+    { return false; }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      iOS 向けにフルスクリーンモードを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetFullScreenMode(bool enable)
+{
+    /* DO_NOTHING */
+    m_IsFullScreen = enable;
+    return true;
+}
+
+#elif A3D_IS_MAC
+//-------------------------------------------------------------------------------------------------
+//      Mac OS 向けにサーフェイスを生成します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::InitSurface(VKSurfaceKHR* pSurface)
+{
+    VkMacOSSurfaceCreateInfoMVK info = {};
+    info.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+    info.pNext = nullptr;
+    info.flags = 0;
+    info.pView = m_Desc.WindowHandle;
+
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
+    A3D_ASSERT(pNativeInstance != null_handle);
+
+    auto ret = vkCreateMacOSSurfaceMVK(pNativeInstance, &info, nullptr, pSurface);
+    if (ret != VK_SUCCESS)
+    { return false; }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      Mac OS 向けにフルスクリーンモードを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetFullScreenMode(bool enable)
+{
+    /* TODO : Implementation */
+
+    m_IsFullScreen = enable;
+    return false;
+}
+
+#elif A3D_IS_GGP
+//-------------------------------------------------------------------------------------------------
+//      Google Game Platform (GGP) 向けにサーフェイスを生成します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::InitSurface(VKSurfaceKHR* pSurface)
+{
+    VkStreamDescriptorSurfaceCreateInfoGGP info = {};
+    info.sType              = VK_STRUCTURE_TYPE_STREAM_DESCRIPTOR_SURFACE_CREATE_INFO_GGP;
+    info.pNext              = nullptr;
+    info.flags              = 0;
+    info.streamDescriptor   = m_Desc.WindowHandle;
+
+    auto pNativeInstance = m_pDevice->GetVulkanInstance();
+    A3D_ASSERT(pNativeInstance != null_handle);
+
+    auto ret = vkCreateStreamDescriptorSurfaceGGP(pNativeInstance, &info, nullptr, pSurface);
+    if (ret != VK_SUCCESS)
+    { return false; }
+
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      Google Game Platform (GGP) 向けにフルスクリーンモードを設定します.
+//-------------------------------------------------------------------------------------------------
+bool SwapChain::SetFullScreenMode(bool enable)
+{
+    /* TODO : Implementation */
+
+    m_IsFullScreen = enable;
+    return false;
 }
 
 #endif

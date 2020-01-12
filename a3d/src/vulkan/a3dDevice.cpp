@@ -481,7 +481,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         {
             VkFlags flags = VK_DEBUG_REPORT_ERROR_BIT_EXT;
             flags |= VK_DEBUG_REPORT_WARNING_BIT_EXT;
-            //flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+            flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
             //flags |= VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
             //flags |= VK_DEBUG_REPORT_DEBUG_BIT_EXT;
 
