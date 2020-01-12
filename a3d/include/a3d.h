@@ -1725,7 +1725,7 @@ struct A3D_API IDescriptorSet : public IDeviceChild
     //! @param[in]      pSampler    設定するサンプラーです.
     //! @note       設定したサンプラーは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetSampler(uint32_t index, ISampler* pSampler) = 0;
+    virtual void A3D_APIENTRY SetSampler(uint32_t index, ISampler* const pSampler) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットを更新します.
