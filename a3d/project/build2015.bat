@@ -4,11 +4,11 @@ set MSBUILD="C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe"
 
 call :CLEAN "d3d11/VS2015/a3d.sln"
 call :CLEAN "d3d12/VS2015/a3d.sln"
-call :CLEAN "vulkan/VS2015/a3d.sln"
+@rem call :CLEAN "vulkan/VS2015/a3d.sln"
 
 call :BUILD "d3d11/VS2015/a3d.sln"
 call :BUILD "d3d12/VS2015/a3d.sln"
-call :BUILD "vulkan/VS2015/a3d.sln"
+@rem call :BUILD "vulkan/VS2015/a3d.sln"
 
 goto :END
 

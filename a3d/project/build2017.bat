@@ -5,11 +5,11 @@ set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBui
 
 call :CLEAN "d3d11/VS2017/a3d.sln"
 call :CLEAN "d3d12/VS2017/a3d.sln"
-call :CLEAN "vulkan/VS2017/a3d.sln"
+@rem call :CLEAN "vulkan/VS2017/a3d.sln"
 
 call :BUILD "d3d11/VS2017/a3d.sln"
 call :BUILD "d3d12/VS2017/a3d.sln"
-call :BUILD "vulkan/VS2017/a3d.sln"
+@rem call :BUILD "vulkan/VS2017/a3d.sln"
 
 goto :END
 
