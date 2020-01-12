@@ -10,8 +10,8 @@
 struct VSInput
 {
     float2 Position : POSITION;     //!< 位置座標.
-    float2 TexCoord : TEXCOORD;     //!< テクスチャ座標.
-    float4 Color    : COLOR;        //!< カラー.    
+    float2 TexCoord : TEXCOORD0;    //!< テクスチャ座標.
+    float4 Color    : COLOR0;       //!< カラー.    
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -39,6 +39,9 @@
     <ClCompile Include="..\..\common\external\imgui\imgui_draw.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\common\external\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\helpers\SampleApp.h">
@@ -52,9 +55,6 @@
     </ClInclude>
     <ClInclude Include="..\..\common\helpers\SampleGui.h">
       <Filter>helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\external\imgui\imgui.h">
-      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -10,6 +10,11 @@
 #include "a3dVulkanFunc.h"
 
 
+namespace {
+
+
+} // namespace
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,6 +159,9 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         if (capabilities.maxImageCount < m_Desc.BufferCount)
         { return false; }
 
+        if (capabilities.minImageCount > m_Desc.BufferCount)
+        { return false; }
+
         // 横幅を最大値に制限する.
         if (capabilities.maxImageExtent.width < m_Desc.Extent.Width)
         { m_Desc.Extent.Width = capabilities.maxImageExtent.width; }
@@ -215,6 +223,23 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         delete [] pPresentModes;
     }
 
+    m_CompositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    VkCompositeAlphaFlagBitsKHR compositeAlphaFlags[] = {
+        VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+        VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+        VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+    };
+
+    for(auto i=0u; i<sizeof(compositeAlphaFlags) / sizeof(compositeAlphaFlags[0]); ++i)
+    {
+        if (capabilities.supportedCompositeAlpha & compositeAlphaFlags[i])
+        {
+            m_CompositeAlpha = compositeAlphaFlags[i];
+            break;
+        }
+    }
+
     // スワップチェインを生成
     {
         VkSwapchainCreateInfoKHR createInfo = {};
@@ -232,12 +257,12 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         createInfo.queueFamilyIndexCount    = 0;
         createInfo.pQueueFamilyIndices      = nullptr;
         createInfo.preTransform             = m_PreTransform;
-        createInfo.compositeAlpha           = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.compositeAlpha           = m_CompositeAlpha;
         createInfo.presentMode              = m_PresentMode;
         createInfo.clipped                  = VK_TRUE;
         createInfo.oldSwapchain             = null_handle;
 
-        auto ret = vkCreateSwapchainKHR(pNativeDevice, &createInfo, nullptr, &m_SwapChain);
+        auto ret = vkCreateSwapchain(pNativeDevice, &createInfo, nullptr, &m_SwapChain);
         if ( ret != VK_SUCCESS )
         { return false; }
     }
@@ -245,7 +270,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     // イメージを取得.
     {
         uint32_t chainCount;
-        auto ret = vkGetSwapchainImagesKHR(pNativeDevice, m_SwapChain, &chainCount, nullptr);
+        auto ret = vkGetSwapchainImages(pNativeDevice, m_SwapChain, &chainCount, nullptr);
         if ( ret != VK_SUCCESS )
         { return false; }
 
@@ -266,7 +291,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         for(auto i=0u; i<chainCount; ++i)
         {  m_pImageViews[i] = null_handle; }
 
-        ret = vkGetSwapchainImagesKHR(pNativeDevice, m_SwapChain, &chainCount, m_pImages);
+        ret = vkGetSwapchainImages(pNativeDevice, m_SwapChain, &chainCount, m_pImages);
         if ( ret != VK_SUCCESS )
         { return false; }
     }
@@ -366,7 +391,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
         auto fence      = m_pQueue->GetVulkanFence(index);
 
-        auto ret = vkAcquireNextImageKHR(
+        auto ret = vkAcquireNextImage(
             pNativeDevice,
             m_SwapChain,
             UINT64_MAX,
@@ -452,7 +477,7 @@ void SwapChain::Term()
 
     if ( m_SwapChain != null_handle )
     {
-        vkDestroySwapchainKHR( pNativeDevice, m_SwapChain, nullptr );
+        vkDestroySwapchain( pNativeDevice, m_SwapChain, nullptr );
         m_SwapChain = null_handle;
     }
 
@@ -603,6 +628,9 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         if (capabilities.maxImageCount < m_Desc.BufferCount)
         { return false; }
 
+        if (capabilities.minImageCount > m_Desc.BufferCount)
+        { return false; }
+
         if (capabilities.maxImageExtent.width < m_Desc.Extent.Width)
         { m_Desc.Extent.Width = capabilities.maxImageExtent.width; }
 
@@ -628,7 +656,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         createInfo.queueFamilyIndexCount    = 0;
         createInfo.pQueueFamilyIndices      = nullptr;
         createInfo.preTransform             = m_PreTransform;
-        createInfo.compositeAlpha           = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.compositeAlpha           = m_CompositeAlpha;
         createInfo.presentMode              = m_PresentMode;
         createInfo.clipped                  = VK_TRUE;
         createInfo.oldSwapchain             = m_SwapChain;

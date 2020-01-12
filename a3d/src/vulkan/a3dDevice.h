@@ -36,6 +36,8 @@ public:
         EXT_AMD_DRAW_INDIRECT_COUNT,            // VK_AMD_draw_indirect_count
         EXT_DEBUG_MARKER,                       // VK_EXT_debug_marker
         EXT_HDR_METADATA,                       // VK_EXT_hdr_metadata
+        EXT_NV_RAY_TRACING,                     // VK_NV_ray_tracing
+        EXT_NV_MESH_SHADER,                     // VK_NV_mesh_shader
         EXT_COUNT,
     };
 

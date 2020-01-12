@@ -142,7 +142,8 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         int width;
         int height;
         int bytePerPixel;
-        
+
+        ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->GetTexDataAsRGBA32(&pPixels, &width, &height, &bytePerPixel);
 
@@ -301,9 +302,9 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
             if (!m_pDescriptorSetLayout->CreateDescriptorSet(&m_pDescriptorSet[i]))
             { return false; }
 
-            m_pDescriptorSet[i]->SetBuffer (0, m_pCBV[i]);
+            m_pDescriptorSet[i]->SetView   (0, m_pCBV[i]);
             m_pDescriptorSet[i]->SetSampler(1, m_pSampler);
-            m_pDescriptorSet[i]->SetTexture(2, m_pTextureView);
+            m_pDescriptorSet[i]->SetView   (2, m_pTextureView);
 
         #if 1
             // DescriptorSet::Update()は削除される予定です.
@@ -371,23 +372,15 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
     {
         // 入力要素です.
         a3d::InputElementDesc inputElements[] = {
-            { "POSITION", 0, 0, a3d::RESOURCE_FORMAT_R32G32_FLOAT   , 0  },
-            { "TEXCOORD", 0, 1, a3d::RESOURCE_FORMAT_R32G32_FLOAT   , 8  },
-            { "COLOR"   , 0, 2, a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM , 16 }
+            { a3d::SEMANTICS_POSITION,  a3d::RESOURCE_FORMAT_R32G32_FLOAT   , 0,  0, a3d::INPUT_CLASSIFICATION_PER_VERTEX },
+            { a3d::SEMANTICS_TEXCOORD0, a3d::RESOURCE_FORMAT_R32G32_FLOAT   , 0,  8, a3d::INPUT_CLASSIFICATION_PER_VERTEX },
+            { a3d::SEMANTICS_COLOR0,    a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM , 0, 16, a3d::INPUT_CLASSIFICATION_PER_VERTEX }
         };
-
-        // 入力ストリームです.
-        a3d::InputStreamDesc inputStream = {};
-        inputStream.ElementCount    = 3;
-        inputStream.pElements       = inputElements;
-        inputStream.StreamIndex     = 0;
-        inputStream.StrideInBytes   = sizeof(ImDrawVert);
-        inputStream.InputClass      = a3d::INPUT_CLASSIFICATION_PER_VERTEX;
 
         // 入力レイアウトです.
         a3d::InputLayoutDesc inputLayout = {};
-        inputLayout.StreamCount = 1;
-        inputLayout.pStreams    = &inputStream;
+        inputLayout.ElementCount = 3;
+        inputLayout.pElements    = inputElements;
 
         // ステンシルステートです.
         a3d::StencilTestDesc stencilTest = {};
@@ -400,8 +393,8 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         a3d::GraphicsPipelineStateDesc desc = {};
 
         // シェーダの設定.
-        desc.VertexShader = vs;
-        desc.PixelShader  = ps;
+        desc.VS = vs;
+        desc.PS = ps;
 
         // ブレンドステートの設定.
         desc.BlendState.IndependentBlendEnable          = false;
@@ -560,11 +553,11 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         io.Fonts->TexID = reinterpret_cast<void*>(m_pTextureView);
         io.IniFilename = nullptr;
         io.LogFilename = nullptr;
+        io.DeltaTime   = 1.0f / 60.0f;
         io.Framerate   = 0.5f;
 
         auto& style = ImGui::GetStyle();
         style.WindowRounding      = 2.0f;
-        style.ChildWindowRounding = 2.0f;
 
     #if !(SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11)
         io.MouseDrawCursor = true;
@@ -588,7 +581,6 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         style.Colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.310000f, 0.310000f, 0.310000f, 1.000000f);
         style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.410000f, 0.410000f, 0.410000f, 1.000000f);
         style.Colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.510000f, 0.510000f, 0.510000f, 1.000000f);
-        style.Colors[ImGuiCol_ComboBg]              = ImVec4(0.140000f, 0.140000f, 0.140000f, 0.792000f);
         style.Colors[ImGuiCol_CheckMark]            = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
         style.Colors[ImGuiCol_SliderGrab]           = ImVec4(0.240000f, 0.520000f, 0.880000f, 1.000000f);
         style.Colors[ImGuiCol_SliderGrabActive]     = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
@@ -598,23 +590,15 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         style.Colors[ImGuiCol_Header]               = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.248000f);
         style.Colors[ImGuiCol_HeaderHovered]        = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.640000f);
         style.Colors[ImGuiCol_HeaderActive]         = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
-        style.Colors[ImGuiCol_Column]               = ImVec4(0.610000f, 0.610000f, 0.610000f, 1.000000f);
-        style.Colors[ImGuiCol_ColumnHovered]        = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.624000f);
-        style.Colors[ImGuiCol_ColumnActive]         = ImVec4(0.260000f, 0.590000f, 0.980000f, 1.000000f);
         style.Colors[ImGuiCol_ResizeGrip]           = ImVec4(0.000000f, 0.000000f, 0.000000f, 0.400000f);
         style.Colors[ImGuiCol_ResizeGripHovered]    = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.536000f);
         style.Colors[ImGuiCol_ResizeGripActive]     = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.760000f);
-        style.Colors[ImGuiCol_CloseButton]          = ImVec4(0.410000f, 0.410000f, 0.410000f, 0.400000f);
-        style.Colors[ImGuiCol_CloseButtonHovered]   = ImVec4(0.980000f, 0.390000f, 0.360000f, 1.000000f);
-        style.Colors[ImGuiCol_CloseButtonActive]    = ImVec4(0.980000f, 0.390000f, 0.360000f, 1.000000f);
         style.Colors[ImGuiCol_PlotLines]            = ImVec4(0.610000f, 0.610000f, 0.610000f, 1.000000f);
         style.Colors[ImGuiCol_PlotLinesHovered]     = ImVec4(1.000000f, 0.430000f, 0.350000f, 1.000000f);
         style.Colors[ImGuiCol_PlotHistogram]        = ImVec4(0.900000f, 0.700000f, 0.000000f, 1.000000f);
         style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.000000f, 0.600000f, 0.000000f, 1.000000f);
         style.Colors[ImGuiCol_TextSelectedBg]       = ImVec4(0.260000f, 0.590000f, 0.980000f, 0.280000f);
         style.Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.800000f, 0.800000f, 0.800000f, 0.280000f);
-
-        ImGui::NewFrame();
     }
 
     m_LastTime = std::chrono::system_clock::now();

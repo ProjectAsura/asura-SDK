@@ -26,13 +26,56 @@
         #endif//A3D_PLATFORM_WIN
     #endif//defined(WIN64)
 
+    #if defined(__APPLE__)
+        #if (TARGET_OS_IOS && TARGET_OS_EMBEDDED)
+            #ifndef A3D_PLATFORM_IOS
+            #define A3D_PLATFORM_IOS  // iOSプラットフォームです.
+            #endif//A3D_PLATFORM_IOS
+        #else
+            #ifndef A3D_PLATFORM_MAC
+            #define A3D_PLATFORM_MAC  // Macプラットフォームです.
+            #endif//A3D_PLATFORM_MAC
+        #endif
+    #endif//defiend(__APPLE__)
+
+    #if defined(__ANDROID__)
+        #ifndef A3D_PLATFORM_ANDROID
+        #define A3D_PLATFORM_ANDROID  // Androidプラットフォームです.
+        #endif//A3D_PLATFORM_ANDROID
+    #endif//defined(__ANDROID__)
+
     #if defined(A3D_PLATFORM_WIN)
         #define A3D_IS_WIN      (1)
-    #endif//defined(A3D_PLATFORM_WIN)
+        #define A3D_IS_IOS      (0)
+        #define A3D_IS_MAC      (0)
+        #define A3D_IS_ANDROID  (0)
+
+    #elif defined(A3D_PLATFORM_IOS)
+        #define A3D_IS_WIN      (0)
+        #define A3D_IS_IOS      (1)
+        #define A3D_IS_MAC      (0)
+        #define A3D_IS_ANDROID  (0)
+
+    #elif defined(A3D_PLATFORM_MAC)
+        #define A3D_IS_WIN      (0)
+        #define A3D_IS_IOS      (0)
+        #define A3D_IS_MAC      (1)
+        #define A3D_IS_ANDROID  (0)
+
+    #elif defined(A3D_PLATFORM_ANDROID)
+        #define A3D_IS_WIN      (0)
+        #define A3D_IS_IOS      (0)
+        #define A3D_IS_MAC      (0)
+        #define A3D_IS_ANDROID  (1)
+
+    #endif
+
 
 #else
-
     #define A3D_IS_WIN      (0)
+    #define A3D_IS_IOS      (0)
+    #define A3D_IS_MAC      (0)
+    #define A3D_IS_ANDROID  (0)
 
 #endif// A3D_TARGET_CONSOLE
 

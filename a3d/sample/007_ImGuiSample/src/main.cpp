@@ -183,8 +183,7 @@ bool InitA3D()
     // グラフィックスシステムの初期化.
     {
         a3d::SystemDesc desc = {};
-        desc.pAllocator = &g_Allocator;
-        desc.pOption    = g_pApp->GetWindowHandle();
+        desc.pSystemAllocator = &g_Allocator;
 
         if (!a3d::InitSystem(&desc))
         { return false; }
@@ -504,22 +503,14 @@ bool InitA3D()
     {
         // 入力要素です.
         a3d::InputElementDesc inputElements[] = {
-            { "POSITION", 0, 0, a3d::RESOURCE_FORMAT_R32G32B32_FLOAT , 0  },
-            { "TEXCOORD", 0, 1, a3d::RESOURCE_FORMAT_R32G32_FLOAT    , 12 },
+            { a3d::SEMANTICS_POSITION,  a3d::RESOURCE_FORMAT_R32G32B32_FLOAT , 0,  0, a3d::INPUT_CLASSIFICATION_PER_VERTEX },
+            { a3d::SEMANTICS_TEXCOORD0, a3d::RESOURCE_FORMAT_R32G32_FLOAT    , 0, 12, a3d::INPUT_CLASSIFICATION_PER_VERTEX },
         };
-
-        // 入力ストリームです.
-        a3d::InputStreamDesc inputStream = {};
-        inputStream.ElementCount    = 2;
-        inputStream.pElements       = inputElements;
-        inputStream.StreamIndex     = 0;
-        inputStream.StrideInBytes   = sizeof(Vertex);
-        inputStream.InputClass      = a3d::INPUT_CLASSIFICATION_PER_VERTEX;
 
         // 入力レイアウトです.
         a3d::InputLayoutDesc inputLayout = {};
-        inputLayout.StreamCount = 1;
-        inputLayout.pStreams    = &inputStream;
+        inputLayout.ElementCount = 2;
+        inputLayout.pElements    = inputElements;
 
         // ステンシルテスト設定です.
         a3d::StencilTestDesc stencilTest = {};
@@ -532,8 +523,8 @@ bool InitA3D()
         a3d::GraphicsPipelineStateDesc desc = {};
 
         // シェーダの設定.
-        desc.VertexShader = vs;
-        desc.PixelShader  = ps;
+        desc.VS = vs;
+        desc.PS = ps;
 
         // ブレンドステートの設定.
         desc.BlendState.IndependentBlendEnable          = false;
@@ -768,14 +759,14 @@ bool InitA3D()
     for(auto i=0; i<2; ++i)
     {
     #if SAMPLE_IS_VULKAN || SAMPLE_IS_D3D12 || SAMPLE_IS_D3D11
-        g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
+        g_pDescriptorSet[i]->SetView   (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(2, g_pTextureView);
+        g_pDescriptorSet[i]->SetView   (2, g_pTextureView);
         g_pDescriptorSet[i]->Update();
     #else
-        g_pDescriptorSet[i]->SetBuffer (0, g_pConstantView[i]);
+        g_pDescriptorSet[i]->SetView   (0, g_pConstantView[i]);
         g_pDescriptorSet[i]->SetSampler(1, g_pSampler);
-        g_pDescriptorSet[i]->SetTexture(1, g_pTextureView);
+        g_pDescriptorSet[i]->SetView   (1, g_pTextureView);
         g_pDescriptorSet[i]->Update();
     #endif
     }
@@ -904,7 +895,7 @@ void DrawA3D()
         a3d::RESOURCE_STATE_COLOR_WRITE);
 
     // フレームバッファを設定します.
-    pCmd->SetFrameBuffer(g_pFrameBuffer[idx]);
+    pCmd->BeginFrameBuffer(g_pFrameBuffer[idx]);
 
     a3d::ClearColorValue clearColor = {};
     clearColor.Float[0] = g_ClearColor[0];
@@ -962,7 +953,7 @@ void DrawA3D()
         // 2. Show another simple window
         if (show_another_window)
         {
-            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiCond_FirstUseEver);
             ImGui::Begin("Another Window", &show_another_window);
             ImGui::Text("Hello");
             ImGui::End();
@@ -973,7 +964,7 @@ void DrawA3D()
     }
 
     // 表示用のバリアを設定する前に，フレームバッファの設定を解除する必要があります.
-    pCmd->SetFrameBuffer(nullptr);
+    pCmd->EndFrameBuffer();
 
     // 表示用にバリアを設定します.
     pCmd->TextureBarrier(

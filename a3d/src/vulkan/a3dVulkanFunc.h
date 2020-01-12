@@ -5,6 +5,18 @@
 //-------------------------------------------------------------------------------------------------
 #pragma once
 
+#if defined(VK_KHR_swapchain)
+extern PFN_vkCreateSwapchainKHR                     vkCreateSwapchain;
+extern PFN_vkDestroySwapchainKHR                    vkDestroySwapchain;
+extern PFN_vkGetSwapchainImagesKHR                  vkGetSwapchainImages;
+extern PFN_vkAcquireNextImageKHR                    vkAcquireNextImage;
+extern PFN_vkQueuePresentKHR                        vkQueuePresent;
+extern PFN_vkGetDeviceGroupPresentCapabilitiesKHR   vkGetDeviceGroupPresentCapabilities;
+extern PFN_vkGetDeviceGroupSurfacePresentModesKHR   vkGetDeviceGroupSurfacePresentModes;
+extern PFN_vkGetPhysicalDevicePresentRectanglesKHR  vkGetPhysicalDevicePresentRectangles;
+extern PFN_vkAcquireNextImage2KHR                   vkAcquireNextImage2;
+#endif
+
 #if defined(VK_EXT_debug_marker)
 extern PFN_vkDebugMarkerSetObjectTagEXT     vkDebugMarkerSetObjectTag;
 extern PFN_vkDebugMarkerSetObjectNameEXT    vkDebugMarkerSetObjectName;

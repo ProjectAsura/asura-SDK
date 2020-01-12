@@ -171,6 +171,7 @@ private:
     VkImageView*                    m_pImageViews;          //!< イメージビューです.
     uint32_t                        m_CurrentBufferIndex;   //!< 現在のバッファ番号です.
     VkPresentModeKHR                m_PresentMode;          //!< 表示モード.
+    VkCompositeAlphaFlagBitsKHR     m_CompositeAlpha;       //!< コンポジットアルファ.
     VkFormat                        m_ImageFormat;          //!< イメージフォーマット.
     VkColorSpaceKHR                 m_ColorSpace;           //!< カラースペース.
     bool                            m_IsFullScreen;         //!< フルスクリーンかどうか?

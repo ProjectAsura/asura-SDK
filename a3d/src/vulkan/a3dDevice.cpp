@@ -139,19 +139,8 @@ VkBool32 VKAPI_CALL DebugReport
     return VK_TRUE;
 }
 
-//-------------------------------------------------------------------------------------------------
-//      インスタンスプロシージャアドレスを取得します.
-//-------------------------------------------------------------------------------------------------
-template<typename T>
-inline T GetProc(VkInstance instance, const char* name)
-{ return reinterpret_cast<T>(vkGetInstanceProcAddr(instance, name)); }
-
-//-------------------------------------------------------------------------------------------------
-//      デバイスプロシージャアドレスを取得します.
-//-------------------------------------------------------------------------------------------------
-template<typename T>
-inline T GetProc(VkDevice device, const char* name)
-{ return reinterpret_cast<T>(vkGetDeviceProcAddr(device, name)); }
+#define GET_INSTANCE_PROC(instance, name) reinterpret_cast<PFN_##name>(vkGetInstanceProcAddr(instance, #name))
+#define GET_DEVICE_PROC(device, name)     reinterpret_cast<PFN_##name>(vkGetDeviceProcAddr(device, #name))
 
 #if 1
 void CheckInstanceLayer
@@ -259,10 +248,34 @@ void CheckDeviceExtension
     temp = static_cast<VkExtensionProperties*>(a3d_alloc(count * sizeof(VkExtensionProperties), 4));
     vkEnumerateDeviceExtensionProperties(physicalDevice, layer, &count, temp);
 
+    const char* requestExtensions[] = {
+        VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
+        VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
+        VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME,
+        VK_AMD_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
+        VK_EXT_DEBUG_MARKER_EXTENSION_NAME,
+        VK_EXT_HDR_METADATA_EXTENSION_NAME,
+        VK_NV_MESH_SHADER_EXTENSION_NAME,
+        //VK_NV_RAY_TRACING_EXTENSION_NAME,
+    };
+
     result.reserve(count);
     for(size_t i=0; i<count; ++i)
     {
         if (strstr(temp[i].extensionName, "VK") == nullptr || temp[i].extensionName[0] < 0)
+        { continue; }
+
+        auto hit = false;
+        for(size_t j=0; j<sizeof(requestExtensions) / sizeof(requestExtensions[0]); ++j)
+        {
+            if (strcmp(temp[i].extensionName, requestExtensions[j]) == 0)
+            {
+                hit = true;
+                break;
+            }
+        }
+
+        if (!hit)
         { continue; }
 
         auto extname = new char[VK_MAX_EXTENSION_NAME_SIZE];
@@ -280,6 +293,18 @@ void CheckDeviceExtension
 //-------------------------------------------------------------------------------------------------
 //  Vulkan Device Extension Functions.
 //-------------------------------------------------------------------------------------------------
+#if defined(VK_KHR_swapchain)
+PFN_vkCreateSwapchainKHR                     vkCreateSwapchain                       = nullptr;
+PFN_vkDestroySwapchainKHR                    vkDestroySwapchain                      = nullptr;
+PFN_vkGetSwapchainImagesKHR                  vkGetSwapchainImages                    = nullptr;
+PFN_vkAcquireNextImageKHR                    vkAcquireNextImage                      = nullptr;
+PFN_vkQueuePresentKHR                        vkQueuePresent                          = nullptr;
+PFN_vkGetDeviceGroupPresentCapabilitiesKHR   vkGetDeviceGroupPresentCapabilities     = nullptr;
+PFN_vkGetDeviceGroupSurfacePresentModesKHR   vkGetDeviceGroupSurfacePresentModes     = nullptr;
+PFN_vkGetPhysicalDevicePresentRectanglesKHR  vkGetPhysicalDevicePresentRectangles    = nullptr;
+PFN_vkAcquireNextImage2KHR                   vkAcquireNextImage2                     = nullptr;
+#endif
+
 #if defined(VK_EXT_debug_marker)
 PFN_vkDebugMarkerSetObjectTagEXT     vkDebugMarkerSetObjectTag  = nullptr;
 PFN_vkDebugMarkerSetObjectNameEXT    vkDebugMarkerSetObjectName = nullptr;
@@ -343,15 +368,23 @@ bool Device::Init(const DeviceDesc* pDesc)
         VK_KHR_ANDROID_SURFACE_EXTENSION_NAME,
     #elif A3D_IS_NX
         VK_NN_VI_SURFACE_EXTENSION_NAME,
+    #elif A3D_IS_IOS
+        VK_MVK_IOS_SURFACE_EXTENSION_NAME,
+    #elif A3D_IS_MAC
+        VK_MVK_MACOS_SURFACE_EXTENSION_NAME
     #endif
+        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+        VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
+        VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+        VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
     };
 
     const char* layerNames[] = {
-        "VK_LAYER_LUNARG_standard_validation",
+        "VK_LAYER_KHRONOS_validation",
     };
 
-    uint32_t instanceExtensionCount = 2;
+    uint32_t instanceExtensionCount = sizeof(instanceExtension) / sizeof(instanceExtension[0]);
     uint32_t layerCount = 0;
 
     if (pDesc->EnableDebug)
@@ -359,8 +392,10 @@ bool Device::Init(const DeviceDesc* pDesc)
     #if !A3D_IS_NX
         layerCount++;
     #endif
-        instanceExtensionCount++;
     }
+
+    if (!pDesc->EnableDebug)
+    { instanceExtensionCount--; }
 
     #if 0
     //a3d::dynamic_array<char*> layers;
@@ -419,14 +454,26 @@ bool Device::Init(const DeviceDesc* pDesc)
         { return false; }
     }
 
+    #if defined(VK_KHR_swapchain)
+    {
+        vkGetDeviceGroupPresentCapabilities  = GET_INSTANCE_PROC(m_Instance, vkGetDeviceGroupPresentCapabilitiesKHR);
+        vkGetDeviceGroupSurfacePresentModes  = GET_INSTANCE_PROC(m_Instance, vkGetDeviceGroupSurfacePresentModesKHR);
+        vkGetPhysicalDevicePresentRectangles = GET_INSTANCE_PROC(m_Instance, vkGetPhysicalDevicePresentRectanglesKHR);
+        
+        vkCreateSwapchain       = GET_INSTANCE_PROC(m_Instance, vkCreateSwapchainKHR);
+        vkDestroySwapchain      = GET_INSTANCE_PROC(m_Instance, vkDestroySwapchainKHR);
+        vkGetSwapchainImages    = GET_INSTANCE_PROC(m_Instance, vkGetSwapchainImagesKHR);
+        vkAcquireNextImage      = GET_INSTANCE_PROC(m_Instance, vkAcquireNextImageKHR);
+        vkQueuePresent          = GET_INSTANCE_PROC(m_Instance, vkQueuePresentKHR);
+        vkAcquireNextImage2     = GET_INSTANCE_PROC(m_Instance, vkAcquireNextImage2KHR);
+    }
+    #endif
+
     if (pDesc->EnableDebug)
     {
-        vkCreateDebugReportCallback  = GetProc<PFN_vkCreateDebugReportCallbackEXT>(
-                                        m_Instance, "vkCreateDebugReportCallbackEXT");
-        vkDestroyDebugReportCallback = GetProc<PFN_vkDestroyDebugReportCallbackEXT>(
-                                        m_Instance, "vkDestroyDebugReportCallbackEXT");
-        vkDebugReportMessage         = GetProc<PFN_vkDebugReportMessageEXT>(
-                                        m_Instance, "vkDebugReportMessageEXT");
+        vkCreateDebugReportCallback  = GET_INSTANCE_PROC(m_Instance, vkCreateDebugReportCallbackEXT);
+        vkDestroyDebugReportCallback = GET_INSTANCE_PROC(m_Instance, vkDestroyDebugReportCallbackEXT);
+        vkDebugReportMessage         = GET_INSTANCE_PROC(m_Instance, vkDebugReportMessageEXT);
 
         if (vkCreateDebugReportCallback  != nullptr &&
             vkDestroyDebugReportCallback != nullptr &&
@@ -624,19 +671,6 @@ bool Device::Init(const DeviceDesc* pDesc)
         }
 
         a3d::dynamic_array<char*> deviceExtensions;
-        //if (pDesc->EnableDebug)
-        //{
-        //    //deviceExtensions.resize(1);
-        //    //deviceExtensions[0] = new char [VK_MAX_EXTENSION_NAME_SIZE];
-        //    //memset(deviceExtensions[0], 0, sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE);
-
-        //    //#if A3D_IS_WIN
-        //    //    strcpy_s(deviceExtensions[0], sizeof(char) * VK_MAX_EXTENSION_NAME_SIZE, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-        //    //#else
-        //    //    strcpy(deviceExtensions[0], VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-        //    //#endif
-        //}
-        //else
         {
             CheckDeviceExtension(
                 nullptr,
@@ -649,33 +683,29 @@ bool Device::Init(const DeviceDesc* pDesc)
 
             for(size_t i=0; i<deviceExtensions.size(); ++i)
             {
-            #if defined(VK_KHR_push_descriptor)
                 if (strcmp(deviceExtensions[i], VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_KHR_PUSH_DESCRIPTOR] = true; }
 
                 if (strcmp(deviceExtensions[i], VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_KHR_DESCRIPTOR_UPDATE_TEMPLATE] = true; }
-            #endif
 
-            #if defined(VK_NVX_device_generated_commands)
                 if (strcmp(deviceExtensions[i], VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_NVX_DEVICE_GENERATE_COMMAND] = true; }
-            #endif
 
-            #if defined(VK_AMD_draw_indirect_count)
                 if (strcmp(deviceExtensions[i], VK_AMD_DRAW_INDIRECT_COUNT_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_AMD_DRAW_INDIRECT_COUNT] = true; }
-            #endif
 
-            #if defined(VK_EXT_debug_marker)
                 if (strcmp(deviceExtensions[i], VK_EXT_DEBUG_MARKER_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_DEBUG_MARKER] = true; }
-            #endif
 
-            #if defined(VK_EXT_hdr_metadata)
                 if (strcmp(deviceExtensions[i], VK_EXT_HDR_METADATA_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_HDR_METADATA] = true; }
-            #endif
+
+                if (strcmp(deviceExtensions[i], VK_NV_RAY_TRACING_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_NV_RAY_TRACING] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_NV_MESH_SHADER_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_NV_MESH_SHADER] = true; }
             }
         }
 
@@ -686,8 +716,8 @@ bool Device::Init(const DeviceDesc* pDesc)
         deviceInfo.pQueueCreateInfos        = pQueueInfos;
         deviceInfo.enabledLayerCount        = layerCount;
         deviceInfo.ppEnabledLayerNames      = (layerCount == 0) ? nullptr : layerNames;
-        deviceInfo.enabledExtensionCount    = 0;//uint32_t(deviceExtensions.size());
-        deviceInfo.ppEnabledExtensionNames  = nullptr;//deviceExtensions.data();
+        deviceInfo.enabledExtensionCount    = uint32_t(deviceExtensions.size());
+        deviceInfo.ppEnabledExtensionNames  = deviceExtensions.data();
         deviceInfo.pEnabledFeatures         = nullptr;
 
         auto ret = vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &m_Device);
@@ -706,15 +736,16 @@ bool Device::Init(const DeviceDesc* pDesc)
         if (ret != VK_SUCCESS )
         { return false; }
 
+
         #if defined(VK_EXT_debug_marker)
         {
             if (m_IsSupportExt[EXT_DEBUG_MARKER])
             {
-                vkDebugMarkerSetObjectTag   = GetProc<PFN_vkDebugMarkerSetObjectTagEXT> (m_Device, "vkDebugMarkerSetObjectTagEXT");
-                vkDebugMarkerSetObjectName  = GetProc<PFN_vkDebugMarkerSetObjectNameEXT>(m_Device, "vkDebugMarkerSetObjectNameEXT");
-                vkCmdDebugMarkerBegin       = GetProc<PFN_vkCmdDebugMarkerBeginEXT>     (m_Device, "vkCmdDebugMarkerBeginEXT");
-                vkCmdDebugMarkerEnd         = GetProc<PFN_vkCmdDebugMarkerEndEXT>       (m_Device, "vkCmdDebugMarkerEndEXT");
-                vkCmdDebugMarkerInsert      = GetProc<PFN_vkCmdDebugMarkerInsertEXT>    (m_Device, "vkCmdDebugMarkerInsert");
+                vkDebugMarkerSetObjectTag   = GET_DEVICE_PROC(m_Device, vkDebugMarkerSetObjectTagEXT);
+                vkDebugMarkerSetObjectName  = GET_DEVICE_PROC(m_Device, vkDebugMarkerSetObjectNameEXT);
+                vkCmdDebugMarkerBegin       = GET_DEVICE_PROC(m_Device, vkCmdDebugMarkerBeginEXT);
+                vkCmdDebugMarkerEnd         = GET_DEVICE_PROC(m_Device, vkCmdDebugMarkerEndEXT);
+                vkCmdDebugMarkerInsert      = GET_DEVICE_PROC(m_Device, vkCmdDebugMarkerInsertEXT);
             }
         }
         #endif
@@ -723,7 +754,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         {
             if (m_IsSupportExt[EXT_KHR_PUSH_DESCRIPTOR])
             {
-                vkCmdPushDescriptorSet = GetProc<PFN_vkCmdPushDescriptorSetKHR>(m_Device, "vkCmdPushDescriptorSetKHR");
+                vkCmdPushDescriptorSet = GET_DEVICE_PROC(m_Device, vkCmdPushDescriptorSetKHR);
             }
         }
         #endif
@@ -732,7 +763,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         {
             if (m_IsSupportExt[EXT_HDR_METADATA])
             {
-                vkSetHdrMetadata = GetProc<PFN_vkSetHdrMetadataEXT>(m_Device, "vkSetHdrMetadataEXT");
+                vkSetHdrMetadata = GET_DEVICE_PROC(m_Device, vkSetHdrMetadataEXT);
             }
         }
         #endif
@@ -840,6 +871,7 @@ void Device::Term()
         vkDestroyInstance(m_Instance, &m_Allocator);
         m_Instance = null_handle;
     }
+
 
     #if 0
     //if (m_Desc.EnableDebug)
