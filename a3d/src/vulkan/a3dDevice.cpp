@@ -249,6 +249,7 @@ void CheckDeviceExtension
     vkEnumerateDeviceExtensionProperties(physicalDevice, layer, &count, temp);
 
     const char* requestExtensions[] = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
         VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
         VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME,
@@ -262,9 +263,6 @@ void CheckDeviceExtension
     result.reserve(count);
     for(size_t i=0; i<count; ++i)
     {
-        if (strstr(temp[i].extensionName, "VK") == nullptr || temp[i].extensionName[0] < 0)
-        { continue; }
-
         auto hit = false;
         for(size_t j=0; j<sizeof(requestExtensions) / sizeof(requestExtensions[0]); ++j)
         {
@@ -384,7 +382,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         "VK_LAYER_KHRONOS_validation",
     };
 
-    uint32_t instanceExtensionCount = sizeof(instanceExtension) / sizeof(instanceExtension[0]);
+    uint32_t instanceExtensionCount = 7;
     uint32_t layerCount = 0;
 
     if (pDesc->EnableDebug)
@@ -434,14 +432,16 @@ bool Device::Init(const DeviceDesc* pDesc)
         instanceInfo.enabledExtensionCount      = static_cast<uint32_t>(extensions.size());
         instanceInfo.ppEnabledExtensionNames    = extensions.data();
 
-        m_Allocator.pfnAllocation           = Alloc;
-        m_Allocator.pfnFree                 = Free;
-        m_Allocator.pfnReallocation         = Realloc;
-        m_Allocator.pfnInternalAllocation   = nullptr;
-        m_Allocator.pfnInternalFree         = nullptr;
-        m_Allocator.pUserData               = nullptr;
+    #if 0
+        //m_Allocator.pfnAllocation           = Alloc;
+        //m_Allocator.pfnFree                 = Free;
+        //m_Allocator.pfnReallocation         = Realloc;
+        //m_Allocator.pfnInternalAllocation   = nullptr;
+        //m_Allocator.pfnInternalFree         = nullptr;
+        //m_Allocator.pUserData               = nullptr;
+    #endif
 
-        auto ret = vkCreateInstance(&instanceInfo, &m_Allocator, &m_Instance);
+        auto ret = vkCreateInstance(&instanceInfo, nullptr, &m_Instance);
 
         for(size_t i=0; i<extensions.size(); ++i)
         {
@@ -868,7 +868,7 @@ void Device::Term()
 
     if (m_Instance != null_handle)
     {
-        vkDestroyInstance(m_Instance, &m_Allocator);
+        vkDestroyInstance(m_Instance, nullptr);
         m_Instance = null_handle;
     }
 

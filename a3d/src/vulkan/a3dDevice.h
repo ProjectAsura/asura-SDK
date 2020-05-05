@@ -394,7 +394,7 @@ private:
     DeviceInfo                  m_Info;                 //!< デバイス情報です.
     uint32_t                    m_PhysicalDeviceCount;  //!< 物理デバイス数です.
     PhysicalDeviceInfo*         m_pPhysicalDeviceInfos; //!< 物理デバイス情報です.
-    VkAllocationCallbacks       m_Allocator;            //!< アロケータです.
+    //VkAllocationCallbacks       m_Allocator;            //!< アロケータです.
     VkDescriptorPoolCreateInfo  m_PoolCreateInfo;       //!< ディスクリプタプール生成情報です.
     Queue*                      m_pGraphicsQueue;       //!< グラフィックスキューです.
     Queue*                      m_pComputeQueue;        //!< コンピュートキューです.
