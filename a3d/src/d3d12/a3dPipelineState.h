@@ -9,6 +9,16 @@
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// PIPELINE_TYPE enum
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum PIPELINE_TYPE
+{
+    PIPELINE_GRAPHICS,      //!< グラフィックスパイプラインです.
+    PIPELINE_COMPUTE,       //!< コンピュートパイプラインです.
+    PIPELINE_GEOMETRY       //!< ジオメトリパイプラインです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // PipelineState class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class A3D_API PipelineState : public IPipelineState, public BaseAllocator
@@ -55,6 +65,20 @@ public:
         IDevice*                        pDevice,
         const ComputePipelineStateDesc* pDesc,
         IPipelineState**                ppPipelineState);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ジオメトリパイプラインとして生成します.
+    //!
+    //! @param[in]      pDevice             デバイスです.
+    //! @param[in]      pDesc               構成設定です.
+    //! @param[in]      ppPipelineState     パイプラインステートの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    static bool A3D_APIENTRY CreateAsGeometry(
+        IDevice*                            pDevice,
+        const GeometryPipelineStateDesc*    pDesc,
+        IPipelineState**                    ppPipelineState);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウントを増やします.
@@ -105,7 +129,7 @@ private:
     ID3D12PipelineState*    m_pPipelineState;       //!< パイプラインステートです.
     D3D_PRIMITIVE_TOPOLOGY  m_PrimitiveTopology;    //!< プリミティブトポロジーです.
     DescriptorSetLayout*    m_pLayout;              //!< ディスクリプタセットレイアウトです.
-    bool                    m_IsGraphicsPipeline;   //!< グラフィックスパイプラインかどうか.
+    PIPELINE_TYPE           m_Type;                 //!< パイプラインタイプです.
 
     //=============================================================================================
     // private methods.
@@ -132,7 +156,7 @@ private:
     bool A3D_APIENTRY InitAsGraphics(IDevice* pDevice, const GraphicsPipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      コンピュートパイプランとして初期化します.
+    //! @brief      コンピュートパイプラインとして初期化します.
     //!
     //! @param[in]      pDevice         デバイスです.
     //! @param[in]      pDesc           構成設定です.
@@ -140,6 +164,16 @@ private:
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY InitAsCompute(IDevice* pDevice, const ComputePipelineStateDesc* pDesc);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ジオメトリパイプラインとして初期化します.
+    //!
+    //! @param[in]      pDevice         デバイスです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @retval true    初期化に成功.
+    //! @retval false   初期化に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY InitAsGeometry(IDevice* pDevice, const GeometryPipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

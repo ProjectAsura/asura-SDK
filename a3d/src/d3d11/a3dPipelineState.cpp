@@ -8,6 +8,9 @@
 
 namespace /* anonymous */ {
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// NativeSemantics structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
 struct NativeSemantics
 {
     const char* Name;
@@ -33,8 +36,6 @@ static const NativeSemantics kSemantics[] = {
     { "BITANGENT",      0 },
     { "BONEINDEX",      0 },
     { "BONEWEIGHT",     0 },
-    { "LIGHTMAP_UV",    0 },
-    { "LIGHTMAP_UV",    1 },
     { "CUSTOM",         0 },
     { "CUSTOM",         1 },
     { "CUSTOM",         2 },

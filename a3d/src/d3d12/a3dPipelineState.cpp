@@ -7,10 +7,13 @@
 
 namespace /* anonymous */ {
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// NativeSemantics structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
 struct NativeSemantics
 {
-    const char* Name;
-    uint32_t    Index;
+    const char* Name;       //!< セマンティクス名.
+    uint32_t    Index;      //!< セマンティクスインデックス.
 };
 
 static const NativeSemantics kSemantics[] = {
@@ -32,8 +35,6 @@ static const NativeSemantics kSemantics[] = {
     { "BITANGENT",      0 },
     { "BONEINDEX",      0 },
     { "BONEWEIGHT",     0 },
-    { "LIGHTMAP_UV",    0 },
-    { "LIGHTMAP_UV",    1 },
     { "CUSTOM",         0 },
     { "CUSTOM",         1 },
     { "CUSTOM",         2 },
@@ -42,6 +43,86 @@ static const NativeSemantics kSemantics[] = {
     { "CUSTOM",         5 },
     { "CUSTOM",         6 },
     { "CUSTOM",         7 },
+};
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// SubObject class
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma warning(push)
+#pragma warning(disable : 4324)
+template<typename InnerStructType, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE Type, typename DefaultArg = InnerStructType>
+class alignas(void*) SubObject
+{
+public:
+    SubObject() noexcept
+    : m_Type    (Type)
+    , m_Inner   (DefaultArg())
+    { /* DO_NOTHING */ }
+
+    SubObject(InnerStructType const& value) noexcept
+    : m_Type    (Type)
+    , m_Inner   (value)
+    { /* DO_NOTHING */ }
+
+    SubObject& operator = (InnerStructType const& value) noexcept
+    {
+        m_Type  = Type;
+        m_Inner = value;
+        return *this;
+    }
+
+    operator InnerStructType const&() const noexcept 
+    { return m_Inner; }
+
+    operator InnerStructType&() noexcept 
+    { return m_Inner; }
+
+    InnerStructType* operator&() noexcept
+    { return &m_Inner; }
+
+    InnerStructType const* operator&() const noexcept
+    { return &m_Inner; }
+
+private:
+    D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_Type;
+    InnerStructType                     m_Inner;
+};
+#pragma warning(pop)
+
+using D3D12_PSS_ROOT_SIGNATURE = SubObject< ID3D12RootSignature*,           D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE >;
+using D3D12_PSS_AS             = SubObject< D3D12_SHADER_BYTECODE,          D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS >;
+using D3D12_PSS_MS             = SubObject< D3D12_SHADER_BYTECODE,          D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS >;
+using D3D12_PSS_PS             = SubObject< D3D12_SHADER_BYTECODE,          D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PS >;
+using D3D12_PSS_BLEND          = SubObject< D3D12_BLEND_DESC,               D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND >;
+using D3D12_PSS_SAMPLE_MASK    = SubObject< UINT,                           D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK >;
+using D3D12_PSS_RASTERIZER     = SubObject< D3D12_RASTERIZER_DESC,          D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER >;
+using D3D12_PSS_DEPTH_STENCIL  = SubObject< D3D12_DEPTH_STENCIL_DESC,       D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL >;
+using D3D12_PSS_RTV_FORMATS    = SubObject< D3D12_RT_FORMAT_ARRAY,          D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RENDER_TARGET_FORMATS >;
+using D3D12_PSS_DSV_FORMAT     = SubObject< DXGI_FORMAT,                    D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL_FORMAT >;
+using D3D12_PSS_SAMPLE_DESC    = SubObject< DXGI_SAMPLE_DESC,               D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_DESC >;
+using D3D12_PSS_NODE_MASK      = SubObject< UINT,                           D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_NODE_MASK >;
+using D3D12_PSS_CACHED_PSO     = SubObject< D3D12_CACHED_PIPELINE_STATE,    D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_CACHED_PSO >;
+using D3D12_PSS_FLAGS          = SubObject< D3D12_PIPELINE_STATE_FLAGS,     D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_FLAGS >;
+
+
+///////////////////////////////////////////////////////////////////////////////
+// D3D12_GEOMETRY_PIPELINE_STATE_DESC structure
+///////////////////////////////////////////////////////////////////////////////
+struct D3D12_GEOMETRY_PIPELINE_STATE_DESC
+{
+    D3D12_PSS_ROOT_SIGNATURE  RootSignature;
+    D3D12_PSS_AS              AS;
+    D3D12_PSS_MS              MS;
+    D3D12_PSS_PS              PS;
+    D3D12_PSS_BLEND           BlendState;
+    D3D12_PSS_SAMPLE_MASK     SampleMask;
+    D3D12_PSS_RASTERIZER      RasterizerState;
+    D3D12_PSS_DEPTH_STENCIL   DepthStencilState;
+    D3D12_PSS_RTV_FORMATS     RTVFormats;
+    D3D12_PSS_DSV_FORMAT      DSVFormat;
+    D3D12_PSS_SAMPLE_DESC     SampleDesc;
+    D3D12_PSS_CACHED_PSO      CachedPSO;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -145,9 +226,9 @@ void ToNativeRanderTargetBlendDesc( const a3d::ColorBlendState& state, D3D12_REN
 //-------------------------------------------------------------------------------------------------
 //      ブレンドステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeBlendDesc( const a3d::BlendState& state, D3D12_BLEND_DESC& result )
+void ToNativeBlendDesc( const a3d::BlendState& state, D3D12_BLEND_DESC& result, BOOL alphaToCoverage )
 {
-    result.AlphaToCoverageEnable = FALSE;
+    result.AlphaToCoverageEnable = alphaToCoverage;
     result.IndependentBlendEnable = (state.IndependentBlendEnable) ? TRUE : FALSE;
     for(auto i=0; i<8; ++i)
     {
@@ -319,7 +400,7 @@ PipelineState::PipelineState()
 , m_pPipelineState      (nullptr)
 , m_PrimitiveTopology   (D3D_PRIMITIVE_TOPOLOGY_UNDEFINED)
 , m_pLayout             (nullptr)
-, m_IsGraphicsPipeline  (true)
+, m_Type                (PIPELINE_GRAPHICS)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -397,14 +478,14 @@ void PipelineState::Issue(ICommandList* pCommandList)
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
-    if (m_IsGraphicsPipeline)
+    if (m_Type == PIPELINE_GRAPHICS)
     { pNativeCommandList->SetGraphicsRootSignature(m_pLayout->GetD3D12RootSignature()); }
-    else
+    else if (m_Type == PIPELINE_COMPUTE)
     { pNativeCommandList->SetComputeRootSignature(m_pLayout->GetD3D12RootSignature()); }
 
     pNativeCommandList->SetPipelineState(m_pPipelineState);
 
-    if (m_IsGraphicsPipeline)
+    if (m_Type == PIPELINE_GRAPHICS)
     { pNativeCommandList->IASetPrimitiveTopology(m_PrimitiveTopology); }
 }
 
@@ -424,7 +505,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_IsGraphicsPipeline = true;
+    m_Type = PIPELINE_GRAPHICS;
 
     m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     m_pLayout->AddRef();
@@ -441,13 +522,12 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     ToNativeShaderByteCode  ( pDesc->DS                , desc.DS );
     ToNativeShaderByteCode  ( pDesc->HS                , desc.HS );
     ToNativeShaderByteCode  ( pDesc->GS                , desc.GS );
-    ToNativeBlendDesc       ( pDesc->BlendState        , desc.BlendState );
+    ToNativeBlendDesc       ( pDesc->BlendState        , desc.BlendState, pDesc->MultiSampleState.EnableAlphaToCoverage );
     ToNativeRasterizerDesc  ( pDesc->RasterizerState   , desc.RasterizerState );
     ToNativeDepthDesc       ( pDesc->DepthState        , desc.DepthStencilState );
     ToNativeStencilDesc     ( pDesc->StencilState      , desc.DepthStencilState );
     ToNativeSampleDesc      ( pDesc->MultiSampleState  , desc.SampleDesc );
-    desc.BlendState.AlphaToCoverageEnable = (pDesc->MultiSampleState.EnableAlphaToCoverage) ? TRUE : FALSE;
-    desc.SampleMask                       = UINT32_MAX;
+    desc.SampleMask         = UINT32_MAX;
 
     auto idx = 0;
     for(auto i=0u; i<pDesc->InputLayout.ElementCount; ++i)
@@ -491,7 +571,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_IsGraphicsPipeline = false;
+    m_Type = PIPELINE_COMPUTE;
 
     auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
@@ -506,6 +586,82 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     auto hr = pNativeDevice->CreateComputePipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));
     if ( FAILED(hr) )
+    { return false; }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ジオメトリパイプラインステートとして初期化します.
+//-------------------------------------------------------------------------------------------------
+bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineStateDesc* pDesc)
+{
+    if (pDevice == nullptr || pDesc == nullptr)
+    { return false; }
+
+    Term();
+
+    m_pDevice = static_cast<Device*>(pDevice);
+    m_pDevice->AddRef();
+
+    m_Type = PIPELINE_COMPUTE;
+
+    auto pNativeDevice = m_pDevice->GetD3D12Device();
+    A3D_ASSERT(pNativeDevice != nullptr);
+
+    auto pWrapDescriptorLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    A3D_ASSERT(pWrapDescriptorLayout != nullptr);
+
+    // シェーダモデルをチェック.
+    {
+        D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = { D3D_SHADER_MODEL_6_5 };
+        auto hr = pNativeDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
+        if (FAILED(hr) || (shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_5))
+        { return false; }
+    }
+
+    // メッシュシェーダをサポートしているかどうかチェック.
+    {
+        D3D12_FEATURE_DATA_D3D12_OPTIONS7 features = {};
+        auto hr = pNativeDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &features, sizeof(features));
+        if (FAILED(hr) || (features.MeshShaderTier == D3D12_MESH_SHADER_TIER_NOT_SUPPORTED))
+        { return false; }
+    }
+
+    D3D12_CACHED_PIPELINE_STATE cachedPSO = {};
+    if (pDesc->pCachedPSO != nullptr)
+    {
+        cachedPSO.pCachedBlob           = pDesc->pCachedPSO->GetBufferPointer();
+        cachedPSO.CachedBlobSizeInBytes = pDesc->pCachedPSO->GetBufferSize();
+    }
+
+    D3D12_RT_FORMAT_ARRAY rtvFormats = {};
+    rtvFormats.NumRenderTargets = pDesc->ColorCount;
+    for (auto i=0u; i<pDesc->ColorCount; ++i)
+    { rtvFormats.RTFormats[i] = a3d::ToNativeFormat(pDesc->ColorTarget[i].Format); }
+
+    D3D12_GEOMETRY_PIPELINE_STATE_DESC psoDesc = {};
+    psoDesc.RootSignature = pWrapDescriptorLayout->GetD3D12RootSignature();
+    ToNativeShaderByteCode( pDesc->AS, psoDesc.AS );
+    ToNativeShaderByteCode( pDesc->MS, psoDesc.MS );
+    ToNativeShaderByteCode( pDesc->PS, psoDesc.PS );
+    ToNativeBlendDesc     ( pDesc->BlendState        , psoDesc.BlendState,  pDesc->MultiSampleState.EnableAlphaToCoverage);
+    ToNativeRasterizerDesc( pDesc->RasterizerState   , psoDesc.RasterizerState );
+    ToNativeDepthDesc     ( pDesc->DepthState        , psoDesc.DepthStencilState );
+    ToNativeStencilDesc   ( pDesc->StencilState      , psoDesc.DepthStencilState );
+    ToNativeSampleDesc    ( pDesc->MultiSampleState  , psoDesc.SampleDesc );
+    psoDesc.RTVFormats    = rtvFormats;
+    psoDesc.DSVFormat     = a3d::ToNativeFormat(pDesc->DepthTarget.Format);
+    psoDesc.SampleMask    = UINT32_MAX;
+    psoDesc.CachedPSO     = cachedPSO;
+
+    D3D12_PIPELINE_STATE_STREAM_DESC pssDesc = {};
+    pssDesc.SizeInBytes                     = sizeof(psoDesc);
+    pssDesc.pPipelineStateSubobjectStream   = &psoDesc;
+
+    // パイプラインステート生成.
+    auto hr = pNativeDevice->CreatePipelineState(&pssDesc, IID_PPV_ARGS(&m_pPipelineState));
+    if (FAILED(hr))
     { return false; }
 
     return true;
@@ -566,6 +722,33 @@ bool PipelineState::CreateAsCompute
     { return false; }
 
     if (!instance->InitAsCompute(pDevice, pDesc))
+    {
+        SafeRelease(instance);
+        return false;
+    }
+
+    *ppPipelineState = instance;
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ジオメトリパイプラインステートとして生成します.
+//-------------------------------------------------------------------------------------------------
+bool PipelineState::CreateAsGeometry
+(
+    IDevice*                            pDevice,
+    const GeometryPipelineStateDesc*    pDesc,
+    IPipelineState**                    ppPipelineState
+)
+{
+    if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
+    { return false; }
+
+    auto instance = new PipelineState;
+    if (instance == nullptr)
+    { return false; }
+
+    if (!instance->InitAsGeometry(pDevice, pDesc))
     {
         SafeRelease(instance);
         return false;

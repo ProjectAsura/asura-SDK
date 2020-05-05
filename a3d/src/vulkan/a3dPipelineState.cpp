@@ -832,6 +832,236 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 }
 
 //-------------------------------------------------------------------------------------------------
+//      ジオメトリパイプランステートとして初期化します.
+//-------------------------------------------------------------------------------------------------
+bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineStateDesc* pDesc)
+{
+    if (pDevice == nullptr || pDesc == nullptr)
+    { return false; }
+
+    if (pDesc->pLayout == nullptr)
+    { return false; }
+
+    m_pDevice = static_cast<Device*>(pDevice);
+    m_pDevice->AddRef();
+
+    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+   {
+        VkAttachmentDescription attachmentDesc[9] = {};
+        VkAttachmentReference   attachmentRefs[9] = {};
+        VkAttachmentReference*  pDepthAttachmentRef = nullptr;
+
+        uint32_t attachmentCount = pDesc->ColorCount;
+
+        for (auto i = 0u; i < pDesc->ColorCount; ++i)
+        {
+            attachmentDesc[i].format            = ToNativeFormat(pDesc->ColorTarget[i].Format);
+            attachmentDesc[i].samples           = ToNativeSampleCountFlags(pDesc->ColorTarget[i].SampleCount);
+            attachmentDesc[i].loadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[i].storeOp           = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[i].stencilLoadOp     = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[i].stencilStoreOp    = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[i].initialLayout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentDesc[i].finalLayout       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachmentDesc[i].flags             = 0;
+
+            attachmentRefs[i].attachment    = i;
+            attachmentRefs[i].layout        = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        }
+
+        if (pDesc->DepthTarget.Format != RESOURCE_FORMAT_UNKNOWN)
+        {
+            attachmentCount++;
+
+            auto idx = pDesc->ColorCount;
+            attachmentDesc[idx].format          = ToNativeFormat(pDesc->DepthTarget.Format);
+            attachmentDesc[idx].samples         = ToNativeSampleCountFlags(pDesc->DepthTarget.SampleCount);
+            attachmentDesc[idx].loadOp          = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[idx].storeOp         = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[idx].stencilLoadOp   = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDesc[idx].stencilStoreOp  = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDesc[idx].initialLayout   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            attachmentDesc[idx].finalLayout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            attachmentRefs[idx].attachment  = idx;
+            attachmentRefs[idx].layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            pDepthAttachmentRef = &attachmentRefs[idx];
+        }
+
+        VkSubpassDescription subpass = {};
+        subpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.flags                   = 0;
+        subpass.inputAttachmentCount    = 0;
+        subpass.colorAttachmentCount    = pDesc->ColorCount;
+        subpass.pColorAttachments       = attachmentRefs;
+        subpass.pResolveAttachments     = nullptr;
+        subpass.pDepthStencilAttachment = pDepthAttachmentRef;
+        subpass.preserveAttachmentCount = 0;
+        subpass.pPreserveAttachments    = nullptr;
+
+
+        VkRenderPassCreateInfo info = {};
+        info.sType              = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        info.pNext              = nullptr;
+        info.flags              = 0;
+        info.attachmentCount    = attachmentCount;
+        info.pAttachments       = attachmentDesc;
+        info.subpassCount       = 1;
+        info.pSubpasses         = &subpass;
+
+
+        auto ret = vkCreateRenderPass(pNativeDevice, &info, nullptr, &m_RenderPass);
+        if (ret != VK_SUCCESS)
+        { return false;  }
+    }
+
+    m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+    // パイプラインキャッシュを生成.
+    {
+        VkPipelineCacheCreateInfo info = {};
+        info.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+        info.pNext           = nullptr;
+        info.flags           = 0;
+        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? size_t(pDesc->pCachedPSO->GetBufferSize()) : 0;
+        info.pInitialData    = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferPointer() : nullptr;
+
+        auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
+        if ( ret != VK_SUCCESS )
+        { return false; }
+    }
+
+    // パイプラインステートを生成.
+    {
+        VkPipelineShaderStageCreateInfo         shaderInfos[3]       = {};
+        VkVertexInputAttributeDescription*      pInputAttrs          = nullptr;
+        VkVertexInputBindingDescription*        pBindingDescs        = nullptr;
+        VkPipelineVertexInputStateCreateInfo    vertexInputState     = {};
+        VkPipelineInputAssemblyStateCreateInfo  inputAssemblyState   = {};
+        VkPipelineTessellationStateCreateInfo   tessellationState    = {};
+        VkPipelineViewportStateCreateInfo       viewportState        = {};
+        VkPipelineRasterizationStateCreateInfo  rasterizerState      = {};
+        VkPipelineMultisampleStateCreateInfo    multisampleState     = {};
+        VkPipelineDepthStencilStateCreateInfo   depthStencilState    = {};
+        VkPipelineColorBlendAttachmentState     colorAttachments[8]  = {};
+        VkPipelineColorBlendStateCreateInfo     colorBlendState      = {};
+
+        auto shaderCount = 0;
+        if (pDesc->AS.pByteCode != nullptr && pDesc->AS.ByteCodeSize != 0)
+        {
+            auto ret = ToNativeShaderStageInfo(
+                pNativeDevice,
+                pDesc->AS,
+                VK_SHADER_STAGE_TASK_BIT_NV,
+                &shaderInfos[shaderCount]);
+            A3D_ASSERT(ret == true);
+            A3D_UNUSED(ret);
+            shaderCount++;
+        }
+
+        if (pDesc->MS.pByteCode != nullptr && pDesc->MS.ByteCodeSize != 0)
+        {
+            auto ret = ToNativeShaderStageInfo(
+                pNativeDevice,
+                pDesc->MS,
+                VK_SHADER_STAGE_MESH_BIT_NV,
+                &shaderInfos[shaderCount]);
+            A3D_ASSERT(ret == true);
+            A3D_UNUSED(ret);
+            shaderCount++;
+        }
+
+        if (pDesc->PS.pByteCode != nullptr && pDesc->PS.ByteCodeSize != 0)
+        {
+            auto ret = ToNativeShaderStageInfo(
+                pNativeDevice,
+                pDesc->PS,
+                VK_SHADER_STAGE_FRAGMENT_BIT,
+                &shaderInfos[shaderCount]);
+            A3D_ASSERT(ret == true);
+            A3D_UNUSED(ret);
+            shaderCount++;
+        }
+
+        VkDynamicState dynamicElements[] = {
+            VK_DYNAMIC_STATE_VIEWPORT,
+            VK_DYNAMIC_STATE_SCISSOR,
+            VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+            VK_DYNAMIC_STATE_STENCIL_REFERENCE
+        };
+
+        VkPipelineDynamicStateCreateInfo dynamicState = {};
+        dynamicState.sType              = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.pNext              = nullptr;
+        dynamicState.flags              = 0;
+        dynamicState.dynamicStateCount  = 4;
+        dynamicState.pDynamicStates     = dynamicElements;
+
+        VkViewport  viewports[16];
+        VkRect2D    scissors[16];
+
+        ToNativeInputAssemblyState(pDesc->PrimitiveTopology, &inputAssemblyState);
+        ToNativeRasterizationState(pDesc->RasterizerState,   &rasterizerState);
+        ToNativeMultisampleState  (pDesc->MultiSampleState,  &multisampleState);
+        ToNativeDepthState        (pDesc->DepthState,        &depthStencilState);
+        ToNativeStencilState      (pDesc->StencilState,      &depthStencilState);
+        ToNativeViewportState(viewports, scissors, &viewportState);
+        ToNativeColorBlendState(
+            pDesc->BlendState,
+            pDesc->ColorCount,
+            colorAttachments,
+            &colorBlendState );
+
+        auto pWrapLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+        A3D_ASSERT(pWrapLayout != nullptr);
+
+        VkGraphicsPipelineCreateInfo info = {};
+        info.sType                  = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        info.pNext                  = nullptr;
+        info.flags                  = 0;
+        info.stageCount             = shaderCount;
+        info.pStages                = shaderInfos;
+        info.pVertexInputState      = &vertexInputState;
+        info.pInputAssemblyState    = &inputAssemblyState;
+        info.pTessellationState     = &tessellationState;
+        info.pViewportState         = &viewportState;
+        info.pRasterizationState    = &rasterizerState;
+        info.pMultisampleState      = &multisampleState;
+        info.pDepthStencilState     = &depthStencilState;
+        info.pColorBlendState       = &colorBlendState;
+        info.pDynamicState          = &dynamicState;
+        info.layout                 = pWrapLayout->GetVulkanPipelineLayout();
+        info.renderPass             = m_RenderPass;
+        info.subpass                = 0;
+        info.basePipelineHandle     = null_handle;
+        info.basePipelineIndex      = 0;
+       
+        auto ret = vkCreateGraphicsPipelines(pNativeDevice, m_PipelineCache, 1, &info, nullptr, &m_PipelineState);
+
+        // メモリを解放.
+        delete [] pBindingDescs;
+        delete [] pInputAttrs;
+
+        for(auto i=0; i<shaderCount; ++i)
+        {
+            if (shaderInfos[i].module != VK_NULL_HANDLE)
+            {
+                vkDestroyShaderModule(pNativeDevice, shaderInfos[i].module, nullptr);
+                shaderInfos[i].module = VK_NULL_HANDLE;
+            }
+        }
+
+        if ( ret != VK_SUCCESS )
+        { return false; }
+    }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      終了処理を行います.
 //-------------------------------------------------------------------------------------------------
 void PipelineState::Term()
@@ -983,5 +1213,33 @@ bool PipelineState::CreateAsCompute
     *ppPipelineState = instance;
     return true;
 }
+
+//-------------------------------------------------------------------------------------------------
+//      ジオメトリパイプラインステートとして生成します.
+//-------------------------------------------------------------------------------------------------
+bool PipelineState::CreateAsGeometry
+(
+    IDevice*                        pDevice,
+    const GeometryPipelineStateDesc* pDesc,
+    IPipelineState**                ppPipelineState
+)
+{
+    if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
+    { return false; }
+
+    auto instance = new PipelineState;
+    if (instance == nullptr)
+    { return false; }
+
+    if (!instance->InitAsGeometry(pDevice, pDesc))
+    {
+        SafeRelease(instance);
+        return false;
+    }
+
+    *ppPipelineState = instance;
+    return true;
+}
+
 
 } // namespace a3d

@@ -363,6 +363,17 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsCompute(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
+//      ジオメトリパイプラインを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateGeometryPipeline(const GeometryPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+{
+    // D3D11ではメッシュシェーダパイプラインがサポートされないため常に失敗扱いにする.
+    A3D_UNUSED(pDesc);
+    A3D_UNUSED(ppPipelineState);
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateDescriptorSetLayout

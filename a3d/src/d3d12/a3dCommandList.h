@@ -234,6 +234,15 @@ public:
     void A3D_APIENTRY Dispatch(uint32_t x, uint32_t y, uint32_t z) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      スレッドグループからメッシュ描画を実行します
+    //!
+    //! @param[in]      x       x 方向に発行するグループの数
+    //! @param[in]      y       y 方向に発行するグループの数
+    //! @param[in]      z       z 方向に発行するグループの数
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY DispatchMesh(uint32_t x, uint32_t y, uint32_t z) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      インダイレクトコマンドを実行します.
     //!
     //! @param[in]      pCommandSet     インダイレクトコマンドセットです.
@@ -417,7 +426,7 @@ public:
     //!
     //! @return     グラフィックスコマンドリストを返却します.
     //---------------------------------------------------------------------------------------------
-    ID3D12GraphicsCommandList* A3D_APIENTRY GetD3D12GraphicsCommandList() const;
+    ID3D12GraphicsCommandList6* A3D_APIENTRY GetD3D12GraphicsCommandList() const;
 
 private:
     //=============================================================================================
@@ -426,7 +435,7 @@ private:
     std::atomic<uint32_t>       m_RefCount;             //!< 参照カウントです.
     Device*                     m_pDevice;              //!< デバイスです.
     ID3D12CommandAllocator*     m_pCommandAllocator;    //!< コマンドアロケータです.
-    ID3D12GraphicsCommandList*  m_pCommandList;         //!< コマンドリストです.
+    ID3D12GraphicsCommandList6*  m_pCommandList;         //!< コマンドリストです.
     FrameBuffer*                m_pFrameBuffer;         //!< 設定されているフレームバッファです.
 
     //=============================================================================================

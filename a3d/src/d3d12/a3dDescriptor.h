@@ -12,6 +12,7 @@ namespace a3d {
 // Forward Declarations.
 //-------------------------------------------------------------------------------------------------
 template<typename T> class Pool;
+class DescriptorHeap;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,6 +87,5 @@ private:
     Descriptor      (const Descriptor&) = delete;
     void operator = (const Descriptor&) = delete;
 };
-
 
 } // namespace a3d

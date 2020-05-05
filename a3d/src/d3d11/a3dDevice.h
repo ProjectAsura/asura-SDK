@@ -232,6 +232,18 @@ public:
         IPipelineState**                    ppPipelineState) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      ジオメトリパイプラインを生成します.
+    //!
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppPipelineState パイプラインステートの格納先です.
+    //! @reval true     生成に成功.
+    //! @reval false    生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateGeometryPipeline(
+        const GeometryPipelineStateDesc*    pDesc,
+        IPipelineState**                    ppPipelineState) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットレイアウトを生成します.
     //!
     //! @param[in]      pDesc                   構成設定です.

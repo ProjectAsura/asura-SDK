@@ -191,6 +191,18 @@ void Queue::WaitIdle()
 }
 
 //-------------------------------------------------------------------------------------------------
+//      画面に表示を行います.
+//-------------------------------------------------------------------------------------------------
+void Queue::Present( ISwapChain* pSwapChain )
+{
+    auto pWrapSwapChain = reinterpret_cast<SwapChain*>(pSwapChain);
+    if (pWrapSwapChain == nullptr)
+    { return; }
+
+    pWrapSwapChain->Present();
+}
+
+//-------------------------------------------------------------------------------------------------
 //      コマンドを解析します.
 //-------------------------------------------------------------------------------------------------
 void Queue::ParseCmd()
@@ -740,6 +752,19 @@ void Queue::ParseCmd()
                         cmd->X,
                         cmd->Y,
                         cmd->Z);
+
+                    pCmd += sizeof(ImCmdDispatch);
+                }
+                break;
+
+
+            case CMD_DISPATCH_MESH:
+                {
+                    auto cmd = reinterpret_cast<ImCmdDispatch*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    /* 対応するコマンドはありません. */
+                    A3D_UNUSED(cmd);
 
                     pCmd += sizeof(ImCmdDispatch);
                 }

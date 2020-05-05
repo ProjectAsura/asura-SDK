@@ -353,6 +353,12 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsCompute(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
+//      ジオメトリパイプラインを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateGeometryPipeline(const GeometryPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+{ return PipelineState::CreateAsGeometry(this, pDesc, ppPipelineState); }
+
+//-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateDescriptorSetLayout
@@ -413,7 +419,7 @@ IDXGIOutput6* Device::GetDXGIOutput() const
 //-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
-ID3D12Device* Device::GetD3D12Device() const
+ID3D12Device9* Device::GetD3D12Device() const
 { return m_pDevice; }
 
 //-------------------------------------------------------------------------------------------------

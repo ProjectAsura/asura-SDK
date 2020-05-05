@@ -1030,6 +1030,12 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsCompute(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
+//      ジオメトリパイプラインステートを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateGeometryPipeline(const GeometryPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+{ return PipelineState::CreateAsGeometry(this, pDesc, ppPipelineState); }
+
+//-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateDescriptorSetLayout(const DescriptorSetLayoutDesc* pDesc, IDescriptorSetLayout** ppLayout)

@@ -115,6 +115,7 @@ struct IBuffer;
 struct ITexture;
 struct ITextureView;
 struct IBlob;
+struct ISwapChain;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -129,34 +130,32 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum SEMANTICS_TYPE
 {
-    SEMANTICS_POSITION      = 0,        // "POSITION"   , Binding = 0
-    SEMANTICS_COLOR0        = 1,        // "COLOR"      , Binding = 1
-    SEMANTICS_COLOR1        = 2,        // "COLOR"      , Binding = 2
-    SEMANTICS_COLOR2        = 3,        // "COLOR"      , Binding = 3
-    SEMANTICS_COLOR3        = 4,        // "COLOR"      , Binding = 4
-    SEMANTICS_TEXCOORD0     = 5,        // "TEXCOORD"   , Binding = 5
-    SEMANTICS_TEXCOORD1     = 6,        // "TEXCOORD"   , Binding = 6
-    SEMANTICS_TEXCOORD2     = 7,        // "TEXCOORD"   , Binding = 7
-    SEMANTICS_TEXCOORD3     = 8,        // "TEXCOORD"   , Binding = 8
-    SEMANTICS_TEXCOORD4     = 9,        // "TEXCOORD"   , Binding = 9
-    SEMANTICS_TEXCOORD5     = 10,       // "TEXCOORD"   , Binding = 10
-    SEMANTICS_TEXCOORD6     = 11,       // "TEXCOORD"   , Binding = 11
-    SEMANTICS_TEXCOORD7     = 12,       // "TEXCOORD"   , Binding = 12
-    SEMANTICS_NORMAL        = 13,       // "NORMAL"     , Binding = 13
-    SEMANTICS_TANGENT       = 14,       // "TANGENT"    , Binding = 14
-    SEMANTICS_BITANGENT     = 15,       // "BITANGENT"  , Binding = 15
-    SEMANTICS_BONEINDEX     = 16,       // "BONEINDEX"  , Binding = 16
-    SEMANTICS_BONEWEIGHT    = 17,       // "BONEWEIGHT" , Binding = 17
-    SEMANTICS_LIGHTMAP_UV0  = 18,       // "LIGHTMAP_UV", Binding = 18
-    SEMANTICS_LIGHTMAP_UV1  = 19,       // "LIGHTMAP_UV", Binding = 19
-    SEMANTICS_CUSTOM0       = 20,       // "CUSOM"      , Binding = 20
-    SEMANTICS_CUSTOM1       = 21,       // "CUSOM"      , Binding = 21
-    SEMANTICS_CUSTOM2       = 22,       // "CUSOM"      , Binding = 22
-    SEMANTICS_CUSTOM3       = 23,       // "CUSOM"      , Binding = 23
-    SEMANTICS_CUSTOM4       = 24,       // "CUSOM"      , Binding = 24
-    SEMANTICS_CUSTOM5       = 25,       // "CUSOM"      , Binding = 25
-    SEMANTICS_CUSTOM6       = 26,       // "CUSOM"      , Binding = 26
-    SEMANTICS_CUSTOM7       = 27,       // "CUSOM"      , Binding = 27
+    SEMANTICS_POSITION      = 0,        // "POSITION"   , location = 0
+    SEMANTICS_COLOR0        = 1,        // "COLOR"      , location = 1
+    SEMANTICS_COLOR1        = 2,        // "COLOR"      , location = 2
+    SEMANTICS_COLOR2        = 3,        // "COLOR"      , location = 3
+    SEMANTICS_COLOR3        = 4,        // "COLOR"      , location = 4
+    SEMANTICS_TEXCOORD0     = 5,        // "TEXCOORD"   , location = 5
+    SEMANTICS_TEXCOORD1     = 6,        // "TEXCOORD"   , location = 6
+    SEMANTICS_TEXCOORD2     = 7,        // "TEXCOORD"   , location = 7
+    SEMANTICS_TEXCOORD3     = 8,        // "TEXCOORD"   , location = 8
+    SEMANTICS_TEXCOORD4     = 9,        // "TEXCOORD"   , location = 9
+    SEMANTICS_TEXCOORD5     = 10,       // "TEXCOORD"   , location = 10
+    SEMANTICS_TEXCOORD6     = 11,       // "TEXCOORD"   , location = 11
+    SEMANTICS_TEXCOORD7     = 12,       // "TEXCOORD"   , location = 12
+    SEMANTICS_NORMAL        = 13,       // "NORMAL"     , location = 13
+    SEMANTICS_TANGENT       = 14,       // "TANGENT"    , location = 14
+    SEMANTICS_BITANGENT     = 15,       // "BITANGENT"  , location = 15
+    SEMANTICS_BONEINDEX     = 16,       // "BONEINDEX"  , location = 16
+    SEMANTICS_BONEWEIGHT    = 17,       // "BONEWEIGHT" , location = 17
+    SEMANTICS_CUSTOM0       = 18,       // "CUSTOM"     , location = 18
+    SEMANTICS_CUSTOM1       = 19,       // "CUSTOM"     , location = 19
+    SEMANTICS_CUSTOM2       = 20,       // "CUSTOM"     , location = 20
+    SEMANTICS_CUSTOM3       = 21,       // "CUSTOM"     , location = 21
+    SEMANTICS_CUSTOM4       = 22,       // "CUSTOM"     , location = 22
+    SEMANTICS_CUSTOM5       = 23,       // "CUSTOM"     , location = 23
+    SEMANTICS_CUSTOM6       = 24,       // "CUSTOM"     , location = 24
+    SEMANTICS_CUSTOM7       = 25,       // "CUSTOM"     , location = 25
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1137,10 +1136,10 @@ struct ComputePipelineStateDesc
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// MeshPipelineStateDesc structure
-//! @brief メッシュパイプラインステートの設定.
+// GeometryPipelineStateDesc structure
+//! @brief メッシュシェーダパイプラインステートの設定.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct MeshPipelineStateDesc
+struct GeometryPipelineStateDesc
 {
     IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
     ShaderBinary            AS;                     //!< アンプリフィケーションシェーダです.
@@ -2004,6 +2003,15 @@ struct A3D_API ICommandList : public IDeviceChild
     virtual void A3D_APIENTRY Dispatch(uint32_t x, uint32_t y, uint32_t z) = 0;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      スレッドグループからコマンドリストを実行します
+    //!
+    //! @param[in]      x       x 方向にディスパッチしたグループの数
+    //! @param[in]      y       y 方向にディスパッチしたグループの数
+    //! @param[in]      z       z 方向にディスパッチしたグループの数
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY DispatchMesh(uint32_t x, uint32_t y, uint32_t z) = 0;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      インダイレクトコマンドを実行します.
     //!
     //! @param[in]      pCommandSet             インダイレクトコマンドセットです.
@@ -2210,6 +2218,13 @@ struct A3D_API IQueue : IDeviceChild
     //! @brief      コマンドリストの実行完了を待機します.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY WaitIdle() = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      画面表示を行います.
+    //!
+    //! @param[in]      pSwapChain      スワップチェイン.
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY Present( ISwapChain* pSwapChain ) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2230,11 +2245,6 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
     virtual SwapChainDesc A3D_APIENTRY GetDesc() const = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      フロントバッファとバックバッファを入れ替え，画面に表示します.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Present() = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      現在のバッファ番号を取得します.
@@ -2489,6 +2499,18 @@ struct A3D_API IDevice : public IReference
     virtual bool A3D_APIENTRY CreateComputePipeline(
         const ComputePipelineStateDesc* pDesc,
         IPipelineState**                ppPipelineState) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ジオメトリパイプラインを生成します.
+    //!
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppPipelineState パイプラインステートの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CreateGeometryPipeline(
+        const GeometryPipelineStateDesc*    pDesc,
+        IPipelineState**                    ppPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットレイアウトを生成します.

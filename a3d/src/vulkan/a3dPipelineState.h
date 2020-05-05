@@ -47,7 +47,7 @@ public:
     //!
     //! @param[in]      pDevice             デバイスです.
     //! @param[in]      pDesc               構成設定です.
-    //! @param[in]      ppPipelineState     パイプラインステートの格納先です.
+    //! @param[out]     ppPipelineState     パイプラインステートの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
@@ -55,6 +55,18 @@ public:
         IDevice*                        pDevice,
         const ComputePipelineStateDesc* pDesc,
         IPipelineState**                ppPipelineState);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ジオメトリパイプラインとして生成します.
+    //!
+    //! @param[in]      pDevice             デバイスです.
+    //! @param[in]      pDesc               構成設定です.
+    //! @param[out]     ppPipelineState     パイプラインステートの格納先です.
+    //---------------------------------------------------------------------------------------------
+    static bool A3D_APIENTRY CreateAsGeometry(
+        IDevice*                            pDevice,
+        const GeometryPipelineStateDesc*    pDesc,
+        IPipelineState**                    ppPipelineState);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウントを増やします.
@@ -139,7 +151,7 @@ private:
     bool A3D_APIENTRY InitAsGraphics(IDevice* pDevice, const GraphicsPipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      コンピュートパイプランとして初期化します.
+    //! @brief      コンピュートパイプラインとして初期化します.
     //!
     //! @param[in]      pDevice         デバイスです.
     //! @param[in]      pDesc           構成設定です.
@@ -147,6 +159,16 @@ private:
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY InitAsCompute(IDevice* pDevice, const ComputePipelineStateDesc* pDesc);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ジオメトリパイプラインとして初期化します.
+    //!
+    //! @param[in]      pDevice         デバイスです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @retval true    初期化に成功.
+    //! @retval false   初期化に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY InitAsGeometry(IDevice* pDevice, const GeometryPipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

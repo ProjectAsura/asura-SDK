@@ -234,6 +234,18 @@ public:
         IPipelineState**                    ppPipelineState) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      ジオメトリパイプラインを生成します.
+    //!
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppPipelineState パイプラインステートの格納先です.
+    //! @reval true     生成に成功.
+    //! @reval false    生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateGeometryPipeline(
+        const GeometryPipelineStateDesc*    pDesc,
+        IPipelineState**                    ppPipelineState) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットレイアウトを生成します.
     //!
     //! @param[in]      pDesc                   構成設定です.
@@ -321,7 +333,7 @@ public:
     //!
     //! @return     デバイスを返却します.
     //---------------------------------------------------------------------------------------------
-    ID3D12Device* A3D_APIENTRY GetD3D12Device() const;
+    ID3D12Device9* A3D_APIENTRY GetD3D12Device() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタヒープを取得します.
@@ -356,7 +368,7 @@ private:
     IDXGIFactory5*          m_pFactory;             //!< ファクトリです.
     IDXGIAdapter4*          m_pAdapter;             //!< アダプターです.
     IDXGIOutput6*           m_pOutput;              //!< DXGIアウトプットです.
-    ID3D12Device*           m_pDevice;              //!< デバイスです.
+    ID3D12Device9*          m_pDevice;              //!< デバイスです.
     DeviceDesc              m_Desc;                 //!< 構成設定です.
     DeviceInfo              m_Info;                 //!< デバイス情報です.
     DescriptorHeap          m_DescriptorHeap[4];    //!< ディスクリプタヒープです.
