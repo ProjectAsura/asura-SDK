@@ -623,7 +623,10 @@ void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
         return;
     }
 
-    vkCmdDrawMeshTasksNV( m_CommandBuffer, x, 0 );
+    if (vkCmdDrawMeshTasks == nullptr)
+    { return; }
+
+    vkCmdDrawMeshTasks( m_CommandBuffer, x, 0 );
 }
 
 //-------------------------------------------------------------------------------------------------

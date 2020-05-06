@@ -32,11 +32,16 @@ public:
     {
         EXT_KHR_PUSH_DESCRIPTOR = 0,            // VK_KHR_push_descriptor
         EXT_KHR_DESCRIPTOR_UPDATE_TEMPLATE,     // VK_KHR_descriptor_upate_template
-        EXT_NVX_DEVICE_GENERATE_COMMAND,        // VK_NVX_device_generate_command
         EXT_AMD_DRAW_INDIRECT_COUNT,            // VK_AMD_draw_indirect_count
         EXT_DEBUG_MARKER,                       // VK_EXT_debug_marker
         EXT_HDR_METADATA,                       // VK_EXT_hdr_metadata
-        EXT_NV_RAY_TRACING,                     // VK_NV_ray_tracing
+        EXT_KHR_GET_EMEMORY_REQUIREMENT2,       // VK_KHR_get_memory_requirement2   (for VK_KHR_ray_tracing).
+        EXT_KHR_MAINTENANCE3,                   // VK_KHR_maintenance3              (for VK_EXT_descriptor_indexing).
+        EXT_DESCRIPTOR_INDEXING,                // VK_EXT_descriptor_indexing       (for VK_KHR_ray_tracing).
+        EXT_KHR_BUFFER_DEVICE_ADDRESS,          // VK_KHR_buffer_device_address     (for VK_KHR_ray_tracing).
+        EXT_KHR_DEFERRED_HOST_OPERATION,        // VK_KHR_deferred_host_operation   (for VK_KHR_ray_tracing).
+        EXT_KHR_PIPELINE_LIBRARY,               // VK_KHR_pipeline_library          (for VK_KHR_ray_tracing).
+        EXT_KHR_RAY_TRACING,                    // VK_KHR_ray_tracing
         EXT_NV_MESH_SHADER,                     // VK_NV_mesh_shader
         EXT_COUNT,
     };

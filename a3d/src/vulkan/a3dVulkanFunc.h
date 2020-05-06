@@ -33,3 +33,8 @@ extern PFN_vkCmdPushDescriptorSetKHR        vkCmdPushDescriptorSet;
 extern PFN_vkSetHdrMetadataEXT              vkSetHdrMetadata;
 #endif
 
+#if defined(VK_NV_mesh_shader)
+extern PFN_vkCmdDrawMeshTasksNV                 vkCmdDrawMeshTasks;
+extern PFN_vkCmdDrawMeshTasksIndirectNV         vkCmdDrawMeshTasksIndirect;
+extern PFN_vkCmdDrawMeshTasksIndirectCountNV    vkCmdDrawMeshTasksIndirectCount;
+#endif

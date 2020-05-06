@@ -252,12 +252,17 @@ void CheckDeviceExtension
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
         VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
-        VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME,
         VK_AMD_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
         VK_EXT_DEBUG_MARKER_EXTENSION_NAME,
         VK_EXT_HDR_METADATA_EXTENSION_NAME,
+        VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+        VK_KHR_MAINTENANCE3_EXTENSION_NAME,
+        VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+        VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+        VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+        VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
         VK_NV_MESH_SHADER_EXTENSION_NAME,
-        //VK_NV_RAY_TRACING_EXTENSION_NAME,
+        VK_KHR_RAY_TRACING_EXTENSION_NAME
     };
 
     result.reserve(count);
@@ -319,6 +324,12 @@ PFN_vkCmdPushDescriptorSetKHR        vkCmdPushDescriptorSet     = nullptr;
 PFN_vkSetHdrMetadataEXT              vkSetHdrMetadata           = nullptr;
 #endif
 
+#if defined(VK_NV_mesh_shader)
+PFN_vkCmdDrawMeshTasksNV                 vkCmdDrawMeshTasks                 = nullptr;
+PFN_vkCmdDrawMeshTasksIndirectNV         vkCmdDrawMeshTasksIndirect         = nullptr;
+PFN_vkCmdDrawMeshTasksIndirectCountNV    vkCmdDrawMeshTasksIndirectCount    = nullptr;
+#endif
+
 
 namespace a3d {
 
@@ -370,10 +381,12 @@ bool Device::Init(const DeviceDesc* pDesc)
         VK_MVK_IOS_SURFACE_EXTENSION_NAME,
     #elif A3D_IS_MAC
         VK_MVK_MACOS_SURFACE_EXTENSION_NAME
+    #elif A3D_IS_GGP
+        VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME
     #endif
         VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
         VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
-        VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+        VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
         VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
     };
@@ -689,9 +702,6 @@ bool Device::Init(const DeviceDesc* pDesc)
                 if (strcmp(deviceExtensions[i], VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_KHR_DESCRIPTOR_UPDATE_TEMPLATE] = true; }
 
-                if (strcmp(deviceExtensions[i], VK_NVX_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME) == 0)
-                { m_IsSupportExt[EXT_NVX_DEVICE_GENERATE_COMMAND] = true; }
-
                 if (strcmp(deviceExtensions[i], VK_AMD_DRAW_INDIRECT_COUNT_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_AMD_DRAW_INDIRECT_COUNT] = true; }
 
@@ -701,11 +711,29 @@ bool Device::Init(const DeviceDesc* pDesc)
                 if (strcmp(deviceExtensions[i], VK_EXT_HDR_METADATA_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_HDR_METADATA] = true; }
 
-                if (strcmp(deviceExtensions[i], VK_NV_RAY_TRACING_EXTENSION_NAME) == 0)
-                { m_IsSupportExt[EXT_NV_RAY_TRACING] = true; }
+                if (strcmp(deviceExtensions[i], VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_GET_EMEMORY_REQUIREMENT2] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_MAINTENANCE3_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_MAINTENANCE3] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_DESCRIPTOR_INDEXING] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_BUFFER_DEVICE_ADDRESS] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_DEFERRED_HOST_OPERATION] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_PIPELINE_LIBRARY] = true; }
 
                 if (strcmp(deviceExtensions[i], VK_NV_MESH_SHADER_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_NV_MESH_SHADER] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_RAY_TRACING_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_RAY_TRACING] = true; }
             }
         }
 
@@ -764,6 +792,17 @@ bool Device::Init(const DeviceDesc* pDesc)
             if (m_IsSupportExt[EXT_HDR_METADATA])
             {
                 vkSetHdrMetadata = GET_DEVICE_PROC(m_Device, vkSetHdrMetadataEXT);
+            }
+        }
+        #endif
+
+        #if defined(VK_NV_mesh_shader)
+        {
+            if (m_IsSupportExt[EXT_NV_MESH_SHADER])
+            {
+                vkCmdDrawMeshTasks              = GET_DEVICE_PROC(m_Device, vkCmdDrawMeshTasksNV);
+                vkCmdDrawMeshTasksIndirect      = GET_DEVICE_PROC(m_Device, vkCmdDrawMeshTasksIndirectNV);
+                vkCmdDrawMeshTasksIndirectCount = GET_DEVICE_PROC(m_Device, vkCmdDrawMeshTasksIndirectCountNV);
             }
         }
         #endif

@@ -333,7 +333,7 @@ public:
     //!
     //! @return     デバイスを返却します.
     //---------------------------------------------------------------------------------------------
-    ID3D12Device9* A3D_APIENTRY GetD3D12Device() const;
+    ID3D12Device8* A3D_APIENTRY GetD3D12Device() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタヒープを取得します.
@@ -368,7 +368,7 @@ private:
     IDXGIFactory5*          m_pFactory;             //!< ファクトリです.
     IDXGIAdapter4*          m_pAdapter;             //!< アダプターです.
     IDXGIOutput6*           m_pOutput;              //!< DXGIアウトプットです.
-    ID3D12Device9*          m_pDevice;              //!< デバイスです.
+    ID3D12Device8*          m_pDevice;              //!< デバイスです.
     DeviceDesc              m_Desc;                 //!< 構成設定です.
     DeviceInfo              m_Info;                 //!< デバイス情報です.
     DescriptorHeap          m_DescriptorHeap[4];    //!< ディスクリプタヒープです.
