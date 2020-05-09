@@ -83,12 +83,11 @@ public:
     ID3D12RootSignature* A3D_APIENTRY GetD3D12RootSignature() const;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      グラフィックスパイプラインかどうかチェックします.
+    //! @brief      パイプラインタイプを取得します.
     //!
-    //! @retval true    グラフィックスパイプラインです.
-    //! @retval false   コンピュートパイプラインすです.
+    //! @return     パイプラインタイプを返却します.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY IsGraphicsPipeline() const;
+    uint8_t A3D_APIENTRY GetType() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -105,7 +104,7 @@ private:
     Device*                 m_pDevice;              //!< デバイスです.
     DescriptorSetLayoutDesc m_Desc;                 //!< 構成設定です.
     ID3D12RootSignature*    m_pRootSignature;       //!< ルートシグニチャです.
-    bool                    m_IsGraphicsPipeline;   //!< グラフィックスパイプラインかどうか?
+    uint8_t                 m_Type;                 //!< パイプラインタイプです.
 
     //=============================================================================================
     // private methods.

@@ -112,7 +112,7 @@ private:
     std::atomic<uint32_t>                       m_RefCount;     //!< 参照カウントです.
     Device*                                     m_pDevice;      //!< デバイスです.
     dynamic_array<D3D12_GPU_DESCRIPTOR_HANDLE>  m_Handles;      //!< ディスクリプタハンドルです.
-    bool                                        m_IsGraphics;   //!< グラフィックスパイプラインかどうか?
+    uint8_t                                     m_Type;         //!< パイプラインタイプです.
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コンストラクタです.

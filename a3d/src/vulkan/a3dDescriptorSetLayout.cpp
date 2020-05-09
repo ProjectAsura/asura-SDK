@@ -87,7 +87,13 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
         if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VERTEX)
         {
-            // グラフィックス系と一緒には使えないようにしておく.
+            if (!isGraphics)
+            { return false; }
+        }
+
+        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_AMPLIFICATION)
+         || (pDesc->Entries[i].ShaderMask & SHADER_MASK_MESH))
+        {
             if (!isGraphics)
             { return false; }
         }

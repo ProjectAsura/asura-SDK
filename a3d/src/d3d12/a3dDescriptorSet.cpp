@@ -17,7 +17,7 @@ namespace a3d {
 DescriptorSet::DescriptorSet()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
-, m_IsGraphics  (true)
+, m_Type        (PIPELINE_GRAPHICS)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -78,7 +78,7 @@ bool DescriptorSet::Init
     auto& desc = pLayout->GetDesc();
     m_Handles.resize(desc.EntryCount);
 
-    m_IsGraphics = pLayout->IsGraphicsPipeline();
+    m_Type = pLayout->GetType();
 
     return true;
 }
@@ -155,7 +155,7 @@ void DescriptorSet::Bind(ICommandList* pCommandList)
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
-    if (m_IsGraphics)
+    if (m_Type != PIPELINE_COMPUTE)
     {
         for(size_t i=0; i<m_Handles.size(); ++i)
         { pNativeCommandList->SetGraphicsRootDescriptorTable( uint32_t(i), m_Handles[i] ); }

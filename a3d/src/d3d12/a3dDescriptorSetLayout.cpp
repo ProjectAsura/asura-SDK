@@ -27,6 +27,12 @@ D3D12_SHADER_VISIBILITY ToNativeShaderVisibility( uint32_t mask )
     else if ( mask == a3d::SHADER_MASK_PIXEL )
     { return D3D12_SHADER_VISIBILITY_PIXEL; }
 
+    else if ( mask == a3d::SHADER_MASK_AMPLIFICATION)
+    { return D3D12_SHADER_VISIBILITY_AMPLIFICATION; }
+
+    else if ( mask == a3d::SHADER_MASK_MESH )
+    { return D3D12_SHADER_VISIBILITY_MESH; }
+
     return D3D12_SHADER_VISIBILITY_ALL;
 }
 
@@ -76,7 +82,7 @@ DescriptorSetLayout::DescriptorSetLayout()
 : m_RefCount            (1)
 , m_pDevice             (nullptr)
 , m_pRootSignature      (nullptr)
-, m_IsGraphicsPipeline  (true)
+, m_Type                (PIPELINE_GRAPHICS)
 { memset( &m_Desc, 0, sizeof(m_Desc) ); }
 
 //-------------------------------------------------------------------------------------------------
@@ -107,13 +113,27 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     for(auto i=0u; i<pDesc->EntryCount; ++i)
     {
         if (pDesc->Entries[i].ShaderMask & SHADER_MASK_COMPUTE)
-        { isCompute = true; }
+        {
+            m_Type = PIPELINE_COMPUTE;
+            isCompute = true;
+        }
 
-        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VERTEX && isCompute)
-        { return false; }
+        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VERTEX)
+        {
+            m_Type = PIPELINE_GRAPHICS;
+            if (isCompute)
+            { return false; }
+        }
+
+        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_AMPLIFICATION)
+         || (pDesc->Entries[i].ShaderMask & SHADER_MASK_MESH))
+        {
+            m_Type = PIPELINE_GEOMETRY;
+            if (isCompute)
+            { return false; }
+        }
     }
 
-    m_IsGraphicsPipeline = (!isCompute);
 
     {
         auto pEntries = new D3D12_DESCRIPTOR_RANGE [pDesc->EntryCount];
@@ -136,36 +156,62 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         }
 
         bool shaders[5] = {};
-        if ( mask & SHADER_MASK_VERTEX )
-        { shaders[0] = true; }
-        if ( mask & SHADER_MASK_HULL )
-        { shaders[1] = true; }
-        if ( mask & SHADER_MASK_DOMAIN )
-        { shaders[2] = true; }
-        if ( mask & SHADER_MASK_GEOMETRY )
-        { shaders[3] = true; }
-        if ( mask & SHADER_MASK_PIXEL )
-        { shaders[4] = true; }
+        if (m_Type == PIPELINE_GEOMETRY)
+        {
+            if ( mask & SHADER_MASK_AMPLIFICATION )
+            { shaders[0] = true; }
+            if ( mask & SHADER_MASK_MESH )
+            { shaders[1] = true; }
+            if ( mask & SHADER_MASK_PIXEL )
+            { shaders[2] = true; }
+        }
+        else
+        {
+            if ( mask & SHADER_MASK_VERTEX )
+            { shaders[0] = true; }
+            if ( mask & SHADER_MASK_HULL )
+            { shaders[1] = true; }
+            if ( mask & SHADER_MASK_DOMAIN )
+            { shaders[2] = true; }
+            if ( mask & SHADER_MASK_GEOMETRY )
+            { shaders[3] = true; }
+            if ( mask & SHADER_MASK_PIXEL )
+            { shaders[4] = true; }
+        }
 
         D3D12_ROOT_SIGNATURE_DESC desc = {};
         desc.NumParameters      = pDesc->EntryCount;
         desc.pParameters        = pParams;
         desc.NumStaticSamplers  = 0;
         desc.pStaticSamplers    = nullptr;
-        desc.Flags              = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
+        desc.Flags              = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+        
         if (pDesc->EntryCount > 0)
         {
-            if (shaders[0] == false)
-            { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS; }
-            if (shaders[1] == false)
-            { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS; }
-            if (shaders[2] == false)
-            { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS; }
-            if (shaders[3] == false)
-            { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS; }
-            if (shaders[4] == false)
-            { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS; }
+            if (m_Type == PIPELINE_GEOMETRY)
+            {
+                if (shaders[0] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS; }
+                if (shaders[1] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS; }
+                if (shaders[2] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS; }
+            }
+            else
+            {
+                desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+                if (shaders[0] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS; }
+                if (shaders[1] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS; }
+                if (shaders[2] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS; }
+                if (shaders[3] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS; }
+                if (shaders[4] == false)
+                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS; }
+            }
         }
 
         ID3DBlob* pSignatureBlob = nullptr;
@@ -266,10 +312,10 @@ ID3D12RootSignature* DescriptorSetLayout::GetD3D12RootSignature() const
 { return m_pRootSignature; }
 
 //-------------------------------------------------------------------------------------------------
-//      グラフィックスパイプラインかどうかチェックします.
+//      パイプラインタイプを取得します.
 //-------------------------------------------------------------------------------------------------
-bool DescriptorSetLayout::IsGraphicsPipeline() const
-{ return m_IsGraphicsPipeline; }
+uint8_t DescriptorSetLayout::GetType() const
+{ return m_Type; }
 
 //-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
