@@ -52,14 +52,6 @@ RESOURCE_FORMAT ToWrapFormat(DXGI_FORMAT format);
 uint32_t ToBits(RESOURCE_FORMAT format);
 
 //-------------------------------------------------------------------------------------------------
-//! @brief      リソースフォーマットのバイト数に変換します.
-//!
-//! @param[in]      format      リソースフォーマットです.
-//! @return     リソースフォーマットのビット数を返却します.
-//-------------------------------------------------------------------------------------------------
-uint32_t ToByte(RESOURCE_FORMAT format);
-
-//-------------------------------------------------------------------------------------------------
 //! @brief      ネイティブ形式に変換します.
 //!
 //! @param[in]      dimension       A3D形式です.
@@ -138,59 +130,5 @@ uint32_t ToNativeBindFlags(uint32_t usage);
 //-------------------------------------------------------------------------------------------------
 DXGI_COLOR_SPACE_TYPE ToNativeColorSpace(COLOR_SPACE_TYPE value);
 #endif//defined(A3D_FOR_WINDOWS10)
-
-//-------------------------------------------------------------------------------------------------
-//! @brief      サブリソース番号を計算します.
-//!
-//! @param[in]      mipSlice        ミップ番号.
-//! @param[in]      arraySlice      配列番号.
-//! @param[in]      planeSlice      平面スライス
-//! @param[in]      mipLevels       ミップレベル数.
-//! @param[in]      arraySize       配列サイズ.
-//! @return     サブリソース番号を返却します.
-//-------------------------------------------------------------------------------------------------
-uint32_t CalcSubresource(
-    uint32_t mipSlice,
-    uint32_t arraySlice,
-    uint32_t planeSlice,
-    uint32_t mipLevels,
-    uint32_t arraySize);
-
-//-------------------------------------------------------------------------------------------------
-//! @brief      サブリソース番号からミップ番号，配列番号を求めます.
-//!
-//! @param[in]      subresouce      サブリソース番号です.
-//! @param[in]      mipLevels       ミップレベル数です.
-//! @param[in]      arraySize       配列数です.
-//! @param[out]     mipSlice        ミップ番号です.
-//! @param[out]     arraySlice      配列番号です
-//! @param[out]     planeSlice      平面スライスです.
-//-------------------------------------------------------------------------------------------------
-void DecomposeSubresource(
-    uint32_t subresource,
-    uint32_t mipLevels,
-    uint32_t arraySize,
-    uint32_t& mipSlice,
-    uint32_t& arraySlice,
-    uint32_t& planeSlice);
-
-//-------------------------------------------------------------------------------------------------
-//! @brief      サブリソースレイアウトを求めます.
-//!
-//! @param[in]      subresource     サブリソース番号です.
-//! @param[in]      format          リソースフォーマットです.
-//! @param[in]      width           横幅です.
-//! @param[in]      height          縦幅です.
-//! @param[in]      depth           奥行です.
-//! @return     サブリソースレイアウトを返却します.
-//-------------------------------------------------------------------------------------------------
-SubresourceLayout CalcSubresourceLayout(
-    uint32_t        subresource,
-    RESOURCE_FORMAT format,
-    uint32_t        width,
-    uint32_t        height,
-    uint32_t        depth
-);
-
 
 } // namespace a3d

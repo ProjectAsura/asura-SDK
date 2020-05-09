@@ -2584,4 +2584,99 @@ struct A3D_API IDevice : public IReference
     virtual void A3D_APIENTRY WaitIdle() = 0;
 };
 
+//-------------------------------------------------------------------------------------------------
+//! @brief      リソースフォーマットのバイト数に変換します.
+//!
+//! @param[in]      format      リソースフォーマットです.
+//! @return     リソースフォーマットのビット数を返却します.
+//-------------------------------------------------------------------------------------------------
+uint32_t A3D_APIENTRY ToByte(RESOURCE_FORMAT format);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      圧縮フォーマットかどうかチェックします.
+//!
+//! @retval true    圧縮フォーマットです.
+//! @retval false   非圧縮フォーマットです.
+//-------------------------------------------------------------------------------------------------
+bool A3D_APIENTRY IsCompressFormat(RESOURCE_FORMAT format);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      sRGBフォーマットかどうかチェックします.
+//!
+//! @retval true    sRGBフォーマットです.
+//! @retval false   非sRGBフォーマットです.
+//-------------------------------------------------------------------------------------------------
+bool A3D_APIENTRY IsSRGBFormat(RESOURCE_FORMAT format);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      サブリソース番号を計算します.
+//!
+//! @param[in]      mipSlice        ミップ番号.
+//! @param[in]      arraySlice      配列番号.
+//! @param[in]      planeSlice      平面スライス
+//! @param[in]      mipLevels       ミップレベル数.
+//! @param[in]      arraySize       配列サイズ.
+//! @return     サブリソース番号を返却します.
+//-------------------------------------------------------------------------------------------------
+uint32_t A3D_APIENTRY CalcSubresource(
+    uint32_t    mipSlice,
+    uint32_t    arraySlice,
+    uint32_t    planeSlice,
+    uint32_t    mipLevels,
+    uint32_t    arraySize);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      サブリソース番号からミップ番号，配列番号を求めます.
+//!
+//! @param[in]      subresouce      サブリソース番号です.
+//! @param[in]      mipLevels       ミップレベル数です.
+//! @param[in]      arraySize       配列数です.
+//! @param[out]     mipSlice        ミップ番号です.
+//! @param[out]     arraySlice      配列番号です
+//! @param[out]     planeSlice      平面スライスです.
+//-------------------------------------------------------------------------------------------------
+void A3D_APIENTRY DecomposeSubresource(
+    uint32_t    subresource,
+    uint32_t    mipLevels,
+    uint32_t    arraySize,
+    uint32_t&   mipSlice,
+    uint32_t&   arraySlice,
+    uint32_t&   planeSlice);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      サブリソースサイズを求めます.
+//!
+//! @param[in]      format          リソースフォーマットです.
+//! @param[in]      width           横幅です.
+//! @param[in]      height          縦幅です.
+//! @param[in]      depth           奥行きです.
+//! @param[out]     slicePitch      1スライス当たりのサイズです.
+//! @param[out]     rowPitch        1行当たりのサイズです.
+//! @param[out]     rowCount        行数です.
+//-------------------------------------------------------------------------------------------------
+void A3D_APIENTRY CalcSubresourceSize(
+    RESOURCE_FORMAT format,
+    uint32_t        width,
+    uint32_t        height,
+    uint32_t        depth,
+    uint64_t&       slicePitch,
+    uint64_t&       rowPitch,
+    uint64_t&       rowCount);
+
+//-------------------------------------------------------------------------------------------------
+//! @brief      サブリソースレイアウトを求めます.
+//!
+//! @param[in]      subresource     サブリソース番号.
+//! @param[in]      format          リソースフォーマット.
+//! @param[in]      width           横幅です.
+//! @param[in]      height          縦幅です.
+//! @param[in]      depth           奥行きです.
+//-------------------------------------------------------------------------------------------------
+SubresourceLayout A3D_APIENTRY CalcSubresourceLayout(
+    uint32_t        subresource,
+    RESOURCE_FORMAT format,
+    uint32_t        width, 
+    uint32_t        height,
+    uint32_t        depth);
+
 } // namespace a3d

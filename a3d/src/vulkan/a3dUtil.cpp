@@ -124,6 +124,40 @@ bool IsCompressFormat(RESOURCE_FORMAT format)
 { return g_FormatTable[format].IsCompress; }
 
 //-------------------------------------------------------------------------------------------------
+//      SRGBフォーマットかどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool IsSRGBFormat(RESOURCE_FORMAT format)
+{
+    switch(format)
+    {
+    case RESOURCE_FORMAT_R8G8B8A8_UNORM_SRGB :
+    case RESOURCE_FORMAT_B8G8R8A8_UNORM_SRGB :
+    case RESOURCE_FORMAT_BC1_UNORM_SRGB :
+    case RESOURCE_FORMAT_BC2_UNORM_SRGB :
+    case RESOURCE_FORMAT_BC3_UNORM_SRGB :
+    case RESOURCE_FORMAT_BC7_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_4X4_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_5X4_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_5X5_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_6X5_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_6X6_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_8X5_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_8X6_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_8X8_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_10X5_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_10X6_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_10X8_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_10X10_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_12X10_UNORM_SRGB :
+    case RESOURCE_FORMAT_ASTC_12X12_UNORM_SRGB :
+        return true;
+
+    default:
+        return false;
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
 //      ブロックの横幅を取得します.
 //-------------------------------------------------------------------------------------------------
 uint32_t GetBlockWidth(RESOURCE_FORMAT format)
