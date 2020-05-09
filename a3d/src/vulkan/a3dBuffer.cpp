@@ -97,7 +97,7 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
         info.usage                  = ToNativeBufferUsage(pDesc->Usage);
 
         VmaAllocationCreateInfo allocInfo = {};
-        allocInfo.usage = ToVmaMemoryUsage(pDesc->HeapProperty.Type);
+        allocInfo.usage = ToVmaMemoryUsage(pDesc->HeapType);
 
         auto ret = vmaCreateBuffer(m_pDevice->GetAllocator(), &info, &allocInfo, &m_Buffer, &m_Allocation, nullptr);
         if ( ret != VK_SUCCESS )

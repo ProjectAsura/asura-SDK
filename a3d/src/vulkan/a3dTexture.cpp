@@ -257,37 +257,12 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         info.initialLayout          = imageLayout;
 
         VmaAllocationCreateInfo allocInfo = {};
-        allocInfo.usage = ToVmaMemoryUsage(pDesc->HeapProperty.Type);
+        allocInfo.usage = ToVmaMemoryUsage(pDesc->HeapType);
 
         auto ret = vmaCreateImage(m_pDevice->GetAllocator(), &info, &allocInfo, &m_Image, &m_Allocation, nullptr);
         if ( ret != VK_SUCCESS )
         { return false; }
     }
-
-    //// デバイスメモリを生成します.
-    //{
-    //    vkGetImageMemoryRequirements(pNativeDevice, m_Image, &m_MemoryRequirements);
-
-    //    bool isMappable = (pDesc->Layout == RESOURCE_LAYOUT_LINEAR);
-    //    auto flags = ToNativeMemoryPropertyFlags(pDesc->HeapProperty.CpuPageProperty, isMappable);
-
-    //    uint32_t index = 0;
-    //    GetMemoryTypeIndex(deviceMemoryProps, m_MemoryRequirements, flags, index);
-
-    //    VkMemoryAllocateInfo info = {};
-    //    info.sType              = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    //    info.pNext              = nullptr;
-    //    info.memoryTypeIndex    = index;
-    //    info.allocationSize     = m_MemoryRequirements.size;
-
-    //    auto ret = vkAllocateMemory(pNativeDevice, &info, nullptr, &m_DeviceMemory);
-    //    if ( ret != VK_SUCCESS )
-    //    { return false; }
-
-    //    ret = vkBindImageMemory(pNativeDevice, m_Image, m_DeviceMemory, 0);
-    //    if ( ret != VK_SUCCESS )
-    //    { return false; }
-    //}
 
     // イメージアスペクトフラグの設定.
     {
@@ -552,19 +527,18 @@ bool Texture::Create
     instance->m_pDevice    = pWrapDevice;
     instance->m_pDevice->AddRef();
 
-    instance->m_Image                               = image;
-    instance->m_ImageAspectFlags                    = (isDepth) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-    instance->m_Desc.Dimension                      = RESOURCE_DIMENSION_TEXTURE2D;
-    instance->m_Desc.Width                          = pDesc->Extent.Width;
-    instance->m_Desc.Height                         = pDesc->Extent.Height;
-    instance->m_Desc.DepthOrArraySize               = 1;
-    instance->m_Desc.Format                         = pDesc->Format;
-    instance->m_Desc.MipLevels                      = pDesc->MipLevels;
-    instance->m_Desc.SampleCount                    = pDesc->SampleCount;
-    instance->m_Desc.Layout                         = RESOURCE_LAYOUT_OPTIMAL;
-    instance->m_Desc.InitState                      = RESOURCE_STATE_UNKNOWN;
-    instance->m_Desc.HeapProperty.Type              = HEAP_TYPE_DEFAULT;
-    instance->m_Desc.HeapProperty.CpuPageProperty   = CPU_PAGE_PROPERTY_NOT_AVAILABLE;
+    instance->m_Image                   = image;
+    instance->m_ImageAspectFlags        = (isDepth) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    instance->m_Desc.Dimension          = RESOURCE_DIMENSION_TEXTURE2D;
+    instance->m_Desc.Width              = pDesc->Extent.Width;
+    instance->m_Desc.Height             = pDesc->Extent.Height;
+    instance->m_Desc.DepthOrArraySize   = 1;
+    instance->m_Desc.Format             = pDesc->Format;
+    instance->m_Desc.MipLevels          = pDesc->MipLevels;
+    instance->m_Desc.SampleCount        = pDesc->SampleCount;
+    instance->m_Desc.Layout             = RESOURCE_LAYOUT_OPTIMAL;
+    instance->m_Desc.InitState          = RESOURCE_STATE_UNKNOWN;
+    instance->m_Desc.HeapType           = HEAP_TYPE_DEFAULT;
 
     *ppResource = instance;
     return true;

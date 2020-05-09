@@ -97,7 +97,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>DEBUG;VK_USE_PLATFORM_WIN32_KHR;VK_ENABLE_BETA_EXTENSIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -109,7 +109,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>DEBUG;VK_USE_PLATFORM_WIN32_KHR;VK_ENABLE_BETA_EXTENSIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -123,7 +123,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>NDEBUG;VK_USE_PLATFORM_WIN32_KHR;VK_ENABLE_BETA_EXTENSIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -141,7 +141,7 @@
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
       <PreprocessorDefinitions>NDEBUG;VK_USE_PLATFORM_WIN32_KHR;VK_ENABLE_BETA_EXTENSIONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -170,6 +170,7 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dQueryPool.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dQueue.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSampler.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dSpirv.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dUnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSwapChain.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTexture.cpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
@@ -196,12 +198,16 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dQueryPool.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dQueue.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSampler.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dSpirv.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSwapChain.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTextureView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

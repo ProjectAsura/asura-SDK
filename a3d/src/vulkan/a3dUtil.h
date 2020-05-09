@@ -57,15 +57,6 @@ VkDescriptorType ToNativeDescriptorType(DESCRIPTOR_TYPE value);
 VkSampleCountFlagBits ToNativeSampleCountFlags(uint32_t sampleCount);
 
 //-------------------------------------------------------------------------------------------------
-//! @brief      ネイティブ形式に変換します.
-//!
-//! @param[in]      prop            CPUページプロパティです.
-//! @param[in]      isMappable      マップ可能にするかどうか.
-//! @return     ネイティブ形式に変換したメモリプロパティフラグを返却します.
-//-------------------------------------------------------------------------------------------------
-VkMemoryPropertyFlags ToNativeMemoryPropertyFlags(CPU_PAGE_PROPERTY prop, bool isMappable);
-
-//-------------------------------------------------------------------------------------------------
 //! @brief      メモリタイプインデックスを取得します.
 //!
 //! @param[in]      deviceMemoryProps       デバイスメモリプロパティです.

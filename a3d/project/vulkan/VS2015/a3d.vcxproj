@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -71,7 +71,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -83,6 +83,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
@@ -104,6 +105,7 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dQueryPool.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dQueue.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSampler.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dSpirv.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSwapChain.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTextureView.h" />
@@ -131,11 +133,15 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dQueryPool.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dQueue.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSampler.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dSpirv.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSwapChain.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTexture.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTextureView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dUnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dUtil.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

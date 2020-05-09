@@ -22,6 +22,12 @@
     <Filter Include="ソース ファイル\misc">
       <UniqueIdentifier>{8c821901-5fb2-44eb-a666-c767a37263ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\external">
+      <UniqueIdentifier>{be0572ec-4b32-4c21-9ff9-5b4c5a2b166f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\external\VulkanMemoryAllocator">
+      <UniqueIdentifier>{1ec0a2e4-64dd-4af5-a0b4-1adcff5096bf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h">
@@ -105,6 +111,12 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dUnorderedAccessView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.h">
+      <Filter>ソース ファイル\external\VulkanMemoryAllocator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\vulkan\a3dSpirv.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
@@ -170,5 +182,13 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dUnorderedAccessView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\vulkan\a3dSpirv.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.natvis">
+      <Filter>ソース ファイル\external\VulkanMemoryAllocator</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

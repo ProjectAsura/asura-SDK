@@ -32,6 +32,8 @@
 #include <dxgi1_5.h>
 #include <dxgi1_6.h>
 
+#include <D3D12MemAlloc.h>
+
 #include "misc/a3dBlob.h"
 
 #include "a3dUtil.h"

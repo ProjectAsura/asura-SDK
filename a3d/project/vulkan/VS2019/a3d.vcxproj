@@ -116,6 +116,7 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h" />
@@ -147,6 +148,9 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

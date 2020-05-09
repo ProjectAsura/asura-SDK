@@ -273,12 +273,11 @@ bool InitA3D()
         };
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = sizeof(vertices);
-        desc.Stride                         = sizeof(Vertex);
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = sizeof(vertices);
+        desc.Stride     = sizeof(Vertex);
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pVertexBuffer) )
         { return false; }

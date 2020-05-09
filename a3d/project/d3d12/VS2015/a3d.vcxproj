@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dUnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
@@ -39,6 +40,7 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
@@ -68,6 +70,9 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\misc\a3dInlines.h" />
     <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{93596F72-7093-45E3-86B2-F6E681D57810}</ProjectGuid>
@@ -118,7 +123,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\D3D12MemoryAllocator</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,7 +136,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\D3D12MemoryAllocator</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

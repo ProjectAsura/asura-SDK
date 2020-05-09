@@ -40,14 +40,6 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
-    D3D12_HEAP_PROPERTIES prop = {
-        ToNativeHeapType(pDesc->HeapProperty.Type),
-        ToNativeCpuPageProperty(pDesc->HeapProperty.CpuPageProperty),
-        D3D12_MEMORY_POOL_UNKNOWN,
-        0,
-        0
-    };
-
     auto format = ToNativeFormat(pDesc->Format);
 
     D3D12_RESOURCE_DESC desc = {};
@@ -65,20 +57,19 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     desc.Flags              = ToNativeResourceFlags(pDesc->Usage);
 
     D3D12_RESOURCE_STATES   state = ToNativeState(pDesc->InitState);
-    D3D12_HEAP_FLAGS        flags = D3D12_HEAP_FLAG_NONE;
 
     bool isTarget = false;
     D3D12_CLEAR_VALUE clearValue = {};
     clearValue.Format = format;
 
-    if (pDesc->Usage & RESOURCE_USAGE_DEPTH_TARGET)
+    if ((pDesc->Usage & RESOURCE_USAGE_DEPTH_TARGET) == RESOURCE_USAGE_DEPTH_TARGET)
     {
         clearValue.DepthStencil.Depth   = 1.0f;
         clearValue.DepthStencil.Stencil = 0;
         isTarget = true;
     }
 
-    if (pDesc->Usage & RESOURCE_USAGE_COLOR_TARGET)
+    if ((pDesc->Usage & RESOURCE_USAGE_COLOR_TARGET) == RESOURCE_USAGE_COLOR_TARGET)
     {
         clearValue.Color[0] = 0.0f;
         clearValue.Color[1] = 0.0f;
@@ -87,8 +78,19 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         isTarget = true;
     }
 
-    auto hr = pNativeDevice->CreateCommittedResource(
-        &prop, flags, &desc, state, (isTarget ? &clearValue : nullptr), IID_PPV_ARGS(&m_pResource));
+    auto allocFlags = (isTarget) ? D3D12MA::ALLOCATION_FLAG_COMMITTED : D3D12MA::ALLOCATION_FLAG_NONE;
+
+    D3D12MA::ALLOCATION_DESC allocDesc = {};
+    allocDesc.HeapType = ToNativeHeapType(pDesc->HeapType);
+    allocDesc.Flags    = allocFlags;
+
+    auto hr = m_pDevice->GetAllocator()->CreateResource(
+        &allocDesc,
+        &desc,
+        state,
+        (isTarget) ? &clearValue : nullptr,
+        &m_pAllocation,
+        IID_PPV_ARGS(&m_pResource));
     if ( FAILED(hr) )
     { return false; }
 
@@ -102,6 +104,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 //-------------------------------------------------------------------------------------------------
 void Texture::Term()
 {
+    SafeRelease(m_pAllocation);
     SafeRelease(m_pResource);
     SafeRelease(m_pDevice);
 
@@ -274,9 +277,8 @@ bool Texture::CreateFromNative
     instance->m_Desc.SampleCount        = nativeDesc.SampleDesc.Count;
     instance->m_Desc.InitState          = RESOURCE_STATE_UNKNOWN;
     instance->m_Desc.Usage              = usage;
-
-    instance->m_Desc.HeapProperty.Type            = static_cast<HEAP_TYPE>(prop.Type);
-    instance->m_Desc.HeapProperty.CpuPageProperty = static_cast<CPU_PAGE_PROPERTY>(prop.CPUPageProperty);
+    instance->m_Desc.HeapType           = static_cast<HEAP_TYPE>(prop.Type);
+    //instance->m_Desc.HeapProperty.CpuPageProperty = static_cast<CPU_PAGE_PROPERTY>(prop.CPUPageProperty);
 
     *ppResource = instance;
     return true;

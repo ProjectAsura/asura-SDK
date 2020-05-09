@@ -41,18 +41,29 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     auto pD3D11Device = m_pDevice->GetD3D11Device();
     A3D_ASSERT(pD3D11Device != nullptr);
 
-    switch(pDesc->HeapProperty.Type)
+    uint32_t accessFlags = 0;
+    switch(pDesc->HeapType)
     {
     case HEAP_TYPE_DEFAULT:
-        { m_MapType = D3D11_MAP_READ_WRITE; }
+        {
+            m_MapType = D3D11_MAP_READ_WRITE;
+            accessFlags |= D3D11_CPU_ACCESS_READ;
+            accessFlags |= D3D11_CPU_ACCESS_WRITE;
+        }
         break;
 
     case HEAP_TYPE_UPLOAD:
-        { m_MapType = D3D11_MAP_WRITE_DISCARD; }
+        {
+            m_MapType = D3D11_MAP_WRITE_DISCARD;
+            accessFlags |= D3D11_CPU_ACCESS_WRITE;
+        }
         break;
 
     case HEAP_TYPE_READBACK:
-        { m_MapType = D3D11_MAP_READ; }
+        {
+            m_MapType = D3D11_MAP_READ;
+            accessFlags |= D3D11_CPU_ACCESS_READ;
+        }
         break;
     }
 
@@ -71,11 +82,9 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     {
         D3D11_BUFFER_DESC desc = {};
         desc.ByteWidth      = static_cast<uint32_t>(size);
-        desc.Usage          = ToNativeUsage(pDesc->HeapProperty.Type);
+        desc.Usage          = ToNativeUsage(pDesc->HeapType);
         desc.BindFlags      = ToNativeBindFlags(pDesc->Usage);
-        desc.CPUAccessFlags = ToNativeCpuAccessFlags(
-                                pDesc->HeapProperty.Type,
-                                pDesc->HeapProperty.CpuPageProperty);
+        desc.CPUAccessFlags = accessFlags;
 
         if (pDesc->Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
         { desc.StructureByteStride = pDesc->Stride; }

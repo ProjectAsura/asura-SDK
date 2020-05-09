@@ -300,12 +300,11 @@ bool InitA3D()
         };
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = sizeof(vertices);
-        desc.Stride                         = sizeof(Vertex);
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = sizeof(vertices);
+        desc.Stride     = sizeof(Vertex);
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pVertexBuffer) )
         { return false; }
@@ -327,12 +326,11 @@ bool InitA3D()
         };
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = sizeof(indices);
-        desc.Stride                         = sizeof(uint32_t);
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_INDEX_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = sizeof(indices);
+        desc.Stride     = sizeof(uint32_t);
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_INDEX_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pIndexBuffer) )
         { return false; }
@@ -351,12 +349,11 @@ bool InitA3D()
         auto stride = a3d::RoundUp<uint32_t>( sizeof(Transform), info.ConstantBufferMemoryAlignment );
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = stride;
-        desc.Stride                         = stride;
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = stride;
+        desc.Stride     = stride;
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         a3d::BufferViewDesc viewDesc = {};
         viewDesc.Offset = 0;
@@ -570,12 +567,11 @@ bool InitA3D()
     // クエリ結果格納バッファの生成.
     {
         a3d::BufferDesc desc = {};
-        desc.Size                           = sizeof(uint64_t);
-        desc.Stride                         = sizeof(uint64_t);
-        desc.InitState                      = a3d::RESOURCE_STATE_COPY_DST;
-        desc.Usage                          = a3d::RESOURCE_USAGE_QUERY_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_READBACK;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = sizeof(uint64_t);
+        desc.Stride     = sizeof(uint64_t);
+        desc.InitState  = a3d::RESOURCE_STATE_COPY_DST;
+        desc.Usage      = a3d::RESOURCE_USAGE_QUERY_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_READBACK;
 
         for(auto i=0; i<2; ++i)
         {

@@ -389,7 +389,7 @@ void CommandList::BufferBarrier
     auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
-    auto heapType = pWrapResource->GetDesc().HeapProperty.Type;
+    auto heapType = pWrapResource->GetDesc().HeapType;
 
     // D3D12では UPLOAD と READBACK はリソースステートを仕様上変更できないため，
     // 実行せずに正常終了させる.

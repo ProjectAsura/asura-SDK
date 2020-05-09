@@ -112,21 +112,21 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     bool isCompute = false;
     for(auto i=0u; i<pDesc->EntryCount; ++i)
     {
-        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_COMPUTE)
+        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_COMPUTE) == SHADER_MASK_COMPUTE)
         {
             m_Type = PIPELINE_COMPUTE;
             isCompute = true;
         }
 
-        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VERTEX)
+        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_VERTEX) == SHADER_MASK_VERTEX)
         {
             m_Type = PIPELINE_GRAPHICS;
             if (isCompute)
             { return false; }
         }
 
-        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_AMPLIFICATION)
-         || (pDesc->Entries[i].ShaderMask & SHADER_MASK_MESH))
+        if (((pDesc->Entries[i].ShaderMask & SHADER_MASK_AMPLIFICATION) == SHADER_MASK_AMPLIFICATION)
+         || ((pDesc->Entries[i].ShaderMask & SHADER_MASK_MESH) == SHADER_MASK_MESH))
         {
             m_Type = PIPELINE_GEOMETRY;
             if (isCompute)
@@ -184,12 +184,14 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         desc.pParameters        = pParams;
         desc.NumStaticSamplers  = 0;
         desc.pStaticSamplers    = nullptr;
-        desc.Flags              = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+        desc.Flags              = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
         
-        if (pDesc->EntryCount > 0)
+        if (pDesc->EntryCount >= 0)
         {
             if (m_Type == PIPELINE_GEOMETRY)
             {
+                desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
                 if (shaders[0] == false)
                 { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS; }
                 if (shaders[1] == false)
@@ -199,8 +201,6 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
             }
             else
             {
-                desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
                 if (shaders[0] == false)
                 { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS; }
                 if (shaders[1] == false)

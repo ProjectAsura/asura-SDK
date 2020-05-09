@@ -77,12 +77,11 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
     // 頂点バッファを生成.
     {
         a3d::BufferDesc desc = {};
-        desc.Size                           = MaxPrimitiveCount * sizeof(ImDrawVert) * 4;
-        desc.Stride                         = sizeof(ImDrawVert);
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = MaxPrimitiveCount * sizeof(ImDrawVert) * 4;
+        desc.Stride     = sizeof(ImDrawVert);
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         for(auto i=0; i<2; ++i)
         {
@@ -94,12 +93,11 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
     // インデックスバッファを生成.
     {
         a3d::BufferDesc desc = {};
-        desc.Size                           = MaxPrimitiveCount * sizeof(ImDrawIdx) * 6;
-        desc.Stride                         = sizeof(ImDrawIdx);
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_INDEX_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = MaxPrimitiveCount * sizeof(ImDrawIdx) * 6;
+        desc.Stride     = sizeof(ImDrawIdx);
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_INDEX_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         for(auto i=0; i<2; ++i)
         {
@@ -113,12 +111,11 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         auto info = m_pDevice->GetInfo();
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = a3d::RoundUp<uint64_t>( sizeof(Mat4), info.ConstantBufferMemoryAlignment );
-        desc.Stride                         = a3d::RoundUp<uint32_t>( sizeof(Mat4), info.ConstantBufferMemoryAlignment );
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = a3d::RoundUp<uint64_t>( sizeof(Mat4), info.ConstantBufferMemoryAlignment );
+        desc.Stride     = a3d::RoundUp<uint32_t>( sizeof(Mat4), info.ConstantBufferMemoryAlignment );
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         for(auto i=0; i<2; ++i)
         {
@@ -151,29 +148,27 @@ bool GuiMgr::Init(a3d::IDevice* pDevice, a3d::IFrameBuffer* pFrameBuffer, IApp* 
         auto size = rowPitch * height;
 
         a3d::BufferDesc bufDesc = {};
-        bufDesc.Size                            = size;
-        bufDesc.InitState                       = a3d::RESOURCE_STATE_GENERAL;
-        bufDesc.Usage                           = a3d::RESOURCE_USAGE_COPY_SRC;
-        bufDesc.HeapProperty.Type               = a3d::HEAP_TYPE_UPLOAD;
-        bufDesc.HeapProperty.CpuPageProperty    = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        bufDesc.Size        = size;
+        bufDesc.InitState   = a3d::RESOURCE_STATE_GENERAL;
+        bufDesc.Usage       = a3d::RESOURCE_USAGE_COPY_SRC;
+        bufDesc.HeapType    = a3d::HEAP_TYPE_UPLOAD;
 
         a3d::IBuffer* pImmediate = nullptr;
         if (!m_pDevice->CreateBuffer(&bufDesc, &pImmediate))
         { return false; }
 
         a3d::TextureDesc desc = {};
-        desc.Dimension                      = a3d::RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Width                          = width;
-        desc.Height                         = height;
-        desc.DepthOrArraySize               = 1;
-        desc.MipLevels                      = 1;
-        desc.Format                         = a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM;
-        desc.SampleCount                    = 1;
-        desc.Layout                         = a3d::RESOURCE_LAYOUT_OPTIMAL;
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_SHADER_RESOURCE | a3d::RESOURCE_USAGE_COPY_DST;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Dimension          = a3d::RESOURCE_DIMENSION_TEXTURE2D;
+        desc.Width              = width;
+        desc.Height             = height;
+        desc.DepthOrArraySize   = 1;
+        desc.MipLevels          = 1;
+        desc.Format             = a3d::RESOURCE_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleCount        = 1;
+        desc.Layout             = a3d::RESOURCE_LAYOUT_OPTIMAL;
+        desc.InitState          = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage              = a3d::RESOURCE_USAGE_SHADER_RESOURCE | a3d::RESOURCE_USAGE_COPY_DST;
+        desc.HeapType           = a3d::HEAP_TYPE_DEFAULT;
 
         if (!m_pDevice->CreateTexture(&desc, &m_pTexture))
         {
@@ -641,11 +636,11 @@ void GuiMgr::Term()
 void GuiMgr::SwapBuffers()
 {
     auto time = std::chrono::system_clock::now();
-    auto elapsedMilliSec = std::chrono::duration_cast<std::chrono::milliseconds>(time - m_LastTime).count();
-    auto elapsedSec = float(elapsedMilliSec / 1000.0);
+    auto elapsedMicroSec = std::chrono::duration_cast<std::chrono::microseconds>(time - m_LastTime).count();
+    auto elapsedSec = float(elapsedMicroSec / (1000.0 * 1000.0f));
 
     auto& io = ImGui::GetIO();
-    io.DeltaTime = elapsedSec;
+    io.DeltaTime     = elapsedSec;
     io.DisplaySize.x = float(m_pApp->GetWidth());
     io.DisplaySize.y = float(m_pApp->GetHeight());
     

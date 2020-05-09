@@ -58,7 +58,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\D3D12MemoryAllocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -76,7 +76,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\D3D12MemoryAllocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -89,6 +89,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp" />
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dBufferView.cpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h" />
@@ -147,6 +149,9 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
     <ClInclude Include="..\..\..\src\misc\a3dInlines.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

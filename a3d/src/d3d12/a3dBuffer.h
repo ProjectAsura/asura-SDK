@@ -107,6 +107,7 @@ private:
     Device*                 m_pDevice;      //!< デバイスです.
     BufferDesc              m_Desc;         //!< 構成設定です.
     ID3D12Resource*         m_pResource;    //!< リソースです.
+    D3D12MA::Allocation*    m_pAllocation;  //!< アロケート情報.
 
     //=============================================================================================
     // private methods.

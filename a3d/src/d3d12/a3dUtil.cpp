@@ -498,20 +498,20 @@ D3D12_HEAP_TYPE ToNativeHeapType(HEAP_TYPE type)
     return table[type];
 }
 
-//-------------------------------------------------------------------------------------------------
-//      ネイティブ形式に変換します.
-//-------------------------------------------------------------------------------------------------
-D3D12_CPU_PAGE_PROPERTY ToNativeCpuPageProperty(CPU_PAGE_PROPERTY prop)
-{
-    static const D3D12_CPU_PAGE_PROPERTY table[] = {
-        D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-        D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE,
-        D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE,
-        D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
-    };
-
-    return table[prop];
-}
+////-------------------------------------------------------------------------------------------------
+////      ネイティブ形式に変換します.
+////-------------------------------------------------------------------------------------------------
+//D3D12_CPU_PAGE_PROPERTY ToNativeCpuPageProperty(CPU_PAGE_PROPERTY prop)
+//{
+//    static const D3D12_CPU_PAGE_PROPERTY table[] = {
+//        D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
+//        D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE,
+//        D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE,
+//        D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
+//    };
+//
+//    return table[prop];
+//}
 
 //-------------------------------------------------------------------------------------------------
 //      ネイティブ形式に変換します.

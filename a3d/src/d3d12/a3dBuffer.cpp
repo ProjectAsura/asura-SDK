@@ -40,13 +40,6 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
-    D3D12_HEAP_PROPERTIES prop = {};
-    prop.Type                   = ToNativeHeapType(pDesc->HeapProperty.Type);
-    prop.CPUPageProperty        = ToNativeCpuPageProperty(pDesc->HeapProperty.CpuPageProperty);
-    prop.MemoryPoolPreference   = D3D12_MEMORY_POOL_UNKNOWN;
-    prop.VisibleNodeMask        = 1;
-    prop.CreationNodeMask       = 1;
-
     D3D12_RESOURCE_DESC desc = {};
     desc.Dimension          = D3D12_RESOURCE_DIMENSION_BUFFER;
     desc.Width              = pDesc->Size;
@@ -62,8 +55,11 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     D3D12_RESOURCE_STATES   state = ToNativeState(pDesc->InitState);
     D3D12_HEAP_FLAGS        flags = D3D12_HEAP_FLAG_NONE;
 
-    auto hr = pNativeDevice->CreateCommittedResource(
-        &prop, flags, &desc, state, nullptr, IID_PPV_ARGS(&m_pResource));
+    D3D12MA::ALLOCATION_DESC allocDesc = {};
+    allocDesc.HeapType = ToNativeHeapType(pDesc->HeapType);
+
+    auto hr = m_pDevice->GetAllocator()->CreateResource(
+        &allocDesc, &desc, state, nullptr, &m_pAllocation, IID_PPV_ARGS(&m_pResource));
     if ( FAILED(hr) )
     { return false; }
 
@@ -77,6 +73,7 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
 //-------------------------------------------------------------------------------------------------
 void Buffer::Term()
 {
+    SafeRelease(m_pAllocation);
     SafeRelease(m_pResource);
     SafeRelease(m_pDevice);
 
@@ -128,7 +125,7 @@ void* Buffer::Map()
 { 
     void* ptr = nullptr;
 
-    if (m_Desc.HeapProperty.Type == HEAP_TYPE_READBACK)
+    if (m_Desc.HeapType == HEAP_TYPE_READBACK)
     {
         D3D12_RANGE range = {};
         range.Begin = 0;
@@ -153,7 +150,7 @@ void* Buffer::Map()
 //-------------------------------------------------------------------------------------------------
 void Buffer::Unmap()
 {
-    if (m_Desc.HeapProperty.Type == HEAP_TYPE_READBACK)
+    if (m_Desc.HeapType == HEAP_TYPE_READBACK)
     {
         m_pResource->Unmap(0, nullptr);
     }

@@ -22,6 +22,12 @@
     <Filter Include="ソース ファイル\misc">
       <UniqueIdentifier>{9b0e8586-5d62-4623-8254-2b1d177231a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\external">
+      <UniqueIdentifier>{9c348f5b-a67a-4359-96e1-9cd8ed60ddc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\external\D3D12MemoryAllocator">
+      <UniqueIdentifier>{a19473c3-07f4-4378-8139-2755232c20c8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
@@ -92,6 +98,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\d3d12\a3dUnorderedAccessView.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp">
+      <Filter>ソース ファイル\external\D3D12MemoryAllocator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -182,5 +191,13 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dUnorderedAccessView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h">
+      <Filter>ソース ファイル\external\D3D12MemoryAllocator</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.natvis">
+      <Filter>ソース ファイル\external\D3D12MemoryAllocator</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

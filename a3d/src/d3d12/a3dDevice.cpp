@@ -16,6 +16,18 @@ inline int Min(int a, int b)
 inline int ComputeIntersectionArea(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2)
 { return Max(0, Min(ax2, bx2) - Max(ax1, bx1)) * Max(0, Min(ay2, by2) - Max(ay1, by1)); }
 
+void* CustomAlloc(size_t size, size_t alignment, void* pUser)
+{ 
+    A3D_UNUSED(pUser);
+    return a3d_alloc(size, alignment); 
+}
+
+void CustomFree(void* ptr, void* pUser)
+{
+    A3D_UNUSED(pUser);
+    return a3d_free(ptr);
+}
+
 } // namespace 
 
 namespace a3d {
@@ -114,6 +126,22 @@ bool Device::Init(const DeviceDesc* pDesc)
     if ( FAILED(hr) )
     { return false; }
 
+    // アロケータ生成.
+    {
+        D3D12MA::ALLOCATION_CALLBACKS allocationCallbacks = {};
+        allocationCallbacks.pAllocate   = &CustomAlloc;
+        allocationCallbacks.pFree       = &CustomFree;
+ 
+        D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+        allocatorDesc.pDevice               = m_pDevice;
+        allocatorDesc.pAdapter              = m_pAdapter;
+        allocatorDesc.pAllocationCallbacks  = &allocationCallbacks;
+
+        auto hr = D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator);
+        if ( FAILED(hr) )
+        { return false; }
+    }
+
     {
         D3D12_DESCRIPTOR_HEAP_DESC desc = {};
         desc.NumDescriptors = pDesc->MaxShaderResourceCount;
@@ -200,6 +228,8 @@ void Device::Term()
     SafeRelease(m_pGraphicsQueue);
     SafeRelease(m_pComputeQueue);
     SafeRelease(m_pCopyQueue);
+
+    SafeRelease(m_pAllocator);
 
     SafeRelease(m_pOutput);
     SafeRelease(m_pAdapter);
@@ -506,6 +536,12 @@ bool Device::CheckDisplayHDRSupport(RECT region)
 
     return desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020;
 }
+
+//-------------------------------------------------------------------------------------------------
+//      アロケータを取得します.
+//-------------------------------------------------------------------------------------------------
+D3D12MA::Allocator* Device::GetAllocator() const
+{ return m_pAllocator; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

@@ -333,41 +333,6 @@ VkSampleCountFlagBits ToNativeSampleCountFlags(uint32_t sampleCount)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      メモリプロパティフラグに変換します.
-//-------------------------------------------------------------------------------------------------
-VkMemoryPropertyFlags ToNativeMemoryPropertyFlags(a3d::CPU_PAGE_PROPERTY prop, bool isMappable)
-{
-    VkMemoryPropertyFlags result = 0;
-
-    if (prop == a3d::CPU_PAGE_PROPERTY_DEFAULT && isMappable)
-    {
-        result |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-    }
-    else if (prop == a3d::CPU_PAGE_PROPERTY_DEFAULT && !isMappable)
-    {
-        result |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    }
-    else if (prop == a3d::CPU_PAGE_PROPERTY_NOT_AVAILABLE)
-    {
-        result |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    }
-    else if (prop == a3d::CPU_PAGE_PROPERTY_WRITE_COMBINE)
-    {
-        result |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        result |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-        result |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    }
-    else if (prop == a3d::CPU_PAGE_PROPERTY_WRITE_BACK)
-    {
-        result |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        result |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-        result |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
-    }
-
-    return result;
-}
-
-//-------------------------------------------------------------------------------------------------
 //      メモリタイプインデックスを取得します.
 //-------------------------------------------------------------------------------------------------
 bool GetMemoryTypeIndex

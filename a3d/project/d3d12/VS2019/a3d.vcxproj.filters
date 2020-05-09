@@ -22,6 +22,12 @@
     <Filter Include="ソース ファイル\misc">
       <UniqueIdentifier>{172c75e4-0061-4b0b-ab17-1b3cf9074978}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\external">
+      <UniqueIdentifier>{2835b9a5-9f63-4e6e-815b-3875da9626ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\external\D3D12MemoryAllocator">
+      <UniqueIdentifier>{ace07c8f-4264-4524-ae26-e7cc6df98a80}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h">
@@ -114,6 +120,9 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h">
+      <Filter>ソース ファイル\external\D3D12MemoryAllocator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
@@ -185,5 +194,13 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dUtil.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp">
+      <Filter>ソース ファイル\external\D3D12MemoryAllocator</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.natvis">
+      <Filter>ソース ファイル\external\D3D12MemoryAllocator</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

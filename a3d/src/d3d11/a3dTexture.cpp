@@ -48,6 +48,32 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     else
     { format = ToNativeFormat(pDesc->Format); }
 
+    uint32_t accessFlags = 0;
+    switch(pDesc->HeapType)
+    {
+    case HEAP_TYPE_DEFAULT:
+        {
+            m_MapType = D3D11_MAP_READ_WRITE;
+            accessFlags |= D3D11_CPU_ACCESS_READ;
+            accessFlags |= D3D11_CPU_ACCESS_WRITE;
+        }
+        break;
+
+    case HEAP_TYPE_UPLOAD:
+        {
+            m_MapType = D3D11_MAP_WRITE_DISCARD;
+            accessFlags |= D3D11_CPU_ACCESS_WRITE;
+        }
+        break;
+
+    case HEAP_TYPE_READBACK:
+        {
+            m_MapType = D3D11_MAP_READ;
+            accessFlags |= D3D11_CPU_ACCESS_READ;
+        }
+        break;
+    }
+
     if (pDesc->Dimension == RESOURCE_DIMENSION_BUFFER)
     { return false; }
     else if (pDesc->Dimension == RESOURCE_DIMENSION_TEXTURE1D)
@@ -57,11 +83,9 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.MipLevels      = pDesc->MipLevels;
         desc.ArraySize      = pDesc->DepthOrArraySize;
         desc.Format         = format;
-        desc.Usage          = ToNativeUsage(pDesc->HeapProperty.Type);
+        desc.Usage          = ToNativeUsage(pDesc->HeapType);
         desc.BindFlags      = ToNativeBindFlags(pDesc->Usage);
-        desc.CPUAccessFlags = ToNativeCpuAccessFlags(
-                                pDesc->HeapProperty.Type,
-                                pDesc->HeapProperty.CpuPageProperty);
+        desc.CPUAccessFlags = accessFlags;
 
         ID3D11Texture1D* pTexture;
         auto hr = pD3D11Device->CreateTexture1D(&desc, nullptr, &pTexture);
@@ -80,11 +104,9 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.Format             = format;
         desc.SampleDesc.Count   = pDesc->SampleCount;
         desc.SampleDesc.Quality = 0;
-        desc.Usage              = ToNativeUsage(pDesc->HeapProperty.Type);
+        desc.Usage              = ToNativeUsage(pDesc->HeapType);
         desc.BindFlags          = ToNativeBindFlags(pDesc->Usage);
-        desc.CPUAccessFlags     = ToNativeCpuAccessFlags(
-                                    pDesc->HeapProperty.Type,
-                                    pDesc->HeapProperty.CpuPageProperty);
+        desc.CPUAccessFlags     = accessFlags;
 
         if (pDesc->Usage & RESOURCE_USAGE_COLOR_TARGET)
         { desc.CPUAccessFlags = 0; }
@@ -109,11 +131,9 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.Format             = format;
         desc.SampleDesc.Count   = pDesc->SampleCount;
         desc.SampleDesc.Quality = 0;
-        desc.Usage              = ToNativeUsage(pDesc->HeapProperty.Type);
+        desc.Usage              = ToNativeUsage(pDesc->HeapType);
         desc.BindFlags          = ToNativeBindFlags(pDesc->Usage);
-        desc.CPUAccessFlags     = ToNativeCpuAccessFlags(
-                                    pDesc->HeapProperty.Type,
-                                    pDesc->HeapProperty.CpuPageProperty);
+        desc.CPUAccessFlags     = accessFlags;
         desc.MiscFlags          = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
         ID3D11Texture2D* pTexture;
@@ -131,11 +151,9 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.Depth          = pDesc->DepthOrArraySize;
         desc.MipLevels      = pDesc->MipLevels;
         desc.Format         = format;
-        desc.Usage          = ToNativeUsage(pDesc->HeapProperty.Type);
+        desc.Usage          = ToNativeUsage(pDesc->HeapType);
         desc.BindFlags      = ToNativeBindFlags(pDesc->Usage);
-        desc.CPUAccessFlags = ToNativeCpuAccessFlags(
-                                pDesc->HeapProperty.Type,
-                                pDesc->HeapProperty.CpuPageProperty);
+        desc.CPUAccessFlags = accessFlags;
 
         ID3D11Texture3D* pTexture;
         auto hr = pD3D11Device->CreateTexture3D(&desc, nullptr, &pTexture);
@@ -143,21 +161,6 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         { return false; }
 
         m_pResource = pTexture;
-    }
-
-    switch(pDesc->HeapProperty.Type)
-    {
-    case HEAP_TYPE_DEFAULT:
-        { m_MapType = D3D11_MAP_READ_WRITE; }
-        break;
-
-    case HEAP_TYPE_UPLOAD:
-        { m_MapType = D3D11_MAP_WRITE_DISCARD; }
-        break;
-
-    case HEAP_TYPE_READBACK:
-        { m_MapType = D3D11_MAP_READ; }
-        break;
     }
 
     return true;
@@ -341,9 +344,7 @@ bool Texture::CreateFromNative
     instance->m_Desc.SampleCount        = nativeDesc.SampleDesc.Count;
     instance->m_Desc.InitState          = RESOURCE_STATE_UNKNOWN;
     instance->m_Desc.Usage              = usage;
-
-    instance->m_Desc.HeapProperty.Type            = HEAP_TYPE_DEFAULT;
-    instance->m_Desc.HeapProperty.CpuPageProperty = CPU_PAGE_PROPERTY_DEFAULT;
+    instance->m_Desc.HeapType           = HEAP_TYPE_DEFAULT;
 
     bool writable = false;
     bool readable = false;

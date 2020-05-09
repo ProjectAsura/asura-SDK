@@ -256,18 +256,17 @@ bool InitA3D()
     // 深度バッファの生成.
     {
         a3d::TextureDesc desc = {};
-        desc.Dimension                      = a3d::RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Width                          = g_pApp->GetWidth();
-        desc.Height                         = g_pApp->GetHeight();
-        desc.DepthOrArraySize               = 1;
-        desc.Format                         = a3d::RESOURCE_FORMAT_D32_FLOAT;
-        desc.MipLevels                      = 1;
-        desc.SampleCount                    = 1;
-        desc.Layout                         = a3d::RESOURCE_LAYOUT_OPTIMAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_DEPTH_TARGET;
-        desc.InitState                      = a3d::RESOURCE_STATE_DEPTH_WRITE;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Dimension          = a3d::RESOURCE_DIMENSION_TEXTURE2D;
+        desc.Width              = g_pApp->GetWidth();
+        desc.Height             = g_pApp->GetHeight();
+        desc.DepthOrArraySize   = 1;
+        desc.Format             = a3d::RESOURCE_FORMAT_D32_FLOAT;
+        desc.MipLevels          = 1;
+        desc.SampleCount        = 1;
+        desc.Layout             = a3d::RESOURCE_LAYOUT_OPTIMAL;
+        desc.Usage              = a3d::RESOURCE_USAGE_DEPTH_TARGET;
+        desc.InitState          = a3d::RESOURCE_STATE_DEPTH_WRITE;
+        desc.HeapType           = a3d::HEAP_TYPE_DEFAULT;
 
         if (!g_pDevice->CreateTexture(&desc, &g_pDepthBuffer))
         { return false; }
@@ -332,12 +331,11 @@ bool InitA3D()
         };
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = sizeof(vertices);
-        desc.Stride                         = sizeof(Vertex);
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = sizeof(vertices);
+        desc.Stride     = sizeof(Vertex);
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_VERTEX_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pVertexBuffer) )
         { return false; }
@@ -359,12 +357,11 @@ bool InitA3D()
         };
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = sizeof(indices);
-        desc.Stride                         = sizeof(uint32_t);
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_INDEX_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = sizeof(indices);
+        desc.Stride     = sizeof(uint32_t);
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_INDEX_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         if ( !g_pDevice->CreateBuffer(&desc, &g_pIndexBuffer) )
         { return false; }
@@ -383,12 +380,11 @@ bool InitA3D()
         auto stride = a3d::RoundUp<uint32_t>( sizeof(Transform), info.ConstantBufferMemoryAlignment );
 
         a3d::BufferDesc desc = {};
-        desc.Size                           = stride * 2;
-        desc.Stride                         = stride;
-        desc.InitState                      = a3d::RESOURCE_STATE_GENERAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_UPLOAD;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Size       = stride * 2;
+        desc.Stride     = stride;
+        desc.InitState  = a3d::RESOURCE_STATE_GENERAL;
+        desc.Usage      = a3d::RESOURCE_USAGE_CONSTANT_BUFFER;
+        desc.HeapType   = a3d::HEAP_TYPE_UPLOAD;
 
         a3d::BufferViewDesc viewDesc = {};
         viewDesc.Offset = 0;
@@ -847,18 +843,17 @@ void Resize( uint32_t w, uint32_t h, void* pUser )
     // 深度バッファの生成.
     {
         a3d::TextureDesc desc = {};
-        desc.Dimension                      = a3d::RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Width                          = g_pApp->GetWidth();
-        desc.Height                         = g_pApp->GetHeight();
-        desc.DepthOrArraySize               = 1;
-        desc.Format                         = a3d::RESOURCE_FORMAT_D32_FLOAT;
-        desc.MipLevels                      = 1;
-        desc.SampleCount                    = 1;
-        desc.Layout                         = a3d::RESOURCE_LAYOUT_OPTIMAL;
-        desc.Usage                          = a3d::RESOURCE_USAGE_DEPTH_TARGET;
-        desc.InitState                      = a3d::RESOURCE_STATE_DEPTH_WRITE;
-        desc.HeapProperty.Type              = a3d::HEAP_TYPE_DEFAULT;
-        desc.HeapProperty.CpuPageProperty   = a3d::CPU_PAGE_PROPERTY_DEFAULT;
+        desc.Dimension          = a3d::RESOURCE_DIMENSION_TEXTURE2D;
+        desc.Width              = g_pApp->GetWidth();
+        desc.Height             = g_pApp->GetHeight();
+        desc.DepthOrArraySize   = 1;
+        desc.Format             = a3d::RESOURCE_FORMAT_D32_FLOAT;
+        desc.MipLevels          = 1;
+        desc.SampleCount        = 1;
+        desc.Layout             = a3d::RESOURCE_LAYOUT_OPTIMAL;
+        desc.Usage              = a3d::RESOURCE_USAGE_DEPTH_TARGET;
+        desc.InitState          = a3d::RESOURCE_STATE_DEPTH_WRITE;
+        desc.HeapType           = a3d::HEAP_TYPE_DEFAULT;
 
         auto ret = g_pDevice->CreateTexture(&desc, &g_pDepthBuffer);
         assert(ret == true);
