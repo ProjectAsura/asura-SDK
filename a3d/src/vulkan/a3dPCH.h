@@ -41,6 +41,7 @@
 #include "a3dPipelineState.h"
 #include "a3dQueryPool.h"
 #include "a3dUtil.h"
+#include "a3dSpirv.h"
 
 #ifndef A3D_ASSERT
     #if defined(DEBUG) || defined(_DEBUG)

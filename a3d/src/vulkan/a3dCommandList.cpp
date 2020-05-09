@@ -771,6 +771,23 @@ void CommandList::ResolveQuery
 }
 
 //-------------------------------------------------------------------------------------------------
+//      クエリをリセットします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::ResetQuery(IQueryPool* pQuery)
+{
+    if (pQuery == nullptr)
+    { return; }
+
+    auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
+    A3D_ASSERT(pWrapQueryPool != nullptr);
+
+    auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+    A3D_ASSERT(pNativeQueryPool != null_handle);
+
+    vkCmdResetQueryPool( m_CommandBuffer, pNativeQueryPool, 0, pQuery->GetDesc().Count );
+}
+
+//-------------------------------------------------------------------------------------------------
 //      リソースをコピーします.
 //-------------------------------------------------------------------------------------------------
 void CommandList::CopyTexture( ITexture* pDst, ITexture* pSrc)

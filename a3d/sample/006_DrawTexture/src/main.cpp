@@ -937,7 +937,7 @@ void DrawA3D()
     { g_pFence->Wait(UINT32_MAX); }
 
     // ‰æ–Ê‚É•\Ž¦‚µ‚Ü‚·.
-    g_pSwapChain->Present();
+    g_pGraphicsQueue->Present( g_pSwapChain );
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -912,6 +912,13 @@ void Queue::ParseCmd()
                     pCmd += sizeof(ImCmdResolveQuery);
                 }
                 break;
+
+            case CMD_RESET_QUERY:
+                {
+                    /* DO_NOTHING */
+                    pCmd += sizeof(ImCmdResetQuery);
+                }
+                break;
         
             case CMD_COPY_TEXTURE:
                 {

@@ -126,7 +126,8 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
         VkDescriptorSetLayoutCreateFlags flags = 0;
         #if defined(VK_KHR_push_descriptor)
-            flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+        if (m_pDevice->IsSupportExtension(Device::EXT_KHR_PUSH_DESCRIPTOR))
+        { flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR; }
         #endif
 
         VkDescriptorSetLayoutCreateInfo info = {};

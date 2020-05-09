@@ -555,10 +555,12 @@ void SwapChain::Present()
 
     auto index      = m_pQueue->GetCurrentBufferIndex();
     auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
-    uint64_t Infinite = 0xFFFFFFFF;
 
     auto ret = vkQueuePresentKHR(m_pQueue->GetVulkanQueue(), &info);
-    A3D_ASSERT(ret == VK_SUCCESS);
+    if (ret != VK_SUCCESS)
+    { return; }
+
+    const uint64_t Infinite = 0xFFFFFFFF;
 
     auto fence = m_pQueue->GetVulkanFence(index);
     A3D_ASSERT(fence != null_handle);
@@ -570,8 +572,9 @@ void SwapChain::Present()
         semaphore,
         fence,
         &m_CurrentBufferIndex);
-    A3D_ASSERT( ret == VK_SUCCESS );
+        A3D_ASSERT( ret == VK_SUCCESS );
 
+    // 取得待ち.
     vkWaitForFences(pNativeDevice, 1, &fence, VK_FALSE, Infinite);
     vkResetFences(pNativeDevice, 1, &fence);
 }

@@ -684,6 +684,9 @@ void DrawA3D()
     auto pCmd = g_pCommandList[idx];
     pCmd->Begin();
 
+    // クエリをリセットします.
+    pCmd->ResetQuery(g_pQueryPool[idx]);
+
     // 書き込み用のバリアを設定します.
     pCmd->TextureBarrier(
         g_pColorBuffer[idx],
@@ -783,7 +786,7 @@ void DrawA3D()
     g_PrevBufferIndex = idx;
 
     // 画面に表示します.
-    g_pSwapChain->Present();
+    g_pGraphicsQueue->Present( g_pSwapChain );
 
 }
 

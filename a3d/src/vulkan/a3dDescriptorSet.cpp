@@ -56,6 +56,7 @@ bool DescriptorSet::Init
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // ディスクリプタセットを生成します.
+    if (!m_pDevice->IsSupportExtension(Device::EXT_KHR_PUSH_DESCRIPTOR))
     {
         auto pNativeDescriptorPool   = pLayout->GetVulkanDescriptorPool();
         auto pNativeDescriptorLayout = pLayout->GetVulkanDescriptorSetLayout();
@@ -365,7 +366,7 @@ void DescriptorSet::Issue(ICommandList* pCommandList)
             pNativeCommandBuffer,
             m_pLayout->GetVulkanPipelineBindPoint(),
             m_pLayout->GetVulkanPipelineLayout(),
-            1,
+            0,                                      // 0番目を更新.
             count,
             m_pWrites);
     }

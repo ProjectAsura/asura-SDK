@@ -37,6 +37,7 @@ enum CMD_TYPE
     CMD_BEGIN_QUERY,                    //!< ICommandList::BeginQuery()
     CMD_END_QUERY,                      //!< ICommandList::EndQuery()
     CMD_RESOLVE_QUERY,                  //!< ICommandList::ResolveQuery()
+    CMD_RESET_QUERY,                    //!< ICommandList::ResetQuery()
     CMD_COPY_TEXTURE,                   //!< ICommandList::CopyTexture()
     CMD_COPY_BUFFER,                    //!< ICommandList::CopyBuffer()
     CMD_COPY_TEXTURE_REGION,            //!< ICommandList::CopyTextureRegion()
@@ -251,6 +252,14 @@ struct ImCmdResolveQuery : ImCmdBase
     uint32_t        QueryCount;
     IBuffer*        pDstBuffer;
     uint64_t        DstOffset;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdResetQuery structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdResetQuery : ImCmdBase
+{
+    IQueryPool*     pQuery;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -11,8 +11,8 @@
 // Input Definitions.
 //-------------------------------------------------------------------------------------------------
 layout(location = 0) in vec2 InputPosition; // 位置座標.
-layout(location = 1) in vec2 InputTexCoord; // テクスチャ座標.
-layout(location = 2) in vec4 InputColor;    // カラー
+layout(location = 1) in vec4 InputColor;    // カラー.
+layout(location = 5) in vec2 InputTexCoord; // テクスチャ座標.
 
 
 //-------------------------------------------------------------------------------------------------

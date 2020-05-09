@@ -206,17 +206,7 @@ void* Buffer::Map()
     VkResult ret;
 
     void* pData;
-    ret = vkMapMemory(pNativeDevice, m_DeviceMemory, 0, m_Desc.Size, 0, &pData);
-    if (ret != VK_SUCCESS)
-    { return nullptr; }
-
-    VkMappedMemoryRange range = {};
-    range.sType  = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    range.pNext  = nullptr;
-    range.memory = m_DeviceMemory;
-    range.offset = 0;
-    range.size   = m_Desc.Size;
-    ret = vkInvalidateMappedMemoryRanges(pNativeDevice, 1, &range);
+    ret = vkMapMemory(pNativeDevice, m_DeviceMemory, 0, VK_WHOLE_SIZE, 0, &pData);
     if (ret != VK_SUCCESS)
     { return nullptr; }
 
@@ -230,14 +220,6 @@ void Buffer::Unmap()
 {
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
-
-    VkMappedMemoryRange range = {};
-    range.sType     = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    range.pNext     = nullptr;
-    range.memory    = m_DeviceMemory;
-    range.offset    = 0;
-    range.size      = m_Desc.Size;
-    vkFlushMappedMemoryRanges(pNativeDevice, 1, &range);
 
     vkUnmapMemory(pNativeDevice, m_DeviceMemory);
 }

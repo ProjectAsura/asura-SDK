@@ -11,7 +11,7 @@
 // Input Definitions.
 //-------------------------------------------------------------------------------------------------
 layout(location = 0) in vec3 InputPosition; // 位置座標.
-layout(location = 1) in vec2 InputTexCoord; // テクスチャ座標.
+layout(location = 5) in vec2 InputTexCoord; // テクスチャ座標.
 
 //-------------------------------------------------------------------------------------------------
 // Output Definitions.

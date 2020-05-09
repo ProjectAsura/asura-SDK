@@ -18,11 +18,15 @@ bool ToNativeShaderStageInfo
     VkPipelineShaderStageCreateInfo*    pInfo
 )
 {
+    auto entryPoint = a3d::FindEntryPoint(binary.pByteCode, binary.ByteCodeSize);
+    if (entryPoint == nullptr)
+    { return false; }
+
     VkShaderModuleCreateInfo info = {};
     info.sType      = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     info.pNext      = nullptr;
     info.flags      = 0;
-    info.pCode      = static_cast<const uint32_t*>(binary.pByteCode);
+    info.pCode      = reinterpret_cast<const uint32_t*>(binary.pByteCode);
     info.codeSize   = binary.ByteCodeSize;
 
     auto ret = vkCreateShaderModule(device, &info, nullptr, &pInfo->module);
@@ -33,7 +37,7 @@ bool ToNativeShaderStageInfo
     pInfo->pNext                = nullptr;
     pInfo->flags                = 0;
     pInfo->stage                = stage;
-//    pInfo->pName                = binary.EntryPoint;
+    pInfo->pName                = entryPoint;
     pInfo->pSpecializationInfo  = nullptr;
 
     return true;
@@ -50,23 +54,6 @@ VkVertexInputRate ToNativeVertexInputRate(a3d::INPUT_CLASSIFICATION classificati
     };
 
     return table[classification];
-}
-
-//-------------------------------------------------------------------------------------------------
-//      頂点入力バインディングに変換します.
-//-------------------------------------------------------------------------------------------------
-void ToNativeVertexInputBinding
-(
-    const a3d::InputElementDesc&     element,
-    VkVertexInputBindingDescription* pDesc,
-    uint32_t                         prevOffsetInBytes
-)
-{
-    auto stride = element.OffsetInBytes - prevOffsetInBytes;
-
-    pDesc->binding   = element.StreamIndex;
-    pDesc->stride    = stride;
-    pDesc->inputRate = ToNativeVertexInputRate(element.InputClass);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -95,25 +82,56 @@ void ToNativeVertexInputState
     VkVertexInputAttributeDescription*      pOutAttr    // 呼び出し側で解放すること.
 )
 {
-    pOutBind = new VkVertexInputBindingDescription[desc.ElementCount];
+    // 必要な数を一回数える.
+    auto bindingCount       = 0;
+    auto prevStreamIndex    = -1;
+    for(auto i=0u; i<desc.ElementCount; ++i)
+    {
+        if (prevStreamIndex != desc.pElements[i].StreamIndex)
+        {
+            bindingCount++;
+            prevStreamIndex = desc.pElements[i].StreamIndex;
+        }
+    }
+
+    pOutBind = new VkVertexInputBindingDescription[bindingCount];
     A3D_ASSERT(pOutBind != nullptr);
+
+    // インデックスをリセット.
+    prevStreamIndex       = -1;
+    auto currBindingIndex = -1;
+    for(auto i=0u; i<desc.ElementCount; ++i)
+    {
+        if (prevStreamIndex != desc.pElements[i].StreamIndex)
+        {
+            currBindingIndex++;
+
+            pOutBind[currBindingIndex].binding   = desc.pElements[i].StreamIndex;
+            pOutBind[currBindingIndex].stride    = ToByte(desc.pElements[i].Format);
+            pOutBind[currBindingIndex].inputRate = ToNativeVertexInputRate(desc.pElements[i].InputClass);
+
+            // ストリーム番号更新.
+            prevStreamIndex  = desc.pElements[i].StreamIndex;
+        }
+        else
+        {
+            pOutBind[currBindingIndex].stride += ToByte(desc.pElements[i].Format);
+        }
+    }
 
     pOutAttr = new VkVertexInputAttributeDescription[desc.ElementCount];
     A3D_ASSERT(pOutAttr != nullptr);
 
     auto index = 0;
-    auto prevOffsetInBytes = 0u;
     for(auto i=0u; i<desc.ElementCount; ++i)
     {
-        ToNativeVertexInputBinding(desc.pElements[i], &pOutBind[i], prevOffsetInBytes);
         ToNativeVertexAttribute(desc.pElements[i], &pOutAttr[i]);
-        prevOffsetInBytes = desc.pElements[i].OffsetInBytes;
     }
 
     pInfo->sType                            = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     pInfo->pNext                            = nullptr;
     pInfo->flags                            = 0;
-    pInfo->vertexBindingDescriptionCount    = desc.ElementCount;
+    pInfo->vertexBindingDescriptionCount    = bindingCount;
     pInfo->pVertexBindingDescriptions       = pOutBind;
     pInfo->vertexAttributeDescriptionCount  = desc.ElementCount;
     pInfo->pVertexAttributeDescriptions     = pOutAttr;
@@ -179,7 +197,6 @@ void ToNativeViewportState
     VkPipelineViewportStateCreateInfo*  pInfo
 )
 {
-
     pViewport->x        = 0.0f;
     pViewport->y        = 0.0f;
     pViewport->width    = 1.0f;
