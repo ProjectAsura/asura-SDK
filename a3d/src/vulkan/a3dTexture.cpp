@@ -203,9 +203,9 @@ Texture::Texture()
 : m_RefCount        (1)
 , m_pDevice         (nullptr)
 , m_Image           (null_handle)
-, m_DeviceMemory    (null_handle)
+, m_Allocation      (null_handle)
 , m_ImageAspectFlags(VK_IMAGE_ASPECT_COLOR_BIT)
-{ memset( &m_MemoryRequirements, 0, sizeof(m_MemoryRequirements) ); }
+{ /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
 //      デストラクタです.
@@ -256,35 +256,38 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         info.pQueueFamilyIndices    = nullptr;
         info.initialLayout          = imageLayout;
 
-        auto ret = vkCreateImage(pNativeDevice, &info, nullptr, &m_Image);
+        VmaAllocationCreateInfo allocInfo = {};
+        allocInfo.usage = ToVmaMemoryUsage(pDesc->HeapProperty.Type);
+
+        auto ret = vmaCreateImage(m_pDevice->GetAllocator(), &info, &allocInfo, &m_Image, &m_Allocation, nullptr);
         if ( ret != VK_SUCCESS )
         { return false; }
     }
 
-    // デバイスメモリを生成します.
-    {
-        vkGetImageMemoryRequirements(pNativeDevice, m_Image, &m_MemoryRequirements);
+    //// デバイスメモリを生成します.
+    //{
+    //    vkGetImageMemoryRequirements(pNativeDevice, m_Image, &m_MemoryRequirements);
 
-        bool isMappable = (pDesc->Layout == RESOURCE_LAYOUT_LINEAR);
-        auto flags = ToNativeMemoryPropertyFlags(pDesc->HeapProperty.CpuPageProperty, isMappable);
+    //    bool isMappable = (pDesc->Layout == RESOURCE_LAYOUT_LINEAR);
+    //    auto flags = ToNativeMemoryPropertyFlags(pDesc->HeapProperty.CpuPageProperty, isMappable);
 
-        uint32_t index = 0;
-        GetMemoryTypeIndex(deviceMemoryProps, m_MemoryRequirements, flags, index);
+    //    uint32_t index = 0;
+    //    GetMemoryTypeIndex(deviceMemoryProps, m_MemoryRequirements, flags, index);
 
-        VkMemoryAllocateInfo info = {};
-        info.sType              = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        info.pNext              = nullptr;
-        info.memoryTypeIndex    = index;
-        info.allocationSize     = m_MemoryRequirements.size;
+    //    VkMemoryAllocateInfo info = {};
+    //    info.sType              = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    //    info.pNext              = nullptr;
+    //    info.memoryTypeIndex    = index;
+    //    info.allocationSize     = m_MemoryRequirements.size;
 
-        auto ret = vkAllocateMemory(pNativeDevice, &info, nullptr, &m_DeviceMemory);
-        if ( ret != VK_SUCCESS )
-        { return false; }
+    //    auto ret = vkAllocateMemory(pNativeDevice, &info, nullptr, &m_DeviceMemory);
+    //    if ( ret != VK_SUCCESS )
+    //    { return false; }
 
-        ret = vkBindImageMemory(pNativeDevice, m_Image, m_DeviceMemory, 0);
-        if ( ret != VK_SUCCESS )
-        { return false; }
-    }
+    //    ret = vkBindImageMemory(pNativeDevice, m_Image, m_DeviceMemory, 0);
+    //    if ( ret != VK_SUCCESS )
+    //    { return false; }
+    //}
 
     // イメージアスペクトフラグの設定.
     {
@@ -335,23 +338,17 @@ void Texture::Term()
 
         if (m_Image != null_handle)
         {
-            vkDestroyImage(pNativeDevice, m_Image, nullptr);
-            m_Image = null_handle;
-        }
-
-        if (m_DeviceMemory != null_handle)
-        {
-            vkFreeMemory(pNativeDevice, m_DeviceMemory, nullptr);
-            m_DeviceMemory = null_handle;
+            vmaDestroyImage(m_pDevice->GetAllocator(), m_Image, m_Allocation);
+            m_Image      = null_handle;
+            m_Allocation = null_handle;
         }
     }
     else
     {
-        m_Image        = null_handle;
-        m_DeviceMemory = null_handle;
+        m_Image      = null_handle;
+        m_Allocation = null_handle;
     }
 
-    memset( &m_MemoryRequirements, 0, sizeof(m_MemoryRequirements) );
     memset( &m_Desc, 0, sizeof(m_Desc) );
 
     SafeRelease(m_pDevice);
@@ -400,14 +397,11 @@ TextureDesc Texture::GetDesc() const
 //-------------------------------------------------------------------------------------------------
 void* Texture::Map()
 {
-    if (m_DeviceMemory == null_handle)
-    { return nullptr; }
-
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     void* pData;
-    auto ret = vkMapMemory(pNativeDevice, m_DeviceMemory, 0, m_Desc.Width, 0, &pData);
+    auto ret = vmaMapMemory(m_pDevice->GetAllocator(), m_Allocation, &pData);
     if (ret != VK_SUCCESS)
     { return nullptr; }
 
@@ -419,13 +413,10 @@ void* Texture::Map()
 //-------------------------------------------------------------------------------------------------
 void Texture::Unmap()
 {
-    if (m_DeviceMemory == null_handle)
-    { return; }
-
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    vkUnmapMemory(pNativeDevice, m_DeviceMemory);
+    vmaUnmapMemory(m_pDevice->GetAllocator(), m_Allocation);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -491,18 +482,6 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
 //-------------------------------------------------------------------------------------------------
 VkImage Texture::GetVulkanImage() const
 { return m_Image; }
-
-//-------------------------------------------------------------------------------------------------
-//      デバイスメモリを取得します.
-//-------------------------------------------------------------------------------------------------
-VkDeviceMemory Texture::GetVulkanDeviceMemory() const
-{ return m_DeviceMemory; }
-
-//-------------------------------------------------------------------------------------------------
-//      メモリ要件を取得します.
-//-------------------------------------------------------------------------------------------------
-VkMemoryRequirements Texture::GetVulkanMemoryRequirements() const
-{ return m_MemoryRequirements; }
 
 //-------------------------------------------------------------------------------------------------
 //      イメージアスペクトフラグを取得します.
@@ -575,7 +554,6 @@ bool Texture::Create
 
     instance->m_Image                               = image;
     instance->m_ImageAspectFlags                    = (isDepth) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-    instance->m_DeviceMemory                        = null_handle;
     instance->m_Desc.Dimension                      = RESOURCE_DIMENSION_TEXTURE2D;
     instance->m_Desc.Width                          = pDesc->Extent.Width;
     instance->m_Desc.Height                         = pDesc->Extent.Height;
@@ -587,8 +565,6 @@ bool Texture::Create
     instance->m_Desc.InitState                      = RESOURCE_STATE_UNKNOWN;
     instance->m_Desc.HeapProperty.Type              = HEAP_TYPE_DEFAULT;
     instance->m_Desc.HeapProperty.CpuPageProperty   = CPU_PAGE_PROPERTY_NOT_AVAILABLE;
-
-    vkGetImageMemoryRequirements(pNativeDevice, image, &instance->m_MemoryRequirements);
 
     *ppResource = instance;
     return true;

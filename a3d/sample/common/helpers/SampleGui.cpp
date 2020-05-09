@@ -608,6 +608,9 @@ void GuiMgr::Term()
         m_SizeIB[i] = 0;
     }
 
+    if (m_pConstantBuffer != nullptr)
+    { m_pConstantBuffer->Unmap(); }
+
     a3d::SafeRelease(m_pConstantView);
     a3d::SafeRelease(m_pConstantBuffer);
     a3d::SafeRelease(m_pSampler);

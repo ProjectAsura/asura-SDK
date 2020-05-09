@@ -814,6 +814,10 @@ void TermA3D()
         // 定数バッファビューの破棄.
         a3d::SafeRelease(g_pConstantView[i]);
 
+        // 破棄前にメモリマッピングを解除.
+        if (g_pConstantBuffer[i] != nullptr)
+        { g_pConstantBuffer[i]->Unmap(); }
+
         // 定数バッファの破棄.
         a3d::SafeRelease(g_pConstantBuffer[i]);
 

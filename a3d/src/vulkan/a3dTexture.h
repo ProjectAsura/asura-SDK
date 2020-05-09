@@ -119,20 +119,6 @@ public:
     VkImage A3D_APIENTRY GetVulkanImage() const;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      デバイスメモリを取得します.
-    //!
-    //! @return     デバイスメモリを返却します.
-    //---------------------------------------------------------------------------------------------
-    VkDeviceMemory A3D_APIENTRY GetVulkanDeviceMemory() const;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      メモリ要件を取得します.
-    //!
-    //! @return     メモリ要件を返却します.
-    //---------------------------------------------------------------------------------------------
-    VkMemoryRequirements A3D_APIENTRY GetVulkanMemoryRequirements() const;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      イメージアスペクトフラグを取得します.
     //!
     //! @return     イメージアスペクトフラグを返却します.
@@ -154,10 +140,9 @@ private:
     Device*                 m_pDevice;              //!< デバイスです.
     TextureDesc             m_Desc;                 //!< 構成設定です.
     VkImage                 m_Image;                //!< イメージです.
-    VkDeviceMemory          m_DeviceMemory;         //!< デバイスメモリです.
-    VkMemoryRequirements    m_MemoryRequirements;   //!< メモリ要件です.
     VkImageAspectFlags      m_ImageAspectFlags;     //!< イメージアスペクトフラグです.
     bool                    m_IsExternal;           //!< 外部リソースかどうか
+    VmaAllocation           m_Allocation;           //!< アロケート情報.
 
     //=============================================================================================
     // private methods.

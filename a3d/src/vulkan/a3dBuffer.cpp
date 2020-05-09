@@ -57,8 +57,8 @@ Buffer::Buffer()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
 , m_Buffer      (null_handle)
-, m_DeviceMemory(null_handle)
-{ memset(&m_MemoryRequirements, 0, sizeof(m_MemoryRequirements)); }
+, m_Allocation  (null_handle)
+{ /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
 //      デストラクタです.
@@ -96,31 +96,10 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
         info.size                   = pDesc->Size;
         info.usage                  = ToNativeBufferUsage(pDesc->Usage);
 
-        auto ret = vkCreateBuffer(pNativeDevice, &info, nullptr, &m_Buffer);
-        if ( ret != VK_SUCCESS )
-        { return false; }
-    }
+        VmaAllocationCreateInfo allocInfo = {};
+        allocInfo.usage = ToVmaMemoryUsage(pDesc->HeapProperty.Type);
 
-    // デバイスメモリを生成します.
-    {
-        vkGetBufferMemoryRequirements(pNativeDevice, m_Buffer, &m_MemoryRequirements);
-
-        auto flags = ToNativeMemoryPropertyFlags(pDesc->HeapProperty.CpuPageProperty, true);
-
-        uint32_t index = 0;
-        GetMemoryTypeIndex(deviceMemoryProps, m_MemoryRequirements, flags, index);
-
-        VkMemoryAllocateInfo info = {};
-        info.sType              = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        info.pNext              = nullptr;
-        info.memoryTypeIndex    = index;
-        info.allocationSize     = m_MemoryRequirements.size;
-
-        auto ret = vkAllocateMemory(pNativeDevice, &info, nullptr, &m_DeviceMemory);
-        if ( ret != VK_SUCCESS )
-        { return false; }
-
-        ret = vkBindBufferMemory(pNativeDevice, m_Buffer, m_DeviceMemory, 0);
+        auto ret = vmaCreateBuffer(m_pDevice->GetAllocator(), &info, &allocInfo, &m_Buffer, &m_Allocation, nullptr);
         if ( ret != VK_SUCCESS )
         { return false; }
     }
@@ -139,19 +118,13 @@ void Buffer::Term()
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    if (m_DeviceMemory != null_handle)
-    {
-        vkFreeMemory(pNativeDevice, m_DeviceMemory, nullptr);
-        m_DeviceMemory = null_handle;
-    }
-
     if (m_Buffer != null_handle)
     {
-        vkDestroyBuffer(pNativeDevice, m_Buffer, nullptr);
+        vmaDestroyBuffer(m_pDevice->GetAllocator(), m_Buffer, m_Allocation);
         m_Buffer = null_handle;
+        m_Allocation = null_handle;
     }
 
-    memset( &m_MemoryRequirements, 0, sizeof(m_MemoryRequirements) );
     memset( &m_Desc, 0, sizeof(m_Desc) );
 
     SafeRelease(m_pDevice);
@@ -206,7 +179,7 @@ void* Buffer::Map()
     VkResult ret;
 
     void* pData;
-    ret = vkMapMemory(pNativeDevice, m_DeviceMemory, 0, VK_WHOLE_SIZE, 0, &pData);
+    ret = vmaMapMemory(m_pDevice->GetAllocator(), m_Allocation, &pData);
     if (ret != VK_SUCCESS)
     { return nullptr; }
 
@@ -221,7 +194,7 @@ void Buffer::Unmap()
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    vkUnmapMemory(pNativeDevice, m_DeviceMemory);
+    vmaUnmapMemory(m_pDevice->GetAllocator(), m_Allocation);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -229,18 +202,6 @@ void Buffer::Unmap()
 //-------------------------------------------------------------------------------------------------
 VkBuffer Buffer::GetVulkanBuffer() const
 { return m_Buffer; }
-
-//-------------------------------------------------------------------------------------------------
-//      デバイスメモリを取得します.
-//-------------------------------------------------------------------------------------------------
-VkDeviceMemory Buffer::GetVulkanDeviceMemory() const
-{ return m_DeviceMemory; }
-
-//-------------------------------------------------------------------------------------------------
-//      メモリ要件を取得します.
-//-------------------------------------------------------------------------------------------------
-VkMemoryRequirements Buffer::GetVulkanMemoryRequirements() const
-{ return m_MemoryRequirements; }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースタイプを取得します.

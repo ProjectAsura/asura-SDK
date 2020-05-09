@@ -18,6 +18,7 @@
 #include <mutex>
 
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 
 #include "misc/a3dBlob.h"
 #include "misc/a3dInlines.h"
@@ -42,6 +43,8 @@
 #include "a3dQueryPool.h"
 #include "a3dUtil.h"
 #include "a3dSpirv.h"
+
+
 
 #ifndef A3D_ASSERT
     #if defined(DEBUG) || defined(_DEBUG)

@@ -613,6 +613,10 @@ void GuiMgr::Term()
 {
     for(auto i=0; i<2; ++i)
     {
+        // メモリマッピングを解除.
+        if (m_pCB[i] != nullptr)
+        { m_pCB[i]->Unmap(); }
+
         a3d::SafeRelease(m_pVB[i]);
         a3d::SafeRelease(m_pIB[i]);
         a3d::SafeRelease(m_pCB[i]);

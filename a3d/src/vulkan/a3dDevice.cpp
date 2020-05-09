@@ -12,6 +12,15 @@
 #include <allocator/a3dBaseAllocator.h>
 
 
+#define VMA_IMPLEMENTATION
+#define VMA_MAX(a, b) ( (a) > (b) ? (a) : (b) )
+#define VMA_MIN(a, b) ( (a) < (b) ? (a) : (b) )
+#define VMA_SYSTEM_ALIGNED_MALLOC(size, alignment) a3d_alloc( (size) , (alignment) )
+#define VMA_SYSTEM_FREE(ptr) a3d_free( (ptr) )
+#define VMA_ASSERT(expr)    A3D_ASSERT(expr)
+#include <vk_mem_alloc.h>
+
+
 namespace /* anonymous */ {
 
 //-------------------------------------------------------------------------------------------------
@@ -764,6 +773,14 @@ bool Device::Init(const DeviceDesc* pDesc)
         if (ret != VK_SUCCESS )
         { return false; }
 
+        // アロケータ生成.
+        VmaAllocatorCreateInfo allocatorInfo = {};
+        allocatorInfo.physicalDevice = m_pPhysicalDeviceInfos[0].Device;
+        allocatorInfo.device         = m_Device;
+
+        ret = vmaCreateAllocator(&allocatorInfo, &m_Allocator);
+        if (ret != VK_SUCCESS)
+        { return false; }
 
         #if defined(VK_EXT_debug_marker)
         {
@@ -863,6 +880,12 @@ void Device::Term()
     SafeRelease(m_pGraphicsQueue);
     SafeRelease(m_pComputeQueue);
     SafeRelease(m_pCopyQueue);
+
+    if (m_Allocator != null_handle)
+    {
+        vmaDestroyAllocator(m_Allocator);
+        m_Allocator = null_handle;
+    }
 
     if (m_Device != null_handle)
     {
@@ -1211,6 +1234,12 @@ bool Device::CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool
 //-------------------------------------------------------------------------------------------------
 bool Device::IsSupportExtension(EXTENSION value) const
 { return m_IsSupportExt[value]; }
+
+//-------------------------------------------------------------------------------------------------
+//      アロケータを取得します.
+//-------------------------------------------------------------------------------------------------
+VmaAllocator Device::GetAllocator() const
+{ return m_Allocator; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

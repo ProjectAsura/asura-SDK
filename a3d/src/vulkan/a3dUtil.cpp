@@ -768,4 +768,24 @@ VkColorSpaceKHR ToNativeColorSpace(a3d::COLOR_SPACE_TYPE value)
     return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      メモリ用途フラグに変換します.
+//-------------------------------------------------------------------------------------------------
+VmaMemoryUsage ToVmaMemoryUsage(a3d::HEAP_TYPE heapType)
+{
+    switch(heapType)
+    {
+    case a3d::HEAP_TYPE_DEFAULT:
+            return VMA_MEMORY_USAGE_GPU_ONLY;
+
+    case a3d::HEAP_TYPE_UPLOAD:
+            return VMA_MEMORY_USAGE_CPU_ONLY;
+
+    case a3d::HEAP_TYPE_READBACK:
+            return VMA_MEMORY_USAGE_GPU_TO_CPU;
+    }
+
+    return VMA_MEMORY_USAGE_UNKNOWN;
+}
+
 } // namespace a3d

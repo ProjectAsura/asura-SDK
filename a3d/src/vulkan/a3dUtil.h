@@ -127,4 +127,9 @@ VkComponentSwizzle ToNativeComponentSwizzle(a3d::TEXTURE_SWIZZLE value);
 //-------------------------------------------------------------------------------------------------
 VkColorSpaceKHR ToNativeColorSpace(a3d::COLOR_SPACE_TYPE value);
 
+//-------------------------------------------------------------------------------------------------
+//! @brief      メモリ用途を取得します.
+//-------------------------------------------------------------------------------------------------
+VmaMemoryUsage ToVmaMemoryUsage(a3d::HEAP_TYPE type);
+
 } // namespace a3d

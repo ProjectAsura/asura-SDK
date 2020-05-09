@@ -390,6 +390,13 @@ public:
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY IsSupportExtension(EXTENSION value) const;
 
+    //---------------------------------------------------------------------------------------------
+    //! @brief      アロケータを取得します.
+    //!
+    //! @return     アロケータを返却します.
+    //---------------------------------------------------------------------------------------------
+    VmaAllocator GetAllocator() const;
+
 private:
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // PhysicalDeviceInfo structure
@@ -404,20 +411,20 @@ private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>       m_RefCount;             //!< 参照カウントです.
-    VkInstance                  m_Instance;             //!< インスタンスです.
-    VkDevice                    m_Device;               //!< デバイスです.
-    DeviceDesc                  m_Desc;                 //!< 構成設定です.
-    DeviceInfo                  m_Info;                 //!< デバイス情報です.
-    uint32_t                    m_PhysicalDeviceCount;  //!< 物理デバイス数です.
-    PhysicalDeviceInfo*         m_pPhysicalDeviceInfos; //!< 物理デバイス情報です.
-    //VkAllocationCallbacks       m_Allocator;            //!< アロケータです.
-    VkDescriptorPoolCreateInfo  m_PoolCreateInfo;       //!< ディスクリプタプール生成情報です.
-    Queue*                      m_pGraphicsQueue;       //!< グラフィックスキューです.
-    Queue*                      m_pComputeQueue;        //!< コンピュートキューです.
-    Queue*                      m_pCopyQueue;           //!< コピーキューです.
-    uint64_t                    m_TimeStampFrequency;   //!< GPUタイムスタンプの更新頻度(Hz単位)です.
-    bool                        m_IsSupportExt[EXT_COUNT];    //!< 拡張機能.
+    std::atomic<uint32_t>       m_RefCount;                     //!< 参照カウントです.
+    VkInstance                  m_Instance;                     //!< インスタンスです.
+    VkDevice                    m_Device;                       //!< デバイスです.
+    DeviceDesc                  m_Desc;                         //!< 構成設定です.
+    DeviceInfo                  m_Info;                         //!< デバイス情報です.
+    uint32_t                    m_PhysicalDeviceCount;          //!< 物理デバイス数です.
+    PhysicalDeviceInfo*         m_pPhysicalDeviceInfos;         //!< 物理デバイス情報です.
+    VkDescriptorPoolCreateInfo  m_PoolCreateInfo;               //!< ディスクリプタプール生成情報です.
+    Queue*                      m_pGraphicsQueue;               //!< グラフィックスキューです.
+    Queue*                      m_pComputeQueue;                //!< コンピュートキューです.
+    Queue*                      m_pCopyQueue;                   //!< コピーキューです.
+    uint64_t                    m_TimeStampFrequency;           //!< GPUタイムスタンプの更新頻度(Hz単位)です.
+    bool                        m_IsSupportExt[EXT_COUNT];      //!< 拡張機能.
+    VmaAllocator                m_Allocator;                    //!< アロケータ.
 
     //=============================================================================================
     // private methods.
