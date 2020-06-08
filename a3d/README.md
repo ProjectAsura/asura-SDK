@@ -34,8 +34,10 @@ This software is licensed under the MIT License, see LICENSE for more informatio
 In order to build, you need to install the following software and libraries.
 * MS Build 14.0
 * Visual Studio 2015 Update 3
-* Windows SDK
-* Vulkan SDK
+* Visual Studio 2017
+* Visual Studio 2019
+* Windows 10 SDK 10.0.19041.0
+* Vulkan SDK 1.2.135.0
 
 There are two ways to build a3d. One is to open solution file(*.sln) from the Visual Studio and build, otherway is batch build.
 For batch build, use MSBuild 14.0. Go to project folder, run build.bat. After build static libraries are created in the bin folder.
@@ -45,8 +47,10 @@ To build from the solution file, Go to project/d3d12 folder and project/vulkan f
 ビルドするには予め以下のものをインストールしておく必要があります。
 * MSBuild 14.0
 * Visual Studio 2015 Update 3  
-* Windows SDK  
-* Vulkan SDK  
+* Visual Studio 2017
+* Visual Studio 2019
+* Windows 10 SDK 10.0.19041.0
+* Vulkan SDK 1.2.135.0
 
 ビルド方法についてですが，バッチビルドと個別にソシューションファイルを開いてビルドする方法があります。
 バッチビルドでは，MSBuild 14.0を使用します。project/build.batを実行することで，binフォルダにスタティックライブラリが生成されます。  
