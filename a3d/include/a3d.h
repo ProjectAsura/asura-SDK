@@ -774,6 +774,9 @@ struct DispatchArguments
     uint32_t    ThreadGroupCountZ;  //!< z 方向の発行するスレッドグループの数です.
 };
 
+//! @brief  ディスパッチメッシュコマンドの引数です.
+using DispatchMeshArguments = DispatchArguments;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandSetDesc structure
 //! @brief  コマンドセットの構成設定です.
@@ -1128,7 +1131,6 @@ struct GeometryPipelineStateDesc
     MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.
     DepthState              DepthState;             //!< 深度ステートです.
     StencilState            StencilState;           //!< ステンシルステートです.
-    PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.
     uint32_t                ColorCount;             //!< カラーフォーマット数です.
     TargetFormat            ColorTarget[8];         //!< カラーターゲットです.
     TargetFormat            DepthTarget;            //!< 深度ターゲットです

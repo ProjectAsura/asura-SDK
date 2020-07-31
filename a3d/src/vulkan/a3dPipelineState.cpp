@@ -1020,7 +1020,6 @@ bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineState
         VkViewport  viewports[16];
         VkRect2D    scissors[16];
 
-        ToNativeInputAssemblyState(pDesc->PrimitiveTopology, &inputAssemblyState);
         ToNativeRasterizationState(pDesc->RasterizerState,   &rasterizerState);
         ToNativeMultisampleState  (pDesc->MultiSampleState,  &multisampleState);
         ToNativeDepthState        (pDesc->DepthState,        &depthStencilState);

@@ -49,46 +49,43 @@ static const NativeSemantics kSemantics[] = {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SubObject class
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma warning(push)
-#pragma warning(disable : 4324)
-template<typename InnerStructType, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE Type, typename DefaultArg = InnerStructType>
+template<typename DataType, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE EnumType>
 class alignas(void*) SubObject
 {
 public:
     SubObject() noexcept
-    : m_Type    (Type)
-    , m_Inner   (DefaultArg())
+    : m_EnumType   (EnumType)
+    , m_DataType   (DataType())
     { /* DO_NOTHING */ }
 
-    SubObject(InnerStructType const& value) noexcept
-    : m_Type    (Type)
-    , m_Inner   (value)
+    SubObject(DataType const& value) noexcept
+    : m_EnumType   (EnumType)
+    , m_DataType   (value)
     { /* DO_NOTHING */ }
 
-    SubObject& operator = (InnerStructType const& value) noexcept
+    SubObject& operator = (DataType const& value) noexcept
     {
-        m_Type  = Type;
-        m_Inner = value;
+        m_EnumType  = EnumType;
+        m_DataType = value;
         return *this;
     }
 
-    operator InnerStructType const&() const noexcept 
-    { return m_Inner; }
+    operator DataType const&() const noexcept 
+    { return m_DataType; }
 
-    operator InnerStructType&() noexcept 
-    { return m_Inner; }
+    operator DataType&() noexcept 
+    { return m_DataType; }
 
-    InnerStructType* operator&() noexcept
-    { return &m_Inner; }
+    DataType* operator&() noexcept
+    { return &m_DataType; }
 
-    InnerStructType const* operator&() const noexcept
-    { return &m_Inner; }
+    DataType const* operator&() const noexcept
+    { return &m_DataType; }
 
 private:
-    D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_Type;
-    InnerStructType                     m_Inner;
+    D3D12_PIPELINE_STATE_SUBOBJECT_TYPE m_EnumType;
+    DataType                            m_DataType;
 };
-#pragma warning(pop)
 
 using D3D12_PSS_ROOT_SIGNATURE = SubObject< ID3D12RootSignature*,           D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE >;
 using D3D12_PSS_AS             = SubObject< D3D12_SHADER_BYTECODE,          D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS >;
