@@ -748,6 +748,8 @@ void CommandList::CopyTextureToBuffer
     Extent3D        srcExtent
 )
 {
+    A3D_UNUSED(srcSubresource);
+
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
     { return; }
 
@@ -862,19 +864,19 @@ ID3D12GraphicsCommandList6* CommandList::GetD3D12GraphicsCommandList() const
 //-------------------------------------------------------------------------------------------------
 bool CommandList::Create
 (
-    IDevice*         pDevice, 
-    COMMANDLIST_TYPE listType,
-    ICommandList**   ppComandList
+    IDevice*                pDevice, 
+    const CommandListDesc*  pDesc,
+    ICommandList**          ppComandList
 )
 {
-    if (pDevice == nullptr || ppComandList == nullptr)
+    if (pDevice == nullptr || pDesc == nullptr || ppComandList == nullptr)
     { return false; }
 
     auto instance = new CommandList;
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDevice, listType))
+    if (!instance->Init(pDevice, pDesc->Type))
     {
         SafeRelease(instance);
         return false;

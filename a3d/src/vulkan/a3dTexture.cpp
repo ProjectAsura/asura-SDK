@@ -279,7 +279,9 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     if (a3d::RESOURCE_STATE_UNKNOWN != pDesc->InitState)
     {
         ICommandList* pCmdList;
-        if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, &pCmdList))
+        CommandListDesc desc = {};
+        desc.Type = COMMANDLIST_TYPE_DIRECT;
+        if (!m_pDevice->CreateCommandList(&desc, &pCmdList))
         { return false; }
 
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);

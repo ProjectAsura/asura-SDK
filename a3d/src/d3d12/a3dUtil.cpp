@@ -651,7 +651,6 @@ void CalcSubresourceSize
     RESOURCE_FORMAT format,
     uint32_t        width,
     uint32_t        height,
-    uint32_t        depth,
     uint64_t&       slicePitch,
     uint64_t&       rowPitch,
     uint64_t&       rowCount

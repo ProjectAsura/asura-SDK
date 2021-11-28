@@ -109,15 +109,14 @@ public:
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストを生成します.
     //!
-    //! @param[in]      commandListType     コマンドリストタイプです.
-    //! @param[in]      pOption             オプション情報を指定します.
+    //! @param[in]      pDesc               構成設定です.
     //! @param[out]     ppCommandList       コマンドリストの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateCommandList(
-        COMMANDLIST_TYPE    commandListType,
-        ICommandList**      ppCommandList) override;
+        const CommandListDesc*  pDesc,
+        ICommandList**          ppCommandList) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      スワップチェインを生成します.

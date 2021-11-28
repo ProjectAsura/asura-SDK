@@ -326,7 +326,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         {
             ID3D12Resource* pBuffer;
 
-            auto hr = m_pSwapChain->GetBuffer(i, IID_PPV_ARGS(&pBuffer));
+            hr = m_pSwapChain->GetBuffer(i, IID_PPV_ARGS(&pBuffer));
             if (SUCCEEDED(hr))
             {
                 if (!Texture::CreateFromNative(

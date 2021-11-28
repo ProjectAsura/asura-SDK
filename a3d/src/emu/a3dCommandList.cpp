@@ -644,13 +644,15 @@ const CommandBuffer* CommandList::GetCommandBuffer() const
 //-------------------------------------------------------------------------------------------------
 bool CommandList::Create
 (
-    IDevice*            pDevice,
-    COMMANDLIST_TYPE    type,
-    uint32_t            size,
-    ICommandList**      ppCommandList
+    IDevice*                pDevice,
+    const CommandListDesc*  pDesc,
+    ICommandList**          ppCommandList
 )
 {
-    if (pDevice == nullptr || size == 0 || ppCommandList == nullptr)
+    if (pDevice == nullptr || pDesc == nullptr || ppCommandList == nullptr)
+    { return false; }
+
+    if (pDesc->BufferSize == 0)
     { return false; }
 
     auto instance = new CommandList();
@@ -659,9 +661,9 @@ bool CommandList::Create
 
     instance->m_pDevice = pDevice;
     instance->m_pDevice->AddRef();
-    instance->m_Type = type;
+    instance->m_Type = pDesc->Type;
     
-    if (!instance->m_Buffer.Init(size))
+    if (!instance->m_Buffer.Init(pDesc->BufferSize))
     {
         SafeRelease(instance);
         return false;

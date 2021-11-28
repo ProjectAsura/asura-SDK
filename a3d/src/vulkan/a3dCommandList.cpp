@@ -1214,19 +1214,19 @@ VkCommandBuffer CommandList::GetVulkanCommandBuffer() const
 //-------------------------------------------------------------------------------------------------
 bool CommandList::Create
 (
-    IDevice*            pDevice,
-    COMMANDLIST_TYPE    listType,
-    ICommandList**      ppCommandList
+    IDevice*                pDevice,
+    const CommandListDesc*  pDesc,
+    ICommandList**          ppCommandList
 )
 {
-    if (pDevice == nullptr || ppCommandList == nullptr)
+    if (pDevice == nullptr || pDesc == nullptr || ppCommandList == nullptr)
     { return false; }
 
     auto instance = new CommandList;
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->Init(pDevice, listType))
+    if (!instance->Init(pDevice, pDesc->Type))
     {
         SafeRelease(instance);
         return false;

@@ -25,7 +25,6 @@
 
 #include <atomic>
 #include <mutex>
-#include <container/a3dDynamicArray.h>
 #include <container/a3dPool.h>
 
 #include <d3d12.h>

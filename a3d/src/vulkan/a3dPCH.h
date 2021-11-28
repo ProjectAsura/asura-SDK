@@ -11,7 +11,6 @@
 //-------------------------------------------------------------------------------------------------
 #include <allocator/a3dBaseAllocator.h>
 #include <allocator/a3dStdAllocator.h>
-#include <container/a3dDynamicArray.h>
 #include <a3d.h>
 #include <cassert>
 #include <atomic>

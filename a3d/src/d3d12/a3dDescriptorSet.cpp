@@ -17,6 +17,8 @@ namespace a3d {
 DescriptorSet::DescriptorSet()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
+, m_HandleCount (0)
+, m_Handles     (nullptr)
 , m_Type        (PIPELINE_GRAPHICS)
 { /* DO_NOTHING */ }
 
@@ -76,8 +78,12 @@ bool DescriptorSet::Init
     m_pDevice->AddRef();
 
     auto& desc = pLayout->GetDesc();
-    m_Handles.resize(desc.EntryCount);
-
+    auto size  = sizeof(D3D12_GPU_DESCRIPTOR_HANDLE) * desc.EntryCount;
+    auto align = alignof(D3D12_GPU_DESCRIPTOR_HANDLE);
+    m_Handles = static_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(a3d_alloc(size, align));
+    for(auto i=0u; i<m_HandleCount; ++i)
+    { m_Handles[i] = D3D12_GPU_DESCRIPTOR_HANDLE(); }
+    m_HandleCount = desc.EntryCount;
     m_Type = pLayout->GetType();
 
     return true;
@@ -88,7 +94,12 @@ bool DescriptorSet::Init
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Term()
 {
-    m_Handles.clear();
+    if (m_Handles != nullptr)
+    {
+        a3d_free(m_Handles);
+        m_Handles = nullptr;
+    }
+    m_HandleCount = 0;
     SafeRelease(m_pDevice);
 }
 
@@ -97,7 +108,7 @@ void DescriptorSet::Term()
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
 {
-    A3D_ASSERT(size_t(index) < m_Handles.size());
+    A3D_ASSERT(size_t(index) < m_HandleCount);
 
     auto pWrapView = static_cast<TextureView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
@@ -110,7 +121,7 @@ void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
 {
-    A3D_ASSERT(size_t(index) < m_Handles.size());
+    A3D_ASSERT(size_t(index) < m_HandleCount);
 
     auto pWrapView = static_cast<BufferView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
@@ -123,7 +134,7 @@ void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {
-    A3D_ASSERT(size_t(index) < m_Handles.size());
+    A3D_ASSERT(size_t(index) < m_HandleCount);
 
     auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
@@ -136,7 +147,7 @@ void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResourc
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetSampler(uint32_t index, ISampler* const pSampler)
 {
-    A3D_ASSERT(size_t(index) < m_Handles.size());
+    A3D_ASSERT(size_t(index) < m_HandleCount);
 
     auto pWrapSampler = static_cast<Sampler*>(pSampler);
     A3D_ASSERT( pWrapSampler != nullptr );
@@ -157,12 +168,12 @@ void DescriptorSet::Bind(ICommandList* pCommandList)
 
     if (m_Type != PIPELINE_COMPUTE)
     {
-        for(size_t i=0; i<m_Handles.size(); ++i)
+        for(auto i=0u; i<m_HandleCount; ++i)
         { pNativeCommandList->SetGraphicsRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
     }
     else
     {
-        for(size_t i=0u; i<m_Handles.size(); ++i)
+        for(auto i=0u; i<m_HandleCount; ++i)
         { pNativeCommandList->SetComputeRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
     }
 }

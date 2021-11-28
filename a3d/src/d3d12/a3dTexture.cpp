@@ -249,6 +249,8 @@ bool Texture::CreateFromNative
     ITexture**          ppResource
 )
 {
+    A3D_UNUSED(componentMapping);
+
     if (pDevice == nullptr || pNativeResource == nullptr || ppResource == nullptr)
     { return false; }
 

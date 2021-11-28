@@ -23,15 +23,13 @@ public:
     //! @brief      コマンドリストを生成します.
     //!
     //! @param[in]      pDevice         デバイスです.
-    //! @param[in]      type            コマンドリストタイプです.
-    //! @param[in]      size            コマンドリストサイズです.
+    //! @param[in]      pDesc           構成設定です.
     //! @param[out]     ppCommandList   コマンドリストの格納先です.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
-        IDevice*            pDevice,
-        COMMANDLIST_TYPE    type,
-        uint32_t            size,
-        ICommandList**      ppCommandList);
+        IDevice*                pDevice,
+        const CommandListDesc*  pDesc,
+        ICommandList**          ppCommandList);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウントを増やします.

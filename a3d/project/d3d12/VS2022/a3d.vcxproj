@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{0b90a331-b8b6-46da-acb7-70a3c15dba79}</ProjectGuid>
+    <RootNamespace>a3d</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)..\..\..\bin\$(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\(PlatformShortName)\$(PlatformToolSet)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\D3D12MemoryAllocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\D3D12MemoryAllocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp" />
+    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dBuffer.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dBufferView.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dCommandList.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dCommandSet.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptor.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorHeap.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorSet.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorSetLayout.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dDevice.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dFence.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dFrameBuffer.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dPCH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d12\a3dPipelineState.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dQueryPool.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dQueue.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dSampler.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dSwapChain.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dTexture.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dTextureView.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dUnorderedAccessView.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dUtil.cpp" />
+    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h" />
+    <ClInclude Include="..\..\..\include\a3d.h" />
+    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
+    <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h" />
+    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />
+    <ClInclude Include="..\..\..\src\container\a3dList.h" />
+    <ClInclude Include="..\..\..\src\container\a3dPool.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dBuffer.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dBufferView.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dCommandList.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dCommandSet.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptor.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorHeap.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorSet.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorSetLayout.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dDevice.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dFence.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dFrameBuffer.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dPCH.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dPipelineState.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dQueryPool.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dQueue.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dSampler.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dSwapChain.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dTexture.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dTextureView.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dUnorderedAccessView.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h" />
+    <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

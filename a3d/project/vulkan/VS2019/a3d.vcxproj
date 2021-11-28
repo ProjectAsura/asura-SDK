@@ -121,7 +121,6 @@
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />
-    <ClInclude Include="..\..\..\src\container\a3dDynamicArray.h" />
     <ClInclude Include="..\..\..\src\container\a3dList.h" />
     <ClInclude Include="..\..\..\src\container\a3dPool.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />

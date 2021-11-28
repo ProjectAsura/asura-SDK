@@ -351,7 +351,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     // イメージレイアウトを変更.
     {
         ICommandList* pCmdList;
-        if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, &pCmdList))
+        CommandListDesc desc = {};
+        desc.Type = COMMANDLIST_TYPE_DIRECT;
+
+        if (!m_pDevice->CreateCommandList(&desc, &pCmdList))
         { return false; }
 
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
@@ -804,7 +807,10 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
     // イメージレイアウトを変更.
     {
         ICommandList* pCmdList;
-        if (!m_pDevice->CreateCommandList(COMMANDLIST_TYPE_DIRECT, &pCmdList))
+        CommandListDesc desc = {};
+        desc.Type = COMMANDLIST_TYPE_DIRECT;
+
+        if (!m_pDevice->CreateCommandList(&desc, &pCmdList))
         { return false; }
 
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);

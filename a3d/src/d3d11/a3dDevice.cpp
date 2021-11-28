@@ -290,8 +290,8 @@ uint64_t Device::GetTimeStampFrequency() const
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandList(COMMANDLIST_TYPE type, ICommandList** ppCommandList)
-{ return CommandList::Create(this, type, 4096, ppCommandList); }
+bool Device::CreateCommandList(const CommandListDesc* pDesc, ICommandList** ppCommandList)
+{ return CommandList::Create(this, pDesc, ppCommandList); }
 
 //-------------------------------------------------------------------------------------------------
 //      スワップチェインを生成します.

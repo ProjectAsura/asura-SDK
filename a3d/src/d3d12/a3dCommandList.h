@@ -38,16 +38,16 @@ public:
     //! @brief      生成処理を行います.
     //!
     //! @param[in]      pDevice         デバイスです.
-    //! @param[in]      listType        リストタイプです.
+    //! @param[in]      pDesc           構成設定です.
     //! @param[in]      pOption         プラットフォーム依存データです.
     //! @param[out]     ppCommandList   コマンドリストの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY Create(
-        IDevice*         pDevice,
-        COMMANDLIST_TYPE listType,
-        ICommandList**   ppCommandList);
+        IDevice*                pDevice,
+        const CommandListDesc*  pDesc,
+        ICommandList**          ppCommandList);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウンタを増やします.

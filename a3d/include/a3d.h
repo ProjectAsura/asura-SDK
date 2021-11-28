@@ -131,31 +131,37 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 enum SEMANTICS_TYPE
 {
     SEMANTICS_POSITION      = 0,        // "POSITION"   , location = 0
-    SEMANTICS_COLOR0        = 1,        // "COLOR"      , location = 1
-    SEMANTICS_COLOR1        = 2,        // "COLOR"      , location = 2
-    SEMANTICS_COLOR2        = 3,        // "COLOR"      , location = 3
-    SEMANTICS_COLOR3        = 4,        // "COLOR"      , location = 4
-    SEMANTICS_TEXCOORD0     = 5,        // "TEXCOORD"   , location = 5
-    SEMANTICS_TEXCOORD1     = 6,        // "TEXCOORD"   , location = 6
-    SEMANTICS_TEXCOORD2     = 7,        // "TEXCOORD"   , location = 7
-    SEMANTICS_TEXCOORD3     = 8,        // "TEXCOORD"   , location = 8
-    SEMANTICS_TEXCOORD4     = 9,        // "TEXCOORD"   , location = 9
-    SEMANTICS_TEXCOORD5     = 10,       // "TEXCOORD"   , location = 10
-    SEMANTICS_TEXCOORD6     = 11,       // "TEXCOORD"   , location = 11
-    SEMANTICS_TEXCOORD7     = 12,       // "TEXCOORD"   , location = 12
-    SEMANTICS_NORMAL        = 13,       // "NORMAL"     , location = 13
-    SEMANTICS_TANGENT       = 14,       // "TANGENT"    , location = 14
-    SEMANTICS_BITANGENT     = 15,       // "BITANGENT"  , location = 15
-    SEMANTICS_BONEINDEX     = 16,       // "BONEINDEX"  , location = 16
-    SEMANTICS_BONEWEIGHT    = 17,       // "BONEWEIGHT" , location = 17
-    SEMANTICS_CUSTOM0       = 18,       // "CUSTOM"     , location = 18
-    SEMANTICS_CUSTOM1       = 19,       // "CUSTOM"     , location = 19
-    SEMANTICS_CUSTOM2       = 20,       // "CUSTOM"     , location = 20
-    SEMANTICS_CUSTOM3       = 21,       // "CUSTOM"     , location = 21
-    SEMANTICS_CUSTOM4       = 22,       // "CUSTOM"     , location = 22
-    SEMANTICS_CUSTOM5       = 23,       // "CUSTOM"     , location = 23
-    SEMANTICS_CUSTOM6       = 24,       // "CUSTOM"     , location = 24
-    SEMANTICS_CUSTOM7       = 25,       // "CUSTOM"     , location = 25
+    SEMANTICS_NORMAL        = 1,        // "NORMAL"     , location = 1
+    SEMANTICS_TANGENT       = 2,        // "TANGENT"    , location = 2
+    SEMANTICS_BITANGENT     = 3,        // "BITANGENT"  , location = 3
+    SEMANTICS_BONEINDEX0    = 4,        // "BONEINDEX"  , location = 4
+    SEMANTICS_BONEINDEX1    = 5,        // "BONEINDEX"  , location = 5
+    SEMANTICS_BONEWEIGHT0   = 6,        // "BONEWEIGHT" , location = 6
+    SEMANTICS_BONEWEIGHT1   = 7,        // "BONEWEIGHT" , location = 7
+    SEMANTICS_COLOR0        = 8,        // "COLOR"      , location = 8
+    SEMANTICS_COLOR1        = 9,        // "COLOR"      , location = 9
+    SEMANTICS_COLOR2        = 10,       // "COLOR"      , location = 10
+    SEMANTICS_COLOR3        = 11,       // "COLOR"      , location = 11
+    SEMANTICS_TEXCOORD0     = 12,       // "TEXCOORD"   , location = 12
+    SEMANTICS_TEXCOORD1     = 13,       // "TEXCOORD"   , location = 13
+    SEMANTICS_TEXCOORD2     = 14,       // "TEXCOORD"   , location = 14
+    SEMANTICS_TEXCOORD3     = 15,       // "TEXCOORD"   , location = 15
+    SEMANTICS_TEXCOORD4     = 16,       // "TEXCOORD"   , location = 16
+    SEMANTICS_TEXCOORD5     = 17,       // "TEXCOORD"   , location = 17
+    SEMANTICS_TEXCOORD6     = 18,       // "TEXCOORD"   , location = 18
+    SEMANTICS_TEXCOORD7     = 19,       // "TEXCOORD"   , location = 19
+    SEMANTICS_TEXCOORD8     = 20,       // "TEXCOORD"   , location = 20
+    SEMANTICS_TEXCOORD9     = 21,       // "TEXCOORD"   , location = 21
+    SEMANTICS_TEXCOORD10    = 22,       // "TEXCOORD"   , location = 22
+    SEMANTICS_TEXCOORD11    = 23,       // "TEXCOORD"   , location = 23
+    SEMANTICS_TEXCOORD12    = 24,       // "TEXCOORD"   , location = 24
+    SEMANTICS_TEXCOORD13    = 25,       // "TEXCOORD"   , location = 25
+    SEMANTICS_TEXCOORD14    = 26,       // "TEXCOORD"   , location = 26
+    SEMANTICS_TEXCOORD15    = 27,       // "TEXCOORD"   , location = 27
+    SEMANTICS_CUSTOM0       = 28,       // "CUSTOM"     , locaiton = 28
+    SMENATICS_CUSTOM1       = 29,       // "CUSTOM"     , location = 29
+    SEMANTICS_CUSTOM2       = 30,       // "CUSTOM"     , location = 30
+    SEMANTICS_CUSTOM3       = 31,       // "CUSTOM"     , location = 31
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -777,6 +783,16 @@ struct DispatchArguments
 //! @brief  ディスパッチメッシュコマンドの引数です.
 using DispatchMeshArguments = DispatchArguments;
 
+///////////////////////////////////////////////////////////////////////////////
+// CommandListDesc structure
+//! @brief  コマンドリストの構成設定です.
+//////////////////////////////////////////////////////////////////////////////
+struct CommandListDesc
+{
+    COMMANDLIST_TYPE        Type;           //!< コマンドリストタイプです.
+    uint64_t                BufferSize;     //!< コマンドバッファのサイズです(D3D12, VULKANの場合はゼロで問題ありません).
+};
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandSetDesc structure
 //! @brief  コマンドセットの構成設定です.
@@ -833,9 +849,9 @@ struct TextureDesc
     RESOURCE_DIMENSION      Dimension;          //!< 次元です.
     uint32_t                Width;              //!< 横幅です.
     uint32_t                Height;             //!< 横幅です.
-    uint32_t                DepthOrArraySize;   //!< 奥行または配列サイズです.
+    uint16_t                DepthOrArraySize;   //!< 奥行または配列サイズです.
     RESOURCE_FORMAT         Format;             //!< フォーマットです.
-    uint32_t                MipLevels;          //!< ミップレベル数です.
+    uint16_t                MipLevels;          //!< ミップレベル数です.
     uint32_t                SampleCount;        //!< サンプル数です.
     RESOURCE_LAYOUT         Layout;             //!< リソースレイアウトです.
     uint32_t                Usage;              //!< 使用用途です.
@@ -1025,7 +1041,6 @@ struct InputElementDesc
     INPUT_CLASSIFICATION    InputClass;     //!< 入力分類です.
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // InputLayoutDesc structure
 //! @brief  入力レイアウトの設定です.
@@ -1086,6 +1101,7 @@ struct TargetFormat
 struct GraphicsPipelineStateDesc
 {
     IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
+    ShaderBinary            FS;                     //!< フェッチシェーダです.
     ShaderBinary            VS;                     //!< 頂点シェーダです.
     ShaderBinary            PS;                     //!< ピクセルシェーダです.
     ShaderBinary            DS;                     //!< ドメインシェーダです.
@@ -1210,6 +1226,8 @@ struct PipelineStatistics
     uint64_t    HSInvocations;         //!< ハルシェーダが呼び出された回数です.
     uint64_t    DSInvocations;         //!< ドメインシェーダが呼び出された回数です.
     uint64_t    CSInvocations;         //!< コンピュートシェーダが呼び出された回数です.
+    uint64_t    ASInvocations;         //!< 増幅シェーダが呼びされた回数です.
+    uint64_t    MSInvocations;         //!< メッシュシェーダが呼び出された回数です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2366,14 +2384,14 @@ struct A3D_API IDevice : public IReference
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストを生成します.
     //!
-    //! @param[in]      commandListType     コマンドリストタイプです.
+    //! @param[in]      pDesc               構成設定です.
     //! @param[out]     ppCommandList       コマンドリストの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY CreateCommandList(
-        COMMANDLIST_TYPE    commandListType,
-        ICommandList**      ppCommandList) = 0;
+        const CommandListDesc*  pDesc,
+        ICommandList**          ppCommandList) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      スワップチェインを生成します.

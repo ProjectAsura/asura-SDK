@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------------------------------
 #include <cstdio>
 #include <cstdarg>
+#include <vector>
+#include <allocator/a3dStdAllocator.h>
 #include <allocator/a3dBaseAllocator.h>
 
 
@@ -21,7 +23,17 @@
 #include <vk_mem_alloc.h>
 
 
+namespace a3d {
+
+template<typename T>
+using dynamic_array = std::vector<T, a3d::StdAllocator<T>>;
+
+} // namespace a3d
+
+
 namespace /* anonymous */ {
+
+static const size_t MAX_SYSTEM_ALLOCATION_SCOPE_COUNT = size_t(VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE - VK_SYSTEM_ALLOCATION_SCOPE_COMMAND);
 
 //-------------------------------------------------------------------------------------------------
 // Global Variables.
@@ -30,7 +42,7 @@ VkDebugReportCallbackEXT            vkDebugReportCallback           = null_handl
 PFN_vkCreateDebugReportCallbackEXT  vkCreateDebugReportCallback     = nullptr;
 PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallback    = nullptr;
 PFN_vkDebugReportMessageEXT         vkDebugReportMessage            = nullptr;
-size_t g_AllocationSize[VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE];
+size_t g_AllocationSize[MAX_SYSTEM_ALLOCATION_SCOPE_COUNT] = {};
 
 
 //-------------------------------------------------------------------------------------------------
@@ -271,7 +283,7 @@ void CheckDeviceExtension
         VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
         VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
         VK_NV_MESH_SHADER_EXTENSION_NAME,
-        VK_KHR_RAY_TRACING_EXTENSION_NAME
+        VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME
     };
 
     result.reserve(count);
@@ -741,7 +753,7 @@ bool Device::Init(const DeviceDesc* pDesc)
                 if (strcmp(deviceExtensions[i], VK_NV_MESH_SHADER_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_NV_MESH_SHADER] = true; }
 
-                if (strcmp(deviceExtensions[i], VK_KHR_RAY_TRACING_EXTENSION_NAME) == 0)
+                if (strcmp(deviceExtensions[i], VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_KHR_RAY_TRACING] = true; }
             }
         }
@@ -1019,8 +1031,8 @@ uint64_t Device::GetTimeStampFrequency() const
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandList(COMMANDLIST_TYPE type, ICommandList** ppCommandList)
-{ return CommandList::Create(this, type, ppCommandList); }
+bool Device::CreateCommandList(const CommandListDesc* pDesc, ICommandList** ppCommandList)
+{ return CommandList::Create(this, pDesc, ppCommandList); }
 
 //-------------------------------------------------------------------------------------------------
 //      スワップチェインを生成します.
@@ -1271,7 +1283,7 @@ bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
     if (pDesc == nullptr || ppDevice == nullptr)
     { return false; }
 
-    for(auto i=0; i<VK_SYSTEM_ALLOCATION_SCOPE_RANGE_SIZE; ++i)
+    for(auto i=0; i<MAX_SYSTEM_ALLOCATION_SCOPE_COUNT; ++i)
     { g_AllocationSize[i] = 0; }
 
     return Device::Create(pDesc, ppDevice);

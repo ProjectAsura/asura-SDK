@@ -137,7 +137,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         allocatorDesc.pAdapter              = m_pAdapter;
         allocatorDesc.pAllocationCallbacks  = &allocationCallbacks;
 
-        auto hr = D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator);
+        hr = D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator);
         if ( FAILED(hr) )
         { return false; }
     }
@@ -310,8 +310,8 @@ uint64_t Device::GetTimeStampFrequency() const
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandList(COMMANDLIST_TYPE type, ICommandList** ppCommandList)
-{ return CommandList::Create(this, type, ppCommandList); }
+bool Device::CreateCommandList(const CommandListDesc* pDesc, ICommandList** ppCommandList)
+{ return CommandList::Create(this, pDesc, ppCommandList); }
 
 //-------------------------------------------------------------------------------------------------
 //      スワップチェインを生成します.

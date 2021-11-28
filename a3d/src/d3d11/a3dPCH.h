@@ -16,7 +16,6 @@
 #include <cassert>
 #include <atomic>
 #include <mutex>
-#include <container/a3dDynamicArray.h>
 
 #if defined(A3D_FOR_WINDOWS10)
 #include <d3d11_4.h>

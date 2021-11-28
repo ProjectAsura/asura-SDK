@@ -53,7 +53,6 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     desc.Flags              = ToNativeResourceFlags(pDesc->Usage);
 
     D3D12_RESOURCE_STATES   state = ToNativeState(pDesc->InitState);
-    D3D12_HEAP_FLAGS        flags = D3D12_HEAP_FLAG_NONE;
 
     D3D12MA::ALLOCATION_DESC allocDesc = {};
     allocDesc.HeapType = ToNativeHeapType(pDesc->HeapType);
