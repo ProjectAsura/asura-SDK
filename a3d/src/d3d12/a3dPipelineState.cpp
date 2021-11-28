@@ -8,43 +8,49 @@
 namespace /* anonymous */ {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// NativeSemantics structure
+// SemanticsTable structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct NativeSemantics
+struct SemanticsTable
 {
-    const char* Name;       //!< セマンティクス名.
-    uint32_t    Index;      //!< セマンティクスインデックス.
+    a3d::SEMANTICS_TYPE Type;
+    const char*         Name;
+    uint32_t            Index;
 };
 
-static const NativeSemantics kSemantics[] = {
-    { "POSITION",       0 },
-    { "COLOR",          0 },
-    { "COLOR",          1 },
-    { "COLOR",          2 },
-    { "COLOR",          3 },
-    { "TEXCOORD",       0 },
-    { "TEXCOORD",       1 },
-    { "TEXCOORD",       2 },
-    { "TEXCOORD",       3 },
-    { "TEXCOORD",       4 },
-    { "TEXCOORD",       5 },
-    { "TEXCOORD",       6 },
-    { "TEXCOORD",       7 },
-    { "NORMAL",         0 },
-    { "TANGENT",        0 },
-    { "BITANGENT",      0 },
-    { "BONEINDEX",      0 },
-    { "BONEWEIGHT",     0 },
-    { "CUSTOM",         0 },
-    { "CUSTOM",         1 },
-    { "CUSTOM",         2 },
-    { "CUSTOM",         3 },
-    { "CUSTOM",         4 },
-    { "CUSTOM",         5 },
-    { "CUSTOM",         6 },
-    { "CUSTOM",         7 },
+static const SemanticsTable kSemantics[] = {
+    { a3d::SEMANTICS_POSITION       , "POSITION"    , 0 },
+    { a3d::SEMANTICS_NORMAL         , "NORMAL"      , 0 },
+    { a3d::SEMANTICS_TANGENT        , "TANGENT"     , 0 },
+    { a3d::SEMANTICS_BITANGENT      , "BITANGENT"   , 0 },
+    { a3d::SEMANTICS_BONEINDEX0     , "BONEINDEX"   , 0 },
+    { a3d::SEMANTICS_BONEINDEX1     , "BONEINDEX"   , 1 },
+    { a3d::SEMANTICS_BONEWEIGHT0    , "BONEWEIGHT"  , 0 },
+    { a3d::SEMANTICS_BONEWEIGHT1    , "BONEWEIGHT"  , 1 },
+    { a3d::SEMANTICS_COLOR0         , "COLOR"       , 0 },
+    { a3d::SEMANTICS_COLOR1         , "COLOR"       , 1 },
+    { a3d::SEMANTICS_COLOR2         , "COLOR"       , 2 },
+    { a3d::SEMANTICS_COLOR3         , "COLOR"       , 3 },
+    { a3d::SEMANTICS_TEXCOORD0      , "TEXCOORD"    , 0 },
+    { a3d::SEMANTICS_TEXCOORD1      , "TEXCOORD"    , 1 },
+    { a3d::SEMANTICS_TEXCOORD2      , "TEXCOORD"    , 2 },
+    { a3d::SEMANTICS_TEXCOORD3      , "TEXCOORD"    , 3 },
+    { a3d::SEMANTICS_TEXCOORD4      , "TEXCOORD"    , 4 },
+    { a3d::SEMANTICS_TEXCOORD5      , "TEXCOORD"    , 5 },
+    { a3d::SEMANTICS_TEXCOORD6      , "TEXCOORD"    , 6 },
+    { a3d::SEMANTICS_TEXCOORD7      , "TEXCOORD"    , 7 },
+    { a3d::SEMANTICS_TEXCOORD8      , "TEXCOORD"    , 8 },
+    { a3d::SEMANTICS_TEXCOORD9      , "TEXCOORD"    , 9 },
+    { a3d::SEMANTICS_TEXCOORD10     , "TEXCOORD"    , 10 },
+    { a3d::SEMANTICS_TEXCOORD11     , "TEXCOORD"    , 11 },
+    { a3d::SEMANTICS_TEXCOORD12     , "TEXCOORD"    , 12 },
+    { a3d::SEMANTICS_TEXCOORD13     , "TEXCOORD"    , 13 },
+    { a3d::SEMANTICS_TEXCOORD14     , "TEXCOORD"    , 14 },
+    { a3d::SEMANTICS_TEXCOORD15     , "TEXCOORD"    , 15 },
+    { a3d::SEMANTICS_CUSTOM0        , "CUSTOM"      , 0 },
+    { a3d::SEMANTICS_CUSTOM1        , "CUSTOM"      , 1 },
+    { a3d::SEMANTICS_CUSTOM2        , "CUSTOM"      , 2 },
+    { a3d::SEMANTICS_CUSTOM3        , "CUSTOM"      , 3 },
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // SubObject class
@@ -353,8 +359,16 @@ void ToNativeInputElementDesc
     D3D12_INPUT_ELEMENT_DESC&       result
 )
 {
-    result.SemanticName         = kSemantics[element.Semantics].Name;
-    result.SemanticIndex        = kSemantics[element.Semantics].Index;
+    for(auto i=0; i<_ARRAYSIZE(kSemantics); ++i)
+    {
+        if (element.Semantics == kSemantics[i].Type)
+        {
+            result.SemanticName  = kSemantics[i].Name;
+            result.SemanticIndex = kSemantics[i].Index;
+            break;
+        }
+    }
+
     result.Format               = a3d::ToNativeFormat( element.Format );
     result.InputSlot            = element.StreamIndex;
     result.AlignedByteOffset    = element.OffsetInBytes;
@@ -518,7 +532,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     ToNativeShaderByteCode  ( pDesc->PS                , desc.PS );
     ToNativeShaderByteCode  ( pDesc->DS                , desc.DS );
     ToNativeShaderByteCode  ( pDesc->HS                , desc.HS );
-    ToNativeShaderByteCode  ( pDesc->GS                , desc.GS );
+    //ToNativeShaderByteCode  ( pDesc->GS                , desc.GS );
     ToNativeBlendDesc       ( pDesc->BlendState        , desc.BlendState, pDesc->MultiSampleState.EnableAlphaToCoverage );
     ToNativeRasterizerDesc  ( pDesc->RasterizerState   , desc.RasterizerState );
     ToNativeDepthDesc       ( pDesc->DepthState        , desc.DepthStencilState );

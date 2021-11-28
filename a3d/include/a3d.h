@@ -159,7 +159,7 @@ enum SEMANTICS_TYPE
     SEMANTICS_TEXCOORD14    = 26,       // "TEXCOORD"   , location = 26
     SEMANTICS_TEXCOORD15    = 27,       // "TEXCOORD"   , location = 27
     SEMANTICS_CUSTOM0       = 28,       // "CUSTOM"     , locaiton = 28
-    SMENATICS_CUSTOM1       = 29,       // "CUSTOM"     , location = 29
+    SEMANTICS_CUSTOM1       = 29,       // "CUSTOM"     , location = 29
     SEMANTICS_CUSTOM2       = 30,       // "CUSTOM"     , location = 30
     SEMANTICS_CUSTOM3       = 31,       // "CUSTOM"     , location = 31
 };
@@ -1101,12 +1101,10 @@ struct TargetFormat
 struct GraphicsPipelineStateDesc
 {
     IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
-    ShaderBinary            FS;                     //!< フェッチシェーダです.
     ShaderBinary            VS;                     //!< 頂点シェーダです.
     ShaderBinary            PS;                     //!< ピクセルシェーダです.
     ShaderBinary            DS;                     //!< ドメインシェーダです.
     ShaderBinary            HS;                     //!< ハルシェーダです.
-    ShaderBinary            GS;                     //!< ジオメトリシェーダです.
     BlendState              BlendState;             //!< ブレンドステートです.
     RasterizerState         RasterizerState;        //!< ラスタライザ―ステートです.
     MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.

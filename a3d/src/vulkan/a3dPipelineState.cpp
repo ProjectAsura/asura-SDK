@@ -690,17 +690,19 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             shaderCount++;
         }
 
-        if (pDesc->GS.pByteCode != nullptr && pDesc->GS.ByteCodeSize != 0)
-        {
-            auto ret = ToNativeShaderStageInfo(
-                pNativeDevice,
-                pDesc->GS,
-                VK_SHADER_STAGE_GEOMETRY_BIT,
-                &shaderInfos[shaderCount]);
-            A3D_ASSERT(ret == true);
-            A3D_UNUSED(ret);
-            shaderCount++;
-        }
+    #if 0
+        //if (pDesc->GS.pByteCode != nullptr && pDesc->GS.ByteCodeSize != 0)
+        //{
+        //    auto ret = ToNativeShaderStageInfo(
+        //        pNativeDevice,
+        //        pDesc->GS,
+        //        VK_SHADER_STAGE_GEOMETRY_BIT,
+        //        &shaderInfos[shaderCount]);
+        //    A3D_ASSERT(ret == true);
+        //    A3D_UNUSED(ret);
+        //    shaderCount++;
+        //}
+    #endif
 
         if (pDesc->PS.pByteCode != nullptr && pDesc->PS.ByteCodeSize != 0)
         {

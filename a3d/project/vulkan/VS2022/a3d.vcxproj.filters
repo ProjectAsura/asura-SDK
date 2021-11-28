@@ -176,5 +176,8 @@
     <ClInclude Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.h">
       <Filter>ソース ファイル\VulkanAllocator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\a3d.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
