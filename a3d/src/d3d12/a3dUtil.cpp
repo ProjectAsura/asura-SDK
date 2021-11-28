@@ -664,7 +664,7 @@ void CalcSubresourceSize
         height = ( height + h - 1 ) / h;
     }
 
-    rowPitch    = width * ToByte( format );
+    rowPitch    = uint64_t(width) * ToByte( format );
     rowCount    = height;
     slicePitch  = rowPitch * rowCount;
 }
