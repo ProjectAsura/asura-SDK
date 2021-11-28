@@ -101,6 +101,7 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         desc.Windowed           = (pDesc->EnableFullScreen) ? FALSE : TRUE;
         desc.OutputWindow       = m_hWnd;
         desc.Flags              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+        desc.SwapEffect         = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
         IDXGISwapChain* pSwapChain = nullptr;
         auto hr = pNativeFactory->CreateSwapChain(pNativeDevice, &desc, &m_pSwapChain);

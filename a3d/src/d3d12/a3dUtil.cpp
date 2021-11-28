@@ -677,8 +677,7 @@ SubresourceLayout CalcSubresourceLayout
     uint32_t        subresource,
     RESOURCE_FORMAT format,
     uint32_t        width,
-    uint32_t        height,
-    uint32_t        depth
+    uint32_t        height
 )
 {
     uint64_t offset   = 0;
@@ -688,13 +687,12 @@ SubresourceLayout CalcSubresourceLayout
 
     auto w = width;
     auto h = height;
-    auto d = depth;
 
     SubresourceLayout result = {};
 
     for(auto i=0u; i<=subresource; ++i)
     {
-        CalcSubresourceSize(format, w, h, d, size, rowPitch, rowCount);
+        CalcSubresourceSize(format, w, h, size, rowPitch, rowCount);
         result.Offset       = offset;
         result.RowCount     = rowCount;
         result.RowPitch     = rowPitch;
@@ -705,11 +703,9 @@ SubresourceLayout CalcSubresourceLayout
 
         w = w >> 1;
         h = h >> 1;
-        d = d >> 1;
 
         if (w == 0) { w = 1; }
         if (h == 0) { h = 1; }
-        if (d == 0) { d = 1; }
     }
 
     return result;

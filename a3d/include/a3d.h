@@ -2645,7 +2645,6 @@ void A3D_APIENTRY DecomposeSubresource(
 //! @param[in]      format          リソースフォーマットです.
 //! @param[in]      width           横幅です.
 //! @param[in]      height          縦幅です.
-//! @param[in]      depth           奥行きです.
 //! @param[out]     slicePitch      1スライス当たりのサイズです.
 //! @param[out]     rowPitch        1行当たりのサイズです.
 //! @param[out]     rowCount        行数です.
@@ -2654,7 +2653,6 @@ void A3D_APIENTRY CalcSubresourceSize(
     RESOURCE_FORMAT format,
     uint32_t        width,
     uint32_t        height,
-    uint32_t        depth,
     uint64_t&       slicePitch,
     uint64_t&       rowPitch,
     uint64_t&       rowCount);
@@ -2666,13 +2664,11 @@ void A3D_APIENTRY CalcSubresourceSize(
 //! @param[in]      format          リソースフォーマット.
 //! @param[in]      width           横幅です.
 //! @param[in]      height          縦幅です.
-//! @param[in]      depth           奥行きです.
 //-------------------------------------------------------------------------------------------------
 SubresourceLayout A3D_APIENTRY CalcSubresourceLayout(
     uint32_t        subresource,
     RESOURCE_FORMAT format,
     uint32_t        width, 
-    uint32_t        height,
-    uint32_t        depth);
+    uint32_t        height);
 
 } // namespace a3d

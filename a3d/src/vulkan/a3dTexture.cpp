@@ -450,8 +450,7 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
         subresource,
         m_Desc.Format,
         m_Desc.Width,
-        m_Desc.Height,
-        m_Desc.DepthOrArraySize);
+        m_Desc.Height);
 }
 
 //-------------------------------------------------------------------------------------------------
