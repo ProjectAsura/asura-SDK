@@ -67,24 +67,24 @@ public:
     void A3D_APIENTRY GetDevice(IDevice** ppDevice) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      テクスチャを設定します.
+    //! @brief      定数バッファビューを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetView(uint32_t index, IConstantBufferView* const pResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      シェーダリソースビューを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
     //! @param[in]      state       リソースステートです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetView(uint32_t index, ITextureView* const pResource) override;
+    void A3D_APIENTRY SetView(uint32_t index, IShaderResourceView* const pResource) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      バッファを設定します.
-    //!
-    //! @param[in]      index       レイアウト番号です.
-    //! @param[in]      pResource   設定するリソースです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetView(uint32_t index, IBufferView* const pResource) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ストレージを設定します.
+    //! @brief      アンオーダードアクセスビューを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.

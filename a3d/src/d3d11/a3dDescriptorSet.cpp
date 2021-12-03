@@ -102,18 +102,18 @@ void DescriptorSet::Term()
 }
 
 //-------------------------------------------------------------------------------------------------
-//      テクスチャを設定します.
+//      定数バッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
+void DescriptorSet::SetView(uint32_t index, IConstantBufferView* const pResource)
 {
     A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
     m_pDescriptors[index] = pResource;
 }
 
 //-------------------------------------------------------------------------------------------------
-//      バッファを設定します.
+//      シェーダリソースビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
+void DescriptorSet::SetView(uint32_t index, IShaderResourceView* const pResource)
 {
     A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
     m_pDescriptors[index] = pResource;

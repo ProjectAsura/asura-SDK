@@ -27,9 +27,6 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dBuffer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\d3d11\a3dBufferView.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\d3d11\a3dCommandSet.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -43,9 +40,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\d3d11\a3dFence.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\d3d11\a3dFrameBuffer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\d3d11\a3dPCH.cpp">
@@ -69,9 +63,6 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dTexture.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\d3d11\a3dTextureView.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\d3d11\a3dUnorderedAccessView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -90,12 +81,21 @@
     <ClCompile Include="..\..\..\src\emu\a3dCommandList.cpp">
       <Filter>ソース ファイル\emu</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d11\a3dConstantBufferView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d11\a3dRenderTargetView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d11\a3dDepthStencilView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\d3d11\a3dShaderResourceView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\d3d11\a3dBuffer.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\d3d11\a3dBufferView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dCommandSet.h">
@@ -114,9 +114,6 @@
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dFence.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\d3d11\a3dFrameBuffer.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dPCH.h">
@@ -138,9 +135,6 @@
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dTexture.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\d3d11\a3dTextureView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dUnorderedAccessView.h">
@@ -172,6 +166,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\emu\a3dImCmd.h">
       <Filter>ソース ファイル\emu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d11\a3dConstantBufferView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d11\a3dRenderTargetView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d11\a3dDepthStencilView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\d3d11\a3dShaderResourceView.h">
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

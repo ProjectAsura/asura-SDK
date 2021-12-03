@@ -131,6 +131,68 @@ void CommandList::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      レンダーターゲットビューをクリアします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::ClearRenderTargetView
+(
+    IRenderTargetView*      pRenderTargetView,
+    const ClearColorValue&  clearValue
+)
+{
+    if (pRenderTargetView == nullptr)
+    { return; }
+
+    auto pWrapperView = static_cast<RenderTargetView*>(pRenderTargetView);
+    if (pWrapperView == nullptr)
+    { return; }
+
+    auto pDescriptor = pWrapperView->GetDescriptor();
+    if (pDescriptor == nullptr)
+    { return; }
+
+    m_pCommandList->ClearRenderTargetView(
+        pDescriptor->GetHandleCPU(),
+        &clearValue.R,
+        0,
+        nullptr);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      深度ステンシルビューをクリアします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::ClearDepthStencilView
+(
+    IDepthStencilView*              pDepthStencilView,
+    const ClearDepthStencilValue&   clearValue
+)
+{
+    if (pDepthStencilView == nullptr)
+    { return; }
+
+    auto pWrapperView = static_cast<DepthStencilView*>(pDepthStencilView);
+    if (pWrapperView == nullptr)
+    { return; }
+
+    auto pDescriptor = pWrapperView->GetDescriptor();
+    if (pDescriptor == nullptr)
+    { return; }
+
+    D3D12_CLEAR_FLAGS flags = {};
+    if (clearValue.EnableClearDepth)
+    { flags |= D3D12_CLEAR_FLAG_DEPTH; }
+    if (clearValue.EnableClearStencil)
+    { flags |= D3D12_CLEAR_FLAG_STENCIL; }
+
+    m_pCommandList->ClearDepthStencilView(
+        pDescriptor->GetHandleCPU(),
+        flags,
+        clearValue.Depth,
+        clearValue.Stencil,
+        0,
+        nullptr);
+}
+
+//-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を開始します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::Begin()
@@ -167,48 +229,62 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
+void CommandList::BeginFrameBuffer
+(
+    uint32_t                renderTargetViewCount,
+    IRenderTargetView**     pRenderTargetViews,
+    IDepthStencilView*      pDepthStencilView
+)
 {
-    if (pBuffer == nullptr)
-    { return; }
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8] = {};
+    D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
 
-    auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pBuffer);
-    A3D_ASSERT(pWrapFrameBuffer != nullptr);
+    if (pRenderTargetViews != nullptr) {
+        for(auto i=0u; i<renderTargetViewCount; ++i)
+        {
+            auto pWrapperRTV = static_cast<const RenderTargetView*>(pRenderTargetViews[i]);
+            A3D_ASSERT(pWrapperRTV != nullptr);
+            rtvHandles[i] = pWrapperRTV->GetDescriptor()->GetHandleCPU();
+        }
+    }
+    if (pDepthStencilView != nullptr)
+    {
+        auto pWrapperDSV = static_cast<const DepthStencilView*>(pDepthStencilView);
+        A3D_ASSERT(pWrapperDSV != nullptr);
+        dsvHandle = pWrapperDSV->GetDescriptor()->GetHandleCPU();
+    }
 
-    // 同じバッファであればコマンドを出さない.
-    if (m_pFrameBuffer == pWrapFrameBuffer)
-    { return; }
-
-    pWrapFrameBuffer->Bind(this);
-    m_pFrameBuffer = pWrapFrameBuffer;
+    m_pCommandList->OMSetRenderTargets(
+        renderTargetViewCount,
+        (pRenderTargetViews != nullptr) ? rtvHandles : nullptr,
+        FALSE,
+        (pDepthStencilView != nullptr) ? &dsvHandle : nullptr);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを解除します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::EndFrameBuffer()
-{
-    m_pCommandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
-}
+{ m_pCommandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr); }
 
-//-------------------------------------------------------------------------------------------------
-//      フレームバッファをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearFrameBuffer
-(
-    uint32_t                        clearColorCount,
-    const ClearColorValue*          pClearColors,
-    const ClearDepthStencilValue*   pClearDepthStencil
-)
-{
-    if (clearColorCount == 0 && pClearColors == nullptr && pClearDepthStencil == nullptr)
-    { return; }
-
-    if (m_pFrameBuffer == nullptr)
-    { return; }
-
-    m_pFrameBuffer->Clear(this, clearColorCount, pClearColors, pClearDepthStencil);
-}
+////-------------------------------------------------------------------------------------------------
+////      フレームバッファをクリアします.
+////-------------------------------------------------------------------------------------------------
+//void CommandList::ClearFrameBuffer
+//(
+//    uint32_t                        clearColorCount,
+//    const ClearColorValue*          pClearColors,
+//    const ClearDepthStencilValue*   pClearDepthStencil
+//)
+//{
+//    if (clearColorCount == 0 && pClearColors == nullptr && pClearDepthStencil == nullptr)
+//    { return; }
+//
+//    if (m_pFrameBuffer == nullptr)
+//    { return; }
+//
+//    m_pFrameBuffer->Clear(this, clearColorCount, pClearColors, pClearDepthStencil);
+//}
 
 //-------------------------------------------------------------------------------------------------
 //      ブレンド定数を設定します.
@@ -872,7 +948,7 @@ bool CommandList::Create
     if (pDevice == nullptr || pDesc == nullptr || ppComandList == nullptr)
     { return false; }
 
-    auto instance = new CommandList;
+    auto instance = new CommandList();
     if (instance == nullptr)
     { return false; }
 

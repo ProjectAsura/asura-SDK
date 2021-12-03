@@ -104,33 +104,33 @@ void DescriptorSet::Term()
 }
 
 //-------------------------------------------------------------------------------------------------
-//      テクスチャを設定します.
+//      定数バッファビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
+void DescriptorSet::SetView(uint32_t index, IConstantBufferView* const pResource)
 {
     A3D_ASSERT(size_t(index) < m_HandleCount);
 
-    auto pWrapView = static_cast<TextureView*>(pResource);
-    A3D_ASSERT(pWrapView != nullptr);
-
-    m_Handles[index] = pWrapView->GetShaderDescriptor()->GetHandleGPU();
-}
-
-//-------------------------------------------------------------------------------------------------
-//      バッファを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
-{
-    A3D_ASSERT(size_t(index) < m_HandleCount);
-
-    auto pWrapView = static_cast<BufferView*>(pResource);
+    auto pWrapView = static_cast<ConstantBufferView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
     m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ストレージを設定します.
+//      シェーダリソースビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetView(uint32_t index, IShaderResourceView* const pResource)
+{
+    A3D_ASSERT(size_t(index) < m_HandleCount);
+
+    auto pWrapView = static_cast<ShaderResourceView*>(pResource);
+    A3D_ASSERT(pWrapView != nullptr);
+
+    m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      アンオーダードアクセスビューを設定します.
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {

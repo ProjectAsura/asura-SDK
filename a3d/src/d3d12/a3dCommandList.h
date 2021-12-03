@@ -74,6 +74,26 @@ public:
     void A3D_APIENTRY GetDevice(IDevice** ppDevice) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      レンダーターゲットビューをクリアします.
+    //! 
+    //! @param[in]      pRenderTargetView       レンダーターゲットビューです.
+    //! @param[in]      clearValue              クリア値です.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY ClearRenderTargetView(
+        IRenderTargetView*      pRenderTargetView, 
+        const ClearColorValue&  clearValue) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      深度ステンシルビューをクリアします.
+    //! 
+    //! @param[in]      pDepthStencilView       深度ステンシルビューです.
+    //! @param[in]      clearValue              クリア値です.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY ClearDepthStencilView(
+        IDepthStencilView*              pDepthStencilView,
+        const ClearDepthStencilValue&   clearValue) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの記録を開始します.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Begin() override;
@@ -81,26 +101,31 @@ public:
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを設定します.
     //!
-    //! @param[in]      pBuffer     フレームバッファです.
+    //! @param[in]      renderTargetViewCount   レンダーターゲットビューの数です.
+    //! @param[in]      pRnderTargetViews       レンダーターゲットビューの配列です.
+    //! @param[in]      pDepthStencilView       深度ステンシルビューです. 
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY BeginFrameBuffer(IFrameBuffer* pBuffer) override;
+    void A3D_APIENTRY BeginFrameBuffer(
+        uint32_t                renderTargetViewCount,
+        IRenderTargetView**     ppRenderTargetViews,
+        IDepthStencilView*      pDepthStencilView) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを解除します.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY EndFrameBuffer() override;
 
-    //---------------------------------------------------------------------------------------------
-    //! @brief      フレームバッファをクリアします.
-    //!
-    //! @param[in]      clearColorCount     クリアカラー数です.
-    //! @param[in]      pClearColors        クリアカラーの配列です.
-    //! @param[in]      pClearDepthStencil  クリア深度ステンシルです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY ClearFrameBuffer(
-        uint32_t                        clearColorCount,
-        const ClearColorValue*          pClearColors,
-        const ClearDepthStencilValue*   pClearDepthStencil) override;
+    ////---------------------------------------------------------------------------------------------
+    ////! @brief      フレームバッファをクリアします.
+    ////!
+    ////! @param[in]      clearColorCount     クリアカラー数です.
+    ////! @param[in]      pClearColors        クリアカラーの配列です.
+    ////! @param[in]      pClearDepthStencil  クリア深度ステンシルです.
+    ////---------------------------------------------------------------------------------------------
+    //void A3D_APIENTRY ClearFrameBuffer(
+    //    uint32_t                        clearColorCount,
+    //    const ClearColorValue*          pClearColors,
+    //    const ClearDepthStencilValue*   pClearDepthStencil) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ブレンド定数を設定します.

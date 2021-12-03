@@ -18,7 +18,6 @@ enum CMD_TYPE
     CMD_SUB_BEGIN,                      //!< ICommandList::Begin() For COMMANDLIST_TYPE_BUNDLE
     CMD_BEGIN_FRAME_BUFFER,             //!< ICommandList::BginFrameBuffer()
     CMD_END_FRAME_BUFFER,               //!< ICommandList::EndFrameBuffer()
-    CMD_CLEAR_FRAME_BUFFER,             //!< ICommandList::ClearFrameBuffer()
     CMD_SET_BLEND_CONSTANT,             //!< ICommandList::SetBlendConstant()
     CMD_SET_STENCIL_REFERENCE,          //!< ICommandList::SetStencilReference()
     CMD_SET_VIEWPORTS,                  //!< ICommandList::SetViewports()
@@ -51,6 +50,8 @@ enum CMD_TYPE
     CMD_UPDATE_CONSTANT_BUFFER,         //!< ICommandList::UpdateConstantBuffer()
     CMD_SUB_END,                        //!< ICommandList::End() For COMMANDLIST_TYPE_BUNDLE
     CMD_END,                            //!< ICommandList::End() For COMMANDLIST_TYPE_DIRECT
+    CMD_CLEAR_RENDER_TARGET_VIEW,       //!< ICommandList::ClearRenderTargetView()
+    CMD_CLEAR_DEPTH_STENCIL_VIEW,       //!< ICommandList::ClearDepthStencilView()
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +73,9 @@ struct ImCmdBegin : ImCmdBase
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ImCmdBeginFrameBuffer : ImCmdBase
 {
-    IFrameBuffer*   pFrameBuffer;
+    uint32_t                RenderTargetViewCount;
+    IRenderTargetView*      pRenderTargetView[8];
+    IDepthStencilView*      pDepthStencilView;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,5 +375,26 @@ struct ImCmdUpdateConstantBuffer: ImCmdBase
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ImCmdEnd : ImCmdBase
 { /* NOTHING */ };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdClearRenderTargetView structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdClearRenderTargetView : ImCmdBase
+{
+    IRenderTargetView*  pRenderTargetView;
+    float               ClearColor[4];
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdClearDepthStencilView structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdClearDepthStencilView : ImCmdBase
+{
+    IDepthStencilView*  pDepthStencilView;
+    bool                EnableClearDepth;
+    bool                EnableClearStencil;
+    float               ClearDepth;
+    uint8_t             ClearStencil;
+};
 
 } // namespace a3d

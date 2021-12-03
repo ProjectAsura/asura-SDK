@@ -67,10 +67,10 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         uav_desc.Format                      = ToNativeViewFormat(pDesc->Format, false);
         uav_desc.ViewDimension               = D3D12_UAV_DIMENSION_BUFFER;
         uav_desc.Buffer.CounterOffsetInBytes = 0;
-        uav_desc.Buffer.FirstElement         = pDesc->FirstElements;
+        uav_desc.Buffer.FirstElement         = pDesc->FirstElement;
         uav_desc.Buffer.NumElements          = pDesc->ElementCount;
         uav_desc.Buffer.StructureByteStride  = pDesc->StructuredByteStride;
-        uav_desc.Buffer.Flags                = (pDesc->IsRaw) ? D3D12_BUFFER_UAV_FLAG_RAW : D3D12_BUFFER_UAV_FLAG_NONE;
+        uav_desc.Buffer.Flags                = (pDesc->StructuredByteStride == 0) ? D3D12_BUFFER_UAV_FLAG_RAW : D3D12_BUFFER_UAV_FLAG_NONE;
 
         pNativeDevice->CreateUnorderedAccessView(
             pWrapBuffer->GetD3D12Resource(),
@@ -115,7 +115,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         case D3D12_UAV_DIMENSION_TEXTURE1DARRAY:
             {
                 uav_desc.Texture1DArray.ArraySize       = pDesc->ElementCount;
-                uav_desc.Texture1DArray.FirstArraySlice = UINT(pDesc->FirstElements);
+                uav_desc.Texture1DArray.FirstArraySlice = UINT(pDesc->FirstElement);
                 uav_desc.Texture1DArray.MipSlice        = pDesc->MipSlice;
             }
             break;
@@ -130,7 +130,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         case D3D12_UAV_DIMENSION_TEXTURE2DARRAY:
             {
                 uav_desc.Texture2DArray.ArraySize       = pDesc->ElementCount;
-                uav_desc.Texture2DArray.FirstArraySlice = UINT(pDesc->FirstElements);
+                uav_desc.Texture2DArray.FirstArraySlice = UINT(pDesc->FirstElement);
                 uav_desc.Texture2DArray.MipSlice        = pDesc->MipSlice;
                 uav_desc.Texture2DArray.PlaneSlice      = 0;
             }
@@ -138,7 +138,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         case D3D12_UAV_DIMENSION_TEXTURE3D:
             {
-                uav_desc.Texture3D.FirstWSlice  = UINT(pDesc->FirstElements);
+                uav_desc.Texture3D.FirstWSlice  = UINT(pDesc->FirstElement);
                 uav_desc.Texture3D.MipSlice     = pDesc->MipSlice;
                 uav_desc.Texture3D.WSize        = pDesc->ElementCount;
             }

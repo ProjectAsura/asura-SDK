@@ -306,32 +306,54 @@ bool Device::CreateBuffer(const BufferDesc* pDesc, IBuffer** ppResource)
 { return Buffer::Create(this, pDesc, ppResource); }
 
 //-------------------------------------------------------------------------------------------------
-//      バッファビューを生成します.
-//-------------------------------------------------------------------------------------------------
-bool Device::CreateBufferView
-(
-    IBuffer*                pBuffer,
-    const BufferViewDesc*   pDesc,
-    IBufferView**           ppBufferView
-)
-{ return BufferView::Create(this, pBuffer, pDesc, ppBufferView); }
-
-//-------------------------------------------------------------------------------------------------
 //      テクスチャを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateTexture(const TextureDesc* pDesc, ITexture** ppResource)
 { return Texture::Create(this, pDesc, ppResource); }
 
 //-------------------------------------------------------------------------------------------------
-//      テクスチャビューを生成します.
+//      レンダーターゲットビューを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateTextureView
+bool Device::CreateRenderTargetView
 (
     ITexture*               pTexture,
-    const TextureViewDesc*  pDesc,
-    ITextureView**          ppTextureView
+    const TargetViewDesc*   pDesc,
+    IRenderTargetView**     ppRenderTargetView
 )
-{ return TextureView::Create(this, pTexture, pDesc, ppTextureView); }
+{ return RenderTargetView::Create(this, pTexture, pDesc, ppRenderTargetView); }
+
+//-------------------------------------------------------------------------------------------------
+//      深度ステンシルビューを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateDepthStencilView
+(
+    ITexture*               pTexture,
+    const TargetViewDesc*   pDesc,
+    IDepthStencilView**     ppDepthStencilView
+)
+{ return DepthStencilView::Create(this, pTexture, pDesc, ppDepthStencilView); }
+
+//-------------------------------------------------------------------------------------------------
+//      シェーダリソースビューを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateShaderResourceView
+(
+    IResource*                      pResource,
+    const ShaderResourceViewDesc*   pDesc,
+    IShaderResourceView**           ppShaderResourceView
+)
+{ return ShaderResourceView::Create(this, pResource, pDesc, ppShaderResourceView); }
+
+//-------------------------------------------------------------------------------------------------
+//      バッファビューを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateConstantBufferView
+(
+    IBuffer*                        pBuffer,
+    const ConstantBufferViewDesc*   pDesc,
+    IConstantBufferView**           ppBufferView
+)
+{ return ConstantBufferView::Create(this, pBuffer, pDesc, ppBufferView); }
 
 //-------------------------------------------------------------------------------------------------
 //      アンオーダードアクセスビューを生成します.
@@ -383,11 +405,6 @@ bool Device::CreateDescriptorSetLayout
 )
 { return DescriptorSetLayout::Create(this, pDesc, ppDescriptorSetLayout); }
 
-//-------------------------------------------------------------------------------------------------
-//      フレームバッファを生成します.
-//-------------------------------------------------------------------------------------------------
-bool Device::CreateFrameBuffer(const FrameBufferDesc* pDesc, IFrameBuffer** ppFrameBuffer)
-{ return FrameBuffer::Create(this, pDesc, ppFrameBuffer); }
 
 //-------------------------------------------------------------------------------------------------
 //      クエリプールを生成します.

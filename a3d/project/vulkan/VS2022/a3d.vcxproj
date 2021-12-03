@@ -95,14 +95,14 @@
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dBuffer.cpp" />
-    <ClCompile Include="..\..\..\src\vulkan\a3dBufferView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandList.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandSet.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dConstantBufferView.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dDepthStencilView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dDescriptorSet.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dDescriptorSetLayout.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dDevice.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dFence.cpp" />
-    <ClCompile Include="..\..\..\src\vulkan\a3dFrameBuffer.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -110,11 +110,12 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dPipelineState.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dQueryPool.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dQueue.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dRenderTargetView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSampler.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dShaderResourceView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSpirv.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dSwapChain.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dTexture.cpp" />
-    <ClCompile Include="..\..\..\src\vulkan\a3dTextureView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dUnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dUtil.cpp" />
   </ItemGroup>
@@ -128,23 +129,24 @@
     <ClInclude Include="..\..\..\src\misc\a3dInlines.h" />
     <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dBuffer.h" />
-    <ClInclude Include="..\..\..\src\vulkan\a3dBufferView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandList.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandSet.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dConstantBufferView.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dDepthStencilView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dDescriptorSet.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dDescriptorSetLayout.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dDevice.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dFence.h" />
-    <ClInclude Include="..\..\..\src\vulkan\a3dFrameBuffer.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dPCH.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dPipelineState.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dQueryPool.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dQueue.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dRenderTargetView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSampler.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dShaderResourceView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSpirv.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dSwapChain.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dTexture.h" />
-    <ClInclude Include="..\..\..\src\vulkan\a3dTextureView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h" />

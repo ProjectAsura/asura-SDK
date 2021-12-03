@@ -91,13 +91,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dBuffer.cpp" />
-    <ClCompile Include="..\..\..\src\d3d11\a3dBufferView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dCommandSet.cpp" />
+    <ClCompile Include="..\..\..\src\d3d11\a3dConstantBufferView.cpp" />
+    <ClCompile Include="..\..\..\src\d3d11\a3dDepthStencilView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSet.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDevice.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dFence.cpp" />
-    <ClCompile Include="..\..\..\src\d3d11\a3dFrameBuffer.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -105,10 +105,11 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dPipelineState.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dQueryPool.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dQueue.cpp" />
+    <ClCompile Include="..\..\..\src\d3d11\a3dRenderTargetView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dSampler.cpp" />
+    <ClCompile Include="..\..\..\src\d3d11\a3dShaderResourceView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dSwapChain.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dTexture.cpp" />
-    <ClCompile Include="..\..\..\src\d3d11\a3dTextureView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dUnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dUtil.cpp" />
     <ClCompile Include="..\..\..\src\emu\a3dCommandBuffer.cpp" />
@@ -124,21 +125,22 @@
     <ClInclude Include="..\..\..\src\container\a3dList.h" />
     <ClInclude Include="..\..\..\src\container\a3dPool.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dBuffer.h" />
-    <ClInclude Include="..\..\..\src\d3d11\a3dBufferView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dCommandSet.h" />
+    <ClInclude Include="..\..\..\src\d3d11\a3dConstantBufferView.h" />
+    <ClInclude Include="..\..\..\src\d3d11\a3dDepthStencilView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSet.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDevice.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dFence.h" />
-    <ClInclude Include="..\..\..\src\d3d11\a3dFrameBuffer.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dPCH.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dPipelineState.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dQueryPool.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dQueue.h" />
+    <ClInclude Include="..\..\..\src\d3d11\a3dRenderTargetView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dSampler.h" />
+    <ClInclude Include="..\..\..\src\d3d11\a3dShaderResourceView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dSwapChain.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dTexture.h" />
-    <ClInclude Include="..\..\..\src\d3d11\a3dTextureView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\emu\a3dCommandBuffer.h" />

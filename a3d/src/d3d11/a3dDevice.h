@@ -142,20 +142,6 @@ public:
         IBuffer**             ppResource) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      バッファビューを生成します.
-    //!
-    //! @param[in]      pBuffer         バッファです.
-    //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppBufferView    バッファビューの格納先です.
-    //! @retval true    生成に成功.
-    //! @retval false   生成に失敗.
-    //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateBufferView(
-        IBuffer*                pBuffer,
-        const BufferViewDesc*   pDesc,
-        IBufferView**           ppBufferView) override;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      テクスチャを生成します.
     //!
     //! @param[in]      pDesc           構成設定です.
@@ -168,18 +154,56 @@ public:
         ITexture**             ppResource) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      テクスチャビューを生成します.
+    //! @brief      レンダーターゲットビューを生成します.
     //!
-    //! @param[in]      pTexture        テクスチャです.
-    //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppTextureView   テクスチャビューの格納先です.
+    //! @param[in]      pTexture                テクスチャです.
+    //! @param[in]      pDesc                   構成設定です.
+    //! @param[out]     ppRenderTargetView      レンダーターゲットビューの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateTextureView(
+    bool A3D_APIENTRY CreateRenderTargetView(
         ITexture*               pTexture,
-        const TextureViewDesc*  pDesc,
-        ITextureView**          ppTextureView) override;
+        const TargetViewDesc*   pDesc,
+        IRenderTargetView**     ppRenderTargetView) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      深度ステンシルビューを生成します.
+    //! 
+    //! @param[in]      pTexture            テクスチャです.
+    //! @param[in]      pDesc               構成設定です.
+    //! @param[out]     ppDepthStencilView  深度ステンシルビューの格納先です.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateDepthStencilView(
+        ITexture*               pTexture,
+        const TargetViewDesc*   pDesc,
+        IDepthStencilView**     ppDepthStencilView) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      シェーダリソースビューを生成します.
+    //! 
+    //! @param[in]      pResource               リソースです.
+    //! @param[in]      pDesc                   構成設定です.
+    //! @param[out]     ppShaderResourceView    シェーダリソースビューの格納先です.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateShaderResourceView(
+        IResource*                      pResource,
+        const ShaderResourceViewDesc*   pDesc,
+        IShaderResourceView**           ppShaderResourceView) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      定数バッファビューを生成します.
+    //!
+    //! @param[in]      pBuffer         バッファです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppBufferView    バッファビューの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateConstantBufferView(
+        IBuffer*                        pBuffer,
+        const ConstantBufferViewDesc*   pDesc,
+        IConstantBufferView**           ppBufferView) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      アンオーダードアクセスビューを生成します.
@@ -254,18 +278,6 @@ public:
     bool A3D_APIENTRY CreateDescriptorSetLayout(
         const DescriptorSetLayoutDesc*  pDesc,
         IDescriptorSetLayout**          ppDescriptorSetLayout) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      フレームバッファを生成します.
-    //!
-    //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppFrameBuffer   フレームバッファの格納先です.
-    //! @retval true    生成に成功.
-    //! @retval false   生成に失敗. 
-    //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateFrameBuffer(
-        const FrameBufferDesc*  pDesc,
-        IFrameBuffer**          ppFrameBuffer) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      クエリプールを生成します.

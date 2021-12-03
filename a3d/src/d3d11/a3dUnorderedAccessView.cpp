@@ -61,9 +61,9 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
         uav_desc.Format                 = ToNativeFormat(pDesc->Format);
         uav_desc.ViewDimension          = D3D11_UAV_DIMENSION_BUFFER;
-        uav_desc.Buffer.FirstElement    = UINT(pDesc->FirstElements);
+        uav_desc.Buffer.FirstElement    = UINT(pDesc->FirstElement);
         uav_desc.Buffer.NumElements     = pDesc->ElementCount;
-        uav_desc.Buffer.Flags           = (pDesc->IsRaw) ? D3D11_BUFFER_UAV_FLAG_RAW : 0;
+        uav_desc.Buffer.Flags           = (pDesc->StructuredByteStride == 0) ? D3D11_BUFFER_UAV_FLAG_RAW : 0;
 
         auto hr = pNativeDevice->CreateUnorderedAccessView(
             pWrapBuffer->GetD3D11Buffer(), &uav_desc, &m_pUAV);
@@ -94,35 +94,35 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         case D3D11_UAV_DIMENSION_TEXTURE1D:
             {
-                uav_desc.Texture1D.MipSlice         = pDesc->MipSlice;
+                uav_desc.Texture1D.MipSlice = pDesc->MipSlice;
             }
             break;
 
         case D3D11_UAV_DIMENSION_TEXTURE1DARRAY:
             {
                 uav_desc.Texture1DArray.ArraySize       = pDesc->ElementCount;
-                uav_desc.Texture1DArray.FirstArraySlice = UINT(pDesc->FirstElements);
+                uav_desc.Texture1DArray.FirstArraySlice = UINT(pDesc->FirstElement);
                 uav_desc.Texture1DArray.MipSlice        = pDesc->MipSlice;
             }
             break;
 
         case D3D11_UAV_DIMENSION_TEXTURE2D:
             {
-                uav_desc.Texture2D.MipSlice         = pDesc->MipSlice;
+                uav_desc.Texture2D.MipSlice = pDesc->MipSlice;
             }
             break;
 
         case D3D11_UAV_DIMENSION_TEXTURE2DARRAY:
             {
                 uav_desc.Texture2DArray.ArraySize       = pDesc->ElementCount;
-                uav_desc.Texture2DArray.FirstArraySlice = UINT(pDesc->FirstElements);
+                uav_desc.Texture2DArray.FirstArraySlice = UINT(pDesc->FirstElement);
                 uav_desc.Texture2DArray.MipSlice        = pDesc->MipSlice;
             }
             break;
 
         case D3D11_UAV_DIMENSION_TEXTURE3D:
             {
-                uav_desc.Texture3D.FirstWSlice      = UINT(pDesc->FirstElements);
+                uav_desc.Texture3D.FirstWSlice      = UINT(pDesc->FirstElement);
                 uav_desc.Texture3D.MipSlice         = pDesc->MipSlice;
                 uav_desc.Texture3D.WSize            = pDesc->ElementCount;
             }

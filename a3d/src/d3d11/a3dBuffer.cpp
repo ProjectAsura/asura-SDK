@@ -89,7 +89,7 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
         if (pDesc->Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
         { desc.StructureByteStride = pDesc->Stride; }
 
-        if (pDesc->Usage == RESOURCE_USAGE_CONSTANT_BUFFER)
+        if (pDesc->Usage == RESOURCE_USAGE_CONSTANT_BUFFER_VIEW)
         {
             m_pSubresource = new uint8_t [size];
             memset(m_pSubresource, 0, size);

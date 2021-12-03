@@ -60,6 +60,46 @@ void CommandList::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      レンダーターゲットビューをクリアします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::ClearRenderTargetView
+(
+    IRenderTargetView*      pRenderTargetView,
+    const ClearColorValue&  clearValue
+)
+{
+    ImCmdClearRenderTargetView cmd = {};
+    cmd.Type                = CMD_CLEAR_RENDER_TARGET_VIEW;
+    cmd.pRenderTargetView   = pRenderTargetView;
+    cmd.ClearColor[0]       = clearValue.R;
+    cmd.ClearColor[1]       = clearValue.G;
+    cmd.ClearColor[2]       = clearValue.B;
+    cmd.ClearColor[3]       = clearValue.A;
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
+//      深度ステンシルビューをクリアします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::ClearDepthStencilView
+(
+    IDepthStencilView*              pDepthStencilView,
+    const ClearDepthStencilValue&   clearValue
+)
+{
+    ImCmdClearDepthStencilView cmd = {};
+    cmd.Type                = CMD_CLEAR_DEPTH_STENCIL_VIEW;
+    cmd.pDepthStencilView   = pDepthStencilView;
+    cmd.EnableClearDepth    = clearValue.EnableClearDepth;
+    cmd.EnableClearStencil  = clearValue.EnableClearStencil;
+    cmd.ClearDepth          = clearValue.Depth;
+    cmd.ClearStencil        = clearValue.Stencil;
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
 //      コマンドの記録を開始します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::Begin()
@@ -75,11 +115,21 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
+void CommandList::BeginFrameBuffer
+(
+    uint32_t            renderTargetViewCount,
+    IRenderTargetView** pRenderTargetViews,
+    IDepthStencilView*  pDepthStencilView
+)
 {
     ImCmdBeginFrameBuffer cmd = {};
     cmd.Type         = CMD_BEGIN_FRAME_BUFFER;
-    cmd.pFrameBuffer = pBuffer;
+    cmd.RenderTargetViewCount = REQUEST_OPLOCK_CURRENT_VERSION;
+
+    auto maxCount = (renderTargetViewCount >= 8) ? 8 : renderTargetViewCount;
+    for(auto i=0u; i<maxCount; ++i)
+    { cmd.pRenderTargetView[i] = pRenderTargetViews[i]; }
+    cmd.pDepthStencilView = pDepthStencilView;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -94,28 +144,6 @@ void CommandList::EndFrameBuffer()
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
-//-------------------------------------------------------------------------------------------------
-//      フレームバッファをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearFrameBuffer
-(
-    uint32_t                        clearColorCount,
-    const ClearColorValue*          pClearColors,
-    const ClearDepthStencilValue*   pClearDepthStencil
-)
-{
-    ImCmdClearFrameBuffer cmd = {};
-    cmd.Type            = CMD_CLEAR_FRAME_BUFFER;
-    cmd.ClearColorCount = clearColorCount;
-    memcpy(cmd.ClearColors, pClearColors, clearColorCount * sizeof(ClearColorValue));
-    if (pClearDepthStencil != nullptr)
-    {
-        cmd.HasDepth            = true;
-        cmd.ClearDepthStencil   = *pClearDepthStencil;
-    }
-
-    m_Buffer.Push(&cmd, sizeof(cmd));
-}
 
 //-------------------------------------------------------------------------------------------------
 //      ブレンド定数を設定します.

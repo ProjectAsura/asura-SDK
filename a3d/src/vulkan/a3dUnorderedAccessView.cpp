@@ -60,8 +60,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         m_Buffer = pWrapBuffer->GetVulkanBuffer();
     }
-
-    if (pResource->GetKind() == RESOURCE_KIND_TEXTURE)
+    else if (pResource->GetKind() == RESOURCE_KIND_TEXTURE)
     {
         auto pWrapTexture = static_cast<Texture*>(pResource);
         A3D_ASSERT(pWrapTexture != nullptr);
@@ -84,7 +83,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         info.subresourceRange.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
         info.subresourceRange.baseMipLevel      = pDesc->MipSlice;
         info.subresourceRange.levelCount        = pDesc->MipLevels;
-        info.subresourceRange.baseArrayLayer    = uint32_t(pDesc->FirstElements);
+        info.subresourceRange.baseArrayLayer    = uint32_t(pDesc->FirstElement);
         info.subresourceRange.layerCount        = pDesc->ElementCount;
 
         auto ret = vkCreateImageView(pNativeDevice, &info, nullptr, &m_ImageView);
@@ -112,6 +111,7 @@ void UnorderedAccessView::Term()
         m_ImageView = null_handle;
     }
 
+    m_Buffer = null_handle;
     SafeRelease( m_pResource );
     SafeRelease( m_pDevice );
 }

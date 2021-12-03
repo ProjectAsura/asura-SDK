@@ -24,7 +24,7 @@ CommandList::CommandList()
 , m_pDevice         (nullptr)
 , m_CommandPool     (null_handle)
 , m_CommandBuffer   (null_handle)
-, m_pFrameBuffer    (nullptr)
+, m_BindRenderPass  (false)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -132,7 +132,6 @@ void CommandList::Term()
         m_CommandPool = null_handle;
     }
 
-    m_pFrameBuffer = nullptr;
     SafeRelease(m_pDevice);
 }
 
@@ -169,6 +168,97 @@ void CommandList::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      レンダーターゲットビューをクリアします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::ClearRenderTargetView
+(
+    IRenderTargetView*      pRenderTargetView,
+    const ClearColorValue&  clearValue
+)
+{
+    if (pRenderTargetView == nullptr)
+    { return; }
+
+    A3D_ASSERT(!m_BindRenderPass);
+
+    auto pWrapRTV = static_cast<RenderTargetView*>(pRenderTargetView);
+    A3D_ASSERT(pWrapRTV != nullptr);
+
+    auto desc = pWrapRTV->GetDesc();
+
+    auto image = pWrapRTV->GetVulkanImage();
+    VkClearColorValue value = {};
+    value.float32[0] = clearValue.R;
+    value.float32[1] = clearValue.G;
+    value.float32[2] = clearValue.B;
+    value.float32[3] = clearValue.A;
+
+    VkImageSubresourceRange range = {};
+    range.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
+    range.baseMipLevel      = desc.MipSlice;
+    range.levelCount        = desc.MipLevels;
+    range.baseArrayLayer    = desc.FirstArraySlice;
+    range.layerCount        = desc.ArraySize;
+
+    vkCmdClearColorImage(
+        m_CommandBuffer,
+        image,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        &value,
+        1,
+        &range);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      深度ステンシルビューをクリアします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::ClearDepthStencilView
+(
+    IDepthStencilView*              pDepthStencilView,
+    const ClearDepthStencilValue&   clearValue
+)
+{
+    if (pDepthStencilView == nullptr)
+    { return; }
+
+    A3D_ASSERT(!m_BindRenderPass);
+
+    auto pWrapDSV = static_cast<DepthStencilView*>(pDepthStencilView);
+    A3D_ASSERT(pWrapDSV != nullptr);
+
+    auto desc = pWrapDSV->GetDesc();
+
+    auto image = pWrapDSV->GetVulkanImage();
+
+    VkImageLayout      imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    VkImageAspectFlags aspectMask  = VK_IMAGE_ASPECT_DEPTH_BIT;
+    if (desc.Format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
+    {
+        imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+
+    VkClearDepthStencilValue value = {};
+    value.depth     = clearValue.Depth;
+    value.stencil   = uint32_t(clearValue.Stencil);
+
+    VkImageSubresourceRange range = {};
+    range.aspectMask        = aspectMask;
+    range.baseArrayLayer    = desc.FirstArraySlice;
+    range.layerCount        = desc.ArraySize;
+    range.baseMipLevel      = desc.MipSlice;
+    range.levelCount        = desc.MipLevels;
+
+    vkCmdClearDepthStencilImage(
+        m_CommandBuffer,
+        image,
+        imageLayout,
+        &value,
+        1,
+        &range);
+}
+
+//-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を開始します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::Begin()
@@ -193,8 +283,6 @@ void CommandList::Begin()
     A3D_ASSERT( result == VK_SUCCESS );
     A3D_UNUSED( result );
 
-    m_pFrameBuffer = nullptr;
-
     VkViewport dummyViewport = {};
     dummyViewport.width    = 1;
     dummyViewport.height   = 1;
@@ -214,20 +302,90 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
+void CommandList::BeginFrameBuffer
+(
+    uint32_t            renderTargetViewCount,
+    IRenderTargetView** pRenderTargetViews,
+    IDepthStencilView*  pDepthStencilView
+)
 {
-    if (pBuffer == nullptr)
-    { return; }
+    A3D_ASSERT(!m_BindRenderPass);
+    if (renderTargetViewCount >= 8)
+    { renderTargetViewCount = 8; }
 
-    auto pWrapFrameBuffer = static_cast<FrameBuffer*>(pBuffer);
-    A3D_ASSERT(pWrapFrameBuffer != nullptr);
+    uint32_t width  = 0;
+    uint32_t height = 0;
 
-    // 同じフレームバッファであればコマンドは出さない.
-    if (m_pFrameBuffer == pWrapFrameBuffer)
-    { return; }
+    VkRenderingAttachmentInfoKHR colorAttachments[8] = {};
+    for(auto i=0u; i<renderTargetViewCount; ++i)
+    {
+        auto pWrapRTV = static_cast<RenderTargetView*>(pRenderTargetViews[i]);
+        A3D_ASSERT(pWrapRTV != nullptr);
 
-    pWrapFrameBuffer->Bind( this );
-    m_pFrameBuffer = pWrapFrameBuffer;
+        colorAttachments[i].sType               = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+        colorAttachments[i].pNext               = nullptr;
+        colorAttachments[i].imageView           = pWrapRTV->GetVulkanImageView();
+        colorAttachments[i].imageLayout         = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachments[i].resolveMode         = VK_RESOLVE_MODE_NONE;
+        colorAttachments[i].resolveImageView    = null_handle;
+        colorAttachments[i].resolveImageLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachments[i].loadOp              = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachments[i].storeOp             = VK_ATTACHMENT_STORE_OP_STORE;
+
+        if (i == 0)
+        {
+            auto texDesc = pWrapRTV->GetTextureDesc();
+            width  = texDesc.Width;
+            height = texDesc.Height;
+        }
+    }
+
+    VkRenderingAttachmentInfoKHR depthAttachment = {};
+    if (pDepthStencilView != nullptr)
+    {
+        auto pWrapDSV = static_cast<DepthStencilView*>(pDepthStencilView);
+        A3D_ASSERT(pWrapDSV != nullptr);
+
+        auto desc = pWrapDSV->GetTextureDesc();
+
+        VkImageLayout imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+        if (desc.Format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
+        { imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; }
+
+        depthAttachment.sType               = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+        depthAttachment.pNext               = nullptr;
+        depthAttachment.imageView           = pWrapDSV->GetVulkanImageView();
+        depthAttachment.imageLayout         = imageLayout;
+        depthAttachment.resolveMode         = VK_RESOLVE_MODE_NONE;
+        depthAttachment.resolveImageView    = null_handle;
+        depthAttachment.resolveImageLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.loadOp              = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.storeOp             = VK_ATTACHMENT_STORE_OP_STORE;
+
+        width   = desc.Width;
+        height  = desc.Height;
+    }
+
+    VkRect2D area = {};
+    area.offset.x       = 0;
+    area.offset.y       = 0;
+    area.extent.width   = width;
+    area.extent.height  = height;
+
+    VkRenderingInfoKHR info = {};
+    info.sType                  = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+    info.pNext                  = nullptr;
+    info.flags                  = 0;
+    info.renderArea             = area;
+    info.layerCount             = 1;
+    info.viewMask               = 0;
+    info.colorAttachmentCount   = renderTargetViewCount;
+    info.pColorAttachments      = colorAttachments;
+    info.pDepthAttachment       = &depthAttachment;
+
+    vkCmdBeginRenderingKHR(m_CommandBuffer, &info);
+
+    m_BindRenderPass = true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -235,27 +393,9 @@ void CommandList::BeginFrameBuffer(IFrameBuffer* pBuffer)
 //-------------------------------------------------------------------------------------------------
 void CommandList::EndFrameBuffer()
 {
-    // フレームバッファがバインド済みであればレンダーパスを終わらせる.
-    if (m_pFrameBuffer != nullptr)
-    { m_pFrameBuffer = nullptr; }
-
-    vkCmdEndRenderPass(m_CommandBuffer);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      フレームバッファをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearFrameBuffer
-(
-    uint32_t                        clearColorCount,
-    const ClearColorValue*          pClearColors,
-    const ClearDepthStencilValue*   pClearDepthStencil
-)
-{
-    if (m_pFrameBuffer == nullptr)
-    { return; }
-
-    m_pFrameBuffer->Clear(this, clearColorCount, pClearColors, pClearDepthStencil);
+    A3D_ASSERT(m_BindRenderPass);
+    vkCmdEndRenderingKHR(m_CommandBuffer);
+    m_BindRenderPass = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -278,13 +418,13 @@ void CommandList::SetViewports(uint32_t count, Viewport* pViewports)
     if (count == 0 || pViewports == nullptr)
     { return; }
 
-    VkViewport viewports[16];
+    if (count >= 16)
+    { count = 16; }
+
+    VkViewport viewports[16] = {};
 
     for(auto i=0u; i<count; ++i)
     {
-        if (i >= 16)
-        { break; }
-
         viewports[i].x        = pViewports[i].X;
         viewports[i].y        = pViewports[i].Y;
         viewports[i].width    = pViewports[i].Width;
@@ -304,13 +444,13 @@ void CommandList::SetScissors(uint32_t count, Rect* pScissors)
     if (count == 0 || pScissors == nullptr)
     { return; }
 
-    VkRect2D rects[16];
+    if (count >= 16)
+    { count = 16; }
+
+    VkRect2D rects[16] = {};
 
     for(auto i=0u; i<count; ++i)
     {
-        if (i >= 16)
-        { break; }
-
         rects[i].offset.x      = pScissors[i].Offset.X;
         rects[i].offset.y      = pScissors[i].Offset.Y;
         rects[i].extent.width  = pScissors[i].Extent.Width;
@@ -1156,12 +1296,6 @@ bool CommandList::UpdateConstantBuffer(IBuffer* pBuffer, size_t offset, size_t s
 //-------------------------------------------------------------------------------------------------
 void CommandList::End()
 {
-    if (m_pFrameBuffer != nullptr)
-    {
-        vkCmdEndRenderPass( m_CommandBuffer );
-        m_pFrameBuffer = nullptr;
-    }
-
     vkEndCommandBuffer( m_CommandBuffer );
 }
 

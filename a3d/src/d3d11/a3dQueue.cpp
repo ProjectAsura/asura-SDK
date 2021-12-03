@@ -211,7 +211,6 @@ void Queue::ParseCmd()
     A3D_ASSERT(pDeviceContext != nullptr);
 
     bool end = false;
-    FrameBuffer*     pActiveFrameBuffer   = nullptr;
     DescriptorSet*   pActiveDescriptorSet = nullptr;
     float            blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     uint32_t         stencilRef     = 0;
@@ -249,18 +248,23 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdBeginFrameBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    pActiveFrameBuffer = static_cast<FrameBuffer*>(cmd->pFrameBuffer);
-                    if (pActiveFrameBuffer != nullptr)
-                    { pActiveFrameBuffer->Bind(pDeviceContext); }
-                    else
+                    ID3D11RenderTargetView* pRTVs[8] = {};
+
+                    auto count = cmd->RenderTargetViewCount;
+                    for(auto i=0u; i<8; ++i)
                     {
-                        ID3D11RenderTargetView* pNullRTVs[] = {
-                            nullptr, nullptr, nullptr, nullptr,
-                            nullptr, nullptr, nullptr, nullptr
-                        };
-                        pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
-                        pActiveFrameBuffer = nullptr;
+                        auto pWrapperRTV = static_cast<RenderTargetView*>(cmd->pRenderTargetView[i]);
+                        pRTVs[i] = pWrapperRTV->GetD3D11RenderTargetView();
                     }
+
+                    ID3D11DepthStencilView* pDSV = nullptr;
+                    if (cmd->pDepthStencilView != nullptr)
+                    {
+                        auto pWrapperDSV = static_cast<DepthStencilView*>(cmd->pDepthStencilView);
+                        pDSV = pWrapperDSV->GetD3D11DepthStencilView();
+                    }
+
+                    pDeviceContext->OMSetRenderTargets(count, pRTVs, pDSV);
 
                     pCmd += sizeof(ImCmdBeginFrameBuffer);
                 }
@@ -274,24 +278,6 @@ void Queue::ParseCmd()
                     };
                     pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
                     pCmd += sizeof(ImCmdBase);
-                }
-                break;
-
-            case CMD_CLEAR_FRAME_BUFFER:
-                {
-                    auto cmd = reinterpret_cast<ImCmdClearFrameBuffer*>(pCmd);
-                    A3D_ASSERT(cmd != nullptr);
-
-                    if (pActiveFrameBuffer != nullptr)
-                    {
-                        pActiveFrameBuffer->Clear(
-                            pDeviceContext,
-                            cmd->ClearColorCount,
-                            cmd->ClearColors,
-                            ((cmd->HasDepth) ? &cmd->ClearDepthStencil : nullptr));
-                    }
-
-                    pCmd += sizeof(ImCmdClearFrameBuffer);
                 }
                 break;
 
@@ -386,7 +372,7 @@ void Queue::ParseCmd()
                             {
                             case DESCRIPTOR_TYPE_CBV:
                                 {
-                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
                                     auto pCBV = pWrapView->GetD3D11Buffer();
                                     pDeviceContext->VSSetConstantBuffers(
                                         entry.ShaderRegister,
@@ -397,7 +383,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SRV:
                                 {
-                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
                                     auto pSRV = pWrapView->GetD3D11ShaderResourceView();
                                     pDeviceContext->VSSetShaderResources(
                                         entry.ShaderRegister,
@@ -408,7 +394,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SMP:
                                 {
-                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
                                     auto pSmp = pWrapSmp->GetD3D11SamplerState();
                                     pDeviceContext->VSSetSamplers(
                                         entry.ShaderRegister,
@@ -425,7 +411,7 @@ void Queue::ParseCmd()
                             {
                             case DESCRIPTOR_TYPE_CBV:
                                 {
-                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
                                     auto pCBV = pWrapView->GetD3D11Buffer();
                                     pDeviceContext->DSSetConstantBuffers(
                                         entry.ShaderRegister,
@@ -436,7 +422,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SRV:
                                 {
-                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
                                     auto pSRV = pWrapView->GetD3D11ShaderResourceView();
                                     pDeviceContext->DSSetShaderResources(
                                         entry.ShaderRegister,
@@ -447,7 +433,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SMP:
                                 {
-                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
                                     auto pSmp = pWrapSmp->GetD3D11SamplerState();
                                     pDeviceContext->DSSetSamplers(
                                         entry.ShaderRegister,
@@ -464,7 +450,7 @@ void Queue::ParseCmd()
                             {
                             case DESCRIPTOR_TYPE_CBV:
                                 {
-                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
                                     auto pCBV = pWrapView->GetD3D11Buffer();
                                     pDeviceContext->GSSetConstantBuffers(
                                         entry.ShaderRegister,
@@ -475,7 +461,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SRV:
                                 {
-                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
                                     auto pSRV = pWrapView->GetD3D11ShaderResourceView();
                                     pDeviceContext->GSSetShaderResources(
                                         entry.ShaderRegister,
@@ -486,7 +472,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SMP:
                                 {
-                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
                                     auto pSmp = pWrapSmp->GetD3D11SamplerState();
                                     pDeviceContext->GSSetSamplers(
                                         entry.ShaderRegister,
@@ -503,7 +489,7 @@ void Queue::ParseCmd()
                             {
                             case DESCRIPTOR_TYPE_CBV:
                                 {
-                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
                                     auto pCBV = pWrapView->GetD3D11Buffer();
                                     pDeviceContext->HSSetConstantBuffers(
                                         entry.ShaderRegister,
@@ -514,7 +500,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SRV:
                                 {
-                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
                                     auto pSRV = pWrapView->GetD3D11ShaderResourceView();
                                     pDeviceContext->HSSetShaderResources(
                                         entry.ShaderRegister,
@@ -525,7 +511,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SMP:
                                 {
-                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
                                     auto pSmp = pWrapSmp->GetD3D11SamplerState();
                                     pDeviceContext->HSSetSamplers(
                                         entry.ShaderRegister,
@@ -542,7 +528,7 @@ void Queue::ParseCmd()
                             {
                             case DESCRIPTOR_TYPE_CBV:
                                 {
-                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
                                     auto pCBV = pWrapView->GetD3D11Buffer();
                                     pDeviceContext->PSSetConstantBuffers(
                                         entry.ShaderRegister,
@@ -553,7 +539,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SRV:
                                 {
-                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
                                     auto pSRV = pWrapView->GetD3D11ShaderResourceView();
                                     pDeviceContext->PSSetShaderResources(
                                         entry.ShaderRegister,
@@ -564,7 +550,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SMP:
                                 {
-                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
                                     auto pSmp = pWrapSmp->GetD3D11SamplerState();
                                     pDeviceContext->PSSetSamplers(
                                         entry.ShaderRegister,
@@ -581,7 +567,7 @@ void Queue::ParseCmd()
                             {
                             case DESCRIPTOR_TYPE_CBV:
                                 {
-                                    auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
                                     auto pCBV = pWrapView->GetD3D11Buffer();
                                     pDeviceContext->CSSetConstantBuffers(
                                         entry.ShaderRegister,
@@ -592,7 +578,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SRV:
                                 {
-                                    auto pWrapView = static_cast<a3d::TextureView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
                                     auto pSRV = pWrapView->GetD3D11ShaderResourceView();
                                     pDeviceContext->CSSetShaderResources(
                                         entry.ShaderRegister,
@@ -603,7 +589,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_SMP:
                                 {
-                                    auto pWrapSmp = static_cast<a3d::Sampler*>(cmd->pDescriptor[i]);
+                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
                                     auto pSmp = pWrapSmp->GetD3D11SamplerState();
                                     pDeviceContext->CSSetSamplers(
                                         entry.ShaderRegister,
@@ -614,7 +600,7 @@ void Queue::ParseCmd()
 
                             case DESCRIPTOR_TYPE_UAV:
                                 {
-                                    auto pWrapView = static_cast<a3d::UnorderedAccessView*>(cmd->pDescriptor[i]);
+                                    auto pWrapView = static_cast<UnorderedAccessView*>(cmd->pDescriptor[i]);
                                     auto pUAV = pWrapView->GetD3D11UnorderedAccessView();
                                     pDeviceContext->CSGetUnorderedAccessViews(
                                         entry.ShaderRegister,
@@ -628,7 +614,7 @@ void Queue::ParseCmd()
 
                         if (entry.Type == DESCRIPTOR_TYPE_CBV)
                         {
-                            auto pWrapView = static_cast<a3d::BufferView*>(cmd->pDescriptor[i]);
+                            auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
                             pWrapView->UpdateSubsource(pDeviceContext);
                         }
                     }
@@ -642,9 +628,9 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetVertexBuffers*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    ID3D11Buffer* pBuffers[32];
-                    uint32_t strides[32];
-                    uint32_t offsets[32];
+                    ID3D11Buffer* pBuffers[32] = {};
+                    uint32_t strides[32] = {};
+                    uint32_t offsets[32] = {};
 
                     for(auto i=0u; i<cmd->Count; ++i)
                     {
@@ -1183,6 +1169,37 @@ void Queue::ParseCmd()
                     end = true;
                     pCmd += sizeof(ImCmdEnd);
                     pDeviceContext->Flush();
+                }
+                break;
+
+            case CMD_CLEAR_RENDER_TARGET_VIEW:
+                {
+                    auto cmd = reinterpret_cast<ImCmdClearRenderTargetView*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    auto pWrapperRTV = static_cast<RenderTargetView*>(cmd->pRenderTargetView);
+                    pDeviceContext->ClearRenderTargetView(pWrapperRTV->GetD3D11RenderTargetView(), cmd->ClearColor);
+
+                    cmd += sizeof(ImCmdClearRenderTargetView);
+                }
+                break;
+
+            case CMD_CLEAR_DEPTH_STENCIL_VIEW:
+                {
+                    auto cmd = reinterpret_cast<ImCmdClearDepthStencilView*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    auto pWrapperDSV = static_cast<DepthStencilView*>(cmd->pDepthStencilView);
+                    UINT flags = 0;
+                    if (cmd->EnableClearDepth)   { flags |= D3D11_CLEAR_DEPTH;   }
+                    if (cmd->EnableClearStencil) { flags |= D3D11_CLEAR_STENCIL; }
+                    pDeviceContext->ClearDepthStencilView(
+                        pWrapperDSV->GetD3D11DepthStencilView(),
+                        flags,
+                        cmd->ClearDepth,
+                        cmd->ClearStencil);
+
+                    cmd += sizeof(ImCmdClearDepthStencilView);
                 }
                 break;
             }

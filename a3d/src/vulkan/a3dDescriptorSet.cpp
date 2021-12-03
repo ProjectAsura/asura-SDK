@@ -192,40 +192,50 @@ void DescriptorSet::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      テクスチャを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, ITextureView* const pResource)
-{
-    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
-
-    auto pWrapResource = static_cast<TextureView*>(pResource);
-    A3D_ASSERT(pWrapResource != nullptr);
-
-    auto layout = (pWrapResource->GetVulkanImageAspectFlags() == VK_IMAGE_ASPECT_COLOR_BIT)
-        ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-
-    m_pInfos[index].Image.imageLayout = layout;
-    m_pInfos[index].Image.imageView   = pWrapResource->GetVulkanImageView();
-    m_pInfos[index].StorageBuffer     = false;
-}
-
-//-------------------------------------------------------------------------------------------------
 //      バッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IBufferView* const pResource)
+void DescriptorSet::SetView(uint32_t index, IConstantBufferView* const pResource)
 {
     A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
 
-    auto pWrapResource = static_cast<BufferView*>(pResource);
-    A3D_ASSERT(pWrapResource != nullptr);
+    auto pWrapCBV = static_cast<ConstantBufferView*>(pResource);
+    A3D_ASSERT(pWrapCBV != nullptr);
 
-    const auto& desc = pWrapResource->GetDesc();
+    const auto& desc = pWrapCBV->GetDesc();
 
-    m_pInfos[index].Buffer.buffer = pWrapResource->GetVulkanBuffer();
+    m_pInfos[index].Buffer.buffer = pWrapCBV->GetVulkanBuffer();
     m_pInfos[index].Buffer.offset = desc.Offset;
     m_pInfos[index].Buffer.range  = desc.Range;
     m_pInfos[index].StorageBuffer = false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      テクスチャを設定します.
+//-------------------------------------------------------------------------------------------------
+void DescriptorSet::SetView(uint32_t index, IShaderResourceView* const pResource)
+{
+    A3D_ASSERT(index < m_pLayout->GetDesc().EntryCount );
+
+    auto pWrapSRV = static_cast<ShaderResourceView*>(pResource);
+    A3D_ASSERT(pWrapSRV != nullptr);
+
+    auto desc = pWrapSRV->GetDesc();
+
+    auto kind = pWrapSRV->GetResource()->GetKind();
+
+    if (kind == RESOURCE_KIND_BUFFER)
+    {
+        m_pInfos[index].Buffer.buffer   = pWrapSRV->GetVulkanBuffer();
+        m_pInfos[index].Buffer.offset   = desc.FirstElement;
+        m_pInfos[index].Buffer.range    = desc.ElementCount;
+        m_pInfos[index].StorageBuffer   = false;
+    }
+    else if (kind == RESOURCE_KIND_TEXTURE)
+    {
+        m_pInfos[index].Image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_pInfos[index].Image.imageView   = pWrapSRV->GetVulkanImageView();
+        m_pInfos[index].StorageBuffer     = false;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -244,7 +254,7 @@ void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResourc
     if (kind == RESOURCE_KIND_BUFFER)
     {
         m_pInfos[index].Buffer.buffer = pWrapView->GetVulkanBuffer();
-        m_pInfos[index].Buffer.offset = desc.FirstElements;
+        m_pInfos[index].Buffer.offset = desc.FirstElement;
         m_pInfos[index].Buffer.range  = desc.ElementCount;
         m_pInfos[index].StorageBuffer = true;
     }

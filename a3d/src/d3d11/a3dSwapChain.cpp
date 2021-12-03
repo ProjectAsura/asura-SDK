@@ -138,7 +138,7 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
             if (!Texture::CreateFromNative(
                 pDevice,
                 pBuffer,
-                RESOURCE_USAGE_COLOR_TARGET,
+                RESOURCE_USAGE_RENDER_TARGET_VIEW,
                 componentMapping,
                 reinterpret_cast<ITexture**>(&m_pBuffers[i])))
             {
@@ -312,7 +312,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
             if (!Texture::CreateFromNative(
                 m_pDevice,
                 pBuffer,
-                RESOURCE_USAGE_COLOR_TARGET,
+                RESOURCE_USAGE_RENDER_TARGET_VIEW,
                 componentMapping,
                 reinterpret_cast<ITexture**>(&m_pBuffers[i])))
             {
