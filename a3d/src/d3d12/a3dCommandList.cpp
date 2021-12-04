@@ -267,25 +267,6 @@ void CommandList::BeginFrameBuffer
 void CommandList::EndFrameBuffer()
 { m_pCommandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr); }
 
-////-------------------------------------------------------------------------------------------------
-////      フレームバッファをクリアします.
-////-------------------------------------------------------------------------------------------------
-//void CommandList::ClearFrameBuffer
-//(
-//    uint32_t                        clearColorCount,
-//    const ClearColorValue*          pClearColors,
-//    const ClearDepthStencilValue*   pClearDepthStencil
-//)
-//{
-//    if (clearColorCount == 0 && pClearColors == nullptr && pClearDepthStencil == nullptr)
-//    { return; }
-//
-//    if (m_pFrameBuffer == nullptr)
-//    { return; }
-//
-//    m_pFrameBuffer->Clear(this, clearColorCount, pClearColors, pClearDepthStencil);
-//}
-
 //-------------------------------------------------------------------------------------------------
 //      ブレンド定数を設定します.
 //-------------------------------------------------------------------------------------------------

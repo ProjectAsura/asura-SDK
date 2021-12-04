@@ -1869,7 +1869,7 @@ struct A3D_API ICommandList : public IDeviceChild
     virtual void A3D_APIENTRY BeginFrameBuffer(
         uint32_t                renderTargetViewCount,
         IRenderTargetView**     pRenderTargetViews,
-        IDepthStencilView*      pDepthStencilView);
+        IDepthStencilView*      pDepthStencilView) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを解除します.

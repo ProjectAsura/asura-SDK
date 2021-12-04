@@ -115,18 +115,6 @@ public:
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY EndFrameBuffer() override;
 
-    ////---------------------------------------------------------------------------------------------
-    ////! @brief      フレームバッファをクリアします.
-    ////!
-    ////! @param[in]      clearColorCount     クリアカラー数です.
-    ////! @param[in]      pClearColors        クリアカラーの配列です.
-    ////! @param[in]      pClearDepthStencil  クリア深度ステンシルです.
-    ////---------------------------------------------------------------------------------------------
-    //void A3D_APIENTRY ClearFrameBuffer(
-    //    uint32_t                        clearColorCount,
-    //    const ClearColorValue*          pClearColors,
-    //    const ClearDepthStencilValue*   pClearDepthStencil) override;
-
     //---------------------------------------------------------------------------------------------
     //! @brief      ブレンド定数を設定します.
     //!
