@@ -251,7 +251,7 @@ void Queue::ParseCmd()
                     ID3D11RenderTargetView* pRTVs[8] = {};
 
                     auto count = cmd->RenderTargetViewCount;
-                    for(auto i=0u; i<8; ++i)
+                    for(auto i=0u; i<count; ++i)
                     {
                         auto pWrapperRTV = static_cast<RenderTargetView*>(cmd->pRenderTargetView[i]);
                         pRTVs[i] = pWrapperRTV->GetD3D11RenderTargetView();
@@ -1180,7 +1180,7 @@ void Queue::ParseCmd()
                     auto pWrapperRTV = static_cast<RenderTargetView*>(cmd->pRenderTargetView);
                     pDeviceContext->ClearRenderTargetView(pWrapperRTV->GetD3D11RenderTargetView(), cmd->ClearColor);
 
-                    cmd += sizeof(ImCmdClearRenderTargetView);
+                    pCmd += sizeof(ImCmdClearRenderTargetView);
                 }
                 break;
 
@@ -1199,7 +1199,7 @@ void Queue::ParseCmd()
                         cmd->ClearDepth,
                         cmd->ClearStencil);
 
-                    cmd += sizeof(ImCmdClearDepthStencilView);
+                    pCmd += sizeof(ImCmdClearDepthStencilView);
                 }
                 break;
             }
