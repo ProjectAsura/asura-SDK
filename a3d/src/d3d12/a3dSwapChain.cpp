@@ -127,12 +127,6 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         if (m_pBuffers == nullptr)
         { return false; }
 
-        ComponentMapping componentMapping;
-        componentMapping.R = TEXTURE_SWIZZLE_R;
-        componentMapping.G = TEXTURE_SWIZZLE_G;
-        componentMapping.B = TEXTURE_SWIZZLE_B;
-        componentMapping.A = TEXTURE_SWIZZLE_A;
-
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         {
             ID3D12Resource* pBuffer;
@@ -144,7 +138,6 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
                     pDevice,
                     pBuffer,
                     RESOURCE_USAGE_RENDER_TARGET_VIEW,
-                    componentMapping,
                     reinterpret_cast<ITexture**>(&m_pBuffers[i])))
                 {
                     SafeRelease(pBuffer);
@@ -316,12 +309,6 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 
     // 再作成.
     {
-        ComponentMapping componentMapping;
-        componentMapping.R = TEXTURE_SWIZZLE_R;
-        componentMapping.G = TEXTURE_SWIZZLE_G;
-        componentMapping.B = TEXTURE_SWIZZLE_B;
-        componentMapping.A = TEXTURE_SWIZZLE_A;
-
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         {
             ID3D12Resource* pBuffer;
@@ -333,7 +320,6 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
                     m_pDevice,
                     pBuffer,
                     RESOURCE_USAGE_RENDER_TARGET_VIEW,
-                    componentMapping,
                     reinterpret_cast<ITexture**>(&m_pBuffers[i])))
                 {
                     SafeRelease(pBuffer);

@@ -314,7 +314,6 @@ bool Texture::CreateFromNative
     IDevice*            pDevice,
     ID3D11Texture2D*    pNativeResource,
     RESOURCE_USAGE      usage,
-    ComponentMapping    componentMapping,
     ITexture**          ppResource
 )
 {
@@ -357,7 +356,7 @@ bool Texture::CreateFromNative
 
     if (writable && readable)
     { instance->m_MapType = D3D11_MAP_READ_WRITE; }
-    else if (writable & dynamic)
+    else if (writable && dynamic)
     { instance->m_MapType = D3D11_MAP_WRITE_DISCARD; }
     else if (readable)
     { instance->m_MapType = D3D11_MAP_READ; }

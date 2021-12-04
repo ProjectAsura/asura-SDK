@@ -689,23 +689,6 @@ VkImageViewType ToNativeImageViewType(a3d::VIEW_DIMENSION value)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      コンポーネントスウィズルに変換します.
-//-------------------------------------------------------------------------------------------------
-VkComponentSwizzle ToNativeComponentSwizzle(a3d::TEXTURE_SWIZZLE value)
-{
-    static VkComponentSwizzle table[] = {
-        VK_COMPONENT_SWIZZLE_R,     // SWIZZLE_R
-        VK_COMPONENT_SWIZZLE_G,     // SWIZZLE_G
-        VK_COMPONENT_SWIZZLE_B,     // SWIZZLE_B
-        VK_COMPONENT_SWIZZLE_A,     // SWIZZLE_A
-        VK_COMPONENT_SWIZZLE_ZERO,  // SWIZZLE_ZERO
-        VK_COMPONENT_SWIZZLE_ONE    // SWIZZLE_ONE
-    };
-
-    return table[value];
-}
-
-//-------------------------------------------------------------------------------------------------
 //      色空間を変換します.
 //-------------------------------------------------------------------------------------------------
 VkColorSpaceKHR ToNativeColorSpace(a3d::COLOR_SPACE_TYPE value)

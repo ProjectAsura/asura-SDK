@@ -56,7 +56,6 @@ public:
         IDevice*            pDevice,
         ID3D11Texture2D*    pNativeResource,
         RESOURCE_USAGE      usage,
-        ComponentMapping    componentMapping,
         ITexture**          ppResource);
 
     //---------------------------------------------------------------------------------------------

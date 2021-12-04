@@ -85,10 +85,10 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
         info.image        = pWrapTexture->GetVulkanImage();
         info.viewType     = ToNativeImageViewType(pDesc->Dimension);
         info.format       = ToNativeFormat(pDesc->Format);
-        info.components.r = ToNativeComponentSwizzle(pDesc->ComponentMapping.R);
-        info.components.g = ToNativeComponentSwizzle(pDesc->ComponentMapping.G);
-        info.components.b = ToNativeComponentSwizzle(pDesc->ComponentMapping.B);
-        info.components.a = ToNativeComponentSwizzle(pDesc->ComponentMapping.A);
+        info.components.r = VK_COMPONENT_SWIZZLE_R;
+        info.components.g = VK_COMPONENT_SWIZZLE_G;
+        info.components.b = VK_COMPONENT_SWIZZLE_B;
+        info.components.a = VK_COMPONENT_SWIZZLE_A;
         info.subresourceRange.aspectMask     = aspectMask;
         info.subresourceRange.baseMipLevel   = pDesc->MipSlice;
         info.subresourceRange.levelCount     = pDesc->MipLevels;

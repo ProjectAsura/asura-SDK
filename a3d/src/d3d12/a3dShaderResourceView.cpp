@@ -86,11 +86,7 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
     D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.ViewDimension  = ToNativeSRVDimension(pDesc->Dimension);
     desc.Format         = ToNativeViewFormat(pDesc->Format, false);
-    desc.Shader4ComponentMapping = D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(
-                                    pDesc->ComponentMapping.R,
-                                    pDesc->ComponentMapping.G,
-                                    pDesc->ComponentMapping.B,
-                                    pDesc->ComponentMapping.A);
+    desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
     switch(desc.ViewDimension)
     {
