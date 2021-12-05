@@ -62,14 +62,14 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     D3D12_CLEAR_VALUE clearValue = {};
     clearValue.Format = format;
 
-    if ((pDesc->Usage & RESOURCE_USAGE_DEPTH_STENCIL_VIEW) == RESOURCE_USAGE_DEPTH_STENCIL_VIEW)
+    if ((pDesc->Usage & RESOURCE_USAGE_DEPTH_STENCIL) == RESOURCE_USAGE_DEPTH_STENCIL)
     {
         clearValue.DepthStencil.Depth   = 1.0f;
         clearValue.DepthStencil.Stencil = 0;
         isTarget = true;
     }
 
-    if ((pDesc->Usage & RESOURCE_USAGE_RENDER_TARGET_VIEW) == RESOURCE_USAGE_RENDER_TARGET_VIEW)
+    if ((pDesc->Usage & RESOURCE_USAGE_RENDER_TARGET) == RESOURCE_USAGE_RENDER_TARGET)
     {
         clearValue.Color[0] = 0.0f;
         clearValue.Color[1] = 0.0f;

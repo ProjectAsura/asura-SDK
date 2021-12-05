@@ -469,19 +469,19 @@ D3D11_USAGE ToNativeUsage(HEAP_TYPE type)
 uint32_t ToNativeBindFlags(uint32_t value)
 {
     uint32_t result = 0;
-    if (value & RESOURCE_USAGE_RENDER_TARGET_VIEW)
+    if (value & RESOURCE_USAGE_RENDER_TARGET)
     { result |= D3D11_BIND_RENDER_TARGET; }
-    if (value & RESOURCE_USAGE_DEPTH_STENCIL_VIEW)
+    if (value & RESOURCE_USAGE_DEPTH_STENCIL)
     { result |= D3D11_BIND_DEPTH_STENCIL; }
-    if (value & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+    if (value & RESOURCE_USAGE_UNORDERED_ACCESS)
     { result |= D3D11_BIND_UNORDERED_ACCESS; }
     if (value & RESOURCE_USAGE_INDEX_BUFFER)
     { result |= D3D11_BIND_INDEX_BUFFER; }
     if (value & RESOURCE_USAGE_VERTEX_BUFFER)
     { result |= D3D11_BIND_VERTEX_BUFFER; }
-    if (value & RESOURCE_USAGE_CONSTANT_BUFFER_VIEW)
+    if (value & RESOURCE_USAGE_CONSTANT_BUFFER)
     { result |= D3D11_BIND_CONSTANT_BUFFER; }
-    if (value & RESOURCE_USAGE_SHADER_RESOURCE_VIEW)
+    if (value & RESOURCE_USAGE_SHADER_RESOURCE)
     { result |= D3D11_BIND_SHADER_RESOURCE; }
 
     return result;

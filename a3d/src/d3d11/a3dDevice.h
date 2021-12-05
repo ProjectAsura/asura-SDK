@@ -263,8 +263,8 @@ public:
     //! @reval true     生成に成功.
     //! @reval false    生成に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateGeometryPipeline(
-        const GeometryPipelineStateDesc*    pDesc,
+    bool A3D_APIENTRY CreateMeshShaderPipeline(
+        const MeshShaderPipelineStateDesc*  pDesc,
         IPipelineState**                    ppPipelineState) override;
 
     //---------------------------------------------------------------------------------------------

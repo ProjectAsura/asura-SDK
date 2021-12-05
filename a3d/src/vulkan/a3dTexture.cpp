@@ -14,20 +14,20 @@ VkImageUsageFlags ToNativeImageUsage(uint32_t usage)
 {
     VkImageUsageFlags result = 0;
 
-    if (usage & a3d::RESOURCE_USAGE_RENDER_TARGET_VIEW)
+    if (usage & a3d::RESOURCE_USAGE_RENDER_TARGET)
     { result |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; }
 
-    if (usage & a3d::RESOURCE_USAGE_DEPTH_STENCIL_VIEW)
+    if (usage & a3d::RESOURCE_USAGE_DEPTH_STENCIL)
     { result |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; }
 
-    if (usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+    if (usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS)
     {
         // TODO : 要確認.
         result |= VK_IMAGE_USAGE_STORAGE_BIT;
         result |= VK_IMAGE_USAGE_SAMPLED_BIT;
     }
 
-    if (usage & a3d::RESOURCE_USAGE_SHADER_RESOURCE_VIEW)
+    if (usage & a3d::RESOURCE_USAGE_SHADER_RESOURCE)
     { result |= VK_IMAGE_USAGE_SAMPLED_BIT; }
 
     if (usage & a3d::RESOURCE_USAGE_COPY_SRC)
@@ -119,7 +119,7 @@ bool IsSupportFormat(a3d::Device* pDevice, const a3d::TextureDesc* pDesc)
     VkFormatProperties formatProps;
     vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
 
-    if (pDesc->Usage & a3d::RESOURCE_USAGE_RENDER_TARGET_VIEW)
+    if (pDesc->Usage & a3d::RESOURCE_USAGE_RENDER_TARGET)
     {
         if (pDesc->Layout == a3d::RESOURCE_LAYOUT_LINEAR)
         {
@@ -133,7 +133,7 @@ bool IsSupportFormat(a3d::Device* pDevice, const a3d::TextureDesc* pDesc)
         }
     }
 
-    if (pDesc->Usage & a3d::RESOURCE_USAGE_DEPTH_STENCIL_VIEW)
+    if (pDesc->Usage & a3d::RESOURCE_USAGE_DEPTH_STENCIL)
     {
         if (pDesc->Layout == a3d::RESOURCE_LAYOUT_LINEAR)
         {
@@ -147,7 +147,7 @@ bool IsSupportFormat(a3d::Device* pDevice, const a3d::TextureDesc* pDesc)
         }
     }
 
-    if (pDesc->Usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+    if (pDesc->Usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS)
     {
         if (pDesc->Layout == a3d::RESOURCE_LAYOUT_LINEAR)
         {
@@ -161,7 +161,7 @@ bool IsSupportFormat(a3d::Device* pDevice, const a3d::TextureDesc* pDesc)
         }
     }
 
-    if (pDesc->Usage & a3d::RESOURCE_USAGE_CONSTANT_BUFFER_VIEW)
+    if (pDesc->Usage & a3d::RESOURCE_USAGE_CONSTANT_BUFFER)
     {
         if (pDesc->Layout == a3d::RESOURCE_LAYOUT_LINEAR)
         {

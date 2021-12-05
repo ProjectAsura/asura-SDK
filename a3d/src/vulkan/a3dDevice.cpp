@@ -283,7 +283,8 @@ void CheckDeviceExtension
         VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
         VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
         VK_NV_MESH_SHADER_EXTENSION_NAME,
-        VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME
+        VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     };
 
     result.reserve(count);
@@ -454,7 +455,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         appInfo.applicationVersion  = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName         = "a3d";
         appInfo.engineVersion       = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion          = VK_API_VERSION_1_0;
+        appInfo.apiVersion          = VK_API_VERSION_1_2;
 
         VkInstanceCreateInfo instanceInfo = {};
         instanceInfo.sType                      = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -465,15 +466,6 @@ bool Device::Init(const DeviceDesc* pDesc)
         instanceInfo.ppEnabledLayerNames        = (layerCount == 0) ? nullptr : layerNames;
         instanceInfo.enabledExtensionCount      = static_cast<uint32_t>(extensions.size());
         instanceInfo.ppEnabledExtensionNames    = extensions.data();
-
-    #if 0
-        //m_Allocator.pfnAllocation           = Alloc;
-        //m_Allocator.pfnFree                 = Free;
-        //m_Allocator.pfnReallocation         = Realloc;
-        //m_Allocator.pfnInternalAllocation   = nullptr;
-        //m_Allocator.pfnInternalFree         = nullptr;
-        //m_Allocator.pUserData               = nullptr;
-    #endif
 
         auto ret = vkCreateInstance(&instanceInfo, nullptr, &m_Instance);
 
@@ -1126,10 +1118,10 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsCompute(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
-//      ジオメトリパイプラインステートを生成します.
+//      メッシュシェーダパイプラインステートを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateGeometryPipeline(const GeometryPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
-{ return PipelineState::CreateAsGeometry(this, pDesc, ppPipelineState); }
+bool Device::CreateMeshShaderPipeline(const MeshShaderPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+{ return PipelineState::CreateAsMesh(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを生成します.

@@ -14,22 +14,22 @@ VkShaderStageFlags ToNativeShaderFlags(uint32_t mask)
 {
     VkShaderStageFlags result = 0;
 
-    if ( mask & a3d::SHADER_MASK_VERTEX )
+    if ( mask & a3d::SHADER_MASK_VS )
     { result |= VK_SHADER_STAGE_VERTEX_BIT; }
 
-    if ( mask & a3d::SHADER_MASK_DOMAIN )
+    if ( mask & a3d::SHADER_MASK_DS )
     { result |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT; }
 
-    if ( mask & a3d::SHADER_MASK_HULL )
+    if ( mask & a3d::SHADER_MASK_HS )
     { result |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT; }
 
-    if ( mask & a3d::SHADER_MASK_GEOMETRY )
-    { result |= VK_SHADER_STAGE_GEOMETRY_BIT; }
+    //if ( mask & a3d::SHADER_MASK_GS )
+    //{ result |= VK_SHADER_STAGE_GEOMETRY_BIT; }
 
-    if ( mask & a3d::SHADER_MASK_PIXEL )
+    if ( mask & a3d::SHADER_MASK_PS )
     { result |= VK_SHADER_STAGE_FRAGMENT_BIT; }
 
-    if ( mask & a3d::SHADER_MASK_COMPUTE )
+    if ( mask & a3d::SHADER_MASK_CS )
     { result |= VK_SHADER_STAGE_COMPUTE_BIT; }
 
     return result;
@@ -82,17 +82,17 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     bool isGraphics = true;
     for(auto i=0u; i<pDesc->EntryCount; ++i)
     {
-        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_COMPUTE)
+        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_CS)
         { isGraphics = false; }
 
-        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VERTEX)
+        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VS)
         {
             if (!isGraphics)
             { return false; }
         }
 
-        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_AMPLIFICATION)
-         || (pDesc->Entries[i].ShaderMask & SHADER_MASK_MESH))
+        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_AS)
+         || (pDesc->Entries[i].ShaderMask & SHADER_MASK_MS))
         {
             if (!isGraphics)
             { return false; }

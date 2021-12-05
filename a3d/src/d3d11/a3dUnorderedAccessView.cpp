@@ -55,7 +55,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         auto bufferDesc = pWrapBuffer->GetDesc();
 
-        if ((bufferDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW) != RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+        if ((bufferDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
         { return false; }
 
         D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
@@ -77,7 +77,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         auto textureDesc = pWrapTexture->GetDesc();
 
-        if ((textureDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW) != RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+        if ((textureDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
         { return false; }
 
         D3D11_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};

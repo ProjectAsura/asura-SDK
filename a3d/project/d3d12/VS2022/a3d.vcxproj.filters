@@ -102,6 +102,9 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dDepthStencilView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\d3d12\a3dBuffer.h">

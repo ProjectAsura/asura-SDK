@@ -191,17 +191,17 @@ enum RESOURCE_LAYOUT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum RESOURCE_USAGE
 {
-    RESOURCE_USAGE_RENDER_TARGET_VIEW       = 0x001,   //!< カラーターゲットとして使用します.
-    RESOURCE_USAGE_DEPTH_STENCIL_VIEW       = 0x002,   //!< 深度ステンシルターゲットとして使用します.
-    RESOURCE_USAGE_UNORDERED_ACCESS_VIEW    = 0x004,   //!< アンオーダードアクセスビューとして使用します.
-    RESOURCE_USAGE_INDEX_BUFFER             = 0x008,   //!< インデックスバッファとして使用します.
-    RESOURCE_USAGE_VERTEX_BUFFER            = 0x010,   //!< 頂点バッファとして使用します.
-    RESOURCE_USAGE_CONSTANT_BUFFER_VIEW     = 0x020,   //!< 定数バッファとして使用します.
-    RESOURCE_USAGE_INDIRECT_BUFFER          = 0x040,   //!< インダイレクトバッファとして使用します.
-    RESOURCE_USAGE_SHADER_RESOURCE_VIEW     = 0x080,   //!< シェーダリソースビューとして使用します.
-    RESOURCE_USAGE_COPY_SRC                 = 0x100,   //!< コピー元として使用します.
-    RESOURCE_USAGE_COPY_DST                 = 0x200,   //!< コピー先として使用します.
-    RESOURCE_USAGE_QUERY_BUFFER             = 0x300,   //!< クエリバッファとして使用します.
+    RESOURCE_USAGE_RENDER_TARGET        = 0x001,   //!< レンダーターゲットとして使用します.
+    RESOURCE_USAGE_DEPTH_STENCIL        = 0x002,   //!< 深度ステンシルターゲットとして使用します.
+    RESOURCE_USAGE_UNORDERED_ACCESS     = 0x004,   //!< アンオーダードアクセスビューとして使用します.
+    RESOURCE_USAGE_INDEX_BUFFER         = 0x008,   //!< インデックスバッファとして使用します.
+    RESOURCE_USAGE_VERTEX_BUFFER        = 0x010,   //!< 頂点バッファとして使用します.
+    RESOURCE_USAGE_CONSTANT_BUFFER      = 0x020,   //!< 定数バッファとして使用します.
+    RESOURCE_USAGE_INDIRECT_BUFFER      = 0x040,   //!< インダイレクトバッファとして使用します.
+    RESOURCE_USAGE_SHADER_RESOURCE      = 0x080,   //!< シェーダリソースビューとして使用します.
+    RESOURCE_USAGE_COPY_SRC             = 0x100,   //!< コピー元として使用します.
+    RESOURCE_USAGE_COPY_DST             = 0x200,   //!< コピー先として使用します.
+    RESOURCE_USAGE_QUERY_BUFFER         = 0x300,   //!< クエリバッファとして使用します.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -308,7 +308,6 @@ enum RESOURCE_STATE
     RESOURCE_STATE_DEPTH_WRITE          = 8,    //!< 深度書き込み状態です.
     RESOURCE_STATE_DEPTH_READ           = 9,    //!< 深度読み込み状態です.
     RESOURCE_STATE_SHADER_READ          = 10,   //!< シェーダで読み込み可能な状態です.
-    RESOURCE_STATE_STREAM_OUT           = 11,   //!< ストリーム出力状態です.
     RESOURCE_STATE_INDIRECT_ARGUMENT    = 12,   //!< インダイレクトコマンド引数です.
     RESOURCE_STATE_COPY_DST             = 13,   //!< 転送先の状態です.
     RESOURCE_STATE_COPY_SRC             = 14,   //!< 転送元の状態です.
@@ -365,14 +364,13 @@ enum PRIMITIVE_TOPOLOGY
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum SHADER_MASK
 {
-    SHADER_MASK_VERTEX        = 0x1,        //!< 頂点シェーダステージです.
-    SHADER_MASK_DOMAIN        = 0x2,        //!< ドメインシェーダステージです.
-    SHADER_MASK_HULL          = 0x4,        //!< ハルシェーダシェーダステージです.
-    SHADER_MASK_GEOMETRY      = 0x8,        //!< ジオメトリシェーダステージです.
-    SHADER_MASK_PIXEL         = 0x10,       //!< ピクセルシェーダステージです.
-    SHADER_MASK_COMPUTE       = 0x20,       //!< コンピュートシェーダステージです.
-    SHADER_MASK_AMPLIFICATION = 0x30,       //!< アンプリフィケーションシェーダステージです.
-    SHADER_MASK_MESH          = 0x40,       //!< メッシュシェーダステージです.
+    SHADER_MASK_VS  = 0x1,        //!< 頂点シェーダステージです.
+    SHADER_MASK_DS  = 0x2,        //!< ドメインシェーダステージです.
+    SHADER_MASK_HS  = 0x4,        //!< ハルシェーダシェーダステージです.
+    SHADER_MASK_PS  = 0x10,       //!< ピクセルシェーダステージです.
+    SHADER_MASK_CS  = 0x20,       //!< コンピュートシェーダステージです.
+    SHADER_MASK_AS  = 0x30,       //!< アンプリフィケーションシェーダステージです.
+    SHADER_MASK_MS  = 0x40,       //!< メッシュシェーダステージです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -673,10 +671,10 @@ struct ClearDepthStencilValue
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ClearColorValue
 {
-    float   R;
-    float   G;
-    float   B;
-    float   A;
+    float   R;  //!< 赤成分です.
+    float   G;  //!< 緑成分です.
+    float   B;  //!< 青成分です.
+    float   A;  //!< アルファ成分です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -845,6 +843,19 @@ struct SamplerDesc
     float                   MinLod;             //!< アクセスをクランプするミップマップ範囲の下限です。0 は最大かつ最も詳細なミップマップ レベルを表し、レベルの値が大きくなるほど詳細でなくなります。
     float                   MaxLod;             //!< アクセスをクランプするミップマップ範囲の上限です。0 は最大かつ最も詳細なミップマップ レベルを表し、レベルの値が大きくなるほど詳細でなくなります。この値は MinLod 以上にする必要があります。
     BORDER_COLOR            BorderColor;        //!< 境界色です.
+
+    static SamplerDesc PointClamp();
+    static SamplerDesc PointRepeat();
+    static SamplerDesc PointMirror();
+    static SamplerDesc LinearClamp();
+    static SamplerDesc LinearRepeat();
+    static SamplerDesc LinearMirror();
+    static SamplerDesc AnisotropicClamp(uint32_t maxAnisotropy = 16);
+    static SamplerDesc AnisotropicRepeat(uint32_t maxAnisotropy = 16);
+    static SamplerDesc AnisotropicMirror(uint32_t maxAnisotropy = 16);
+    static SamplerDesc PointClampCmp(COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static SamplerDesc LinearClampCmp(COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static SamplerDesc AnisotropicClampCmp(COMPARE_OP = COMPARE_OP_LEQUAL, uint32_t maxAinisotropy = 16);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -861,6 +872,11 @@ struct RasterizerState
     float               SlopeScaledDepthBias;       //!< 深度傾斜バイアスです.
     bool                DepthClipEnable;            //!< 深度クリップを有効にするかどうか.
     bool                EnableConservativeRaster;   //!< コンサバティブラスタライゼーションを有効化にするかどうか.
+
+    static RasterizerState CullNone();
+    static RasterizerState CullFront();
+    static RasterizerState CullBack();
+    static RasterizerState Wireframe();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -873,6 +889,8 @@ struct StencilTestDesc
     STENCIL_OP      StencilDepthFailOp;         //!< ステンシル テストに合格し、深度テストで不合格となったときに実行するステンシル処理です.
     STENCIL_OP      StencilPassOp;              //!< ステンシル テストと深度テストの両方に合格したときに実行するステンシル処理です.
     COMPARE_OP      StencilCompareOp;           //!< ステンシル データを既存のステンシル データと比較する操作です.
+
+    static StencilTestDesc Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -886,6 +904,8 @@ struct StencilState
     uint8_t         StencilWriteMask;           //!< 深度ステンシル バッファーの中で、ステンシル データを書き込む部分を識別します.
     StencilTestDesc FrontFace;                  //!< 法線がカメラの方向を向いているサーフェスを持つピクセルの深度テストとステンシル テストの結果を使用する方法を識別します.
     StencilTestDesc BackFace;                   //!< 法線がカメラと逆方向を向いているサーフェスを持つピクセルの深度テストとステンシル テストの結果を使用する方法を識別します.
+
+    static StencilState Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -897,6 +917,11 @@ struct DepthState
     bool            DepthTestEnable;            //!< 深度テストを使用可能にします.
     bool            DepthWriteEnable;           //!< 深度書き込みを可能にします.
     COMPARE_OP      DepthCompareOp;             //!< 深度データの比較操作です.
+
+    static DepthState None();
+    static DepthState Default(COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static DepthState ReadOnly(COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static DepthState WriteOnly(COMPARE_OP op = COMPARE_OP_LEQUAL);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -916,6 +941,14 @@ struct ColorBlendState
     bool            EnableWriteG;           //!< G成分への書き込みを有効にします.
     bool            EnableWriteB;           //!< B成分への書き込みを有効にします.
     bool            EnableWriteA;           //!< A成分への書き込みを有効にします.
+
+    static ColorBlendState Opaque();
+    static ColorBlendState AlphaBlend();
+    static ColorBlendState Additive();
+    static ColorBlendState Substract();
+    static ColorBlendState PremultipliedAlpha();
+    static ColorBlendState Multiply();
+    static ColorBlendState Screen();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -927,7 +960,9 @@ struct BlendState
     bool            IndependentBlendEnable; //!< RGB値とアルファ値の独立したブレンディングを有効します.
     bool            LogicOpEnable;          //!< 論理操作を有効にします.
     LOGIC_OP        LogicOp;                //!< 論理操作です.
-    ColorBlendState ColorTarget[8];         //!< カラーターゲットのブレンド設定です.
+    ColorBlendState RenderTarget[8];        //!< カラーターゲットのブレンド設定です.
+
+    static BlendState Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -939,6 +974,8 @@ struct MultiSampleState
     bool            EnableAlphaToCoverage;  //!< アルファトゥカバレッジを有効にします.
     bool            EnableMultiSample;      //!< マルチサンプルを有効にします.
     uint32_t        SampleCount;            //!< マルチサンプル数です.
+
+    static MultiSampleState Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -948,6 +985,8 @@ struct MultiSampleState
 struct TessellationState
 {
     uint32_t        PatchControlCount;      //!< パッチ制御点の数です.
+
+    static TessellationState Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1035,8 +1074,8 @@ struct GraphicsPipelineStateDesc
     TessellationState       TessellationState;      //!< テッセレーションステートです.
     InputLayoutDesc         InputLayout;            //!< 入力レイアウトステートです.
     PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.
-    uint32_t                ColorCount;             //!< カラーフォーマット数です.
-    TargetFormat            ColorTarget[8];         //!< カラーターゲットです.
+    uint32_t                RenderTargetCount;      //!< レンダーターゲット数です.
+    TargetFormat            RenderTarget[8];        //!< レンダーターゲットです.
     TargetFormat            DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
 };
@@ -1053,10 +1092,10 @@ struct ComputePipelineStateDesc
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// GeometryPipelineStateDesc structure
+// MeshShaderPipelineStateDesc structure
 //! @brief メッシュシェーダパイプラインステートの設定.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct GeometryPipelineStateDesc
+struct MeshShaderPipelineStateDesc
 {
     IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
     ShaderBinary            AS;                     //!< アンプリフィケーションシェーダです.
@@ -1067,8 +1106,8 @@ struct GeometryPipelineStateDesc
     MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.
     DepthState              DepthState;             //!< 深度ステートです.
     StencilState            StencilState;           //!< ステンシルステートです.
-    uint32_t                ColorCount;             //!< カラーフォーマット数です.
-    TargetFormat            ColorTarget[8];         //!< カラーターゲットです.
+    uint32_t                RenderTargetCount;      //!< レンダーターゲット数です.
+    TargetFormat            RenderTarget[8];        //!< レンダーターゲットです.
     TargetFormat            DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
 };
@@ -1106,10 +1145,10 @@ struct SwapChainDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct MetaDataHDR10
 {
-    float       PrimaryR[2];                    //!< 色座標の赤値です(配列番号0がX座標, 1がY座標となります).
-    float       PrimaryG[2];                    //!< 色座標の緑値です(配列番号0がX座標, 1がY座標となります).
-    float       PrimaryB[2];                    //!< 色座標の青値です(配列番号0がX座標, 1がY座標となります).
-    float       WhitePoint[2];                  //!< 色座標の白色点です(配列番号0がX座標, 1がY座標となります).
+    float       PrimaryR[2];                    //!< 色座標の赤値です(配列番号0がX座標, 配列番号1がY座標となります).
+    float       PrimaryG[2];                    //!< 色座標の緑値です(配列番号0がX座標, 配列番号1がY座標となります).
+    float       PrimaryB[2];                    //!< 色座標の青値です(配列番号0がX座標, 配列番号1がY座標となります).
+    float       WhitePoint[2];                  //!< 色座標の白色点です(配列番号0がX座標, 配列番号1がY座標となります).
     float       MaxMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最大ニト[nit]数です(数値の単位は1nitです).
     float       MinMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最小ニト[nit]数です(数値の単位は1nitです).
     float       MaxContentLightLevel;           //!< コンテンツの最大ニト[nit]数です.
@@ -2503,15 +2542,15 @@ struct A3D_API IDevice : public IReference
         IPipelineState**                ppPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ジオメトリパイプラインを生成します.
+    //! @brief      メッシュシェーダパイプラインを生成します.
     //!
     //! @param[in]      pDesc           構成設定です.
     //! @param[out]     ppPipelineState パイプラインステートの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CreateGeometryPipeline(
-        const GeometryPipelineStateDesc*    pDesc,
+    virtual bool A3D_APIENTRY CreateMeshShaderPipeline(
+        const MeshShaderPipelineStateDesc*  pDesc,
         IPipelineState**                    ppPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------

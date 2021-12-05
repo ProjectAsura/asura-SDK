@@ -55,7 +55,7 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
         A3D_ASSERT(pWrapBuffer != nullptr);
 
         auto bufferDesc = pWrapBuffer->GetDesc();
-        if ((bufferDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE_VIEW) != RESOURCE_USAGE_SHADER_RESOURCE_VIEW)
+        if ((bufferDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE) != RESOURCE_USAGE_SHADER_RESOURCE)
         { return false; }
 
         m_Buffer = pWrapBuffer->GetVulkanBuffer();
@@ -66,7 +66,7 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
         A3D_ASSERT(pWrapTexture != nullptr);
 
         auto textureDesc = pWrapTexture->GetDesc();
-        if ((textureDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE_VIEW) != RESOURCE_USAGE_SHADER_RESOURCE_VIEW)
+        if ((textureDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE) != RESOURCE_USAGE_SHADER_RESOURCE)
         { return false; }
 
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;

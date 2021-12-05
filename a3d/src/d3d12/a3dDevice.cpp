@@ -405,10 +405,10 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsCompute(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
-//      ジオメトリパイプラインを生成します.
+//      メッシュシェーダパイプラインを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateGeometryPipeline(const GeometryPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
-{ return PipelineState::CreateAsGeometry(this, pDesc, ppPipelineState); }
+bool Device::CreateMeshShaderPipeline(const MeshShaderPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+{ return PipelineState::CreateAsMesh(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを生成します.

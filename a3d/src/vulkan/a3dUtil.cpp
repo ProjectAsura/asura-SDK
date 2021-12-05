@@ -541,9 +541,9 @@ VkAccessFlags ToNativeAccessFlags(a3d::RESOURCE_STATE state)
         { result = VK_ACCESS_SHADER_READ_BIT; }
         break;
 
-    case a3d::RESOURCE_STATE_STREAM_OUT:
-        { result = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT; }
-        break;
+    //case a3d::RESOURCE_STATE_STREAM_OUT:
+    //    { result = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT; }
+    //    break;
 
     case a3d::RESOURCE_STATE_INDIRECT_ARGUMENT:
         { result = VK_ACCESS_INDIRECT_COMMAND_READ_BIT; }

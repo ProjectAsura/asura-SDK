@@ -155,7 +155,7 @@ void ToNativeBlendDesc( const a3d::BlendState& state, D3D11_BLEND_DESC& result )
         //result.RenderTarget[i].LogicOpEnable = (state.LogicOpEnable) ? TRUE : FALSE;
         //result.RenderTarget[i].LogicOp       = ToNativeLogicOp(state.LogicOp);
     #endif
-        ToNativeRanderTargetBlendDesc( state.ColorTarget[i], result.RenderTarget[i] );
+        ToNativeRanderTargetBlendDesc( state.RenderTarget[i], result.RenderTarget[i] );
     }
 }
 

@@ -494,7 +494,7 @@ void ToNativeColorBlendState
 )
 { 
     for(auto i=0u; i<colorTargetCount; ++i)
-    { ToNativeColorBlendAttachmentState(state.ColorTarget[i], &pAttachments[i]); }
+    { ToNativeColorBlendAttachmentState(state.RenderTarget[i], &pAttachments[i]); }
 
     pInfo->sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     pInfo->pNext             = nullptr;
@@ -526,7 +526,6 @@ PipelineState::PipelineState()
 , m_PipelineState   (null_handle)
 , m_BindPoint       (VK_PIPELINE_BIND_POINT_GRAPHICS)
 , m_PipelineCache   (null_handle)
-, m_RenderPass      (null_handle)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -551,76 +550,6 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
-
-   {
-        VkAttachmentDescription attachmentDesc[9] = {};
-        VkAttachmentReference   attachmentRefs[9] = {};
-        VkAttachmentReference*  pDepthAttachmentRef = nullptr;
-
-        uint32_t attachmentCount = pDesc->ColorCount;
-
-        for (auto i = 0u; i < pDesc->ColorCount; ++i)
-        {
-            attachmentDesc[i].format            = ToNativeFormat(pDesc->ColorTarget[i].Format);
-            attachmentDesc[i].samples           = ToNativeSampleCountFlags(pDesc->ColorTarget[i].SampleCount);
-            attachmentDesc[i].loadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[i].storeOp           = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[i].stencilLoadOp     = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[i].stencilStoreOp    = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[i].initialLayout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDesc[i].finalLayout       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDesc[i].flags             = 0;
-
-            attachmentRefs[i].attachment    = i;
-            attachmentRefs[i].layout        = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        }
-
-        if (pDesc->DepthTarget.Format != RESOURCE_FORMAT_UNKNOWN)
-        {
-            attachmentCount++;
-
-            auto idx = pDesc->ColorCount;
-            attachmentDesc[idx].format          = ToNativeFormat(pDesc->DepthTarget.Format);
-            attachmentDesc[idx].samples         = ToNativeSampleCountFlags(pDesc->DepthTarget.SampleCount);
-            attachmentDesc[idx].loadOp          = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[idx].storeOp         = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[idx].stencilLoadOp   = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[idx].stencilStoreOp  = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[idx].initialLayout   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            attachmentDesc[idx].finalLayout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            attachmentRefs[idx].attachment  = idx;
-            attachmentRefs[idx].layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            pDepthAttachmentRef = &attachmentRefs[idx];
-        }
-
-        VkSubpassDescription subpass = {};
-        subpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.flags                   = 0;
-        subpass.inputAttachmentCount    = 0;
-        subpass.colorAttachmentCount    = pDesc->ColorCount;
-        subpass.pColorAttachments       = attachmentRefs;
-        subpass.pResolveAttachments     = nullptr;
-        subpass.pDepthStencilAttachment = pDepthAttachmentRef;
-        subpass.preserveAttachmentCount = 0;
-        subpass.pPreserveAttachments    = nullptr;
-
-
-        VkRenderPassCreateInfo info = {};
-        info.sType              = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        info.pNext              = nullptr;
-        info.flags              = 0;
-        info.attachmentCount    = attachmentCount;
-        info.pAttachments       = attachmentDesc;
-        info.subpassCount       = 1;
-        info.pSubpasses         = &subpass;
-
-
-        auto ret = vkCreateRenderPass(pNativeDevice, &info, nullptr, &m_RenderPass);
-        if (ret != VK_SUCCESS)
-        { return false;  }
-    }
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
@@ -743,7 +672,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         ToNativeViewportState(viewports, scissors, &viewportState);
         ToNativeColorBlendState(
             pDesc->BlendState,
-            pDesc->ColorCount,
+            pDesc->RenderTargetCount,
             colorAttachments,
             &colorBlendState );
 
@@ -766,7 +695,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         info.pColorBlendState       = &colorBlendState;
         info.pDynamicState          = &dynamicState;
         info.layout                 = pWrapLayout->GetVulkanPipelineLayout();
-        info.renderPass             = m_RenderPass;
+        info.renderPass             = null_handle;
         info.subpass                = 0;
         info.basePipelineHandle     = null_handle;
         info.basePipelineIndex      = 0;
@@ -851,9 +780,9 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ジオメトリパイプランステートとして初期化します.
+//      メッシュパイプランステートとして初期化します.
 //-------------------------------------------------------------------------------------------------
-bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineStateDesc* pDesc)
+bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
@@ -866,76 +795,6 @@ bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineState
 
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
-
-   {
-        VkAttachmentDescription attachmentDesc[9] = {};
-        VkAttachmentReference   attachmentRefs[9] = {};
-        VkAttachmentReference*  pDepthAttachmentRef = nullptr;
-
-        uint32_t attachmentCount = pDesc->ColorCount;
-
-        for (auto i = 0u; i < pDesc->ColorCount; ++i)
-        {
-            attachmentDesc[i].format            = ToNativeFormat(pDesc->ColorTarget[i].Format);
-            attachmentDesc[i].samples           = ToNativeSampleCountFlags(pDesc->ColorTarget[i].SampleCount);
-            attachmentDesc[i].loadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[i].storeOp           = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[i].stencilLoadOp     = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[i].stencilStoreOp    = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[i].initialLayout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDesc[i].finalLayout       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachmentDesc[i].flags             = 0;
-
-            attachmentRefs[i].attachment    = i;
-            attachmentRefs[i].layout        = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        }
-
-        if (pDesc->DepthTarget.Format != RESOURCE_FORMAT_UNKNOWN)
-        {
-            attachmentCount++;
-
-            auto idx = pDesc->ColorCount;
-            attachmentDesc[idx].format          = ToNativeFormat(pDesc->DepthTarget.Format);
-            attachmentDesc[idx].samples         = ToNativeSampleCountFlags(pDesc->DepthTarget.SampleCount);
-            attachmentDesc[idx].loadOp          = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[idx].storeOp         = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[idx].stencilLoadOp   = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDesc[idx].stencilStoreOp  = VK_ATTACHMENT_STORE_OP_STORE;
-            attachmentDesc[idx].initialLayout   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            attachmentDesc[idx].finalLayout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            attachmentRefs[idx].attachment  = idx;
-            attachmentRefs[idx].layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-            pDepthAttachmentRef = &attachmentRefs[idx];
-        }
-
-        VkSubpassDescription subpass = {};
-        subpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.flags                   = 0;
-        subpass.inputAttachmentCount    = 0;
-        subpass.colorAttachmentCount    = pDesc->ColorCount;
-        subpass.pColorAttachments       = attachmentRefs;
-        subpass.pResolveAttachments     = nullptr;
-        subpass.pDepthStencilAttachment = pDepthAttachmentRef;
-        subpass.preserveAttachmentCount = 0;
-        subpass.pPreserveAttachments    = nullptr;
-
-
-        VkRenderPassCreateInfo info = {};
-        info.sType              = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        info.pNext              = nullptr;
-        info.flags              = 0;
-        info.attachmentCount    = attachmentCount;
-        info.pAttachments       = attachmentDesc;
-        info.subpassCount       = 1;
-        info.pSubpasses         = &subpass;
-
-
-        auto ret = vkCreateRenderPass(pNativeDevice, &info, nullptr, &m_RenderPass);
-        if (ret != VK_SUCCESS)
-        { return false;  }
-    }
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
@@ -1029,7 +888,7 @@ bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineState
         ToNativeViewportState(viewports, scissors, &viewportState);
         ToNativeColorBlendState(
             pDesc->BlendState,
-            pDesc->ColorCount,
+            pDesc->RenderTargetCount,
             colorAttachments,
             &colorBlendState );
 
@@ -1052,7 +911,7 @@ bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineState
         info.pColorBlendState       = &colorBlendState;
         info.pDynamicState          = &dynamicState;
         info.layout                 = pWrapLayout->GetVulkanPipelineLayout();
-        info.renderPass             = m_RenderPass;
+        info.renderPass             = null_handle;
         info.subpass                = 0;
         info.basePipelineHandle     = null_handle;
         info.basePipelineIndex      = 0;
@@ -1100,12 +959,6 @@ void PipelineState::Term()
     {
         vkDestroyPipelineCache( pNativeDevice, m_PipelineCache, nullptr );
         m_PipelineCache = null_handle;
-    }
-
-    if (m_RenderPass != null_handle)
-    {
-        vkDestroyRenderPass( pNativeDevice, m_RenderPass, nullptr );
-        m_RenderPass = null_handle;
     }
 
     SafeRelease(m_pDevice);
@@ -1233,13 +1086,13 @@ bool PipelineState::CreateAsCompute
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ジオメトリパイプラインステートとして生成します.
+//      メッシュパイプラインステートとして生成します.
 //-------------------------------------------------------------------------------------------------
-bool PipelineState::CreateAsGeometry
+bool PipelineState::CreateAsMesh
 (
-    IDevice*                        pDevice,
-    const GeometryPipelineStateDesc* pDesc,
-    IPipelineState**                ppPipelineState
+    IDevice*                            pDevice,
+    const MeshShaderPipelineStateDesc*  pDesc,
+    IPipelineState**                    ppPipelineState
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
@@ -1249,7 +1102,7 @@ bool PipelineState::CreateAsGeometry
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->InitAsGeometry(pDevice, pDesc))
+    if (!instance->InitAsMesh(pDevice, pDesc))
     {
         SafeRelease(instance);
         return false;

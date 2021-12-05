@@ -12,25 +12,25 @@ namespace /* anonymous */ {
 //-------------------------------------------------------------------------------------------------
 D3D12_SHADER_VISIBILITY ToNativeShaderVisibility( uint32_t mask )
 {
-    if ( mask == a3d::SHADER_MASK_VERTEX )
+    if ( mask == a3d::SHADER_MASK_VS )
     { return D3D12_SHADER_VISIBILITY_VERTEX; }
 
-    else if ( mask == a3d::SHADER_MASK_DOMAIN )
+    else if ( mask == a3d::SHADER_MASK_DS )
     { return D3D12_SHADER_VISIBILITY_DOMAIN; }
 
-    else if ( mask == a3d::SHADER_MASK_HULL )
+    else if ( mask == a3d::SHADER_MASK_HS )
     { return D3D12_SHADER_VISIBILITY_HULL; }
 
-    else if ( mask == a3d::SHADER_MASK_GEOMETRY )
-    { return D3D12_SHADER_VISIBILITY_GEOMETRY; }
+    //else if ( mask == a3d::SHADER_MASK_GS )
+    //{ return D3D12_SHADER_VISIBILITY_GEOMETRY; }
 
-    else if ( mask == a3d::SHADER_MASK_PIXEL )
+    else if ( mask == a3d::SHADER_MASK_PS )
     { return D3D12_SHADER_VISIBILITY_PIXEL; }
 
-    else if ( mask == a3d::SHADER_MASK_AMPLIFICATION)
+    else if ( mask == a3d::SHADER_MASK_AS )
     { return D3D12_SHADER_VISIBILITY_AMPLIFICATION; }
 
-    else if ( mask == a3d::SHADER_MASK_MESH )
+    else if ( mask == a3d::SHADER_MASK_MS )
     { return D3D12_SHADER_VISIBILITY_MESH; }
 
     return D3D12_SHADER_VISIBILITY_ALL;
@@ -112,21 +112,21 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     bool isCompute = false;
     for(auto i=0u; i<pDesc->EntryCount; ++i)
     {
-        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_COMPUTE) == SHADER_MASK_COMPUTE)
+        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_CS) == SHADER_MASK_CS)
         {
             m_Type = PIPELINE_COMPUTE;
             isCompute = true;
         }
 
-        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_VERTEX) == SHADER_MASK_VERTEX)
+        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_VS) == SHADER_MASK_VS)
         {
             m_Type = PIPELINE_GRAPHICS;
             if (isCompute)
             { return false; }
         }
 
-        if (((pDesc->Entries[i].ShaderMask & SHADER_MASK_AMPLIFICATION) == SHADER_MASK_AMPLIFICATION)
-         || ((pDesc->Entries[i].ShaderMask & SHADER_MASK_MESH) == SHADER_MASK_MESH))
+        if (((pDesc->Entries[i].ShaderMask & SHADER_MASK_AS) == SHADER_MASK_AS)
+         || ((pDesc->Entries[i].ShaderMask & SHADER_MASK_MS) == SHADER_MASK_MS))
         {
             m_Type = PIPELINE_GEOMETRY;
             if (isCompute)
@@ -158,24 +158,24 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         bool shaders[5] = {};
         if (m_Type == PIPELINE_GEOMETRY)
         {
-            if ( mask & SHADER_MASK_AMPLIFICATION )
+            if ( mask & SHADER_MASK_AS )
             { shaders[0] = true; }
-            if ( mask & SHADER_MASK_MESH )
+            if ( mask & SHADER_MASK_MS )
             { shaders[1] = true; }
-            if ( mask & SHADER_MASK_PIXEL )
+            if ( mask & SHADER_MASK_PS )
             { shaders[2] = true; }
         }
         else
         {
-            if ( mask & SHADER_MASK_VERTEX )
+            if ( mask & SHADER_MASK_VS )
             { shaders[0] = true; }
-            if ( mask & SHADER_MASK_HULL )
+            if ( mask & SHADER_MASK_HS )
             { shaders[1] = true; }
-            if ( mask & SHADER_MASK_DOMAIN )
+            if ( mask & SHADER_MASK_DS )
             { shaders[2] = true; }
-            if ( mask & SHADER_MASK_GEOMETRY )
-            { shaders[3] = true; }
-            if ( mask & SHADER_MASK_PIXEL )
+            //if ( mask & SHADER_MASK_GS )
+            //{ shaders[3] = true; }
+            if ( mask & SHADER_MASK_PS )
             { shaders[4] = true; }
         }
 

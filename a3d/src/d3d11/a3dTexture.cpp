@@ -42,8 +42,8 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     A3D_ASSERT(pD3D11Device != nullptr);
 
     DXGI_FORMAT format;
-    if (pDesc->Usage & RESOURCE_USAGE_SHADER_RESOURCE_VIEW ||
-        pDesc->Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+    if (pDesc->Usage & RESOURCE_USAGE_SHADER_RESOURCE ||
+        pDesc->Usage & RESOURCE_USAGE_UNORDERED_ACCESS)
     { format = ToNativeTypelessFormat(pDesc->Format); }
     else
     { format = ToNativeFormat(pDesc->Format); }
@@ -108,10 +108,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         desc.BindFlags          = ToNativeBindFlags(pDesc->Usage);
         desc.CPUAccessFlags     = accessFlags;
 
-        if (pDesc->Usage & RESOURCE_USAGE_RENDER_TARGET_VIEW)
+        if (pDesc->Usage & RESOURCE_USAGE_RENDER_TARGET)
         { desc.CPUAccessFlags = 0; }
 
-        if (pDesc->Usage & RESOURCE_USAGE_DEPTH_STENCIL_VIEW)
+        if (pDesc->Usage & RESOURCE_USAGE_DEPTH_STENCIL)
         { desc.CPUAccessFlags = 0; }
 
         ID3D11Texture2D* pTexture;

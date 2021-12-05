@@ -237,7 +237,7 @@ void ToNativeBlendDesc( const a3d::BlendState& state, D3D12_BLEND_DESC& result, 
     {
         result.RenderTarget[i].LogicOpEnable = (state.LogicOpEnable) ? TRUE : FALSE;
         result.RenderTarget[i].LogicOp       = ToNativeLogicOp(state.LogicOp);
-        ToNativeRanderTargetBlendDesc( state.ColorTarget[i], result.RenderTarget[i] );
+        ToNativeRanderTargetBlendDesc( state.RenderTarget[i], result.RenderTarget[i] );
     }
 }
 
@@ -551,11 +551,11 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     desc.InputLayout.pInputElementDescs  = elementDesc;
     desc.IBStripCutValue                 = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
     desc.PrimitiveTopologyType           = a3d::ToNativePrimitiveTopology( pDesc->PrimitiveTopology );
-    desc.NumRenderTargets                = pDesc->ColorCount;
+    desc.NumRenderTargets                = pDesc->RenderTargetCount;
     ToNativePipelieStateCache( pDesc->pCachedPSO, desc.CachedPSO );
 
-    for (auto i=0u; i<pDesc->ColorCount; ++i)
-    { desc.RTVFormats[i] = a3d::ToNativeFormat(pDesc->ColorTarget[i].Format); }
+    for (auto i=0u; i<pDesc->RenderTargetCount; ++i)
+    { desc.RTVFormats[i] = a3d::ToNativeFormat(pDesc->RenderTarget[i].Format); }
     desc.DSVFormat = a3d::ToNativeFormat(pDesc->DepthTarget.Format);
 
     auto hr = pNativeDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));
@@ -603,9 +603,9 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ジオメトリパイプラインステートとして初期化します.
+//      メッシュシェーダパイプラインステートとして初期化します.
 //-------------------------------------------------------------------------------------------------
-bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineStateDesc* pDesc)
+bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
     { return false; }
@@ -647,9 +647,9 @@ bool PipelineState::InitAsGeometry(IDevice* pDevice, const GeometryPipelineState
     }
 
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-    rtvFormats.NumRenderTargets = pDesc->ColorCount;
-    for (auto i=0u; i<pDesc->ColorCount; ++i)
-    { rtvFormats.RTFormats[i] = a3d::ToNativeFormat(pDesc->ColorTarget[i].Format); }
+    rtvFormats.NumRenderTargets = pDesc->RenderTargetCount;
+    for (auto i=0u; i<pDesc->RenderTargetCount; ++i)
+    { rtvFormats.RTFormats[i] = a3d::ToNativeFormat(pDesc->RenderTarget[i].Format); }
 
     D3D12_GEOMETRY_PIPELINE_STATE_DESC psoDesc = {};
     psoDesc.RootSignature = pWrapDescriptorLayout->GetD3D12RootSignature();
@@ -743,12 +743,12 @@ bool PipelineState::CreateAsCompute
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ジオメトリパイプラインステートとして生成します.
+//      メッシュシェーダパイプラインステートとして生成します.
 //-------------------------------------------------------------------------------------------------
-bool PipelineState::CreateAsGeometry
+bool PipelineState::CreateAsMesh
 (
     IDevice*                            pDevice,
-    const GeometryPipelineStateDesc*    pDesc,
+    const MeshShaderPipelineStateDesc*  pDesc,
     IPipelineState**                    ppPipelineState
 )
 {
@@ -759,7 +759,7 @@ bool PipelineState::CreateAsGeometry
     if (instance == nullptr)
     { return false; }
 
-    if (!instance->InitAsGeometry(pDevice, pDesc))
+    if (!instance->InitAsMesh(pDevice, pDesc))
     {
         SafeRelease(instance);
         return false;

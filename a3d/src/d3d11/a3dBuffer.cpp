@@ -86,10 +86,10 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
         desc.BindFlags      = ToNativeBindFlags(pDesc->Usage);
         desc.CPUAccessFlags = accessFlags;
 
-        if (pDesc->Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+        if (pDesc->Usage & RESOURCE_USAGE_UNORDERED_ACCESS)
         { desc.StructureByteStride = pDesc->Stride; }
 
-        if (pDesc->Usage == RESOURCE_USAGE_CONSTANT_BUFFER_VIEW)
+        if (pDesc->Usage == RESOURCE_USAGE_CONSTANT_BUFFER)
         {
             m_pSubresource = new uint8_t [size];
             memset(m_pSubresource, 0, size);

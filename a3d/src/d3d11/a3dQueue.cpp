@@ -366,7 +366,7 @@ void Queue::ParseCmd()
                     {
                         auto& entry = cmd->pDesc->Entries[i];
 
-                        if (entry.ShaderMask & SHADER_MASK_VERTEX)
+                        if (entry.ShaderMask & SHADER_MASK_VS)
                         {
                             switch(entry.Type)
                             {
@@ -405,7 +405,7 @@ void Queue::ParseCmd()
                             }
                         }
                         
-                        if (entry.ShaderMask & SHADER_MASK_DOMAIN)
+                        if (entry.ShaderMask & SHADER_MASK_DS)
                         {
                             switch(entry.Type)
                             {
@@ -444,46 +444,46 @@ void Queue::ParseCmd()
                             }
                         }
 
-                        if (entry.ShaderMask & SHADER_MASK_GEOMETRY)
-                        {
-                            switch(entry.Type)
-                            {
-                            case DESCRIPTOR_TYPE_CBV:
-                                {
-                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                                    auto pCBV = pWrapView->GetD3D11Buffer();
-                                    pDeviceContext->GSSetConstantBuffers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pCBV);
-                                }
-                                break;
+                        //if (entry.ShaderMask & SHADER_MASK_GS)
+                        //{
+                        //    switch(entry.Type)
+                        //    {
+                        //    case DESCRIPTOR_TYPE_CBV:
+                        //        {
+                        //            auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
+                        //            auto pCBV = pWrapView->GetD3D11Buffer();
+                        //            pDeviceContext->GSSetConstantBuffers(
+                        //                entry.ShaderRegister,
+                        //                1,
+                        //                &pCBV);
+                        //        }
+                        //        break;
 
-                            case DESCRIPTOR_TYPE_SRV:
-                                {
-                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
-                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
-                                    pDeviceContext->GSSetShaderResources(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSRV);
-                                }
-                                break;
+                        //    case DESCRIPTOR_TYPE_SRV:
+                        //        {
+                        //            auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
+                        //            auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                        //            pDeviceContext->GSSetShaderResources(
+                        //                entry.ShaderRegister,
+                        //                1,
+                        //                &pSRV);
+                        //        }
+                        //        break;
 
-                            case DESCRIPTOR_TYPE_SMP:
-                                {
-                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
-                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
-                                    pDeviceContext->GSSetSamplers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSmp);
-                                }
-                                break;
-                            }
-                        }
+                        //    case DESCRIPTOR_TYPE_SMP:
+                        //        {
+                        //            auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
+                        //            auto pSmp = pWrapSmp->GetD3D11SamplerState();
+                        //            pDeviceContext->GSSetSamplers(
+                        //                entry.ShaderRegister,
+                        //                1,
+                        //                &pSmp);
+                        //        }
+                        //        break;
+                        //    }
+                        //}
 
-                        if (entry.ShaderMask & SHADER_MASK_HULL)
+                        if (entry.ShaderMask & SHADER_MASK_HS)
                         {
                             switch(entry.Type)
                             {
@@ -522,7 +522,7 @@ void Queue::ParseCmd()
                             }
                         }
 
-                        if (entry.ShaderMask & SHADER_MASK_PIXEL)
+                        if (entry.ShaderMask & SHADER_MASK_PS)
                         {
                             switch(entry.Type)
                             {
@@ -561,7 +561,7 @@ void Queue::ParseCmd()
                             }
                         }
 
-                        if (entry.ShaderMask & SHADER_MASK_COMPUTE)
+                        if (entry.ShaderMask & SHADER_MASK_CS)
                         {
                             switch(entry.Type)
                             {

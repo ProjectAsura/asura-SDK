@@ -14,7 +14,7 @@ VkBufferUsageFlags ToNativeBufferUsage(uint32_t usage)
 {
     VkBufferUsageFlags result = 0;
 
-    if (usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+    if (usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS)
     { result |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
 
     if (usage & a3d::RESOURCE_USAGE_INDEX_BUFFER)
@@ -23,10 +23,10 @@ VkBufferUsageFlags ToNativeBufferUsage(uint32_t usage)
     if (usage & a3d::RESOURCE_USAGE_VERTEX_BUFFER)
     { result |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; }
 
-    if (usage & a3d::RESOURCE_USAGE_CONSTANT_BUFFER_VIEW)
+    if (usage & a3d::RESOURCE_USAGE_CONSTANT_BUFFER)
     { result |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; }
 
-    if (usage & a3d::RESOURCE_USAGE_SHADER_RESOURCE_VIEW)
+    if (usage & a3d::RESOURCE_USAGE_SHADER_RESOURCE)
     { result |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; }
 
     if (usage & a3d::RESOURCE_USAGE_INDIRECT_BUFFER)

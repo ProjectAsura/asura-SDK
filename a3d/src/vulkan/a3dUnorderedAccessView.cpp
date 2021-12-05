@@ -55,7 +55,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         A3D_ASSERT(pWrapBuffer != nullptr);
 
         auto bufferDesc = pWrapBuffer->GetDesc();
-        if ((bufferDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW) != RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+        if ((bufferDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
         { return false; }
 
         m_Buffer = pWrapBuffer->GetVulkanBuffer();
@@ -66,7 +66,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         A3D_ASSERT(pWrapTexture != nullptr);
 
         auto textureDesc = pWrapTexture->GetDesc();
-        if ((textureDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS_VIEW) != RESOURCE_USAGE_UNORDERED_ACCESS_VIEW)
+        if ((textureDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
         { return false; }
 
         VkImageViewCreateInfo info = {};

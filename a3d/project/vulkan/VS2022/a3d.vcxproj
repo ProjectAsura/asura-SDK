@@ -94,6 +94,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
+    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandList.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandSet.cpp" />

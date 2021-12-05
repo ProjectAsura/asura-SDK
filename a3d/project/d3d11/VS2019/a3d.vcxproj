@@ -115,6 +115,7 @@
     <ClCompile Include="..\..\..\src\emu\a3dCommandBuffer.cpp" />
     <ClCompile Include="..\..\..\src\emu\a3dCommandList.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
+    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\a3d.h" />

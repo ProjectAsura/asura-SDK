@@ -67,7 +67,7 @@ public:
         IPipelineState**                ppPipelineState);
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ジオメトリパイプラインとして生成します.
+    //! @brief      メッシュシェーダパイプラインとして生成します.
     //!
     //! @param[in]      pDevice             デバイスです.
     //! @param[in]      pDesc               構成設定です.
@@ -75,9 +75,9 @@ public:
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    static bool A3D_APIENTRY CreateAsGeometry(
+    static bool A3D_APIENTRY CreateAsMesh(
         IDevice*                            pDevice,
-        const GeometryPipelineStateDesc*    pDesc,
+        const MeshShaderPipelineStateDesc*  pDesc,
         IPipelineState**                    ppPipelineState);
 
     //---------------------------------------------------------------------------------------------
@@ -166,14 +166,14 @@ private:
     bool A3D_APIENTRY InitAsCompute(IDevice* pDevice, const ComputePipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ジオメトリパイプラインとして初期化します.
+    //! @brief      メッシュシェーダパイプラインとして初期化します.
     //!
     //! @param[in]      pDevice         デバイスです.
     //! @param[in]      pDesc           構成設定です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY InitAsGeometry(IDevice* pDevice, const GeometryPipelineStateDesc* pDesc);
+    bool A3D_APIENTRY InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.
