@@ -531,4 +531,63 @@ TessellationState TessellationState::Default()
     return result;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// GraphicsPipelineStateDesc structure
+///////////////////////////////////////////////////////////////////////////////
+GraphicsPipelineStateDesc GraphicsPipelineStateDesc::Default()
+{
+    GraphicsPipelineStateDesc result = {};
+    result.pLayout                  = nullptr;
+    result.VS                       = {};
+    result.PS                       = {};
+    result.DS                       = {};
+    result.HS                       = {};
+    result.BlendState               = BlendState::Default();
+    result.RasterizerState          = RasterizerState::CullNone();
+    result.MultiSampleState         = MultiSampleState::Default();
+    result.DepthState               = DepthState::Default();
+    result.StencilState             = StencilState::Default();
+    result.TessellationState        = TessellationState::Default();
+    result.InputLayout.ElementCount = 0;
+    result.InputLayout.pElements    = nullptr;
+    result.PrimitiveTopology        = PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    result.RenderTargetCount        = 0;
+    for(auto i=0; i<8; ++i)
+    {
+        result.RenderTarget[i].Format       = RESOURCE_FORMAT_UNKNOWN;
+        result.RenderTarget[i].SampleCount  = 0;
+    }
+    result.DepthTarget.Format       = RESOURCE_FORMAT_UNKNOWN;
+    result.DepthTarget.SampleCount  = 0;
+    result.pCachedPSO               = nullptr;
+    return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// MeshShaderPipelineStateDesc structure
+///////////////////////////////////////////////////////////////////////////////
+MeshShaderPipelineStateDesc MeshShaderPipelineStateDesc::Default()
+{
+    MeshShaderPipelineStateDesc result = {};
+    result.pLayout              = nullptr;
+    result.AS                   = {};
+    result.MS                   = {};
+    result.PS                   = {};
+    result.BlendState           = BlendState::Default();
+    result.RasterizerState      = RasterizerState::CullNone();
+    result.MultiSampleState     = MultiSampleState::Default();
+    result.DepthState           = DepthState::Default();
+    result.StencilState         = StencilState::Default();
+    result.RenderTargetCount    = 0;
+    for(auto i=0; i<8; ++i)
+    {
+        result.RenderTarget[i].Format       = RESOURCE_FORMAT_UNKNOWN;
+        result.RenderTarget[i].SampleCount  = 0;
+    }
+    result.DepthTarget.Format       = RESOURCE_FORMAT_UNKNOWN;
+    result.DepthTarget.SampleCount  = 0;
+    result.pCachedPSO               = nullptr;
+    return result;
+}
+
 } // namespace a3d

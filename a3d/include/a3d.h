@@ -1078,6 +1078,8 @@ struct GraphicsPipelineStateDesc
     TargetFormat            RenderTarget[8];        //!< レンダーターゲットです.
     TargetFormat            DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
+
+    static GraphicsPipelineStateDesc Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1110,6 +1112,8 @@ struct MeshShaderPipelineStateDesc
     TargetFormat            RenderTarget[8];        //!< レンダーターゲットです.
     TargetFormat            DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
+
+    static MeshShaderPipelineStateDesc Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
