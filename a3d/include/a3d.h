@@ -1091,6 +1091,8 @@ struct ComputePipelineStateDesc
     IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
     ShaderBinary            CS;                     //!< コンピュートシェーダです.
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
+
+    static ComputePipelineStateDesc Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

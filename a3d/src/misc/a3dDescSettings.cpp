@@ -564,6 +564,18 @@ GraphicsPipelineStateDesc GraphicsPipelineStateDesc::Default()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// ComputePipelineStateDesc structure
+///////////////////////////////////////////////////////////////////////////////
+ComputePipelineStateDesc ComputePipelineStateDesc::Default()
+{
+    ComputePipelineStateDesc result = {};
+    result.pLayout      = nullptr;
+    result.CS           = {};
+    result.pCachedPSO   = nullptr;
+    return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // MeshShaderPipelineStateDesc structure
 ///////////////////////////////////////////////////////////////////////////////
 MeshShaderPipelineStateDesc MeshShaderPipelineStateDesc::Default()

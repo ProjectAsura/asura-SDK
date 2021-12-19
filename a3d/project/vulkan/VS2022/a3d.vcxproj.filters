@@ -94,7 +94,7 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\misc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
