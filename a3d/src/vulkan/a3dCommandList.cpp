@@ -310,6 +310,7 @@ void CommandList::BeginFrameBuffer
 )
 {
     A3D_ASSERT(!m_BindRenderPass);
+    A3D_ASSERT(vkCmdBeginRendering != nullptr);
     if (renderTargetViewCount >= 8)
     { renderTargetViewCount = 8; }
 
@@ -394,6 +395,7 @@ void CommandList::BeginFrameBuffer
 void CommandList::EndFrameBuffer()
 {
     A3D_ASSERT(m_BindRenderPass);
+    A3D_ASSERT(vkCmdEndRendering != nullptr);
     vkCmdEndRendering(m_CommandBuffer);
     m_BindRenderPass = false;
 }

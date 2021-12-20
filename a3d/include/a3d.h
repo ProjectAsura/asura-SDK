@@ -89,38 +89,38 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum SEMANTICS_TYPE
 {
-    SEMANTICS_POSITION      = 0,        // "POSITION"   , location = 0
-    SEMANTICS_NORMAL        = 1,        // "NORMAL"     , location = 1
-    SEMANTICS_TANGENT       = 2,        // "TANGENT"    , location = 2
-    SEMANTICS_BITANGENT     = 3,        // "BITANGENT"  , location = 3
-    SEMANTICS_BONEINDEX0    = 4,        // "BONEINDEX"  , location = 4
-    SEMANTICS_BONEINDEX1    = 5,        // "BONEINDEX"  , location = 5
-    SEMANTICS_BONEWEIGHT0   = 6,        // "BONEWEIGHT" , location = 6
-    SEMANTICS_BONEWEIGHT1   = 7,        // "BONEWEIGHT" , location = 7
-    SEMANTICS_COLOR0        = 8,        // "COLOR"      , location = 8
-    SEMANTICS_COLOR1        = 9,        // "COLOR"      , location = 9
-    SEMANTICS_COLOR2        = 10,       // "COLOR"      , location = 10
-    SEMANTICS_COLOR3        = 11,       // "COLOR"      , location = 11
-    SEMANTICS_TEXCOORD0     = 12,       // "TEXCOORD"   , location = 12
-    SEMANTICS_TEXCOORD1     = 13,       // "TEXCOORD"   , location = 13
-    SEMANTICS_TEXCOORD2     = 14,       // "TEXCOORD"   , location = 14
-    SEMANTICS_TEXCOORD3     = 15,       // "TEXCOORD"   , location = 15
-    SEMANTICS_TEXCOORD4     = 16,       // "TEXCOORD"   , location = 16
-    SEMANTICS_TEXCOORD5     = 17,       // "TEXCOORD"   , location = 17
-    SEMANTICS_TEXCOORD6     = 18,       // "TEXCOORD"   , location = 18
-    SEMANTICS_TEXCOORD7     = 19,       // "TEXCOORD"   , location = 19
-    SEMANTICS_TEXCOORD8     = 20,       // "TEXCOORD"   , location = 20
-    SEMANTICS_TEXCOORD9     = 21,       // "TEXCOORD"   , location = 21
-    SEMANTICS_TEXCOORD10    = 22,       // "TEXCOORD"   , location = 22
-    SEMANTICS_TEXCOORD11    = 23,       // "TEXCOORD"   , location = 23
-    SEMANTICS_TEXCOORD12    = 24,       // "TEXCOORD"   , location = 24
-    SEMANTICS_TEXCOORD13    = 25,       // "TEXCOORD"   , location = 25
-    SEMANTICS_TEXCOORD14    = 26,       // "TEXCOORD"   , location = 26
-    SEMANTICS_TEXCOORD15    = 27,       // "TEXCOORD"   , location = 27
-    SEMANTICS_CUSTOM0       = 28,       // "CUSTOM"     , locaiton = 28
-    SEMANTICS_CUSTOM1       = 29,       // "CUSTOM"     , location = 29
-    SEMANTICS_CUSTOM2       = 30,       // "CUSTOM"     , location = 30
-    SEMANTICS_CUSTOM3       = 31,       // "CUSTOM"     , location = 31
+    SEMANTICS_POSITION      = 0,        // "POSITION"
+    SEMANTICS_NORMAL        = 1,        // "NORMAL"
+    SEMANTICS_TANGENT       = 2,        // "TANGENT"
+    SEMANTICS_BITANGENT     = 3,        // "BITANGENT"
+    SEMANTICS_BONEINDEX0    = 4,        // "BONEINDEX"
+    SEMANTICS_BONEINDEX1    = 5,        // "BONEINDEX"
+    SEMANTICS_BONEWEIGHT0   = 6,        // "BONEWEIGHT"
+    SEMANTICS_BONEWEIGHT1   = 7,        // "BONEWEIGHT"
+    SEMANTICS_COLOR0        = 8,        // "COLOR"
+    SEMANTICS_COLOR1        = 9,        // "COLOR"
+    SEMANTICS_COLOR2        = 10,       // "COLOR"
+    SEMANTICS_COLOR3        = 11,       // "COLOR"
+    SEMANTICS_TEXCOORD0     = 12,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD1     = 13,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD2     = 14,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD3     = 15,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD4     = 16,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD5     = 17,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD6     = 18,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD7     = 19,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD8     = 20,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD9     = 21,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD10    = 22,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD11    = 23,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD12    = 24,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD13    = 25,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD14    = 26,       // "TEXCOORD"
+    SEMANTICS_TEXCOORD15    = 27,       // "TEXCOORD"
+    SEMANTICS_CUSTOM0       = 28,       // "CUSTOM"
+    SEMANTICS_CUSTOM1       = 29,       // "CUSTOM"
+    SEMANTICS_CUSTOM2       = 30,       // "CUSTOM"
+    SEMANTICS_CUSTOM3       = 31,       // "CUSTOM"
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -995,7 +995,7 @@ struct TessellationState
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct InputElementDesc
 {
-    SEMANTICS_TYPE          Semantics;      //!< セマンティクス.
+    uint32_t                Semantics;      //!< セマンティクス(D3D12) または ロケーション番号(Vulkan)を指定します.
     RESOURCE_FORMAT         Format;         //!< リソースフォーマットです.
     uint32_t                StreamIndex;    //!< ストリーム番号です.
     uint32_t                OffsetInBytes;  //!< 先頭要素からオフセットです.
