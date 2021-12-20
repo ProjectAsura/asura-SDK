@@ -12,6 +12,7 @@
 #include <vector>
 #include <allocator/a3dStdAllocator.h>
 #include <allocator/a3dBaseAllocator.h>
+#include <renderdoc_app.h>
 
 
 #define VMA_IMPLEMENTATION
@@ -43,6 +44,7 @@ PFN_vkCreateDebugReportCallbackEXT  vkCreateDebugReportCallback     = nullptr;
 PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallback    = nullptr;
 PFN_vkDebugReportMessageEXT         vkDebugReportMessage            = nullptr;
 size_t g_AllocationSize[MAX_SYSTEM_ALLOCATION_SCOPE_COUNT] = {};
+RENDERDOC_API_1_0_0*    g_RenderDocAPI = nullptr;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -316,6 +318,43 @@ void CheckDeviceExtension
     a3d_free(temp);
 }
 
+//-------------------------------------------------------------------------------------------------
+//      RenderDocのセットアップ処理.
+//-------------------------------------------------------------------------------------------------
+void SetupRenderDoc()
+{
+#if A3D_IS_WIN
+    HMODULE handle = GetModuleHandleA("renderdoc.dll");
+    if (handle == NULL)
+    { return; }
+
+    pRENDERDOC_GetAPI RenderDocGetAPI = nullptr;
+    RenderDocGetAPI = (pRENDERDOC_GetAPI)GetProcAddress(handle, "RENDERDOC_GetAPI");
+    if (RenderDocGetAPI == nullptr)
+    { return; }
+
+    if (RenderDocGetAPI(eRENDERDOC_API_Version_1_0_0, reinterpret_cast<void**>(&g_RenderDocAPI)) != 1)
+    {
+        g_RenderDocAPI = nullptr;
+        return;
+    }
+
+#elif (A3D_IS_LINUX || A3D_IS_GGP || A3D_IS_ANDROID)
+    void* mod = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
+    if (mode == nullptr)
+    { return; }
+
+    pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, "RENDERDOC_GetAPI");
+    int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_0_0, reinterpret_cast<void**>(&g_RenderDocAPI));
+    if (ret != 1)
+    {
+        g_RenderDocAPI = nullptr;
+        return;
+    }
+
+#endif
+}
+
 } // namespace /* anonymous */
 
 //-------------------------------------------------------------------------------------------------
@@ -394,6 +433,9 @@ bool Device::Init(const DeviceDesc* pDesc)
     if (pDesc == nullptr)
     { return false; }
 
+    if (pDesc->EnableCapture)
+    { SetupRenderDoc(); }
+
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
     const char* instanceExtension[] = {
@@ -417,6 +459,8 @@ bool Device::Init(const DeviceDesc* pDesc)
         VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
         VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
         VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,
+
+        // 必ず最後にVK_EXT_DEBUG_REPORT_EXTENSION_NAME.
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
     };
 
@@ -424,7 +468,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         "VK_LAYER_KHRONOS_validation",
     };
 
-    uint32_t instanceExtensionCount = 7;
+    uint32_t instanceExtensionCount = _countof(instanceExtension);
     uint32_t layerCount = 0;
 
     if (pDesc->EnableDebug)
@@ -1286,6 +1330,41 @@ bool Device::IsSupportExtension(EXTENSION value) const
 //-------------------------------------------------------------------------------------------------
 VmaAllocator Device::GetAllocator() const
 { return m_Allocator; }
+
+//-------------------------------------------------------------------------------------------------
+//      キャプチャー中かどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool Device::IsFrameCapturing()
+{
+    if (g_RenderDocAPI == nullptr)
+    { return false; }
+
+    return g_RenderDocAPI->IsFrameCapturing() == 1;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フレームキャプチャーを開始します.
+//-------------------------------------------------------------------------------------------------
+void Device::StartFrameCapture(void* windowHandle)
+{
+    if (g_RenderDocAPI == nullptr)
+    { return; }
+
+    auto devicePtr = RENDERDOC_DEVICEPOINTER_FROM_VKINSTANCE(m_Instance);
+    g_RenderDocAPI->StartFrameCapture(devicePtr, windowHandle);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      フレームキャプチャーを終了します.
+//-------------------------------------------------------------------------------------------------
+void Device::EndFrameCapture(void* windowHandle)
+{
+    if (g_RenderDocAPI == nullptr)
+    { return; }
+
+    auto devicePtr = RENDERDOC_DEVICEPOINTER_FROM_VKINSTANCE(m_Instance);
+    g_RenderDocAPI->EndFrameCapture(devicePtr, windowHandle);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

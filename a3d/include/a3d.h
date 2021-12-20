@@ -1217,6 +1217,7 @@ struct DeviceDesc
     uint32_t        MaxComputeQueueSubmitCount;     //!< コンピュートキューへの最大サブミット数です.
     uint32_t        MaxCopyQueueSubmitCount;        //!< コピーキューへの最大サブミット数です.
     bool            EnableDebug;                    //!< デバッグモードを有効にします.
+    bool            EnableCapture;                  //!< デバッガーによるフレームキャプチャーを有効にします.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

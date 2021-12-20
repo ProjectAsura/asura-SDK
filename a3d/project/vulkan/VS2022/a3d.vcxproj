@@ -61,7 +61,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VK_ENABLE_BETA_EXTENSIONS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(ProjectDir)..\..\..\..\external\renderdoc;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -79,7 +79,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>VK_USE_PLATFORM_WIN32_KHR;VK_PROTOTYPES;VK_ENABLE_BETA_EXTENSIONS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(ProjectDir)..\..\..\..\external\renderdoc;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>

@@ -426,6 +426,18 @@ void SwapChain::Term()
     if (m_pDevice == nullptr)
     { return; }
 
+    if (m_pDevice->GetDesc().EnableCapture)
+    {
+        if (m_pDevice->IsFrameCapturing())
+        {
+            void* windowHandle = nullptr;
+        #if A3D_IS_WIN
+            windowHandle = m_hWnd;
+        #endif
+            m_pDevice->EndFrameCapture(windowHandle);
+        }
+    }
+
     auto pNativeInstance = m_pDevice->GetVulkanInstance();
     A3D_ASSERT(pNativeInstance != null_handle);
 
@@ -580,6 +592,19 @@ void SwapChain::Present()
     // 取得待ち.
     vkWaitForFences(pNativeDevice, 1, &fence, VK_FALSE, Infinite);
     vkResetFences(pNativeDevice, 1, &fence);
+
+    if (m_pDevice->GetDesc().EnableCapture)
+    {
+        void* windowHandle = nullptr;
+        #if A3D_IS_WIN
+            windowHandle = m_hWnd;
+        #endif
+
+        if (m_pDevice->IsFrameCapturing())
+        { m_pDevice->EndFrameCapture(windowHandle); }
+
+        m_pDevice->StartFrameCapture(windowHandle);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
