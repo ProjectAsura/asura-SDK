@@ -905,7 +905,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
             &colorBlendState );
 
         VkFormat colorFormats[8] = {};
-        for(auto i=0; i<pDesc->RenderTargetCount; ++i)
+        for(auto i=0u; i<pDesc->RenderTargetCount; ++i)
         { colorFormats[i] = ToNativeFormat(pDesc->RenderTarget[i]); }
 
         VkFormat stencilFormat = VK_FORMAT_UNDEFINED;
