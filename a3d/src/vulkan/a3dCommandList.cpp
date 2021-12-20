@@ -383,7 +383,7 @@ void CommandList::BeginFrameBuffer
     info.pColorAttachments      = colorAttachments;
     info.pDepthAttachment       = &depthAttachment;
 
-    vkCmdBeginRenderingKHR(m_CommandBuffer, &info);
+    vkCmdBeginRendering(m_CommandBuffer, &info);
 
     m_BindRenderPass = true;
 }
@@ -394,7 +394,7 @@ void CommandList::BeginFrameBuffer
 void CommandList::EndFrameBuffer()
 {
     A3D_ASSERT(m_BindRenderPass);
-    vkCmdEndRenderingKHR(m_CommandBuffer);
+    vkCmdEndRendering(m_CommandBuffer);
     m_BindRenderPass = false;
 }
 

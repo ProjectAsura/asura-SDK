@@ -41,8 +41,11 @@ public:
         EXT_KHR_BUFFER_DEVICE_ADDRESS,          // VK_KHR_buffer_device_address     (for VK_KHR_ray_tracing).
         EXT_KHR_DEFERRED_HOST_OPERATION,        // VK_KHR_deferred_host_operation   (for VK_KHR_ray_tracing).
         EXT_KHR_PIPELINE_LIBRARY,               // VK_KHR_pipeline_library          (for VK_KHR_ray_tracing).
+        EXT_KHR_ACCELERATION_STRUCTURE,         // VK_KHR_acceleration_structure
         EXT_KHR_RAY_TRACING,                    // VK_KHR_ray_tracing
+        EXT_KHR_RAY_QUERY,                      // VK_KHR_ray_query
         EXT_NV_MESH_SHADER,                     // VK_NV_mesh_shader
+        EXT_KHR_DYNAMIC_RENDERING,              // VK_KHR_dynamic_rendering
         EXT_COUNT,
     };
 

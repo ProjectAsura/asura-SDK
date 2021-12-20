@@ -555,8 +555,8 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     ToNativePipelieStateCache( pDesc->pCachedPSO, desc.CachedPSO );
 
     for (auto i=0u; i<pDesc->RenderTargetCount; ++i)
-    { desc.RTVFormats[i] = a3d::ToNativeFormat(pDesc->RenderTarget[i].Format); }
-    desc.DSVFormat = a3d::ToNativeFormat(pDesc->DepthTarget.Format);
+    { desc.RTVFormats[i] = a3d::ToNativeFormat(pDesc->RenderTarget[i]); }
+    desc.DSVFormat = a3d::ToNativeFormat(pDesc->DepthTarget);
 
     auto hr = pNativeDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));
     if ( FAILED(hr) )
@@ -649,7 +649,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
     rtvFormats.NumRenderTargets = pDesc->RenderTargetCount;
     for (auto i=0u; i<pDesc->RenderTargetCount; ++i)
-    { rtvFormats.RTFormats[i] = a3d::ToNativeFormat(pDesc->RenderTarget[i].Format); }
+    { rtvFormats.RTFormats[i] = a3d::ToNativeFormat(pDesc->RenderTarget[i]); }
 
     D3D12_GEOMETRY_PIPELINE_STATE_DESC psoDesc = {};
     psoDesc.RootSignature = pWrapDescriptorLayout->GetD3D12RootSignature();
@@ -662,7 +662,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
     ToNativeStencilDesc   ( pDesc->StencilState      , psoDesc.DepthStencilState );
     ToNativeSampleDesc    ( pDesc->MultiSampleState  , psoDesc.SampleDesc );
     psoDesc.RTVFormats    = rtvFormats;
-    psoDesc.DSVFormat     = a3d::ToNativeFormat(pDesc->DepthTarget.Format);
+    psoDesc.DSVFormat     = a3d::ToNativeFormat(pDesc->DepthTarget);
     psoDesc.SampleMask    = UINT32_MAX;
     psoDesc.CachedPSO     = cachedPSO;
 

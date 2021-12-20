@@ -676,12 +676,24 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             colorAttachments,
             &colorBlendState );
 
+        VkFormat colorFormats[8] = {};
+        for(auto i=0; i<8; ++i)
+        { colorFormats[i] = ToNativeFormat(pDesc->RenderTarget[i]); }
+
+        VkPipelineRenderingCreateInfoKHR renderInfo = {};
+        renderInfo.sType                    = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+        renderInfo.pNext                    = nullptr;
+        renderInfo.colorAttachmentCount     = pDesc->RenderTargetCount;
+        renderInfo.pColorAttachmentFormats  = colorFormats;
+        renderInfo.depthAttachmentFormat    = ToNativeFormat(pDesc->DepthTarget);
+        renderInfo.stencilAttachmentFormat  = VK_FORMAT_UNDEFINED;;
+
         auto pWrapLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
         A3D_ASSERT(pWrapLayout != nullptr);
 
         VkGraphicsPipelineCreateInfo info = {};
         info.sType                  = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        info.pNext                  = nullptr;
+        info.pNext                  = &renderInfo;
         info.flags                  = 0;
         info.stageCount             = shaderCount;
         info.pStages                = shaderInfos;
@@ -892,12 +904,28 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
             colorAttachments,
             &colorBlendState );
 
+        VkFormat colorFormats[8] = {};
+        for(auto i=0; i<pDesc->RenderTargetCount; ++i)
+        { colorFormats[i] = ToNativeFormat(pDesc->RenderTarget[i]); }
+
+        VkFormat stencilFormat = VK_FORMAT_UNDEFINED;
+        if (pDesc->DepthTarget == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
+        { stencilFormat = ToNativeFormat(pDesc->DepthTarget); }
+
+        VkPipelineRenderingCreateInfoKHR renderInfo = {};
+        renderInfo.sType                    = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+        renderInfo.pNext                    = nullptr;
+        renderInfo.colorAttachmentCount     = pDesc->RenderTargetCount;
+        renderInfo.pColorAttachmentFormats  = colorFormats;
+        renderInfo.depthAttachmentFormat    = ToNativeFormat(pDesc->DepthTarget);
+        renderInfo.stencilAttachmentFormat  = stencilFormat;
+
         auto pWrapLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
         A3D_ASSERT(pWrapLayout != nullptr);
 
         VkGraphicsPipelineCreateInfo info = {};
         info.sType                  = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        info.pNext                  = nullptr;
+        info.pNext                  = &renderInfo;
         info.flags                  = 0;
         info.stageCount             = shaderCount;
         info.pStages                = shaderInfos;

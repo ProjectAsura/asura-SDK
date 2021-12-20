@@ -553,12 +553,8 @@ GraphicsPipelineStateDesc GraphicsPipelineStateDesc::Default()
     result.PrimitiveTopology        = PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     result.RenderTargetCount        = 0;
     for(auto i=0; i<8; ++i)
-    {
-        result.RenderTarget[i].Format       = RESOURCE_FORMAT_UNKNOWN;
-        result.RenderTarget[i].SampleCount  = 0;
-    }
-    result.DepthTarget.Format       = RESOURCE_FORMAT_UNKNOWN;
-    result.DepthTarget.SampleCount  = 0;
+    { result.RenderTarget[i]        = RESOURCE_FORMAT_UNKNOWN; }
+    result.DepthTarget              = RESOURCE_FORMAT_UNKNOWN;
     result.pCachedPSO               = nullptr;
     return result;
 }
@@ -592,13 +588,9 @@ MeshShaderPipelineStateDesc MeshShaderPipelineStateDesc::Default()
     result.StencilState         = StencilState::Default();
     result.RenderTargetCount    = 0;
     for(auto i=0; i<8; ++i)
-    {
-        result.RenderTarget[i].Format       = RESOURCE_FORMAT_UNKNOWN;
-        result.RenderTarget[i].SampleCount  = 0;
-    }
-    result.DepthTarget.Format       = RESOURCE_FORMAT_UNKNOWN;
-    result.DepthTarget.SampleCount  = 0;
-    result.pCachedPSO               = nullptr;
+    { result.RenderTarget[i]    = RESOURCE_FORMAT_UNKNOWN; }
+    result.DepthTarget          = RESOURCE_FORMAT_UNKNOWN;
+    result.pCachedPSO           = nullptr;
     return result;
 }
 

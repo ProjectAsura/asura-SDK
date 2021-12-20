@@ -283,7 +283,9 @@ void CheckDeviceExtension
         VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
         VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME,
         VK_NV_MESH_SHADER_EXTENSION_NAME,
+        VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
         VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+        VK_KHR_RAY_QUERY_EXTENSION_NAME,
         VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
     };
 
@@ -291,7 +293,8 @@ void CheckDeviceExtension
     for(size_t i=0; i<count; ++i)
     {
         auto hit = false;
-        for(size_t j=0; j<sizeof(requestExtensions) / sizeof(requestExtensions[0]); ++j)
+        auto count = sizeof(requestExtensions) / sizeof(requestExtensions[0]);
+        for(size_t j=0; j<count; ++j)
         {
             if (strcmp(temp[i].extensionName, requestExtensions[j]) == 0)
             {
@@ -352,6 +355,10 @@ PFN_vkCmdDrawMeshTasksIndirectNV         vkCmdDrawMeshTasksIndirect         = nu
 PFN_vkCmdDrawMeshTasksIndirectCountNV    vkCmdDrawMeshTasksIndirectCount    = nullptr;
 #endif
 
+#if defined(VK_KHR_dynamic_rendering)
+PFN_vkCmdBeginRenderingKHR               vkCmdBeginRendering    = nullptr;
+PFN_vkCmdEndRenderingKHR                 vkCmdEndRendering      = nullptr;
+#endif
 
 namespace a3d {
 
@@ -745,8 +752,17 @@ bool Device::Init(const DeviceDesc* pDesc)
                 if (strcmp(deviceExtensions[i], VK_NV_MESH_SHADER_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_NV_MESH_SHADER] = true; }
 
+                if (strcmp(deviceExtensions[i], VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_ACCELERATION_STRUCTURE] = true; }
+
                 if (strcmp(deviceExtensions[i], VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME) == 0)
                 { m_IsSupportExt[EXT_KHR_RAY_TRACING] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_RAY_QUERY_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_RAY_QUERY] = true; }
+
+                if (strcmp(deviceExtensions[i], VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME) == 0)
+                { m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING] = true; }
             }
         }
 
@@ -824,6 +840,16 @@ bool Device::Init(const DeviceDesc* pDesc)
                 vkCmdDrawMeshTasks              = GET_DEVICE_PROC(m_Device, vkCmdDrawMeshTasksNV);
                 vkCmdDrawMeshTasksIndirect      = GET_DEVICE_PROC(m_Device, vkCmdDrawMeshTasksIndirectNV);
                 vkCmdDrawMeshTasksIndirectCount = GET_DEVICE_PROC(m_Device, vkCmdDrawMeshTasksIndirectCountNV);
+            }
+        }
+        #endif
+
+        #if defined(VK_KHR_dynamic_rendering)
+        {
+            if (m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING])
+            {
+                vkCmdBeginRendering = GET_DEVICE_PROC(m_Device, vkCmdBeginRenderingKHR);
+                vkCmdEndRendering   = GET_DEVICE_PROC(m_Device, vkCmdEndRenderingKHR);
             }
         }
         #endif

@@ -1046,16 +1046,6 @@ struct ShaderBinary
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// TargetFormat structure
-//! @brief  描画ターゲットフォーマットです.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct TargetFormat
-{
-    RESOURCE_FORMAT     Format;             //!< リソースフォーマットです.
-    uint32_t            SampleCount;        //!< サンプル数です.
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // GraphicsPipelineStateDesc structure
 //! @brief  グラフィックスパイプラインステートの設定です.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1075,8 +1065,8 @@ struct GraphicsPipelineStateDesc
     InputLayoutDesc         InputLayout;            //!< 入力レイアウトステートです.
     PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.
     uint32_t                RenderTargetCount;      //!< レンダーターゲット数です.
-    TargetFormat            RenderTarget[8];        //!< レンダーターゲットです.
-    TargetFormat            DepthTarget;            //!< 深度ターゲットです
+    RESOURCE_FORMAT         RenderTarget[8];        //!< レンダーターゲットです.
+    RESOURCE_FORMAT         DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
 
     static GraphicsPipelineStateDesc Default();
@@ -1111,8 +1101,8 @@ struct MeshShaderPipelineStateDesc
     DepthState              DepthState;             //!< 深度ステートです.
     StencilState            StencilState;           //!< ステンシルステートです.
     uint32_t                RenderTargetCount;      //!< レンダーターゲット数です.
-    TargetFormat            RenderTarget[8];        //!< レンダーターゲットです.
-    TargetFormat            DepthTarget;            //!< 深度ターゲットです
+    RESOURCE_FORMAT         RenderTarget[8];        //!< レンダーターゲットです.
+    RESOURCE_FORMAT         DepthTarget;            //!< 深度ターゲットです
     IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
 
     static MeshShaderPipelineStateDesc Default();
