@@ -8,5 +8,8 @@ VS2022 [![Build status](https://ci.appveyor.com/api/projects/status/87v880ck9olc
 
 ## Modules
 
-* a3d  : 抽象化グラフィックスライブラリ.
-* a3dx : 抽象化グラフィックス補助ライブラリ.
+* a3d  : Abstract Graphics API Library.
+
+## Samples
+
+* a3d [https://github.com/ProjectAsura/a3d_Samples]

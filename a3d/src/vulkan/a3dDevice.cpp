@@ -914,7 +914,7 @@ bool Device::Init(const DeviceDesc* pDesc)
 
         if (!m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING])
         {
-            A3D_LOG("Error : VK_KHR_DYNAMIC_RENDERING is not supported.");
+            A3D_LOG("Error : VK_KHR_dynamic_rendering is not supported.");
             return false;
         }
 

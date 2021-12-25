@@ -133,6 +133,17 @@ bool Device::Init(const DeviceDesc* pDesc)
         if ( SUCCEEDED(hr) )
         { pDebug->EnableDebugLayer(); }
 
+        ID3D12DeviceRemovedExtendedDataSettings1* pDredSettings = nullptr;
+        hr = D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings));
+        if (SUCCEEDED(hr))
+        {
+            pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+            pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+            pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+            //pDredSettings->SetWatsonDumpEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+        }
+
+        SafeRelease(pDredSettings);
         SafeRelease(pDebug);
     }
 
@@ -200,6 +211,29 @@ bool Device::Init(const DeviceDesc* pDesc)
     {
         A3D_LOG("Error : D3D12CreateDevice() Failed. errcode = 0x%x", hr);
         return false;
+    }
+
+    if (pDesc->EnableDebug)
+    {
+        ID3D12InfoQueue* pInfoQueue = nullptr;
+        hr = m_pDevice->QueryInterface(IID_PPV_ARGS(&pInfoQueue));
+        if (SUCCEEDED(hr))
+        {
+            // レンダーターゲットと深度ステンシルビューのクリア値が異なる警告は抑制する.
+            D3D12_MESSAGE_ID muteIds[] = {
+                D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+                D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+            };
+
+            D3D12_INFO_QUEUE_FILTER filter = {};
+            filter.DenyList.NumIDs  = _countof(muteIds);
+            filter.DenyList.pIDList = muteIds;
+
+            pInfoQueue->AddStorageFilterEntries(&filter);
+            pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+            pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+        }
+        SafeRelease(pInfoQueue);
     }
 
     // アロケータ生成.

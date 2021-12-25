@@ -174,7 +174,6 @@ bool Device::Init(const DeviceDesc* pDesc)
     }
     #endif
 
-
     {
         D3D_FEATURE_LEVEL featureLevels[] = {
             D3D_FEATURE_LEVEL_11_1,
@@ -202,6 +201,18 @@ bool Device::Init(const DeviceDesc* pDesc)
             A3D_LOG("Error : D3D11CreateDevice() Failed. errcode = 0x%x", hr);
             return false;
         }
+    }
+
+    if (pDesc->EnableDebug)
+    {
+        ID3D11InfoQueue* pInfoQueue = nullptr;
+        auto hr = m_pDevice->QueryInterface(IID_PPV_ARGS(&pInfoQueue));
+        if (SUCCEEDED(hr))
+        {
+            pInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+            pInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
+        }
+        SafeRelease(pInfoQueue);
     }
 
     if (!Queue::Create(

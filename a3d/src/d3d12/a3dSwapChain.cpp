@@ -251,7 +251,22 @@ SwapChainDesc SwapChain::GetDesc() const
 //      画面に表示します.
 //-------------------------------------------------------------------------------------------------
 void SwapChain::Present()
-{ m_pSwapChain->Present( m_Desc.SyncInterval, m_PresentFlag ); }
+{
+    auto hr = m_pSwapChain->Present( m_Desc.SyncInterval, m_PresentFlag );
+    if (FAILED(hr))
+    {
+        if (hr == DXGI_ERROR_DEVICE_REMOVED)
+        {
+            OutputLog("Error : Device Removed");
+            ReportDRED(m_pDevice);
+        }
+        else if (hr == DXGI_ERROR_DEVICE_RESET)
+        {
+            OutputLog("Error : Device Reset");
+            ReportDRED(m_pDevice);
+        }
+    }
+}
 
 //-------------------------------------------------------------------------------------------------
 //      現在のバッファ番号を取得します.

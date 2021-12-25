@@ -104,6 +104,7 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorSet.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dDescriptorSetLayout.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dDevice.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dDred.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dFence.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -141,6 +142,7 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorSet.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dDescriptorSetLayout.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dDevice.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dDred.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dFence.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dPCH.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dPipelineState.h" />

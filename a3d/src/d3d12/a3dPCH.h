@@ -57,5 +57,6 @@
 #include "a3dDescriptorSet.h"
 #include "a3dPipelineState.h"
 #include "a3dQueryPool.h"
+#include "a3dDred.h"
 
 
