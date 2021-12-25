@@ -121,6 +121,7 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dUtil.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
+    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
+    <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

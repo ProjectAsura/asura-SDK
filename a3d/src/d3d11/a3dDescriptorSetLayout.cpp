@@ -31,7 +31,10 @@ DescriptorSetLayout::~DescriptorSetLayout()
 bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -110,15 +113,22 @@ bool DescriptorSetLayout::Create
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new DescriptorSetLayout;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         instance->Release();
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

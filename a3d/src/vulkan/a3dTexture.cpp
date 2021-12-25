@@ -219,7 +219,10 @@ Texture::~Texture()
 bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -228,7 +231,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (!IsSupportFormat(m_pDevice, pDesc))
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto deviceMemoryProps = m_pDevice->GetVulkanPhysicalDeviceMemoryProperties(0);
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
@@ -261,7 +267,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 
         auto ret = vmaCreateImage(m_pDevice->GetAllocator(), &info, &allocInfo, &m_Image, &m_Allocation, nullptr);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vmaCreateImage() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     // イメージアスペクトフラグの設定.
@@ -282,7 +291,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         CommandListDesc desc = {};
         desc.Type = COMMANDLIST_TYPE_DIRECT;
         if (!m_pDevice->CreateCommandList(&desc, &pCmdList))
-        { return false; }
+        {
+            A3D_LOG("Error : Device::CretaeCommandList() Failed.");
+            return false;
+        }
 
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
         A3D_ASSERT(pWrapCmdList != nullptr);
@@ -477,15 +489,22 @@ RESOURCE_KIND Texture::GetKind() const
 bool Texture::Create(IDevice* pDevice, const TextureDesc* pDesc, ITexture** ppResource)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Texture;
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 
@@ -506,11 +525,17 @@ bool Texture::Create
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Texture;
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     auto pWrapDevice = static_cast<Device*>(pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);

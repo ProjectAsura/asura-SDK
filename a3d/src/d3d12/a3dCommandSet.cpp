@@ -32,7 +32,10 @@ CommandSet::~CommandSet()
 bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -70,7 +73,10 @@ bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
         delete[] pArguments;
 
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandSignature() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -129,15 +135,22 @@ ID3D12CommandSignature* CommandSet::GetD3D12CommandSignature() const
 bool CommandSet::Create(IDevice* pDevice, const CommandSetDesc* pDesc, ICommandSet** ppCommandSet)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppCommandSet == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Arugment.");
+        return false;
+    }
 
     auto instance = new CommandSet;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

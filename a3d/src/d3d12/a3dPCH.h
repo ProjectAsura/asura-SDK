@@ -34,6 +34,7 @@
 #include <D3D12MemAlloc.h>
 
 #include "misc/a3dBlob.h"
+#include "misc/a3dLogger.h"
 
 #include "a3dUtil.h"
 #include "a3dDescriptor.h"

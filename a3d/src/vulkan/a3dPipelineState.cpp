@@ -540,10 +540,16 @@ PipelineState::~PipelineState()
 bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     if (pDesc->pLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -564,7 +570,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreatePipelineCache() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     // パイプラインステートを生成.
@@ -728,7 +737,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         }
 
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateGraphicsPipelines() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;
@@ -740,12 +752,18 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     if (pDesc->pLayout         == nullptr
      || pDesc->CS.ByteCodeSize == 0 
      || pDesc->CS.pByteCode    == nullptr)
-    { return false;}
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -766,7 +784,10 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreatePipelineCache() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     // コンピュートパイプラインを生成します.
@@ -785,7 +806,10 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
         auto ret = vkCreateComputePipelines(pNativeDevice, m_PipelineCache, 1, &info, nullptr, &m_PipelineState);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateComputePipelines() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;
@@ -797,10 +821,16 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     if (pDesc->pLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -821,7 +851,10 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreatePipelineCache() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     // パイプラインステートを生成.
@@ -960,7 +993,10 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
         }
 
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateGraphicsPipelines() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;
@@ -1036,10 +1072,16 @@ bool PipelineState::GetCachedBlob(IBlob** ppBlob)
     void*   pData = nullptr;
     auto ret = vkGetPipelineCacheData(pNativeDevice, m_PipelineCache, &size, pData);
     if ( ret != VK_SUCCESS )
-    { return false; }
+    {
+        A3D_LOG("Error : vkGetPipelineCacheData() Failed. VkResult = %s", ToString(ret));
+        return false;
+    }
 
     if (!Blob::Create(size, ppBlob))
-    { return false; }
+    {
+        A3D_LOG("Error : Blob::Create() Failed.");
+        return false;
+    }
 
     void* pPtr = (*ppBlob)->GetBufferPointer();
     memcpy(pPtr, pData, size);
@@ -1070,15 +1112,22 @@ bool PipelineState::CreateAsGraphics
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsGraphics(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsGraphics() Failed.");
         return false;
     }
 
@@ -1097,15 +1146,22 @@ bool PipelineState::CreateAsCompute
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsCompute(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsCompute() Failed.");
         return false;
     }
 
@@ -1124,15 +1180,22 @@ bool PipelineState::CreateAsMesh
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsMesh(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsMesh() Failed.");
         return false;
     }
 

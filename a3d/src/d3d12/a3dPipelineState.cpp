@@ -506,10 +506,16 @@ void PipelineState::Issue(ICommandList* pCommandList)
 bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     if (pDesc->pLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -560,7 +566,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     auto hr = pNativeDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : ID3D12Device::CreateGraphicsPipelineState() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     m_PrimitiveTopology = a3d::ToNativePrimitive( 
         pDesc->PrimitiveTopology,
@@ -575,7 +584,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -597,7 +609,10 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     auto hr = pNativeDevice->CreateComputePipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : ID3D12Device::CreateComputePipelineState() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     return true;
 }
@@ -608,7 +623,10 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -628,7 +646,10 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
         D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = { D3D_SHADER_MODEL_6_5 };
         auto hr = pNativeDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
         if (FAILED(hr) || (shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_5))
-        { return false; }
+        {
+            A3D_LOG("Error : D3D_SHADER_MODEL_6_5 is not supported. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // メッシュシェーダをサポートしているかどうかチェック.
@@ -636,7 +657,10 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
         D3D12_FEATURE_DATA_D3D12_OPTIONS7 features = {};
         auto hr = pNativeDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &features, sizeof(features));
         if (FAILED(hr) || (features.MeshShaderTier == D3D12_MESH_SHADER_TIER_NOT_SUPPORTED))
-        { return false; }
+        {
+            A3D_LOG("Error : D3D12_MESH_SHADER_TIER_NOT_SUPPROTED. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     D3D12_CACHED_PIPELINE_STATE cachedPSO = {};
@@ -673,7 +697,10 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
     // パイプラインステート生成.
     auto hr = pNativeDevice->CreatePipelineState(&pssDesc, IID_PPV_ARGS(&m_pPipelineState));
     if (FAILED(hr))
-    { return false; }
+    {
+        A3D_LOG("Error : ID3D12Device::CreatePipelineState8) Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     return true;
 }
@@ -699,15 +726,22 @@ bool PipelineState::CreateAsGraphics
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsGraphics(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsGraphics() Failed.");
         return false;
     }
 
@@ -726,15 +760,22 @@ bool PipelineState::CreateAsCompute
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsCompute(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsCompute() Failed.");
         return false;
     }
 
@@ -753,15 +794,22 @@ bool PipelineState::CreateAsMesh
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsMesh(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsMesh() Failed.");
         return false;
     }
 

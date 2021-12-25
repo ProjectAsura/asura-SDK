@@ -7,8 +7,6 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
-#include <cstdio>
-#include <cstdarg>
 #include <vector>
 #include <allocator/a3dStdAllocator.h>
 #include <allocator/a3dBaseAllocator.h>
@@ -43,31 +41,9 @@ VkDebugReportCallbackEXT            vkDebugReportCallback           = null_handl
 PFN_vkCreateDebugReportCallbackEXT  vkCreateDebugReportCallback     = nullptr;
 PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallback    = nullptr;
 PFN_vkDebugReportMessageEXT         vkDebugReportMessage            = nullptr;
-size_t g_AllocationSize[MAX_SYSTEM_ALLOCATION_SCOPE_COUNT] = {};
+size_t                  g_AllocationSize[MAX_SYSTEM_ALLOCATION_SCOPE_COUNT] = {};
 RENDERDOC_API_1_0_0*    g_RenderDocAPI = nullptr;
 
-
-//-------------------------------------------------------------------------------------------------
-//      ログ出力を行います.
-//-------------------------------------------------------------------------------------------------
-void OutputLog(const char* format, ...)
-{
-    #if A3D_IS_WIN
-        char temp[2048];
-        va_list va;
-        va_start(va, format);
-        vsprintf_s( temp, format, va );
-        va_end(va);
-
-        OutputDebugStringA(temp);
-        printf_s( "%s", temp );
-    #else
-        va_list va;
-        va_start(va, format);
-        vprintf(format, va);
-        va_end(va);
-    #endif
-}
 
 //-------------------------------------------------------------------------------------------------
 //      メモリ確保処理.
@@ -137,27 +113,27 @@ VkBool32 VKAPI_CALL DebugReport
 
     if (msgFlags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
     {
-        OutputLog( "Error [%s] Code %d : ", pLayerPrefix, msgCode );
+        a3d::OutputLog( "Error [%s] Code %d : ", pLayerPrefix, msgCode );
     }
     else if (msgFlags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
     {
-        OutputLog( "Warning [%s] Code %d : ", pLayerPrefix, msgCode );
+        a3d::OutputLog( "Warning [%s] Code %d : ", pLayerPrefix, msgCode );
     }
     else if (msgFlags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
     {
-        OutputLog( "Information [%s] Code %d : ", pLayerPrefix, msgCode );
+        a3d::OutputLog( "Information [%s] Code %d : ", pLayerPrefix, msgCode );
     }
     else if (msgFlags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
     {
-        OutputLog( "Debug [%s] Code %d : ", pLayerPrefix, msgCode );
+        a3d::OutputLog( "Debug [%s] Code %d : ", pLayerPrefix, msgCode );
     }
     else if (msgFlags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
     {
-        OutputLog( "Performance Warning [%s] Code %d : ", pLayerPrefix, msgCode );
+        a3d::OutputLog( "Performance Warning [%s] Code %d : ", pLayerPrefix, msgCode );
     }
 
-    OutputLog( pMsg );
-    OutputLog( "\n" );
+    a3d::OutputLog( pMsg );
+    a3d::OutputLog( "\n" );
 
     return VK_TRUE;
 }
@@ -331,10 +307,14 @@ void SetupRenderDoc()
     pRENDERDOC_GetAPI RenderDocGetAPI = nullptr;
     RenderDocGetAPI = (pRENDERDOC_GetAPI)GetProcAddress(handle, "RENDERDOC_GetAPI");
     if (RenderDocGetAPI == nullptr)
-    { return; }
+    {
+        A3D_LOG("GetProcAddress(RENDERDOC_GetAPI) Failed");
+        return;
+    }
 
     if (RenderDocGetAPI(eRENDERDOC_API_Version_1_0_0, reinterpret_cast<void**>(&g_RenderDocAPI)) != 1)
     {
+        A3D_LOG("Error : RenderDocGetAPI() Failed.");
         g_RenderDocAPI = nullptr;
         return;
     }
@@ -342,12 +322,16 @@ void SetupRenderDoc()
 #elif (A3D_IS_LINUX || A3D_IS_GGP || A3D_IS_ANDROID)
     void* mod = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD);
     if (mode == nullptr)
-    { return; }
+    {
+        A3D_LOG("dlopen() Failed.");
+        return;
+    }
 
     pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, "RENDERDOC_GetAPI");
     int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_0_0, reinterpret_cast<void**>(&g_RenderDocAPI));
     if (ret != 1)
     {
+        A3D_LOG("RENDERDOC_GetAPI() Fasiled.");
         g_RenderDocAPI = nullptr;
         return;
     }
@@ -431,7 +415,10 @@ Device::~Device()
 bool Device::Init(const DeviceDesc* pDesc)
 {
     if (pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument");
+        return false;
+    }
 
     if (pDesc->EnableCapture)
     { SetupRenderDoc(); }
@@ -528,7 +515,10 @@ bool Device::Init(const DeviceDesc* pDesc)
         extensions.clear();
 
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateInstance() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     #if defined(VK_KHR_swapchain)
@@ -582,7 +572,10 @@ bool Device::Init(const DeviceDesc* pDesc)
             a3d_enable_counter(true);
 
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateDebugReportCallback() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
         }
     }
 
@@ -591,22 +584,32 @@ bool Device::Init(const DeviceDesc* pDesc)
         uint32_t count = 0;
         auto ret = vkEnumeratePhysicalDevices( m_Instance, &count, nullptr );
         if ( ret != VK_SUCCESS || count < 1 )
-        { return false; }
+        {
+            A3D_LOG("Error : vkEnumeratePhysicalDevices() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         m_PhysicalDeviceCount = count;
 
         m_pPhysicalDeviceInfos = new PhysicalDeviceInfo [count];
         if (m_pPhysicalDeviceInfos == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         VkPhysicalDevice* gpus = new VkPhysicalDevice[count];
         if (gpus == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         ret = vkEnumeratePhysicalDevices( m_Instance, &count, gpus );
         if ( ret != VK_SUCCESS )
         {
             delete [] gpus;
+            A3D_LOG("Error : vkEnumeratePhysicalDevices() Failed. VkResult = %s", ToString(ret));
             return false;
         }
 
@@ -629,7 +632,10 @@ bool Device::Init(const DeviceDesc* pDesc)
 
         VkQueueFamilyProperties* pProps = new VkQueueFamilyProperties[propCount];
         if (pProps == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propCount, pProps);
 
@@ -640,6 +646,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         VkDeviceQueueCreateInfo* pQueueInfos = new VkDeviceQueueCreateInfo[propCount];
         if (pQueueInfos == nullptr)
         {
+            A3D_LOG("Error : Out of Memory.");
             delete [] pProps;
             return false;
         }
@@ -735,6 +742,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         {
             delete [] pProps;
             delete [] pQueueInfos;
+            A3D_LOG("Error : Out Of Memory.");
             return false;
         }
 
@@ -835,7 +843,10 @@ bool Device::Init(const DeviceDesc* pDesc)
         delete[] pPriorities;
 
         if (ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateDevice() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         // アロケータ生成.
         VmaAllocatorCreateInfo allocatorInfo = {};
@@ -844,7 +855,10 @@ bool Device::Init(const DeviceDesc* pDesc)
 
         ret = vmaCreateAllocator(&allocatorInfo, &m_Allocator);
         if (ret != VK_SUCCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : vmaCreateAllocator() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         #if defined(VK_EXT_debug_marker)
         {
@@ -898,13 +912,22 @@ bool Device::Init(const DeviceDesc* pDesc)
         }
         #endif
 
+        if (!m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING])
+        {
+            A3D_LOG("Error : VK_KHR_DYNAMIC_RENDERING is not supported.");
+            return false;
+        }
+
         if (!Queue::Create(
             this, 
             graphicsIndex,
             graphicsQueueIndex,
             pDesc->MaxGraphicsQueueSubmitCount,
             reinterpret_cast<IQueue**>(&m_pGraphicsQueue)))
-        { return false; }
+        {
+            A3D_LOG("Error : Queue::Create() Failed.");
+            return false;
+        }
 
         if (!Queue::Create(
             this,
@@ -912,7 +935,10 @@ bool Device::Init(const DeviceDesc* pDesc)
             computeQueueIndex,
             pDesc->MaxComputeQueueSubmitCount,
             reinterpret_cast<IQueue**>(&m_pComputeQueue)))
-        { return false; }
+        {
+            A3D_LOG("Error : Queue::Create() Failed.");
+            return false;
+        }
 
         if (!Queue::Create(
             this,
@@ -920,7 +946,10 @@ bool Device::Init(const DeviceDesc* pDesc)
             transferQueueindex,
             pDesc->MaxCopyQueueSubmitCount,
             reinterpret_cast<IQueue**>(&m_pCopyQueue)))
-        { return false; }
+        {
+            A3D_LOG("Error : Queue::Create() Failed.");
+            return false;
+        }
     }
 
     // デバイス情報の設定.
@@ -1314,7 +1343,10 @@ bool Device::CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool
 
     auto ret = vkCreateDescriptorPool(m_Device, &info, nullptr, pPool);
     if (ret != VK_SUCCESS)
-    { return false; }
+    {
+        A3D_LOG("Error : vkCreateDescriptorPool() Failed. VkResult = %s", ToString(ret));
+        return false;
+    }
 
     return true;
 }
@@ -1372,15 +1404,22 @@ void Device::EndFrameCapture(void* windowHandle)
 bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument");
+        return false;
+    }
 
     auto instance = new Device;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 
@@ -1394,7 +1433,10 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument");
+        return false;
+    }
 
     for(auto i=0; i<MAX_SYSTEM_ALLOCATION_SCOPE_COUNT; ++i)
     { g_AllocationSize[i] = 0; }

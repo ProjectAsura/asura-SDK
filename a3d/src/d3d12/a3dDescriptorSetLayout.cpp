@@ -97,7 +97,10 @@ DescriptorSetLayout::~DescriptorSetLayout()
 bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -225,6 +228,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         {
             SafeRelease(pSignatureBlob);
             SafeRelease(pErrorBlob);
+            A3D_LOG("Error : D3D12SerializeRootSignature() Failed. errcode = 0x%x", hr);
 
             return false;
         }
@@ -239,7 +243,10 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         SafeRelease(pErrorBlob);
 
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D12Device::CreateRootSignature() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -300,7 +307,10 @@ bool DescriptorSetLayout::CreateDescriptorSet(IDescriptorSet** ppDesctiproSet)
     A3D_ASSERT(pWrapDevice != nullptr);
 
     if (!DescriptorSet::Create(m_pDevice, this, ppDesctiproSet))
-    { return false; }
+    {
+        A3D_LOG("Error : DescriptorSet::Create() Failed.");
+        return false;
+    }
 
     return true;
 }
@@ -334,15 +344,22 @@ bool DescriptorSetLayout::Create
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new DescriptorSetLayout;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         instance->Release();
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

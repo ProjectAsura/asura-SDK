@@ -43,7 +43,10 @@ CommandList::~CommandList()
 bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
 {
     if (pDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Erorr : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -76,11 +79,17 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
 
         auto hr = pNativeDevice->CreateCommandAllocator( type, IID_PPV_ARGS(&m_pCommandAllocator) );
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandAllocator() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         hr = pNativeDevice->CreateCommandList( 0, type, m_pCommandAllocator, nullptr, IID_PPV_ARGS(&m_pCommandList) );
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandList() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     m_pCommandList->Close();
@@ -927,15 +936,22 @@ bool CommandList::Create
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppComandList == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new CommandList();
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc->Type))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

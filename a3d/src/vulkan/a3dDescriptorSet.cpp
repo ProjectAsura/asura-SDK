@@ -44,7 +44,10 @@ bool DescriptorSet::Init
 )
 {
     if (pDevice == nullptr || pLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -70,7 +73,10 @@ bool DescriptorSet::Init
 
         auto ret = vkAllocateDescriptorSets( pNativeDevice, &info, &m_DescriptorSet );
         if (ret != VK_SUCCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : vkAllocateDescriptorSets() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     if (pLayout->GetDesc().EntryCount > 0)
@@ -80,13 +86,19 @@ bool DescriptorSet::Init
 
         m_pWrites = new VkWriteDescriptorSet [count];
         if (m_pWrites == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         memset( m_pWrites, 0, sizeof(VkWriteDescriptorSet) * count );
 
         m_pInfos = new DescriptorInfo [count];
         if (m_pInfos == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         memset( m_pInfos, 0, sizeof(DescriptorInfo) * count );
 
@@ -430,15 +442,22 @@ bool DescriptorSet::Create
     if (pDevice         == nullptr 
      || pLayout         == nullptr 
      || ppDescriptorSet == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new DescriptorSet;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pLayout))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

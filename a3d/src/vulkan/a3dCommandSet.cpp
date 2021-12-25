@@ -31,7 +31,10 @@ CommandSet::~CommandSet()
 bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();

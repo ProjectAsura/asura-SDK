@@ -32,7 +32,10 @@ ConstantBufferView::~ConstantBufferView()
 bool ConstantBufferView::Init(IDevice* pDevice, IBuffer* pBuffer, const ConstantBufferViewDesc* pDesc)
 {
     if (pDevice == nullptr || pBuffer == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invlaid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -138,15 +141,22 @@ bool ConstantBufferView::Create
 )
 {
     if (pDevice == nullptr || pBuffer == nullptr || pDesc == nullptr || ppBufferView == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new ConstantBufferView();
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if ( !instance->Init(pDevice, pBuffer, pDesc) )
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

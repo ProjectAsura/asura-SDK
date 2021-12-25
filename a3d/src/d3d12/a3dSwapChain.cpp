@@ -51,7 +51,10 @@ SwapChain::~SwapChain()
 bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDesc)
 {
     if (pDevice == nullptr || pQueue == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -107,7 +110,10 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         IDXGISwapChain1* pSwapChain = nullptr;
         auto hr = pNativeFactory->CreateSwapChainForHwnd(pNativeQueue, m_hWnd, &desc, nullptr, nullptr, &pSwapChain);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : IDXGIFactory::CreateSwapChainForHwnd() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         if (m_IsTearingSupport)
         { pNativeFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER); }
@@ -115,7 +121,10 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
         hr = pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain));
         SafeRelease(pSwapChain);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : IDXGISwapChain1::QueryInterface() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         hr = m_pSwapChain->QueryInterface(IID_PPV_ARGS(&m_pSwapChain4));
         if (FAILED(hr))
@@ -125,7 +134,10 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
     {
         m_pBuffers = new Texture* [m_Desc.BufferCount];
         if (m_pBuffers == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         {
@@ -141,6 +153,7 @@ bool SwapChain::Init(IDevice* pDevice, IQueue* pQueue, const SwapChainDesc* pDes
                     reinterpret_cast<ITexture**>(&m_pBuffers[i])))
                 {
                     SafeRelease(pBuffer);
+                    A3D_LOG("Error : Texture::CreateFromNative() Failed.");
                     return false;
                 }
             }
@@ -290,7 +303,10 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 
     auto hr = m_pSwapChain->ResizeTarget(&desc);
     if (FAILED(hr))
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGISwapChain::ResizeTarget() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     DXGI_SWAP_CHAIN_DESC sd = {};
     m_pSwapChain->GetDesc(&sd);
@@ -302,7 +318,10 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         desc.Format,
         sd.Flags);
     if (FAILED(hr))
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGISwapChain::ResizeBuffers() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     m_Desc.Extent.Width  = width;
     m_Desc.Extent.Height = height;
@@ -323,6 +342,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
                     reinterpret_cast<ITexture**>(&m_pBuffers[i])))
                 {
                     SafeRelease(pBuffer);
+                    A3D_LOG("Error : Texture::CreateFromNative() Failed.");
                     return false;
                 }
             }
@@ -340,10 +360,16 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
 {
     if (m_pSwapChain4 == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Operation.");
+        return false;
+    }
 
     if (pMetaData == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     switch(type)
     {
@@ -368,7 +394,10 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
 
             auto hr = m_pSwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
             if (FAILED(hr))
-            { return false; }
+            {
+                A3D_LOG("Error : IDXGISwapChain4::SetHDRMetaData() Failed. errcode = 0x%x", hr);
+                return false;
+            }
         }
         break;
 
@@ -480,13 +509,19 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
         GetWindowRect(m_hWnd, &region);
 
         if (!m_pDevice->CheckDisplayHDRSupport(region))
-        { return false; }
+        {
+            A3D_LOG("Error : Device::CheckDisplayHDRSupport() Failed.");
+            return false;
+        }
     }
 
     uint32_t flags;
     auto hr = m_pSwapChain->CheckColorSpaceSupport(colorSpace, &flags);
     if (FAILED(hr))
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGISwapChain::CheckColorSpacesSupport() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     return flags & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT;
 }
@@ -503,13 +538,19 @@ bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
         GetWindowRect(m_hWnd, &region);
 
         if (!m_pDevice->CheckDisplayHDRSupport(region))
-        { return false; }
+        {
+            A3D_LOG("Error : Device::CheckDisplayHDRSupport() Failed.");
+            return false;
+        }
     }
 
     auto color_space = ToNativeColorSpace(type);
     auto hr = m_pSwapChain->SetColorSpace1(color_space);
     if (FAILED(hr))
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGISwapChain::SetColorSpace1() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     return true;
 }
@@ -538,15 +579,22 @@ bool SwapChain::Create
 )
 {
     if (pDevice == nullptr || pQueue == nullptr || pDesc == nullptr || ppSwapChain == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new SwapChain();
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pQueue, pDesc))
     {
         instance->Release();
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

@@ -75,7 +75,10 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
 
         auto ret = vkCreateCommandPool( pNativeDevice, &info, nullptr, &m_CommandPool );
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateCommandPool() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     if ( listType == COMMANDLIST_TYPE_BUNDLE )
@@ -89,7 +92,10 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
 
         auto ret = vkAllocateCommandBuffers( pNativeDevice, &info, &m_CommandBuffer );
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkAllocateCommandBuffers() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
     else
     {
@@ -103,7 +109,10 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
 
         auto ret = vkAllocateCommandBuffers( pNativeDevice, &info, &m_CommandBuffer );
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : VkAllocateCommandBuffers() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;

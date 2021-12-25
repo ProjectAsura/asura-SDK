@@ -58,7 +58,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(ProjectDir)..\..\..\..\external\renderdoc;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -76,7 +76,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;$(ProjectDir)..\..\..\..\external\VulkanMemoryAllocator;$(ProjectDir)..\..\..\..\external\renderdoc;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>a3dPCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>a3dPCH.h</ForcedIncludeFiles>
@@ -92,6 +92,7 @@
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
+    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandList.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandSet.cpp" />
@@ -127,6 +128,7 @@
     <ClInclude Include="..\..\..\src\container\a3dPool.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
     <ClInclude Include="..\..\..\src\misc\a3dInlines.h" />
+    <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
     <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandList.h" />

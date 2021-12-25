@@ -51,7 +51,10 @@ bool Queue::Init
 )
 {
     if (pDevice == nullptr || maxSubmitCount == 0)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     // NOTE : Device 無いから呼ばれるため，
     // AddRef() してしまうと Device が解放できなくなるため，AddRef() してはいけない !!
@@ -70,11 +73,17 @@ bool Queue::Init
         {
             auto ret = vkCreateSemaphore( pNativeDevice, &info, nullptr, &m_SignalSemaphore[i]);
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateSemaphore() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
 
             ret = vkCreateSemaphore( pNativeDevice, &info, nullptr, &m_WaitSemaphore[i] );
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateSemaphore() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
         }
     }
 
@@ -88,7 +97,10 @@ bool Queue::Init
         {
             auto ret = vkCreateFence( pNativeDevice, &info, nullptr, &m_Fence[i]);
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateFence() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
 
             ret = vkResetFences( pNativeDevice, 1, &m_Fence[i] );
             if ( ret != VK_SUCCESS )
@@ -105,7 +117,10 @@ bool Queue::Init
 
     m_pSubmitList = new VkCommandBuffer[maxSubmitCount];
     if (m_pSubmitList == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     for(auto i=0u; i<maxSubmitCount; ++i)
     { m_pSubmitList[i] = null_handle; }
@@ -391,11 +406,17 @@ bool Queue::ResetSyncObject()
         {
             auto ret = vkCreateSemaphore( pNativeDevice, &info, nullptr, &m_SignalSemaphore[i]);
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateSemaphore() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
 
             ret = vkCreateSemaphore( pNativeDevice, &info, nullptr, &m_WaitSemaphore[i] );
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateSemaphore() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
         }
     }
 
@@ -410,7 +431,10 @@ bool Queue::ResetSyncObject()
         {
             auto ret = vkCreateFence( pNativeDevice, &info, nullptr, &m_Fence[i]);
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateFence() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
 
             ret = vkResetFences( pNativeDevice, 1, &m_Fence[i] );
             if ( ret != VK_SUCCESS )
@@ -440,15 +464,22 @@ bool Queue::Create
 )
 {
     if (pDevice == nullptr || maxSubmitCount == 0)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Queue;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, familyIndex, queueIndex, maxSubmitCount))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

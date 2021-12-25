@@ -31,7 +31,10 @@ Buffer::~Buffer()
 bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -100,7 +103,10 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     
         auto hr = pD3D11Device->CreateBuffer(&desc, nullptr, &m_pBuffer);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateBuffer() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -218,15 +224,22 @@ void* Buffer::GetSubresourcePointer() const
 bool Buffer::Create(IDevice* pDevice, const BufferDesc* pDesc, IBuffer** ppResource)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Buffer;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

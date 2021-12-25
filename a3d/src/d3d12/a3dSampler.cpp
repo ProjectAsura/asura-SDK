@@ -110,7 +110,10 @@ Sampler::~Sampler()
 bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -135,7 +138,10 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
                         ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
                         ->CreateDescriptor();
     if (m_pDescriptor == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : CreateDescriptor() Failed.");
+        return false;
+    }
 
     auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT( pNativeDevice != nullptr );
@@ -205,15 +211,22 @@ const Descriptor* Sampler::GetDescriptor() const
 bool Sampler::Create(IDevice* pDevice, const SamplerDesc* pDesc, ISampler** ppSampler)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppSampler == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Sampler();
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

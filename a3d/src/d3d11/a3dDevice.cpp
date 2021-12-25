@@ -110,7 +110,10 @@ Device::~Device()
 bool Device::Init(const DeviceDesc* pDesc)
 {
     if (pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     if (pDesc->EnableCapture)
     { LoadPixGpuCpatureDll(); }
@@ -128,21 +131,30 @@ bool Device::Init(const DeviceDesc* pDesc)
     {
         auto hr = CreateDXGIFactory( IID_PPV_ARGS(&m_pFactory) );
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : CreateDXGIFactory() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // デフォルトアダプターを取得.
     {
         auto hr = m_pFactory->EnumAdapters( 0, &m_pAdapter );
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : IDXGIFactory::EnumAdapters() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // デフォルトディスプレイを取得.
     {
         auto hr = m_pAdapter->EnumOutputs(0, &m_pOutput);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : IDXGIAdapter::EnumOutputs() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     #if defined(A3D_FOR_WINDOWS10)
@@ -186,7 +198,10 @@ bool Device::Init(const DeviceDesc* pDesc)
             &m_FeatureLevel,
             &m_pDeviceContext );
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : D3D11CreateDevice() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     if (!Queue::Create(
@@ -194,21 +209,30 @@ bool Device::Init(const DeviceDesc* pDesc)
         COMMANDLIST_TYPE_DIRECT,
         pDesc->MaxGraphicsQueueSubmitCount,
         reinterpret_cast<IQueue**>(&m_pGraphicsQueue)))
-    { return false; }
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
 
     if (!Queue::Create(
         this,
         COMMANDLIST_TYPE_COMPUTE,
         pDesc->MaxComputeQueueSubmitCount,
         reinterpret_cast<IQueue**>(&m_pComputeQueue)))
-    { return false; }
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
 
     if (!Queue::Create(
         this, 
         COMMANDLIST_TYPE_COPY,
         pDesc->MaxCopyQueueSubmitCount,
         reinterpret_cast<IQueue**>(&m_pCopyQueue)))
-    { return false; }
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
 
     // デバイス情報の設定.
     {
@@ -230,6 +254,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         if (FAILED(hr))
         {
             SafeRelease(pQuery);
+            A3D_LOG("Error : ID3D11Query::CreateQuery() Failed. errcode = 0x%x", hr);
             return false;
         }
 
@@ -551,7 +576,10 @@ bool Device::CheckDisplayHDRSupport(RECT region)
     IDXGIAdapter1* pAdapter = nullptr;
     auto hr = m_pFactory5->EnumAdapters1(0, &pAdapter);
     if (FAILED(hr))
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGIFactory::EnumAdapters1() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     UINT i=0;
     IDXGIOutput* pCurrentOutput = nullptr;
@@ -571,6 +599,7 @@ bool Device::CheckDisplayHDRSupport(RECT region)
         {
             SafeRelease(pCurrentOutput);
             SafeRelease(pBestOutput);
+            A3D_LOG("Error : IDXGIOutput::GetDesc() Failed. errcode = 0x%x", hr);
             return false;
         }
 
@@ -596,6 +625,7 @@ bool Device::CheckDisplayHDRSupport(RECT region)
     {
         SafeRelease(pBestOutput);
         SafeRelease(pCurrentOutput);
+        A3D_LOG("Error : IDXGIOutput::QueryInterface() Failed. errcode = 0x%x", hr);
         return false;
     }
 
@@ -605,6 +635,7 @@ bool Device::CheckDisplayHDRSupport(RECT region)
     {
         SafeRelease(pBestOutput);
         SafeRelease(pCurrentOutput);
+        A3D_LOG("Error : IDXGIOutput6::GetDesc1() Failed. errcode = 0x%x", hr);
     }
 
     return desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020;
@@ -618,15 +649,22 @@ bool Device::CheckDisplayHDRSupport(RECT region)
 bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Device;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 
@@ -640,7 +678,10 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     return Device::Create(pDesc, ppDevice);
 }

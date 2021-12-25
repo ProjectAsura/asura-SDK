@@ -119,6 +119,7 @@
     <ClCompile Include="..\..\..\src\emu\a3dCommandList.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
+    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\a3d.h" />
@@ -149,6 +150,7 @@
     <ClInclude Include="..\..\..\src\emu\a3dCommandList.h" />
     <ClInclude Include="..\..\..\src\emu\a3dImCmd.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
+    <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

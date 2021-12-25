@@ -107,7 +107,10 @@ RenderTargetView::~RenderTargetView()
 bool RenderTargetView::Init(IDevice* pDevice, ITexture* pTexture, const TargetViewDesc* pDesc)
 {
     if (pDevice == nullptr || pTexture == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -135,7 +138,10 @@ bool RenderTargetView::Init(IDevice* pDevice, ITexture* pTexture, const TargetVi
             &rtvDesc,
             &m_pRTV);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateRenderTargetView() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -213,15 +219,22 @@ bool RenderTargetView::Create
 )
 {
     if (pDevice == nullptr || pTexture == nullptr || pDesc == nullptr || ppTextureView == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new RenderTargetView();
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if ( !instance->Init(pDevice, pTexture, pDesc) )
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

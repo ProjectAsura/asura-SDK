@@ -43,7 +43,10 @@ Queue::~Queue()
 bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCount)
 {
     if (pDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     // NOTE : Deviceから呼ばれるので，参照カウントを増やしてまうと
     // Device が解放されなくなるので AddRef() しないこと!!
@@ -67,7 +70,10 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
 
         auto hr = pD3D11Device->CreateQuery(&desc, &m_pQuery);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateQuery() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -1220,11 +1226,15 @@ bool Queue::Create
 {
     auto instance = new Queue();
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, type, maxSubmitCount))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

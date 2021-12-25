@@ -32,7 +32,10 @@ Buffer::~Buffer()
 bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -60,7 +63,10 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     auto hr = m_pDevice->GetAllocator()->CreateResource(
         &allocDesc, &desc, state, nullptr, &m_pAllocation, IID_PPV_ARGS(&m_pResource));
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : CreateResource() Failed. errocde = 0x%x", hr);
+        return false;
+    }
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
@@ -181,15 +187,22 @@ ID3D12Resource* Buffer::GetD3D12Resource() const
 bool Buffer::Create(IDevice* pDevice, const BufferDesc* pDesc, IBuffer** ppResource)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Buffer;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

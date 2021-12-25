@@ -33,7 +33,10 @@ RenderTargetView::~RenderTargetView()
 bool RenderTargetView::Init(IDevice* pDevice, ITexture* pTexture, const TargetViewDesc* pDesc)
 {
     if (pDevice == nullptr || pTexture == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -71,7 +74,10 @@ bool RenderTargetView::Init(IDevice* pDevice, ITexture* pTexture, const TargetVi
 
         auto ret = vkCreateImageView(pNativeDevice, &info, nullptr, &m_ImageView);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateImageView() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;
@@ -185,7 +191,8 @@ bool RenderTargetView::Create
 )
 {
     if (pDevice == nullptr || pTexture == nullptr || pDesc == nullptr || ppView == nullptr)
-    { return false; }
+    {
+        return false; }
 
     auto instance = new RenderTargetView();
     if ( instance == nullptr )

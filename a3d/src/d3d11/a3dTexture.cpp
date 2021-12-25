@@ -31,7 +31,10 @@ Texture::~Texture()
 bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -90,7 +93,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         ID3D11Texture1D* pTexture;
         auto hr = pD3D11Device->CreateTexture1D(&desc, nullptr, &pTexture);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateTexture1D() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         m_pResource = pTexture;
     }
@@ -117,7 +123,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         ID3D11Texture2D* pTexture;
         auto hr = pD3D11Device->CreateTexture2D(&desc, nullptr, &pTexture);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateTexture2D() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         m_pResource = pTexture;
     }
@@ -139,7 +148,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         ID3D11Texture2D* pTexture;
         auto hr = pD3D11Device->CreateTexture2D(&desc, nullptr, &pTexture);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateTexture2D() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         m_pResource = pTexture;
     }
@@ -158,7 +170,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         ID3D11Texture3D* pTexture;
         auto hr = pD3D11Device->CreateTexture3D(&desc, nullptr, &pTexture);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateTexture3D() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         m_pResource = pTexture;
     }
@@ -290,15 +305,22 @@ ID3D11Resource* A3D_APIENTRY Texture::GetD3D11Resource() const
 bool Texture::Create(IDevice* pDevice, const TextureDesc* pDesc, ITexture** ppResource)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Texture;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 
@@ -318,7 +340,10 @@ bool Texture::CreateFromNative
 )
 {
     if (pDevice == nullptr || pNativeResource == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Texture;
     if (instance == nullptr)

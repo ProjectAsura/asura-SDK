@@ -35,7 +35,10 @@ Queue::~Queue()
 bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCount)
 {
     if (pDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     // NOTE : Deviceから呼ばれるので，参照カウントを増やしてまうと
     // Device が解放されなくなるので AddRef() しないこと!!
@@ -71,7 +74,10 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
 
         auto hr = pNativeDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_pQueue));
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandQueue() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     m_MaxSubmitCount = maxSubmitCount;
@@ -79,7 +85,10 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
     {
         m_pSubmitList = new ID3D12CommandList* [maxSubmitCount];
         if (m_pSubmitList == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         m_SubmitIndex = 0;
     }
@@ -87,11 +96,17 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
     {
         auto hr = pNativeDevice->CreateFence( 0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence) );
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D12Device::CreateFence() Failed. errcode = 0x%x", hr);
+            return false;
+        }
 
         m_Event = CreateEventEx( nullptr, FALSE, FALSE, EVENT_ALL_ACCESS );
         if ( m_Event == nullptr )
-        { return false; }
+        {
+            A3D_LOG("Error : CreateEventEx() Failed.");
+            return false;
+        }
     }
 
     return true;
@@ -244,11 +259,15 @@ bool Queue::Create
 {
     auto instance = new Queue();
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, type, maxSubmitCount))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

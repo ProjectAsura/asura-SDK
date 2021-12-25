@@ -37,7 +37,10 @@ Fence::~Fence()
 bool Fence::Init(IDevice* pDevice)
 {
     if (pDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -53,7 +56,10 @@ bool Fence::Init(IDevice* pDevice)
 
         auto hr = pD3D11Device->CreateQuery(&desc, &m_pQuery);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateQuery() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -145,15 +151,22 @@ ID3D11Query* Fence::GetD3D11Query() const
 bool Fence::Create(IDevice* pDevice, IFence** ppFence)
 {
     if (pDevice == nullptr || ppFence == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Fence;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

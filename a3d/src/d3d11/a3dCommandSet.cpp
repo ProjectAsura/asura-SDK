@@ -31,7 +31,10 @@ CommandSet::~CommandSet()
 bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -91,15 +94,22 @@ CommandSetDesc CommandSet::GetDesc() const
 bool CommandSet::Create(IDevice* pDevice, const CommandSetDesc* pDesc, ICommandSet** ppCommandSet)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppCommandSet == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new CommandSet;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

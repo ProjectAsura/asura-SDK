@@ -412,10 +412,16 @@ void PipelineState::Bind
 bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     if (pDesc->pLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -436,7 +442,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             nullptr,
             &m_pVS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateVertexShader() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
  
     // ピクセルシェーダ.
@@ -448,7 +457,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             nullptr,
             &m_pPS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreatePixelShader() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // ドメインシェーダ.
@@ -460,7 +472,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             nullptr,
             &m_pDS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateDomainShader() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // ハルシェーダ.
@@ -472,7 +487,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             nullptr,
             &m_pHS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateHullShader() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
 #if 0
@@ -496,7 +514,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
         auto hr = pD3D11Device->CreateRasterizerState(&desc, &m_pRS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateRasterizerState() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // ブレンドステート.
@@ -507,7 +528,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
         auto hr = pD3D11Device->CreateBlendState(&desc, &m_pBS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateBlendState() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // 深度ステンシルステート.
@@ -518,7 +542,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
         auto hr = pD3D11Device->CreateDepthStencilState(&desc, &m_pDSS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateDepthStencilState() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     // 入力レイアウト.
@@ -541,7 +568,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             pDesc->VS.ByteCodeSize,
             &m_pIL);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateInputLayout() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     m_Topology = ToNativePrimitive( pDesc->PrimitiveTopology, pDesc->TessellationState.PatchControlCount );
@@ -554,12 +584,13 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 //-------------------------------------------------------------------------------------------------
 bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDesc* pDesc)
 {
-    A3D_UNUSED(pDesc);
-
     if (pDevice == nullptr || pDesc == nullptr ||
         pDesc->CS.pByteCode == nullptr ||
         pDesc->CS.ByteCodeSize == 0)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -578,7 +609,10 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
             nullptr,
             &m_pCS);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateComputeShader() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -613,15 +647,22 @@ bool PipelineState::CreateAsGraphics
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsGraphics(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsGraphics() Failed.");
         return false;
     }
 
@@ -640,15 +681,22 @@ bool PipelineState::CreateAsCompute
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new PipelineState;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->InitAsCompute(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : InitAsCompute() Failed.");
         return false;
     }
 

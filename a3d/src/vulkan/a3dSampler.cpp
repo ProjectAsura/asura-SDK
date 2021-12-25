@@ -91,7 +91,10 @@ Sampler::~Sampler()
 bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -121,7 +124,10 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
 
     auto ret = vkCreateSampler(pNativeDevice, &info, nullptr, &m_Sampler);
     if ( ret != VK_SUCCESS )
-    { return false; }
+    {
+        A3D_LOG("Error : vkCreateSampler() Failed. VkResult = %s", ToString(ret));
+        return false;
+    }
 
     return true;
 }
@@ -187,15 +193,22 @@ VkSampler Sampler::GetVulkanSampler() const
 bool Sampler::Create(IDevice* pDevice, const SamplerDesc* pDesc, ISampler** ppSampler)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppSampler == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Sampler;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

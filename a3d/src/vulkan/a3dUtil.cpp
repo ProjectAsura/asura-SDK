@@ -4,6 +4,8 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
+#define STR(var) #var
+
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -729,6 +731,76 @@ VmaMemoryUsage ToVmaMemoryUsage(a3d::HEAP_TYPE heapType)
     }
 
     return VMA_MEMORY_USAGE_UNKNOWN;
+}
+
+#define TABLE_ITEM(var)     { var, STR(var) }
+
+//-------------------------------------------------------------------------------------------------
+//      文字列を取得します.
+//-------------------------------------------------------------------------------------------------
+const char* ToString(VkResult result)
+{
+    struct Table
+    {
+        VkResult        value;
+        const char*     tag;
+    };
+    static const Table g_Tables[] = {
+        TABLE_ITEM(VK_SUCCESS),
+        TABLE_ITEM(VK_NOT_READY),
+        TABLE_ITEM(VK_TIMEOUT),
+        TABLE_ITEM(VK_EVENT_SET),
+        TABLE_ITEM(VK_EVENT_RESET),
+        TABLE_ITEM(VK_INCOMPLETE),
+        TABLE_ITEM(VK_ERROR_OUT_OF_HOST_MEMORY),
+        TABLE_ITEM(VK_ERROR_OUT_OF_DEVICE_MEMORY),
+        TABLE_ITEM(VK_ERROR_INITIALIZATION_FAILED),
+        TABLE_ITEM(VK_ERROR_DEVICE_LOST),
+        TABLE_ITEM(VK_ERROR_MEMORY_MAP_FAILED),
+        TABLE_ITEM(VK_ERROR_LAYER_NOT_PRESENT),
+        TABLE_ITEM(VK_ERROR_EXTENSION_NOT_PRESENT),
+        TABLE_ITEM(VK_ERROR_FEATURE_NOT_PRESENT),
+        TABLE_ITEM(VK_ERROR_INCOMPATIBLE_DRIVER),
+        TABLE_ITEM(VK_ERROR_TOO_MANY_OBJECTS),
+        TABLE_ITEM(VK_ERROR_FORMAT_NOT_SUPPORTED),
+        TABLE_ITEM(VK_ERROR_FRAGMENTED_POOL),
+        TABLE_ITEM(VK_ERROR_UNKNOWN),
+        TABLE_ITEM(VK_ERROR_OUT_OF_POOL_MEMORY),
+        TABLE_ITEM(VK_ERROR_INVALID_EXTERNAL_HANDLE),
+        TABLE_ITEM(VK_ERROR_FRAGMENTATION),
+        TABLE_ITEM(VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS),
+        TABLE_ITEM(VK_ERROR_SURFACE_LOST_KHR),
+        TABLE_ITEM(VK_ERROR_NATIVE_WINDOW_IN_USE_KHR),
+        TABLE_ITEM(VK_SUBOPTIMAL_KHR),
+        TABLE_ITEM(VK_ERROR_OUT_OF_DATE_KHR),
+        TABLE_ITEM(VK_ERROR_INCOMPATIBLE_DISPLAY_KHR),
+        TABLE_ITEM(VK_ERROR_VALIDATION_FAILED_EXT),
+        TABLE_ITEM(VK_ERROR_INVALID_SHADER_NV),
+        TABLE_ITEM(VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT),
+        TABLE_ITEM(VK_ERROR_NOT_PERMITTED_EXT),
+        TABLE_ITEM(VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT),
+        TABLE_ITEM(VK_THREAD_IDLE_KHR),
+        TABLE_ITEM(VK_THREAD_DONE_KHR),
+        TABLE_ITEM(VK_OPERATION_DEFERRED_KHR),
+        TABLE_ITEM(VK_OPERATION_NOT_DEFERRED_KHR),
+        TABLE_ITEM(VK_PIPELINE_COMPILE_REQUIRED_EXT),
+        TABLE_ITEM(VK_ERROR_OUT_OF_POOL_MEMORY_KHR),
+        TABLE_ITEM(VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR),
+        TABLE_ITEM(VK_ERROR_FRAGMENTATION_EXT),
+        TABLE_ITEM(VK_ERROR_INVALID_DEVICE_ADDRESS_EXT),
+        TABLE_ITEM(VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR),
+        TABLE_ITEM(VK_ERROR_PIPELINE_COMPILE_REQUIRED_EXT),
+        TABLE_ITEM(VK_RESULT_MAX_ENUM)
+    };
+
+    auto count = _countof(g_Tables);
+    for(auto i=0; i<count; ++i)
+    {
+        if (g_Tables[i].value == result)
+        { return g_Tables[i].tag; }
+    }
+
+    return "UNKNOWN";
 }
 
 } // namespace a3d

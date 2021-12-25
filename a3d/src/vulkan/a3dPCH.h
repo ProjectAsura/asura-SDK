@@ -22,6 +22,7 @@
 #include "misc/a3dBlob.h"
 #include "misc/a3dInlines.h"
 #include "misc/a3dNullHandle.h"
+#include "misc/a3dLogger.h"
 
 #include "a3dDevice.h"
 #include "a3dFence.h"
@@ -43,7 +44,6 @@
 #include "a3dQueryPool.h"
 #include "a3dUtil.h"
 #include "a3dSpirv.h"
-
 
 
 #ifndef A3D_ASSERT

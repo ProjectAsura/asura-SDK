@@ -125,7 +125,10 @@ ShaderResourceView::~ShaderResourceView()
 bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const ShaderResourceViewDesc* pDesc)
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -160,7 +163,10 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
             &srvDesc,
             &m_pSRV);
         if (FAILED(hr))
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateShaderResourceView() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
     else
     {
@@ -178,7 +184,10 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
                 &srvDesc,
                 &m_pSRV);
             if ( FAILED(hr) )
-            { return false; }
+            {
+                A3D_LOG("Error : ID3D11Device::CreateShaderResourceView() Failed. errcode = 0x%x", hr);
+                return false;
+            }
         }
     }
 
@@ -257,15 +266,22 @@ bool ShaderResourceView::Create
 )
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppTextureView == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new ShaderResourceView();
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if ( !instance->Init(pDevice, pResource, pDesc) )
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

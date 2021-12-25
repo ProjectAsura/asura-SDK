@@ -34,7 +34,10 @@ UnorderedAccessView::~UnorderedAccessView()
 bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const UnorderedAccessViewDesc* pDesc)
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -56,7 +59,10 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         auto bufferDesc = pWrapBuffer->GetDesc();
         if ((bufferDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         m_Buffer = pWrapBuffer->GetVulkanBuffer();
     }
@@ -67,7 +73,10 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         auto textureDesc = pWrapTexture->GetDesc();
         if ((textureDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         VkImageViewCreateInfo info = {};
         info.sType                              = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -88,7 +97,10 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 
         auto ret = vkCreateImageView(pNativeDevice, &info, nullptr, &m_ImageView);
         if (ret != VK_SUCCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateImageView() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;

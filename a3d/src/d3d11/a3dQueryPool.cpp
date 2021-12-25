@@ -31,7 +31,10 @@ QueryPool::~QueryPool()
 bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -68,7 +71,10 @@ bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
             ID3D11Query* pQuery;
             auto hr = pD3D11Device->CreateQuery(&desc, &pQuery);
             if ( FAILED(hr) )
-            { return false; }
+            {
+                A3D_LOG("Error : ID3D11Device::CreateQuery() Failed. errcode = 0x%x", hr);
+                return false;
+            }
 
             m_pQuery[i] = pQuery;
         }
@@ -151,15 +157,22 @@ ID3D11Query* QueryPool::GetD3D11Query(uint32_t index) const
 bool QueryPool::Create(IDevice* pDevice, const QueryPoolDesc* pDesc, IQueryPool** ppQueryPool)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppQueryPool == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new QueryPool;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

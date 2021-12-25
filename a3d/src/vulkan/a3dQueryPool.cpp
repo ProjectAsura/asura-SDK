@@ -33,7 +33,10 @@ QueryPool::~QueryPool()
 bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -73,7 +76,10 @@ bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
 
     auto ret = vkCreateQueryPool( pNativeDevice, &info, nullptr, &m_Pool );
     if ( ret != VK_SUCCESS )
-    { return false; }
+    {
+        A3D_LOG("Error : vkCreateQueryPool() Failed. VkResult = %s", ToString(ret));
+        return false;
+    }
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
@@ -154,15 +160,22 @@ VkQueryType QueryPool::GetVulkanQueryType() const
 bool QueryPool::Create(IDevice* pDevice, const QueryPoolDesc* pDesc, IQueryPool** ppQueryPool)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppQueryPool == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new QueryPool;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

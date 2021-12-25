@@ -117,7 +117,10 @@ Device::~Device()
 bool Device::Init(const DeviceDesc* pDesc)
 {
     if (pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument");
+        return false;
+    }
 
     if (pDesc->EnableCapture)
     { LoadPixGpuCpatureDll(); }
@@ -140,7 +143,10 @@ bool Device::Init(const DeviceDesc* pDesc)
     // DXGIファクトリを生成.
     auto hr = CreateDXGIFactory2( flags, IID_PPV_ARGS(&m_pFactory) );
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : CreateDXGIFactory2() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     BOOL allowTearing;
     hr = m_pFactory->CheckFeatureSupport( DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing) );
@@ -157,6 +163,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         if ( FAILED(hr) )
         {
             SafeRelease(pAdapter);
+            A3D_LOG("Error : IDXGIFactory::EnumWarpAdapter() Failed. errcode = 0x%x", hr);
             return false;
         }
     }
@@ -165,23 +172,35 @@ bool Device::Init(const DeviceDesc* pDesc)
     hr = pAdapter->QueryInterface( IID_PPV_ARGS(&m_pAdapter));
     SafeRelease(pAdapter);
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGIAdapter4::QueryInterface() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     // デフォルトディスプレイを取得.
     IDXGIOutput* pOutput;
     hr = m_pAdapter->EnumOutputs(0, &pOutput);
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGIAdapter4::EnumOutputs() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     // IDXGOutput6に変換.
     hr = pOutput->QueryInterface( IID_PPV_ARGS(&m_pOutput) );
     SafeRelease(pOutput);
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : IDXGIOutput6::QueryInterface() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     hr = D3D12CreateDevice( nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_pDevice) );
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : D3D12CreateDevice() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     // アロケータ生成.
     {
@@ -196,7 +215,10 @@ bool Device::Init(const DeviceDesc* pDesc)
 
         hr = D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : D3D12MA::CreateAllocator() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     {
@@ -205,7 +227,10 @@ bool Device::Init(const DeviceDesc* pDesc)
         desc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        { return false; }
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false;
+        }
     }
 
     {
@@ -214,7 +239,10 @@ bool Device::Init(const DeviceDesc* pDesc)
         desc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
         desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        { return false; }
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false;
+        }
     }
 
     {
@@ -222,7 +250,10 @@ bool Device::Init(const DeviceDesc* pDesc)
         desc.NumDescriptors = pDesc->MaxColorTargetCount;
         desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        { return false; }
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false; 
+        }
     }
 
     {
@@ -230,7 +261,10 @@ bool Device::Init(const DeviceDesc* pDesc)
         desc.NumDescriptors = pDesc->MaxDepthTargetCount;
         desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
         if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        { return false; }
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false;
+        }
     }
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
@@ -240,21 +274,30 @@ bool Device::Init(const DeviceDesc* pDesc)
         COMMANDLIST_TYPE_DIRECT,
         pDesc->MaxGraphicsQueueSubmitCount,
         reinterpret_cast<IQueue**>(&m_pGraphicsQueue)))
-    { return false; }
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
 
     if (!Queue::Create(
         this,
         COMMANDLIST_TYPE_COMPUTE,
         pDesc->MaxComputeQueueSubmitCount,
         reinterpret_cast<IQueue**>(&m_pComputeQueue)))
-    { return false; }
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
 
     if (!Queue::Create(
         this,
         COMMANDLIST_TYPE_COPY,
         pDesc->MaxCopyQueueSubmitCount,
         reinterpret_cast<IQueue**>(&m_pCopyQueue)))
-    { return false; }
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
 
     // デバイス情報の設定.
     {
@@ -269,7 +312,10 @@ bool Device::Init(const DeviceDesc* pDesc)
 
     hr = m_pGraphicsQueue->GetD3D12Queue()->GetTimestampFrequency(&m_TimeStampFrequency);
     if (FAILED(hr))
-    { return false; }
+    {
+        A3D_LOG("Error : ID3D12CommandQueue::GetTimestampFrequency() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     return true;
 }
@@ -622,15 +668,22 @@ D3D12MA::Allocator* Device::GetAllocator() const
 bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Device;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 
@@ -644,7 +697,10 @@ bool Device::Create(const DeviceDesc* pDesc, IDevice** ppDevice)
 bool A3D_APIENTRY CreateDevice(const DeviceDesc* pDesc, IDevice** ppDevice)
 {
     if (pDesc == nullptr || ppDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     return Device::Create(pDesc, ppDevice);
 }

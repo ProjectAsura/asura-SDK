@@ -102,7 +102,10 @@ DepthStencilView::~DepthStencilView()
 bool DepthStencilView::Init(IDevice* pDevice, ITexture* pTexture, const TargetViewDesc* pDesc)
 {
     if (pDevice == nullptr || pTexture == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -130,7 +133,10 @@ bool DepthStencilView::Init(IDevice* pDevice, ITexture* pTexture, const TargetVi
             &dsvDesc,
             &m_pDSV);
         if ( FAILED(hr) )
-        { return false; }
+        {
+            A3D_LOG("Error : ID3D11Device::CreateDepthStencilView() Failed. errcode = 0x%x", hr);
+            return false;
+        }
     }
 
     return true;
@@ -208,15 +214,22 @@ bool DepthStencilView::Create
 )
 {
     if (pDevice == nullptr || pTexture == nullptr || pDesc == nullptr || ppDepthStencilView == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new DepthStencilView();
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if ( !instance->Init(pDevice, pTexture, pDesc) )
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

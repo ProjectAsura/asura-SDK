@@ -31,6 +31,7 @@
 #include "emu/a3dCommandList.h"
 
 #include "misc/a3dBlob.h"
+#include "misc/a3dLogger.h"
 
 #include "a3dUtil.h"
 #include "a3dDevice.h"

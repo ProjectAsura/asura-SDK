@@ -32,7 +32,10 @@ Texture::~Texture()
 bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -92,7 +95,10 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         &m_pAllocation,
         IID_PPV_ARGS(&m_pResource));
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : CreateResource() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
@@ -221,15 +227,22 @@ RESOURCE_KIND Texture::GetKind() const
 bool Texture::Create(IDevice* pDevice, const TextureDesc* pDesc, ITexture** ppResource)
 {
     if (pDevice == nullptr || pDesc == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Texture;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 
@@ -249,11 +262,17 @@ bool Texture::CreateFromNative
 )
 {
     if (pDevice == nullptr || pNativeResource == nullptr || ppResource == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Texture;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     instance->m_pDevice = static_cast<Device*>(pDevice);
     instance->m_pDevice->AddRef();

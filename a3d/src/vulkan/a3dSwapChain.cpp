@@ -50,7 +50,10 @@ SwapChain::~SwapChain()
 bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     SafeRelease(m_pQueue);
     SafeRelease(m_pDevice);
@@ -108,21 +111,31 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
 
         auto ret = vkGetPhysicalDeviceSurfaceSupportKHR(pNativePhysicalDevice, familyIndex, m_Surface, &support);
         if ( ret != VK_SUCCESS || support == VK_FALSE )
-        { return false; }
+        {
+            A3D_LOG("Error : vkGetPhysicalDeviceSurfaceSupportKHR() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         ret = vkGetPhysicalDeviceSurfaceFormatsKHR(pNativePhysicalDevice, m_Surface, &m_SurfaceFormatCount, nullptr);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkGetPhysicalDeviceSurfaceFormatsKHR() Failed. VkReuslt = %s", ToString(ret));
+            return false;
+        }
 
         m_pSurfaceFormats = new (std::nothrow) VkSurfaceFormatKHR [m_SurfaceFormatCount];
         if (m_pSurfaceFormats == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         ret = vkGetPhysicalDeviceSurfaceFormatsKHR(pNativePhysicalDevice, m_Surface, &m_SurfaceFormatCount, m_pSurfaceFormats);
         if ( ret != VK_SUCCESS )
         {
             delete [] m_pSurfaceFormats;
             m_SurfaceFormatCount = 0;
+            A3D_LOG("Error : vkGetPhysicalDeviceSurfaceFormatsKHR() Failed. VkResult = %s", ToString(ret));
             return false;
         }
 
@@ -155,7 +168,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         auto ret = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
             pNativePhysicalDevice, m_Surface, &capabilities);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkGetPhysicalDeviceSurfaceCapabilitiesKHR() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         if (capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
         { m_PreTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR; }
@@ -163,10 +179,16 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         { m_PreTransform = capabilities.currentTransform; }
 
         if (capabilities.maxImageCount < m_Desc.BufferCount)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Operation.");
+            return false;
+        }
 
         if (capabilities.minImageCount > m_Desc.BufferCount)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Operation.");
+            return false;
+        }
 
         // 横幅を最大値に制限する.
         if (capabilities.maxImageExtent.width < m_Desc.Extent.Width)
@@ -184,17 +206,24 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         auto ret = vkGetPhysicalDeviceSurfacePresentModesKHR(
             pNativePhysicalDevice, m_Surface, &presentModeCount, nullptr);
         if (ret != VK_SUCCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : vkGetPhysicalDeviceSurfacePresentModesKHR() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         auto pPresentModes = new (std::nothrow) VkPresentModeKHR [presentModeCount];
         if (pPresentModes == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         ret = vkGetPhysicalDeviceSurfacePresentModesKHR(
             pNativePhysicalDevice, m_Surface, &presentModeCount, pPresentModes);
         if (ret != VK_SUCCESS)
         {
             delete [] pPresentModes;
+            A3D_LOG("Error : vkGetPhysicalDeviceSurfacePresentModesKHR() Failed. VkResult = %s", ToString(ret));
             return false;
         }
 
@@ -270,7 +299,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
 
         auto ret = vkCreateSwapchain(pNativeDevice, &createInfo, nullptr, &m_SwapChain);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateSwapchain() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     // イメージを取得.
@@ -278,28 +310,43 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         uint32_t chainCount;
         auto ret = vkGetSwapchainImages(pNativeDevice, m_SwapChain, &chainCount, nullptr);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkGetSwapchainImages() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         if ( chainCount != pDesc->BufferCount )
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Operation.");
+            return false;
+        }
 
         m_pImages = new VkImage [chainCount];
         if ( m_pImages == nullptr )
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         for(auto i=0u; i<chainCount; ++i)
         {  m_pImages[i] = null_handle; }
 
         m_pImageViews = new VkImageView [chainCount];
         if ( m_pImageViews == nullptr )
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         for(auto i=0u; i<chainCount; ++i)
         {  m_pImageViews[i] = null_handle; }
 
         ret = vkGetSwapchainImages(pNativeDevice, m_SwapChain, &chainCount, m_pImages);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkGetSwapchainImages() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     // イメージビューを生成.
@@ -326,7 +373,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
 
             auto ret = vkCreateImageView(pNativeDevice, &viewInfo, nullptr, &m_pImageViews[i]);
             if ( ret != VK_SUCCESS )
-            { return false; }
+            {
+                A3D_LOG("Error : vkCreateImageView() Failed. VkResult = %s", ToString(ret));
+                return false;
+            }
         }
     }
 
@@ -334,7 +384,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     {
         m_pBuffers = new Texture* [m_Desc.BufferCount];
         if ( m_pBuffers == nullptr )
-        { return false; }
+        {
+            A3D_LOG("Error : Out Of Memory.");
+            return false;
+        }
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         {
@@ -344,7 +397,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
                 m_pImages[i],
                 m_pImageViews[i],
                 reinterpret_cast<ITexture**>(&m_pBuffers[i])))
-            { return false; }
+            {
+                A3D_LOG("Error : Texture::Create() Failed.");
+                return false;
+            }
         }
     }
 
@@ -355,7 +411,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         desc.Type = COMMANDLIST_TYPE_DIRECT;
 
         if (!m_pDevice->CreateCommandList(&desc, &pCmdList))
-        { return false; }
+        {
+            A3D_LOG("Error : Device::CreateCommandList() Failed.");
+            return false;
+        }
 
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
         pWrapCmdList->Begin();
@@ -408,7 +467,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
             fence,
             &m_CurrentBufferIndex);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkAcquireNextImage() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
 
         // 待機.
         vkWaitForFences(pNativeDevice, 1, &fence, VK_FALSE, UINT64_MAX);

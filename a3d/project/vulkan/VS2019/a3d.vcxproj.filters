@@ -126,6 +126,9 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dShaderResourceView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\misc\a3dLogger.h">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
@@ -198,6 +201,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp">
       <Filter>ソース ファイル\misc</Filter>
     </ClCompile>
   </ItemGroup>

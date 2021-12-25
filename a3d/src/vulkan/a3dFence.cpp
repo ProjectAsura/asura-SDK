@@ -32,7 +32,10 @@ Fence::~Fence()
 bool Fence::Init(IDevice* pDevice)
 {
     if (pDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -47,7 +50,10 @@ bool Fence::Init(IDevice* pDevice)
 
     auto ret = vkCreateFence(pNativeDevice, &info, nullptr, &m_Fence);
     if ( ret != VK_SUCCESS )
-    { return false; }
+    {
+        A3D_LOG("Error : vkCreateFence() Failed. VkResult = %s", ToString(ret));
+        return false;
+    }
 
     return true;
 }
@@ -143,15 +149,22 @@ VkFence Fence::GetVulkanFence() const
 bool Fence::Create(IDevice* pDevice, IFence** ppFence)
 {
     if (pDevice == nullptr || ppFence == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Fence();
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

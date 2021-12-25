@@ -31,20 +31,32 @@ DescriptorHeap::~DescriptorHeap()
 bool DescriptorHeap::Init(ID3D12Device* pDevice, const D3D12_DESCRIPTOR_HEAP_DESC* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     if (pDesc->NumDescriptors == 0)
-    { return true; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return true;
+    }
 
     auto hr = pDevice->CreateDescriptorHeap(pDesc, IID_PPV_ARGS(&m_pHeap));
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : ID3D12Device::CreateDescritoprHeap() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     // インクリメントサイズを取得.
     m_IncrementSize = pDevice->GetDescriptorHandleIncrementSize(pDesc->Type);
 
     if (!m_Pool.Init(pDesc->NumDescriptors))
-    { return false; }
+    {
+        A3D_LOG("Error : Pool::Init() Failed.");
+        return false;
+    }
 
     return true;
 }

@@ -33,7 +33,10 @@ ShaderResourceView::~ShaderResourceView()
 bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const ShaderResourceViewDesc* pDesc)
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Buffer*         pWrapperBuffer  = nullptr;
     Texture*        pWrapperTexture = nullptr;
@@ -42,24 +45,37 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
     {
         pWrapperBuffer = static_cast<Buffer*>(pResource);
         if (pWrapperBuffer == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         pNativeResource = pWrapperBuffer->GetD3D12Resource();
         if (pNativeResource == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
     }
     else if (pResource->GetKind() == RESOURCE_KIND_TEXTURE)
     {
         pWrapperTexture = static_cast<Texture*>(pResource);
         if (pWrapperTexture == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         pNativeResource = pWrapperTexture->GetD3D12Resource();
         if (pNativeResource == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
     }
     else 
     {
+        A3D_LOG("Error : Invalid Argument.");
         return false;
     }
 
@@ -79,7 +95,10 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
     m_pDescriptor = m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
                              ->CreateDescriptor();
     if (m_pDescriptor == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : CreateDescriptor() Failed.");
+        return false;
+    }
 
     D3D12_RESOURCE_DESC resDesc = pNativeResource->GetDesc();
 
@@ -261,15 +280,22 @@ bool ShaderResourceView::Create
 )
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppTextureView == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new ShaderResourceView();
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if ( !instance->Init(pDevice, pResource, pDesc) )
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

@@ -105,6 +105,9 @@
     <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp">
       <Filter>ソース ファイル\misc</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\d3d12\a3dBuffer.h">
@@ -196,6 +199,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d12\a3dDepthStencilView.h">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\misc\a3dLogger.h">
+      <Filter>ソース ファイル\misc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

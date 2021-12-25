@@ -35,7 +35,10 @@ Fence::~Fence()
 bool Fence::Init(IDevice* pDevice)
 {
     if (pDevice == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -50,11 +53,17 @@ bool Fence::Init(IDevice* pDevice)
 
     auto hr = pNativeDevice->CreateFence( m_CurrentValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence) );
     if ( FAILED(hr) )
-    { return false; }
+    {
+        A3D_LOG("Error : ID3D12Device::CreateFence() Failed. errcode = 0x%x", hr);
+        return false;
+    }
 
     m_Event = CreateEventEx( nullptr, FALSE, FALSE, EVENT_ALL_ACCESS );
     if ( m_Event == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : CreateEventExt() Failed.");
+        return false;
+    }
 
     return true;
 }
@@ -167,15 +176,22 @@ void Fence::AdvanceValue()
 bool Fence::Create(IDevice* pDevice, IFence** ppFence)
 {
     if (pDevice == nullptr || ppFence == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new Fence;
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

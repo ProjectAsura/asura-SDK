@@ -33,7 +33,10 @@ UnorderedAccessView::~UnorderedAccessView()
 bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const UnorderedAccessViewDesc* pDesc)
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -55,13 +58,19 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         auto bufferDesc = pWrapBuffer->GetDesc();
 
         if ((bufferDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         m_pDescriptor = m_pDevice
                             ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
                             ->CreateDescriptor();
         if (m_pDescriptor == nullptr)
-        { return false; }
+        {
+            A3D_LOG("Error : CreateDescriptor() Failed.");
+            return false;
+        }
 
         D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
         uav_desc.Format                      = ToNativeViewFormat(pDesc->Format, false);
@@ -86,7 +95,10 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         auto textureDesc = pWrapTexture->GetDesc();
 
         if ((textureDesc.Usage & RESOURCE_USAGE_UNORDERED_ACCESS) != RESOURCE_USAGE_UNORDERED_ACCESS)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         m_pDescriptor = m_pDevice
                             ->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
@@ -101,10 +113,16 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         switch (uav_desc.ViewDimension)
         {
         case D3D12_UAV_DIMENSION_UNKNOWN:
-            { return false; }
+            {
+                A3D_LOG("Error : Invalid Argument.");
+                return false;
+            }
 
         case D3D12_UAV_DIMENSION_BUFFER:
-            { return false; }
+            {
+                A3D_LOG("Error : Invalid Argument.");
+                return false;
+            }
 
         case D3D12_UAV_DIMENSION_TEXTURE1D:
             {
@@ -227,15 +245,22 @@ bool UnorderedAccessView::Create
 )
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppStorageView == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new UnorderedAccessView();
     if (instance == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if (!instance->Init(pDevice, pResource, pDesc))
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

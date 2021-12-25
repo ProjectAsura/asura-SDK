@@ -69,7 +69,10 @@ DescriptorSetLayout::~DescriptorSetLayout()
 bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
@@ -88,14 +91,20 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VS)
         {
             if (!isGraphics)
-            { return false; }
+            {
+                A3D_LOG("Error : Invalid Argument.");
+                return false;
+            }
         }
 
         if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_AS)
          || (pDesc->Entries[i].ShaderMask & SHADER_MASK_MS))
         {
             if (!isGraphics)
-            { return false; }
+            {
+                A3D_LOG("Error : Invalid Argument.");
+                return false;
+            }
         }
     }
 
@@ -145,7 +154,10 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
         auto ret = vkCreateDescriptorSetLayout( pNativeDevice, &info, nullptr, &m_DescriptorSetLayout );
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateDescriptorSetLayout() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     {
@@ -160,11 +172,17 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
         auto ret = vkCreatePipelineLayout( pNativeDevice, &info, nullptr, &m_PipelineLayout );
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreatePipelineLayout() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     if (!m_pDevice->CreateVulkanDescriptorPool(pDesc->MaxSetCount, &m_DescriptorPool))
-    { return false; }
+    {
+        A3D_LOG("Error : Device::CreateVulknDescriptorPool() Failed.");
+        return false;
+    }
 
     return true;
 }
@@ -301,15 +319,22 @@ bool DescriptorSetLayout::Create
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppLayout == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new DescriptorSetLayout;
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if ( !instance->Init(pDevice, pDesc) )
     {
         SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 

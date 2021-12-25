@@ -34,7 +34,10 @@ ShaderResourceView::~ShaderResourceView()
 bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const ShaderResourceViewDesc* pDesc)
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     Term();
 
@@ -56,7 +59,10 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
 
         auto bufferDesc = pWrapBuffer->GetDesc();
         if ((bufferDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE) != RESOURCE_USAGE_SHADER_RESOURCE)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         m_Buffer = pWrapBuffer->GetVulkanBuffer();
     }
@@ -67,7 +73,10 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
 
         auto textureDesc = pWrapTexture->GetDesc();
         if ((textureDesc.Usage & RESOURCE_USAGE_SHADER_RESOURCE) != RESOURCE_USAGE_SHADER_RESOURCE)
-        { return false; }
+        {
+            A3D_LOG("Error : Invalid Argument.");
+            return false;
+        }
 
         VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
@@ -97,7 +106,10 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
 
         auto ret = vkCreateImageView(pNativeDevice, &info, nullptr, &m_ImageView);
         if ( ret != VK_SUCCESS )
-        { return false; }
+        {
+            A3D_LOG("Error : vkCreateImageView() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;
@@ -193,15 +205,22 @@ bool ShaderResourceView::Create
 )
 {
     if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppView == nullptr)
-    { return false; }
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
 
     auto instance = new ShaderResourceView();
     if ( instance == nullptr )
-    { return false; }
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
 
     if ( !instance->Init(pDevice, pResource, pDesc) )
     {
         a3d::SafeRelease(instance);
+        A3D_LOG("Error : Init() Failed.");
         return false;
     }
 
