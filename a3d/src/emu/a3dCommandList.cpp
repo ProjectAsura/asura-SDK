@@ -247,7 +247,7 @@ void CommandList::SetVertexBuffers
     uint64_t*   pOffsets
 )
 {
-    if (ppResource == nullptr)
+    if (ppResources == nullptr)
     { return; }
 
     ImCmdSetVertexBuffers cmd = {};
