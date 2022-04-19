@@ -378,10 +378,10 @@ PFN_vkCmdDrawMeshTasksIndirectNV         vkCmdDrawMeshTasksIndirect         = nu
 PFN_vkCmdDrawMeshTasksIndirectCountNV    vkCmdDrawMeshTasksIndirectCount    = nullptr;
 #endif
 
-#if defined(VK_KHR_dynamic_rendering)
-PFN_vkCmdBeginRenderingKHR               vkCmdBeginRendering    = nullptr;
-PFN_vkCmdEndRenderingKHR                 vkCmdEndRendering      = nullptr;
-#endif
+//#if defined(VK_KHR_dynamic_rendering)
+//PFN_vkCmdBeginRenderingKHR               vkCmdBeginRendering    = nullptr;
+//PFN_vkCmdEndRenderingKHR                 vkCmdEndRendering      = nullptr;
+//#endif
 
 namespace a3d {
 
@@ -902,15 +902,15 @@ bool Device::Init(const DeviceDesc* pDesc)
         }
         #endif
 
-        #if defined(VK_KHR_dynamic_rendering)
-        {
-            if (m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING])
-            {
-                vkCmdBeginRendering = GET_DEVICE_PROC(m_Device, vkCmdBeginRenderingKHR);
-                vkCmdEndRendering   = GET_DEVICE_PROC(m_Device, vkCmdEndRenderingKHR);
-            }
-        }
-        #endif
+        //#if defined(VK_KHR_dynamic_rendering)
+        //{
+        //    if (m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING])
+        //    {
+        //        vkCmdBeginRendering = GET_DEVICE_PROC(m_Device, vkCmdBeginRenderingKHR);
+        //        vkCmdEndRendering   = GET_DEVICE_PROC(m_Device, vkCmdEndRenderingKHR);
+        //    }
+        //}
+        //#endif
 
         if (!m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING])
         {

@@ -93,6 +93,7 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
     }
 
     m_pCommandList->Close();
+    m_Type = listType;
 
     return true;
 }
@@ -429,14 +430,28 @@ void CommandList::TextureBarrier
     auto pWrapResource = static_cast<Texture*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
-    D3D12_RESOURCE_BARRIER barrier = {};
-    barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Transition.pResource   = pWrapResource->GetD3D12Resource();
-    barrier.Transition.StateBefore = ToNativeState(prevState);
-    barrier.Transition.StateAfter  = ToNativeState(nextState);
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    if (m_Type == COMMANDLIST_TYPE_COMPUTE)
+    {
+        if (prevState == RESOURCE_STATE_UNORDERED_ACCESS)
+        {
+            D3D12_RESOURCE_BARRIER barrier = {};
+            barrier.Type            = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+            barrier.UAV.pResource   = pWrapResource->GetD3D12Resource();
 
-    m_pCommandList->ResourceBarrier(1, &barrier);
+            m_pCommandList->ResourceBarrier(1, &barrier);
+        }
+    }
+    else
+    {
+        D3D12_RESOURCE_BARRIER barrier = {};
+        barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Transition.pResource   = pWrapResource->GetD3D12Resource();
+        barrier.Transition.StateBefore = ToNativeState(prevState);
+        barrier.Transition.StateAfter  = ToNativeState(nextState);
+        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+        m_pCommandList->ResourceBarrier(1, &barrier);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -462,14 +477,26 @@ void CommandList::BufferBarrier
     if (heapType == HEAP_TYPE_UPLOAD || heapType == HEAP_TYPE_READBACK)
     { return;}
 
-    D3D12_RESOURCE_BARRIER barrier = {};
-    barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Transition.pResource   = pWrapResource->GetD3D12Resource();
-    barrier.Transition.StateBefore = ToNativeState(prevState);
-    barrier.Transition.StateAfter  = ToNativeState(nextState);
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    if (m_Type == COMMANDLIST_TYPE_COMPUTE)
+    {
+        if (prevState == RESOURCE_STATE_UNORDERED_ACCESS)
+        {
+            D3D12_RESOURCE_BARRIER barrier = {};
+            barrier.Type            = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+            barrier.UAV.pResource   = pWrapResource->GetD3D12Resource();
+        }
+    }
+    else
+    {
+        D3D12_RESOURCE_BARRIER barrier = {};
+        barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Transition.pResource   = pWrapResource->GetD3D12Resource();
+        barrier.Transition.StateBefore = ToNativeState(prevState);
+        barrier.Transition.StateAfter  = ToNativeState(nextState);
+        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-    m_pCommandList->ResourceBarrier(1, &barrier);
+        m_pCommandList->ResourceBarrier(1, &barrier);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -501,13 +528,13 @@ void CommandList::DrawIndexedInstanced
 }
 
 //-------------------------------------------------------------------------------------------------
-//      スレッドグループからコマンドリストを実行します.
+//      コンピュートシェーダを起動します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::Dispatch(uint32_t x, uint32_t y, uint32_t z)
+void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 { m_pCommandList->Dispatch(x, y, z); }
 
 //-------------------------------------------------------------------------------------------------
-//      スレッドグループからメッシュ描画を実行します.
+//      メッシュシェーダ(あるいは増幅シェーダ)を起動します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 { m_pCommandList->DispatchMesh(x, y, z); }

@@ -51,8 +51,16 @@ bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
         D3D12_INDIRECT_ARGUMENT_TYPE table[] = {
             D3D12_INDIRECT_ARGUMENT_TYPE_DRAW,
             D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED,
-            D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH
+            D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH,
+            D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH,
         };
+
+        //size_t structSizeTable[] = {
+        //    sizeof(D3D12_DRAW_ARGUMENTS),
+        //    sizeof(D3D12_DRAW_INDEXED_ARGUMENTS),
+        //    sizeof(D3D12_DISPATCH_ARGUMENTS),
+        //    sizeof(D3D12_DISPATCH_MESH_ARGUMENTS),
+        //};
 
         for(auto i=0u; i<pDesc->ArgumentCount; ++i)
         {

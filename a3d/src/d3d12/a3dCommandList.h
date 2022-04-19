@@ -238,16 +238,16 @@ public:
         uint32_t firstInstance) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      スレッドグループからコマンドリストを実行します
+    //! @brief      コンピュートシェーダを起動します.
     //!
     //! @param[in]      x       x 方向に発行するグループの数
     //! @param[in]      y       y 方向に発行するグループの数
     //! @param[in]      z       z 方向に発行するグループの数
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY Dispatch(uint32_t x, uint32_t y, uint32_t z) override;
+    void A3D_APIENTRY DispatchCompute(uint32_t x, uint32_t y, uint32_t z) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      スレッドグループからメッシュ描画を実行します
+    //! @brief      メッシュシェーダを起動します.
     //!
     //! @param[in]      x       x 方向に発行するグループの数
     //! @param[in]      y       y 方向に発行するグループの数
@@ -455,8 +455,9 @@ private:
     std::atomic<uint32_t>       m_RefCount;             //!< 参照カウントです.
     Device*                     m_pDevice;              //!< デバイスです.
     ID3D12CommandAllocator*     m_pCommandAllocator;    //!< コマンドアロケータです.
-    ID3D12GraphicsCommandList6*  m_pCommandList;         //!< コマンドリストです.
+    ID3D12GraphicsCommandList6* m_pCommandList;         //!< コマンドリストです.
     FrameBuffer*                m_pFrameBuffer;         //!< 設定されているフレームバッファです.
+    COMMANDLIST_TYPE            m_Type;                 //!< コマンドリストタイプ.
 
     //=============================================================================================
     // private methods.

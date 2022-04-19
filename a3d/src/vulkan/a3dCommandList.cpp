@@ -745,9 +745,9 @@ void CommandList::DrawIndexedInstanced
 }
 
 //-------------------------------------------------------------------------------------------------
-//      スレッドグループからコマンドリストを実行します.
+//      コンピュートシェーダを起動します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::Dispatch(uint32_t x, uint32_t y, uint32_t z)
+void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 {
     if (x == 0 && y == 0 && z == 0)
     { return; }
@@ -756,7 +756,7 @@ void CommandList::Dispatch(uint32_t x, uint32_t y, uint32_t z)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      スレッドグループからメッシュ描画を実行します.
+//      メッシュシェーダを起動します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 {
@@ -828,8 +828,12 @@ void CommandList::ExecuteIndirect
             { vkCmdDrawIndexedIndirect( m_CommandBuffer, pNativeArgumentBuffer, offset, count, desc.ByteStride ); }
             break;
 
-        case INDIRECT_ARGUMENT_TYPE_DISPATCH:
+        case INDIRECT_ARGUMENT_TYPE_DISPATCH_COMPUTE:
             { vkCmdDispatchIndirect( m_CommandBuffer, pNativeArgumentBuffer, offset ); }
+            break;
+
+        case INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH:
+            { vkCmdDrawMeshTasksIndirect( m_CommandBuffer, pNativeArgumentBuffer, offset, count, desc.ByteStride ); }
             break;
         }
 

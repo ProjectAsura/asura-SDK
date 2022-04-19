@@ -337,12 +337,12 @@ void CommandList::DrawIndexedInstanced
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスパッチします.
+//      コンピュートシェーダを起動します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::Dispatch(uint32_t x, uint32_t y, uint32_t z)
+void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 {
     ImCmdDispatch cmd = {};
-    cmd.Type    = CMD_DISPATCH;
+    cmd.Type    = CMD_DISPATCH_COMPUTE;
     cmd.X       = x;
     cmd.Y       = y;
     cmd.Z       = z;
@@ -351,7 +351,7 @@ void CommandList::Dispatch(uint32_t x, uint32_t y, uint32_t z)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      メッシュをディスパッチします.
+//      メッシュシェーダを起動します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 {

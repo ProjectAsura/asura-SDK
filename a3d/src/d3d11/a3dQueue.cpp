@@ -735,7 +735,7 @@ void Queue::ParseCmd()
                 }
                 break;
 
-            case CMD_DISPATCH:
+            case CMD_DISPATCH_COMPUTE:
                 {
                     auto cmd = reinterpret_cast<ImCmdDispatch*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
@@ -799,8 +799,12 @@ void Queue::ParseCmd()
                             { pDeviceContext->DrawIndexedInstancedIndirect(pNativeArgumentBuffer, offset); }
                             break;
 
-                        case INDIRECT_ARGUMENT_TYPE_DISPATCH:
+                        case INDIRECT_ARGUMENT_TYPE_DISPATCH_COMPUTE:
                             { pDeviceContext->DispatchIndirect(pNativeArgumentBuffer, offset); }
+                            break;
+
+                        case INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH:
+                            { A3D_ASSERT(false); }
                             break;
                         }
 

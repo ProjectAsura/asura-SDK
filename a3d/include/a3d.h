@@ -85,45 +85,6 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// SEMANTICS_TYPE
-///////////////////////////////////////////////////////////////////////////////////////////////////
-enum SEMANTICS_TYPE
-{
-    SEMANTICS_POSITION      = 0,        // "POSITION"
-    SEMANTICS_NORMAL        = 1,        // "NORMAL"
-    SEMANTICS_TANGENT       = 2,        // "TANGENT"
-    SEMANTICS_BITANGENT     = 3,        // "BITANGENT"
-    SEMANTICS_BONEINDEX0    = 4,        // "BONEINDEX"
-    SEMANTICS_BONEINDEX1    = 5,        // "BONEINDEX"
-    SEMANTICS_BONEWEIGHT0   = 6,        // "BONEWEIGHT"
-    SEMANTICS_BONEWEIGHT1   = 7,        // "BONEWEIGHT"
-    SEMANTICS_COLOR0        = 8,        // "COLOR"
-    SEMANTICS_COLOR1        = 9,        // "COLOR"
-    SEMANTICS_COLOR2        = 10,       // "COLOR"
-    SEMANTICS_COLOR3        = 11,       // "COLOR"
-    SEMANTICS_TEXCOORD0     = 12,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD1     = 13,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD2     = 14,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD3     = 15,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD4     = 16,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD5     = 17,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD6     = 18,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD7     = 19,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD8     = 20,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD9     = 21,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD10    = 22,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD11    = 23,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD12    = 24,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD13    = 25,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD14    = 26,       // "TEXCOORD"
-    SEMANTICS_TEXCOORD15    = 27,       // "TEXCOORD"
-    SEMANTICS_CUSTOM0       = 28,       // "CUSTOM"
-    SEMANTICS_CUSTOM1       = 29,       // "CUSTOM"
-    SEMANTICS_CUSTOM2       = 30,       // "CUSTOM"
-    SEMANTICS_CUSTOM3       = 31,       // "CUSTOM"
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 //! @enum   INDIRECT_ARGUMENT_TYPE
 //! @brief  インダイレクト引数タイプです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,7 +92,7 @@ enum INDIRECT_ARGUMENT_TYPE
 {
     INDIRECT_ARGUMENT_TYPE_DRAW             = 0,    //!< 描画用引数です.
     INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED     = 1,    //!< インデックス付き描画用引数です.
-    INDIRECT_ARGUMENT_TYPE_DISPATCH         = 2,    //!< ディスパッチ用引数です.
+    INDIRECT_ARGUMENT_TYPE_DISPATCH_COMPUTE = 2,    //!< コンピュートディスパッチ用引数です.
     INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH    = 3,    //!< メッシュディスパッチ用引数です.
 };
 
@@ -713,7 +674,10 @@ struct DispatchArguments
     uint32_t    ThreadGroupCountZ;  //!< z 方向の発行するスレッドグループの数です.
 };
 
-//! @brief  ディスパッチメッシュコマンドの引数です.
+//! @brief  コンピュートシェーダディスパッチの引数です.
+using DispatchComputeArguments = DispatchArguments;
+
+//! @brief  メッシュシェーダディスパッチの引数です.
 using DispatchMeshArguments = DispatchArguments;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -844,18 +808,18 @@ struct SamplerDesc
     float                   MaxLod;             //!< アクセスをクランプするミップマップ範囲の上限です。0 は最大かつ最も詳細なミップマップ レベルを表し、レベルの値が大きくなるほど詳細でなくなります。この値は MinLod 以上にする必要があります。
     BORDER_COLOR            BorderColor;        //!< 境界色です.
 
-    static SamplerDesc PointClamp();
-    static SamplerDesc PointRepeat();
-    static SamplerDesc PointMirror();
-    static SamplerDesc LinearClamp();
-    static SamplerDesc LinearRepeat();
-    static SamplerDesc LinearMirror();
-    static SamplerDesc AnisotropicClamp(uint32_t maxAnisotropy = 16);
-    static SamplerDesc AnisotropicRepeat(uint32_t maxAnisotropy = 16);
-    static SamplerDesc AnisotropicMirror(uint32_t maxAnisotropy = 16);
-    static SamplerDesc PointClampCmp(COMPARE_OP op = COMPARE_OP_LEQUAL);
-    static SamplerDesc LinearClampCmp(COMPARE_OP op = COMPARE_OP_LEQUAL);
-    static SamplerDesc AnisotropicClampCmp(COMPARE_OP = COMPARE_OP_LEQUAL, uint32_t maxAinisotropy = 16);
+    static SamplerDesc PointClamp           ();
+    static SamplerDesc PointRepeat          ();
+    static SamplerDesc PointMirror          ();
+    static SamplerDesc LinearClamp          ();
+    static SamplerDesc LinearRepeat         ();
+    static SamplerDesc LinearMirror         ();
+    static SamplerDesc AnisotropicClamp     (uint32_t maxAnisotropy = 16);
+    static SamplerDesc AnisotropicRepeat    (uint32_t maxAnisotropy = 16);
+    static SamplerDesc AnisotropicMirror    (uint32_t maxAnisotropy = 16);
+    static SamplerDesc PointClampCmp        (COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static SamplerDesc LinearClampCmp       (COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static SamplerDesc AnisotropicClampCmp  (COMPARE_OP op = COMPARE_OP_LEQUAL, uint32_t maxAinisotropy = 16);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -873,9 +837,9 @@ struct RasterizerState
     bool                DepthClipEnable;            //!< 深度クリップを有効にするかどうか.
     bool                EnableConservativeRaster;   //!< コンサバティブラスタライゼーションを有効化にするかどうか.
 
-    static RasterizerState CullNone();
+    static RasterizerState CullNone ();
     static RasterizerState CullFront();
-    static RasterizerState CullBack();
+    static RasterizerState CullBack ();
     static RasterizerState Wireframe();
 };
 
@@ -918,10 +882,10 @@ struct DepthState
     bool            DepthWriteEnable;           //!< 深度書き込みを可能にします.
     COMPARE_OP      DepthCompareOp;             //!< 深度データの比較操作です.
 
-    static DepthState None();
-    static DepthState Default(COMPARE_OP op = COMPARE_OP_LEQUAL);
-    static DepthState ReadOnly(COMPARE_OP op = COMPARE_OP_LEQUAL);
-    static DepthState WriteOnly(COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static DepthState None      ();
+    static DepthState Default   (COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static DepthState ReadOnly  (COMPARE_OP op = COMPARE_OP_LEQUAL);
+    static DepthState WriteOnly (COMPARE_OP op = COMPARE_OP_LEQUAL);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -942,13 +906,13 @@ struct ColorBlendState
     bool            EnableWriteB;           //!< B成分への書き込みを有効にします.
     bool            EnableWriteA;           //!< A成分への書き込みを有効にします.
 
-    static ColorBlendState Opaque();
-    static ColorBlendState AlphaBlend();
-    static ColorBlendState Additive();
-    static ColorBlendState Substract();
-    static ColorBlendState PremultipliedAlpha();
-    static ColorBlendState Multiply();
-    static ColorBlendState Screen();
+    static ColorBlendState Opaque               ();
+    static ColorBlendState AlphaBlend           ();
+    static ColorBlendState Additive             ();
+    static ColorBlendState Substract            ();
+    static ColorBlendState PremultipliedAlpha   ();
+    static ColorBlendState Multiply             ();
+    static ColorBlendState Screen               ();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -995,7 +959,9 @@ struct TessellationState
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct InputElementDesc
 {
-    uint32_t                Semantics;      //!< セマンティクス(D3D12) または ロケーション番号(Vulkan)を指定します.
+    const char*             SemanticName;   //!< セマンティクス名(D3D11, D3D12)
+    uint32_t                SemanticIndex;  //!< セマンティクス番号(D3D11, D3D12)
+    uint32_t                LocationIndex;  //!< ロケーション番号(Vulkan).
     RESOURCE_FORMAT         Format;         //!< リソースフォーマットです.
     uint32_t                StreamIndex;    //!< ストリーム番号です.
     uint32_t                OffsetInBytes;  //!< 先頭要素からオフセットです.
@@ -1995,16 +1961,16 @@ struct A3D_API ICommandList : public IDeviceChild
         uint32_t firstInstance) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      スレッド グループからコマンド リストを実行します
+    //! @brief      コンピュートシェーダを起動します.
     //!
     //! @param[in]      x       x 方向にディスパッチしたグループの数
     //! @param[in]      y       y 方向にディスパッチしたグループの数
     //! @param[in]      z       z 方向にディスパッチしたグループの数
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Dispatch(uint32_t x, uint32_t y, uint32_t z) = 0;
+    virtual void A3D_APIENTRY DispatchCompute(uint32_t x, uint32_t y, uint32_t z) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      スレッドグループからコマンドリストを実行します
+    //! @brief      メッシュシェーダを起動します.
     //!
     //! @param[in]      x       x 方向にディスパッチしたグループの数
     //! @param[in]      y       y 方向にディスパッチしたグループの数

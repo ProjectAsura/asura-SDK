@@ -39,7 +39,7 @@ extern PFN_vkCmdDrawMeshTasksIndirectNV             vkCmdDrawMeshTasksIndirect;
 extern PFN_vkCmdDrawMeshTasksIndirectCountNV        vkCmdDrawMeshTasksIndirectCount;
 #endif
 
-#if defined(VK_KHR_dynamic_rendering)
-extern PFN_vkCmdBeginRenderingKHR                   vkCmdBeginRendering;
-extern PFN_vkCmdEndRenderingKHR                     vkCmdEndRendering;
-#endif
+//#if defined(VK_KHR_dynamic_rendering)
+//extern PFN_vkCmdBeginRenderingKHR                   vkCmdBeginRendering;
+//extern PFN_vkCmdEndRenderingKHR                     vkCmdEndRendering;
+//#endif

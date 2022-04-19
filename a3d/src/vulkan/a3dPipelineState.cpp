@@ -65,7 +65,7 @@ void ToNativeVertexAttribute
     VkVertexInputAttributeDescription*  pDesc
 )
 {
-    pDesc->location = element.Semantics;
+    pDesc->location = element.LocationIndex;
     pDesc->binding  = element.StreamIndex;
     pDesc->format   = ToNativeFormat(element.Format);
     pDesc->offset   = element.OffsetInBytes;

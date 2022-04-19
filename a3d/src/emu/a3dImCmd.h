@@ -30,7 +30,7 @@ enum CMD_TYPE
     CMD_BUFFER_BARRIER,                 //!< ICommandList::BufferBarrier()
     CMD_DRAW_INSTANCED,                 //!< ICommandList::DrawInstanced()
     CMD_DRAW_INDEXED_INSTANCED,         //!< ICommandList::DrawIndexedInstanced()
-    CMD_DISPATCH,                       //!< ICommandList::Dispatch()
+    CMD_DISPATCH_COMPUTE,               //!< ICommandList::DispatchCompute()
     CMD_DISPATCH_MESH,                  //!< ICommandList::DispatchMesh()
     CMD_EXECUTE_INDIRECT,               //!< ICommandList::ExecuteIndirect()
     CMD_BEGIN_QUERY,                    //!< ICommandList::BeginQuery()
