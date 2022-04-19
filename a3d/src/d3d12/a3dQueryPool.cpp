@@ -66,8 +66,8 @@ bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
 
         case QUERY_TYPE_PIPELINE_STATISTICS:
             {
-                desc.Type   = D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS;
-                m_QueryType = D3D12_QUERY_TYPE_PIPELINE_STATISTICS;
+                desc.Type   = D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS1;
+                m_QueryType = D3D12_QUERY_TYPE_PIPELINE_STATISTICS1;
             }
             break;
         }

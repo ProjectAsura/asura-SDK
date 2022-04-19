@@ -514,11 +514,14 @@ void CommandList::SetVertexBuffers
     uint64_t*   pOffsets
 )
 {
-    if (count == 0 || ppResources == nullptr)
-    { return; }
-
     VkBuffer     buffers[32] = {};
     VkDeviceSize offsets[32] = {};
+
+    if (count == 0 || ppResources == nullptr)
+    {
+        vkCmdBindVertexBuffers( m_CommandBuffer, 0, 32, buffers, offsets );
+        return;
+    }
 
     for(auto i=0u; i<count; ++i)
     {
@@ -545,7 +548,10 @@ void CommandList::SetIndexBuffer
 )
 {
     if (pResource == nullptr)
-    { return; }
+    {
+        vkCmdBindIndexBuffer( m_CommandBuffer, null_handle, 0, VK_INDEX_TYPE_NONE_KHR );
+        return;
+    }
 
     auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
@@ -567,7 +573,7 @@ void CommandList::TextureBarrier
     RESOURCE_STATE  nextState
 )
 {
-    if (pResource == nullptr)
+    if (pResource == nullptr || prevState == nextState)
     { return; }
 
     auto pWrapResource = static_cast<Texture*>(pResource);
@@ -664,7 +670,7 @@ void CommandList::BufferBarrier
     RESOURCE_STATE  nextState
 )
 {
-    if (pResource == nullptr)
+    if (pResource == nullptr || prevState == nextState)
     { return; }
 
     auto pWrapResource = static_cast<Buffer*>(pResource);

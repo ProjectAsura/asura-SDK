@@ -360,7 +360,11 @@ void CommandList::SetVertexBuffers
 )
 {
     if (count == 0 || ppResources == nullptr)
-    { return; }
+    {
+        D3D12_VERTEX_BUFFER_VIEW views[D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
+        m_pCommandList->IASetVertexBuffers(0, D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT, views);
+        return;
+    }
 
     D3D12_VERTEX_BUFFER_VIEW views[D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
 
@@ -396,7 +400,11 @@ void CommandList::SetIndexBuffer
 )
 {
     if (pResource == nullptr)
-    { return; }
+    {
+        D3D12_INDEX_BUFFER_VIEW view = {};
+        m_pCommandList->IASetIndexBuffer(&view);
+        return;
+    }
 
     auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
@@ -424,7 +432,7 @@ void CommandList::TextureBarrier
     RESOURCE_STATE  nextState
 )
 {
-    if (pResource == nullptr)
+    if (pResource == nullptr || prevState == nextState)
     { return; }
 
     auto pWrapResource = static_cast<Texture*>(pResource);
@@ -464,7 +472,7 @@ void CommandList::BufferBarrier
     RESOURCE_STATE  nextState
 )
 {
-    if (pResource == nullptr)
+    if (pResource == nullptr || prevState == nextState)
     { return; }
 
     auto pWrapResource = static_cast<Buffer*>(pResource);
