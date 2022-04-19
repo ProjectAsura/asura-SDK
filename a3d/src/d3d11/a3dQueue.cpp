@@ -227,10 +227,10 @@ void Queue::ParseCmd()
 
         while(pCmd != m_pCommandLists[i]->GetCommandBuffer()->GetCmdPtr() || !end)
         {
-            auto type = reinterpret_cast<ImCmdBase*>(pCmd)->Type; 
+            auto id = reinterpret_cast<ImCmdBase*>(pCmd)->Id; 
 
             // 中間コマンドからネイティブに変換します.
-            switch(type)
+            switch(id)
             {
             case CMD_BEGIN:
                 {
@@ -271,6 +271,34 @@ void Queue::ParseCmd()
                     }
 
                     pDeviceContext->OMSetRenderTargets(count, pRTVs, pDSV);
+
+                    count = cmd->ClearColorCount;
+                    for(auto i=0u; i<count; ++i)
+                    {
+                        auto index = cmd->ClearColors[i].SlotIndex;
+                        float colors[4] = { 
+                            cmd->ClearColors[i].R,
+                            cmd->ClearColors[i].G,
+                            cmd->ClearColors[i].B,
+                            cmd->ClearColors[i].A,
+                        };
+                        pDeviceContext->ClearRenderTargetView(pRTVs[index], colors);
+                    }
+
+                    if (pDSV != nullptr && (cmd->ClearDepthStencil.EnableClearDepth || cmd->ClearDepthStencil.EnableClearStencil))
+                    {
+                        UINT flags = 0;
+                        if (cmd->ClearDepthStencil.EnableClearDepth)
+                        { flags = D3D11_CLEAR_DEPTH; }
+                        if (cmd->ClearDepthStencil.EnableClearStencil)
+                        { flags = D3D11_CLEAR_STENCIL; }
+
+                        pDeviceContext->ClearDepthStencilView(
+                            pDSV,
+                            flags,
+                            cmd->ClearDepthStencil.Depth,
+                            cmd->ClearDepthStencil.Stencil);
+                    }
 
                     pCmd += sizeof(ImCmdBeginFrameBuffer);
                 }
@@ -1179,37 +1207,6 @@ void Queue::ParseCmd()
                     end = true;
                     pCmd += sizeof(ImCmdEnd);
                     pDeviceContext->Flush();
-                }
-                break;
-
-            case CMD_CLEAR_RENDER_TARGET_VIEW:
-                {
-                    auto cmd = reinterpret_cast<ImCmdClearRenderTargetView*>(pCmd);
-                    A3D_ASSERT(cmd != nullptr);
-
-                    auto pWrapperRTV = static_cast<RenderTargetView*>(cmd->pRenderTargetView);
-                    pDeviceContext->ClearRenderTargetView(pWrapperRTV->GetD3D11RenderTargetView(), cmd->ClearColor);
-
-                    pCmd += sizeof(ImCmdClearRenderTargetView);
-                }
-                break;
-
-            case CMD_CLEAR_DEPTH_STENCIL_VIEW:
-                {
-                    auto cmd = reinterpret_cast<ImCmdClearDepthStencilView*>(pCmd);
-                    A3D_ASSERT(cmd != nullptr);
-
-                    auto pWrapperDSV = static_cast<DepthStencilView*>(cmd->pDepthStencilView);
-                    UINT flags = 0;
-                    if (cmd->EnableClearDepth)   { flags |= D3D11_CLEAR_DEPTH;   }
-                    if (cmd->EnableClearStencil) { flags |= D3D11_CLEAR_STENCIL; }
-                    pDeviceContext->ClearDepthStencilView(
-                        pWrapperDSV->GetD3D11DepthStencilView(),
-                        flags,
-                        cmd->ClearDepth,
-                        cmd->ClearStencil);
-
-                    pCmd += sizeof(ImCmdClearDepthStencilView);
                 }
                 break;
             }

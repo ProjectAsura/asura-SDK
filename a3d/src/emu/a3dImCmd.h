@@ -9,10 +9,10 @@
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//! @enum   CMD_TYPE
-//! @brief  コマンドタイプです.
+//! @enum   CMD_ID
+//! @brief  コマンドIDです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-enum CMD_TYPE
+enum CMD_ID
 {
     CMD_BEGIN = 0,                      //!< ICommandList::Begin() For COMMANDLIST_TYPE_DIRECT
     CMD_SUB_BEGIN,                      //!< ICommandList::Begin() For COMMANDLIST_TYPE_BUNDLE
@@ -50,8 +50,6 @@ enum CMD_TYPE
     CMD_UPDATE_CONSTANT_BUFFER,         //!< ICommandList::UpdateConstantBuffer()
     CMD_SUB_END,                        //!< ICommandList::End() For COMMANDLIST_TYPE_BUNDLE
     CMD_END,                            //!< ICommandList::End() For COMMANDLIST_TYPE_DIRECT
-    CMD_CLEAR_RENDER_TARGET_VIEW,       //!< ICommandList::ClearRenderTargetView()
-    CMD_CLEAR_DEPTH_STENCIL_VIEW,       //!< ICommandList::ClearDepthStencilView()
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +57,7 @@ enum CMD_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ImCmdBase 
 {
-    CMD_TYPE    Type;
+    CMD_ID    Id;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,18 +74,21 @@ struct ImCmdBeginFrameBuffer : ImCmdBase
     uint32_t                RenderTargetViewCount;
     IRenderTargetView*      pRenderTargetView[8];
     IDepthStencilView*      pDepthStencilView;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// ImCmdClearFrameBuffer structure
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ImCmdClearFrameBuffer : ImCmdBase
-{
     uint32_t                ClearColorCount;
-    bool                    HasDepth;
     ClearColorValue         ClearColors[8];
     ClearDepthStencilValue  ClearDepthStencil;
 };
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//// ImCmdClearFrameBuffer structure
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//struct ImCmdClearFrameBuffer : ImCmdBase
+//{
+//    uint32_t                ClearColorCount;
+//    bool                    HasDepth;
+//    ClearColorValue         ClearColors[8];
+//    ClearDepthStencilValue  ClearDepthStencil;
+//};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // ImCmdSetBlendConstant structure

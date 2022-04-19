@@ -145,7 +145,7 @@ void DescriptorSet::SetSampler(uint32_t index, ISampler* const pSampler)
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::MakeCommand(ImCmdSetDescriptorSet* pCmd)
 {
-    pCmd->Type = CMD_SET_DESCRIPTORSET;
+    pCmd->Id    = CMD_SET_DESCRIPTORSET;
     pCmd->pDesc = m_pLayoutDesc;
     for(auto i=0u; i<m_pLayoutDesc->EntryCount; ++i)
     { pCmd->pDescriptor[i] = m_pDescriptors[i]; }

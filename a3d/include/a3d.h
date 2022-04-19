@@ -632,10 +632,11 @@ struct ClearDepthStencilValue
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ClearColorValue
 {
-    float   R;  //!< 赤成分です.
-    float   G;  //!< 緑成分です.
-    float   B;  //!< 青成分です.
-    float   A;  //!< アルファ成分です.
+    uint32_t    SlotIndex;  //!< レンダーターゲットのスロット番号です.
+    float       R;          //!< 赤成分です.
+    float       G;          //!< 緑成分です.
+    float       B;          //!< 青成分です.
+    float       A;          //!< アルファ成分です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1803,36 +1804,22 @@ struct A3D_API ICommandList : public IDeviceChild
     virtual void A3D_APIENTRY Begin() = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      レンダーターゲットビューをクリアします.
-    //! 
-    //! @param[in]      pRenderTargetView       レンダーターゲットビュー.
-    //! @param[in]      clearValue              クリア値です.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY ClearRenderTargetView(
-        IRenderTargetView*              pRenderTargetView,
-        const ClearColorValue&          clearValue) = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      深度ステンシルビューをクリアします.
-    //! 
-    //! @param[in]      pDepthStencilView       深度ステンシルビューです.
-    //! @param[in]      clearValue              クリア値です.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY ClearDepthStencilView(
-        IDepthStencilView*              pDepthStencilView,
-        const ClearDepthStencilValue&   clearValue) = 0;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを設定します.
     //!
     //! @param[in]      renderTargetViewCount   レンダーターゲットビューの数です.
     //! @param[in]      pRnderTargetViews       レンダーターゲットビューの配列です.
     //! @param[in]      pDepthStencilView       深度ステンシルビューです.
+    //! @param[in]      clearColorCount         クリアカラーを行う数です.
+    //! @param[in]      pClearColors            カラークリア値の指定です(nullptr可).
+    //! @param[in]      pClearDepthStencil      深度ステンシルビューのクリア値です(nullptr可).
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY BeginFrameBuffer(
-        uint32_t                renderTargetViewCount,
-        IRenderTargetView**     pRenderTargetViews,
-        IDepthStencilView*      pDepthStencilView) = 0;
+        uint32_t                        renderTargetViewCount,
+        IRenderTargetView**             pRenderTargetViews,
+        IDepthStencilView*              pDepthStencilView,
+        uint32_t                        clearColorCount,
+        const ClearColorValue*          pClearColors,
+        const ClearDepthStencilValue*   pClearDepthStencil) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを解除します.

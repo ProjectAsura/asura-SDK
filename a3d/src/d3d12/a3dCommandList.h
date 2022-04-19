@@ -74,26 +74,6 @@ public:
     void A3D_APIENTRY GetDevice(IDevice** ppDevice) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      レンダーターゲットビューをクリアします.
-    //! 
-    //! @param[in]      pRenderTargetView       レンダーターゲットビューです.
-    //! @param[in]      clearValue              クリア値です.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY ClearRenderTargetView(
-        IRenderTargetView*      pRenderTargetView, 
-        const ClearColorValue&  clearValue) override;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      深度ステンシルビューをクリアします.
-    //! 
-    //! @param[in]      pDepthStencilView       深度ステンシルビューです.
-    //! @param[in]      clearValue              クリア値です.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY ClearDepthStencilView(
-        IDepthStencilView*              pDepthStencilView,
-        const ClearDepthStencilValue&   clearValue) override;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの記録を開始します.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Begin() override;
@@ -106,9 +86,12 @@ public:
     //! @param[in]      pDepthStencilView       深度ステンシルビューです. 
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY BeginFrameBuffer(
-        uint32_t                renderTargetViewCount,
-        IRenderTargetView**     ppRenderTargetViews,
-        IDepthStencilView*      pDepthStencilView) override;
+        uint32_t                        renderTargetViewCount,
+        IRenderTargetView**             ppRenderTargetViews,
+        IDepthStencilView*              pDepthStencilView,
+        uint32_t                        clearColorCount,
+        const ClearColorValue*          pClearColors,
+        const ClearDepthStencilValue*   pClearDepthStencil) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを解除します.

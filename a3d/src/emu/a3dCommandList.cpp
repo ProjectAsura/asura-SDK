@@ -60,52 +60,6 @@ void CommandList::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      レンダーターゲットビューをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearRenderTargetView
-(
-    IRenderTargetView*      pRenderTargetView,
-    const ClearColorValue&  clearValue
-)
-{
-    if (pRenderTargetView == nullptr)
-    { return; }
-
-    ImCmdClearRenderTargetView cmd = {};
-    cmd.Type                = CMD_CLEAR_RENDER_TARGET_VIEW;
-    cmd.pRenderTargetView   = pRenderTargetView;
-    cmd.ClearColor[0]       = clearValue.R;
-    cmd.ClearColor[1]       = clearValue.G;
-    cmd.ClearColor[2]       = clearValue.B;
-    cmd.ClearColor[3]       = clearValue.A;
-
-    m_Buffer.Push(&cmd, sizeof(cmd));
-}
-
-//-------------------------------------------------------------------------------------------------
-//      深度ステンシルビューをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearDepthStencilView
-(
-    IDepthStencilView*              pDepthStencilView,
-    const ClearDepthStencilValue&   clearValue
-)
-{
-    if (pDepthStencilView == nullptr)
-    { return; }
-
-    ImCmdClearDepthStencilView cmd = {};
-    cmd.Type                = CMD_CLEAR_DEPTH_STENCIL_VIEW;
-    cmd.pDepthStencilView   = pDepthStencilView;
-    cmd.EnableClearDepth    = clearValue.EnableClearDepth;
-    cmd.EnableClearStencil  = clearValue.EnableClearStencil;
-    cmd.ClearDepth          = clearValue.Depth;
-    cmd.ClearStencil        = clearValue.Stencil;
-
-    m_Buffer.Push(&cmd, sizeof(cmd));
-}
-
-//-------------------------------------------------------------------------------------------------
 //      コマンドの記録を開始します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::Begin()
@@ -113,7 +67,7 @@ void CommandList::Begin()
     m_Buffer.Reset();
 
     ImCmdBegin cmd = {};
-    cmd.Type = (m_Type == COMMANDLIST_TYPE_DIRECT) ? CMD_BEGIN : CMD_SUB_BEGIN;
+    cmd.Id = (m_Type == COMMANDLIST_TYPE_DIRECT) ? CMD_BEGIN : CMD_SUB_BEGIN;
     
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -123,22 +77,32 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 void CommandList::BeginFrameBuffer
 (
-    uint32_t            renderTargetViewCount,
-    IRenderTargetView** pRenderTargetViews,
-    IDepthStencilView*  pDepthStencilView
+    uint32_t                        renderTargetViewCount,
+    IRenderTargetView**             pRenderTargetViews,
+    IDepthStencilView*              pDepthStencilView,
+    uint32_t                        clearColorCount,
+    const ClearColorValue*          pClearColors,
+    const ClearDepthStencilValue*   pClearDepthStencil
 )
 {
     if (pRenderTargetViews == nullptr && pDepthStencilView == nullptr)
     { return; }
 
     ImCmdBeginFrameBuffer cmd = {};
-    cmd.Type         = CMD_BEGIN_FRAME_BUFFER;
+    cmd.Id         = CMD_BEGIN_FRAME_BUFFER;
     cmd.RenderTargetViewCount = REQUEST_OPLOCK_CURRENT_VERSION;
 
     auto maxCount = (renderTargetViewCount >= 8) ? 8 : renderTargetViewCount;
     for(auto i=0u; i<maxCount; ++i)
     { cmd.pRenderTargetView[i] = pRenderTargetViews[i]; }
     cmd.pDepthStencilView = pDepthStencilView;
+
+    cmd.ClearColorCount = clearColorCount;
+    for(auto i=0u; i<clearColorCount; ++i)
+    { cmd.ClearColors[i] = pClearColors[i]; }
+
+    if (pClearDepthStencil != nullptr)
+    { cmd.ClearDepthStencil = *pClearDepthStencil; }
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -149,7 +113,7 @@ void CommandList::BeginFrameBuffer
 void CommandList::EndFrameBuffer()
 {
     ImCmdBase cmd = {};
-    cmd.Type = CMD_END_FRAME_BUFFER;
+    cmd.Id = CMD_END_FRAME_BUFFER;
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
@@ -159,7 +123,7 @@ void CommandList::EndFrameBuffer()
 void CommandList::SetBlendConstant(const float blendConstant[4])
 {
     ImCmdSetBlendConstant cmd = {};
-    cmd.Type = CMD_SET_BLEND_CONSTANT;
+    cmd.Id = CMD_SET_BLEND_CONSTANT;
     memcpy( cmd.BlendConstant, blendConstant, sizeof(cmd.BlendConstant) );
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -171,8 +135,8 @@ void CommandList::SetBlendConstant(const float blendConstant[4])
 void CommandList::SetStencilReference(uint32_t stencilRef)
 {
     ImCmdSetStencilReference cmd = {};
-    cmd.Type = CMD_SET_STENCIL_REFERENCE;
-    cmd.StencilReference = stencilRef;
+    cmd.Id                  = CMD_SET_STENCIL_REFERENCE;
+    cmd.StencilReference    = stencilRef;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -186,8 +150,8 @@ void CommandList::SetViewports(uint32_t count, Viewport* pViewports)
     { return; }
 
     ImCmdSetViewports cmd = {};
-    cmd.Type  = CMD_SET_VIEWPORTS;
-    cmd.Count = count;
+    cmd.Id      = CMD_SET_VIEWPORTS;
+    cmd.Count   = count;
     memcpy(cmd.Viewports, pViewports, sizeof(Viewport) * count);
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -202,8 +166,8 @@ void CommandList::SetScissors(uint32_t count, Rect* pScissors)
     { return; }
 
     ImCmdSetScissors cmd = {};
-    cmd.Type  = CMD_SET_SCISSORS;
-    cmd.Count = count;
+    cmd.Id      = CMD_SET_SCISSORS;
+    cmd.Count   = count;
     memcpy(cmd.Rects, pScissors, sizeof(Rect) * count);
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -215,7 +179,7 @@ void CommandList::SetScissors(uint32_t count, Rect* pScissors)
 void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 {
     ImCmdSetPipelineState cmd = {};
-    cmd.Type            = CMD_SET_PIPELINESTATE;
+    cmd.Id              = CMD_SET_PIPELINESTATE;
     cmd.pPipelineState  = pPipelineState;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -251,7 +215,7 @@ void CommandList::SetVertexBuffers
     { return; }
 
     ImCmdSetVertexBuffers cmd = {};
-    cmd.Type        = CMD_SET_VERTEX_BUFFERS;
+    cmd.Id          = CMD_SET_VERTEX_BUFFERS;
     cmd.StartSlot   = startSlot;
     cmd.Count       = count;
     memcpy(cmd.pBuffers, ppResources, sizeof(IBuffer) * count);
@@ -268,7 +232,7 @@ void CommandList::SetVertexBuffers
 void CommandList::SetIndexBuffer(IBuffer* pResource, uint64_t offset)
 {
     ImCmdSetIndexBuffer cmd = {};
-    cmd.Type    = CMD_SET_INDEX_BUFFER;
+    cmd.Id      = CMD_SET_INDEX_BUFFER;
     cmd.pBuffer = pResource;
     cmd.Offset  = offset;
 
@@ -289,7 +253,7 @@ void CommandList::TextureBarrier
     { return; }
 
     ImCmdTextureBarrier cmd = {};
-    cmd.Type        = CMD_TEXTURE_BARRIER;
+    cmd.Id          = CMD_TEXTURE_BARRIER;
     cmd.pResource   = pResource;
     cmd.PrevState   = prevState;
     cmd.NextState   = nextState;
@@ -311,7 +275,7 @@ void CommandList::BufferBarrier
     { return; }
 
     ImCmdBufferBarrier cmd = {};
-    cmd.Type        = CMD_BUFFER_BARRIER;
+    cmd.Id          = CMD_BUFFER_BARRIER;
     cmd.pResource   = pResource;
     cmd.PrevState   = prevState;
     cmd.NextState   = nextState;
@@ -331,7 +295,7 @@ void CommandList::DrawInstanced
 )
 {
     ImCmdDrawInstanced cmd = {};
-    cmd.Type            = CMD_DRAW_INSTANCED;
+    cmd.Id              = CMD_DRAW_INSTANCED;
     cmd.VertexCount     = vertexCount;
     cmd.InstanceCount   = instanceCount;
     cmd.FirstVertex     = firstVertex;
@@ -353,7 +317,7 @@ void CommandList::DrawIndexedInstanced
 )
 {
     ImCmdDrawIndexedInstanced cmd = {};
-    cmd.Type            = CMD_DRAW_INDEXED_INSTANCED;
+    cmd.Id              = CMD_DRAW_INDEXED_INSTANCED;
     cmd.IndexCount      = indexCount;
     cmd.InstanceCount   = instanceCount;
     cmd.FirstIndex      = firstIndex;
@@ -369,10 +333,10 @@ void CommandList::DrawIndexedInstanced
 void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 {
     ImCmdDispatch cmd = {};
-    cmd.Type    = CMD_DISPATCH_COMPUTE;
-    cmd.X       = x;
-    cmd.Y       = y;
-    cmd.Z       = z;
+    cmd.Id  = CMD_DISPATCH_COMPUTE;
+    cmd.X   = x;
+    cmd.Y   = y;
+    cmd.Z   = z;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -383,10 +347,10 @@ void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 {
     ImCmdDispatch cmd = {};
-    cmd.Type = CMD_DISPATCH_MESH;
-    cmd.X = x;
-    cmd.Y = y;
-    cmd.Z = z;
+    cmd.Id  = CMD_DISPATCH_MESH;
+    cmd.X   = x;
+    cmd.Y   = y;
+    cmd.Z   = z;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -408,7 +372,7 @@ void CommandList::ExecuteIndirect
     { return; }
 
     ImCmdExecuteIndirect cmd = {};
-    cmd.Type                    = CMD_EXECUTE_INDIRECT;
+    cmd.Id                      = CMD_EXECUTE_INDIRECT;
     cmd.pCommandSet             = pCommandSet;
     cmd.MaxCommandCount         = maxCommandCount;
     cmd.pArgumentBuffer         = pArgumentBuffer;
@@ -428,7 +392,7 @@ void CommandList::BeginQuery(IQueryPool* pQuery, uint32_t index)
     { return; }
 
     ImCmdBeginQuery cmd = {};
-    cmd.Type    = CMD_BEGIN_QUERY;
+    cmd.Id      = CMD_BEGIN_QUERY;
     cmd.pQuery  = pQuery;
     cmd.Index   = index;
 
@@ -444,7 +408,7 @@ void CommandList::EndQuery(IQueryPool* pQuery, uint32_t index)
     { return; }
 
     ImCmdEndQuery cmd = {};
-    cmd.Type    = CMD_END_QUERY;
+    cmd.Id      = CMD_END_QUERY;
     cmd.pQuery  = pQuery;
     cmd.Index   = index;
 
@@ -467,7 +431,7 @@ void CommandList::ResolveQuery
     { return; }
 
     ImCmdResolveQuery cmd = {};
-    cmd.Type        = CMD_RESOLVE_QUERY;
+    cmd.Id          = CMD_RESOLVE_QUERY;
     cmd.pQuery      = pQuery;
     cmd.StartIndex  = startIndex;
     cmd.QueryCount  = queryCount;
@@ -486,7 +450,7 @@ void CommandList::ResetQuery(IQueryPool* pQuery)
     { return; }
 
     ImCmdResetQuery cmd = {};
-    cmd.Type    = CMD_RESET_QUERY;
+    cmd.Id      = CMD_RESET_QUERY;
     cmd.pQuery  = pQuery;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -505,7 +469,7 @@ void CommandList::CopyTexture
     { return; }
 
     ImCmdCopyTexture cmd = {};
-    cmd.Type        = CMD_COPY_TEXTURE;
+    cmd.Id          = CMD_COPY_TEXTURE;
     cmd.pDstTexture = pDstResource;
     cmd.pSrcTexture = pSrcResource;
 
@@ -521,7 +485,7 @@ void CommandList::CopyBuffer(IBuffer* pDstResource, IBuffer* pSrcResource)
     { return; }
 
     ImCmdCopyBuffer cmd = {};
-    cmd.Type       = CMD_COPY_BUFFER;
+    cmd.Id          = CMD_COPY_BUFFER;
     cmd.pDstBuffer = pDstResource;
     cmd.pSrcBuffer = pSrcResource;
 
@@ -546,7 +510,7 @@ void CommandList::CopyTextureRegion
     { return; }
 
     ImCmdCopyTextureRegion cmd = {};
-    cmd.Type            = CMD_COPY_TEXTURE_REGION;
+    cmd.Id              = CMD_COPY_TEXTURE_REGION;
     cmd.pDstResource    = pDstResource;
     cmd.DstSubresource  = dstSubresource;
     cmd.DstOffset       = dstOffset;
@@ -574,7 +538,7 @@ void CommandList::CopyBufferRegion
     { return; }
 
     ImCmdCopyBufferRegion cmd = {};
-    cmd.Type        = CMD_COPY_BUFFER_REGION;
+    cmd.Id          = CMD_COPY_BUFFER_REGION;
     cmd.pDstBuffer  = pDstBuffer;
     cmd.DstOffset   = dstOffset;
     cmd.pSrcBuffer  = pSrcBuffer;
@@ -600,7 +564,7 @@ void CommandList::CopyBufferToTexture
     { return; }
 
     ImCmdCopyBufferToTexture cmd = {};
-    cmd.Type            = CMD_COPY_BUFFER_TO_TEXTURE;
+    cmd.Id              = CMD_COPY_BUFFER_TO_TEXTURE;
     cmd.pDstTexture     = pDstTexture;
     cmd.DstSubresource  = dstSubresource;
     cmd.DstOffset       = dstOffset;
@@ -627,7 +591,7 @@ void CommandList::CopyTextureToBuffer
     { return; }
 
     ImCmdCopyTextureToBuffer cmd = {};
-    cmd.Type            = CMD_COPY_TEXTURE_TO_BUFFER;
+    cmd.Id              = CMD_COPY_TEXTURE_TO_BUFFER;
     cmd.pDstBuffer      = pDstBuffer;
     cmd.DstOffset       = dstOffset;
     cmd.pSrcTexture     = pSrcTexture;
@@ -653,7 +617,7 @@ void CommandList::ResolveSubresource
     { return; }
 
     ImCmdResolveSubresource cmd = {};
-    cmd.Type            = CMD_RESOLVE_SUBRESOURCE;
+    cmd.Id              = CMD_RESOLVE_SUBRESOURCE;
     cmd.pDstResource    = pDstResource;
     cmd.DstSubresource  = dstSubresource;
     cmd.pSrcResource    = pSrcResource;
@@ -685,7 +649,7 @@ void CommandList::PushMarker(const char* tag)
     { return; }
 
     ImCmdPushMarker cmd = {};
-    cmd.Type = CMD_PUSH_MARKER;
+    cmd.Id = CMD_PUSH_MARKER;
     strcpy_s( cmd.Tag, tag );
 
     m_Buffer.Push(&cmd, sizeof(cmd));
@@ -697,7 +661,7 @@ void CommandList::PushMarker(const char* tag)
 void CommandList::PopMarker()
 {
     ImCmdPopMarker cmd = {};
-    cmd.Type = CMD_POP_MARKER;
+    cmd.Id = CMD_POP_MARKER;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
@@ -711,7 +675,7 @@ bool CommandList::UpdateConstantBuffer(IBuffer* pBuffer, size_t offset, size_t s
     { return false; }
 
     ImCmdUpdateConstantBuffer cmd = {};
-    cmd.Type    = CMD_UPDATE_CONSTANT_BUFFER;
+    cmd.Id      = CMD_UPDATE_CONSTANT_BUFFER;
     cmd.pBuffer = pBuffer;
     cmd.Offset  = offset;
     cmd.Size    = size;
@@ -727,7 +691,7 @@ bool CommandList::UpdateConstantBuffer(IBuffer* pBuffer, size_t offset, size_t s
 void CommandList::End()
 {
     ImCmdEnd cmd = {};
-    cmd.Type = (m_Type == COMMANDLIST_TYPE_DIRECT) ? CMD_END : CMD_SUB_END;
+    cmd.Id = (m_Type == COMMANDLIST_TYPE_DIRECT) ? CMD_END : CMD_SUB_END;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
     m_Buffer.Close();
@@ -761,7 +725,7 @@ bool CommandList::Create
 
     instance->m_pDevice = pDevice;
     instance->m_pDevice->AddRef();
-    instance->m_Type = pDesc->Type;
+    instance->m_Type    = pDesc->Type;
     
     if (!instance->m_Buffer.Init(pDesc->BufferSize))
     {

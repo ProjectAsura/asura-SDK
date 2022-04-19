@@ -140,67 +140,6 @@ void CommandList::GetDevice(IDevice** ppDevice)
     { m_pDevice->AddRef(); }
 }
 
-//-------------------------------------------------------------------------------------------------
-//      レンダーターゲットビューをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearRenderTargetView
-(
-    IRenderTargetView*      pRenderTargetView,
-    const ClearColorValue&  clearValue
-)
-{
-    if (pRenderTargetView == nullptr)
-    { return; }
-
-    auto pWrapperView = static_cast<RenderTargetView*>(pRenderTargetView);
-    if (pWrapperView == nullptr)
-    { return; }
-
-    auto pDescriptor = pWrapperView->GetDescriptor();
-    if (pDescriptor == nullptr)
-    { return; }
-
-    m_pCommandList->ClearRenderTargetView(
-        pDescriptor->GetHandleCPU(),
-        &clearValue.R,
-        0,
-        nullptr);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      深度ステンシルビューをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearDepthStencilView
-(
-    IDepthStencilView*              pDepthStencilView,
-    const ClearDepthStencilValue&   clearValue
-)
-{
-    if (pDepthStencilView == nullptr)
-    { return; }
-
-    auto pWrapperView = static_cast<DepthStencilView*>(pDepthStencilView);
-    if (pWrapperView == nullptr)
-    { return; }
-
-    auto pDescriptor = pWrapperView->GetDescriptor();
-    if (pDescriptor == nullptr)
-    { return; }
-
-    D3D12_CLEAR_FLAGS flags = {};
-    if (clearValue.EnableClearDepth)
-    { flags |= D3D12_CLEAR_FLAG_DEPTH; }
-    if (clearValue.EnableClearStencil)
-    { flags |= D3D12_CLEAR_FLAG_STENCIL; }
-
-    m_pCommandList->ClearDepthStencilView(
-        pDescriptor->GetHandleCPU(),
-        flags,
-        clearValue.Depth,
-        clearValue.Stencil,
-        0,
-        nullptr);
-}
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を開始します.
@@ -241,9 +180,12 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 void CommandList::BeginFrameBuffer
 (
-    uint32_t                renderTargetViewCount,
-    IRenderTargetView**     pRenderTargetViews,
-    IDepthStencilView*      pDepthStencilView
+    uint32_t                        renderTargetViewCount,
+    IRenderTargetView**             pRenderTargetViews,
+    IDepthStencilView*              pDepthStencilView,
+    uint32_t                        clearColorCount,
+    const ClearColorValue*          pClearColors,
+    const ClearDepthStencilValue*   pClearDepthStencil
 )
 {
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8] = {};
@@ -269,6 +211,37 @@ void CommandList::BeginFrameBuffer
         (pRenderTargetViews != nullptr) ? rtvHandles : nullptr,
         FALSE,
         (pDepthStencilView != nullptr) ? &dsvHandle : nullptr);
+
+    if (pClearColors != nullptr && clearColorCount > 0)
+    {
+        for(auto i=0u; i<clearColorCount; ++i)
+        {
+            auto index = pClearColors[i].SlotIndex;
+            float colors[4] = { 
+                pClearColors[i].R,
+                pClearColors[i].G,
+                pClearColors[i].B,
+                pClearColors[i].A
+            };
+            m_pCommandList->ClearRenderTargetView(rtvHandles[index], colors, 0, nullptr);
+        }
+    }
+
+    if (pClearDepthStencil != nullptr)
+    {
+        D3D12_CLEAR_FLAGS flags = {};
+        if (pClearDepthStencil->EnableClearDepth)
+        { flags |= D3D12_CLEAR_FLAG_DEPTH; }
+        if (pClearDepthStencil->EnableClearStencil)
+        { flags |= D3D12_CLEAR_FLAG_STENCIL; }
+
+        m_pCommandList->ClearDepthStencilView(
+            dsvHandle,
+            flags,
+            pClearDepthStencil->Depth,
+            pClearDepthStencil->Stencil,
+            0, nullptr);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------

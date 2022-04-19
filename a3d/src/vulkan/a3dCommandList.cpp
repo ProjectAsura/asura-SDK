@@ -177,97 +177,6 @@ void CommandList::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      レンダーターゲットビューをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearRenderTargetView
-(
-    IRenderTargetView*      pRenderTargetView,
-    const ClearColorValue&  clearValue
-)
-{
-    if (pRenderTargetView == nullptr)
-    { return; }
-
-    A3D_ASSERT(!m_BindRenderPass);
-
-    auto pWrapRTV = static_cast<RenderTargetView*>(pRenderTargetView);
-    A3D_ASSERT(pWrapRTV != nullptr);
-
-    auto desc = pWrapRTV->GetDesc();
-
-    auto image = pWrapRTV->GetVulkanImage();
-    VkClearColorValue value = {};
-    value.float32[0] = clearValue.R;
-    value.float32[1] = clearValue.G;
-    value.float32[2] = clearValue.B;
-    value.float32[3] = clearValue.A;
-
-    VkImageSubresourceRange range = {};
-    range.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
-    range.baseMipLevel      = desc.MipSlice;
-    range.levelCount        = desc.MipLevels;
-    range.baseArrayLayer    = desc.FirstArraySlice;
-    range.layerCount        = desc.ArraySize;
-
-    vkCmdClearColorImage(
-        m_CommandBuffer,
-        image,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        &value,
-        1,
-        &range);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      深度ステンシルビューをクリアします.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ClearDepthStencilView
-(
-    IDepthStencilView*              pDepthStencilView,
-    const ClearDepthStencilValue&   clearValue
-)
-{
-    if (pDepthStencilView == nullptr)
-    { return; }
-
-    A3D_ASSERT(!m_BindRenderPass);
-
-    auto pWrapDSV = static_cast<DepthStencilView*>(pDepthStencilView);
-    A3D_ASSERT(pWrapDSV != nullptr);
-
-    auto desc = pWrapDSV->GetDesc();
-
-    auto image = pWrapDSV->GetVulkanImage();
-
-    VkImageLayout      imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-    VkImageAspectFlags aspectMask  = VK_IMAGE_ASPECT_DEPTH_BIT;
-    if (desc.Format == RESOURCE_FORMAT_D24_UNORM_S8_UINT)
-    {
-        imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-    }
-
-    VkClearDepthStencilValue value = {};
-    value.depth     = clearValue.Depth;
-    value.stencil   = uint32_t(clearValue.Stencil);
-
-    VkImageSubresourceRange range = {};
-    range.aspectMask        = aspectMask;
-    range.baseArrayLayer    = desc.FirstArraySlice;
-    range.layerCount        = desc.ArraySize;
-    range.baseMipLevel      = desc.MipSlice;
-    range.levelCount        = desc.MipLevels;
-
-    vkCmdClearDepthStencilImage(
-        m_CommandBuffer,
-        image,
-        imageLayout,
-        &value,
-        1,
-        &range);
-}
-
-//-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を開始します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::Begin()
@@ -313,9 +222,12 @@ void CommandList::Begin()
 //-------------------------------------------------------------------------------------------------
 void CommandList::BeginFrameBuffer
 (
-    uint32_t            renderTargetViewCount,
-    IRenderTargetView** pRenderTargetViews,
-    IDepthStencilView*  pDepthStencilView
+    uint32_t                        renderTargetViewCount,
+    IRenderTargetView**             pRenderTargetViews,
+    IDepthStencilView*              pDepthStencilView,
+    uint32_t                        clearColorCount,
+    const ClearColorValue*          pClearColors,
+    const ClearDepthStencilValue*   pClearDepthStencil
 )
 {
     A3D_ASSERT(!m_BindRenderPass);
@@ -394,8 +306,54 @@ void CommandList::BeginFrameBuffer
     info.pDepthAttachment       = &depthAttachment;
 
     vkCmdBeginRendering(m_CommandBuffer, &info);
-
     m_BindRenderPass = true;
+
+    VkClearAttachment clearAttachments[9] = {};
+    VkClearRect       clearRects[9] = {};
+
+    auto count = 0u;
+    if (pClearColors != nullptr && clearColorCount > 0)
+    {
+        for(auto i=0u; i<clearColorCount; ++i)
+        {
+            clearAttachments[i].aspectMask                  = VK_IMAGE_ASPECT_COLOR_BIT;
+            clearAttachments[i].clearValue.color.float32[0] = pClearColors[i].R;
+            clearAttachments[i].clearValue.color.float32[1] = pClearColors[i].G;
+            clearAttachments[i].clearValue.color.float32[2] = pClearColors[i].B;
+            clearAttachments[i].clearValue.color.float32[3] = pClearColors[i].A;
+            clearAttachments[i].colorAttachment             = pClearColors[i].SlotIndex;
+
+            auto viewDesc = pRenderTargetViews[pClearColors[i].SlotIndex]->GetDesc();
+            clearRects[i].baseArrayLayer = viewDesc.FirstArraySlice;
+            clearRects[i].layerCount     = viewDesc.ArraySize;
+            clearRects[i].rect           = area;
+        }
+
+        count += clearColorCount;
+    }
+
+    if (pClearDepthStencil != nullptr)
+    {
+        VkImageAspectFlags aspect = VK_IMAGE_ASPECT_NONE_KHR;
+        if (pClearDepthStencil->EnableClearDepth)
+        { aspect |= VK_IMAGE_ASPECT_DEPTH_BIT; }
+        if (pClearDepthStencil->EnableClearStencil)
+        { aspect |= VK_IMAGE_ASPECT_STENCIL_BIT; }
+
+        clearAttachments[count].aspectMask                      = aspect;
+        clearAttachments[count].clearValue.depthStencil.depth   = pClearDepthStencil->Depth;
+        clearAttachments[count].clearValue.depthStencil.stencil = uint32_t(pClearDepthStencil->Stencil);
+
+        auto viewDesc = pDepthStencilView->GetDesc();
+        clearRects[count].baseArrayLayer = viewDesc.FirstArraySlice;
+        clearRects[count].layerCount     = viewDesc.ArraySize;
+        clearRects[count].rect           = area;
+
+        count++;
+    }
+
+    if (count > 0)
+    { vkCmdClearAttachments(m_CommandBuffer, count, clearAttachments, count, clearRects); }
 }
 
 //-------------------------------------------------------------------------------------------------
