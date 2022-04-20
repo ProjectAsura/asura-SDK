@@ -124,7 +124,6 @@
     <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h" />
     <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />
     <ClInclude Include="..\..\..\src\container\a3dList.h" />
     <ClInclude Include="..\..\..\src\container\a3dPool.h" />

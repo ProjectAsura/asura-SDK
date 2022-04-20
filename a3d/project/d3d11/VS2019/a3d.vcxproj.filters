@@ -30,9 +30,6 @@
     <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h">
       <Filter>ソース ファイル\allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h">
       <Filter>ソース ファイル\allocator</Filter>
     </ClInclude>

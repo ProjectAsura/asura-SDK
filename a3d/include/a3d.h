@@ -1665,7 +1665,7 @@ struct A3D_API IDescriptorSet : public IDeviceChild
     virtual void A3D_APIENTRY SetView(uint32_t index, IShaderResourceView* const pResource) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ストレージを設定します.
+    //! @brief      アンオーダードアクセスビューを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pResource   設定するリソースです.
@@ -2454,7 +2454,7 @@ struct A3D_API IDevice : public IReference
     virtual bool A3D_APIENTRY CreateUnorderedAccessView(
         IResource*                      pResource,
         const UnorderedAccessViewDesc*  pDesc,
-        IUnorderedAccessView**          ppStorageView) = 0;
+        IUnorderedAccessView**          ppUnorderedAccessView) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを生成します.
