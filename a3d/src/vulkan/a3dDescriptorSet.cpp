@@ -291,6 +291,7 @@ void DescriptorSet::SetSampler(uint32_t index, ISampler* pSampler)
     m_pInfos[index].Image.sampler = pWrapSampler->GetVulkanSampler();
 }
 
+#if 0
 //-------------------------------------------------------------------------------------------------
 //      更新処理を行います.
 //-------------------------------------------------------------------------------------------------
@@ -336,6 +337,7 @@ void DescriptorSet::Update()
 
     vkUpdateDescriptorSets(pNativeDevice, count, m_pWrites, 0, nullptr);
 }
+#endif
 
 //-------------------------------------------------------------------------------------------------
 //      描画コマンドを生成します.
