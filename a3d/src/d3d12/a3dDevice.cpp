@@ -33,6 +33,7 @@ void CustomFree(void* ptr, void* pUser)
     return a3d_free(ptr);
 }
 
+#if A3D_IS_WIN
 void LoadPixGpuCpatureDll()
 {
     LPWSTR programFilesPath = nullptr;
@@ -81,6 +82,7 @@ void LoadPixGpuCpatureDll()
         LoadLibraryW(dllPath);
     }
 }
+#endif
 
 } // namespace 
 
@@ -115,6 +117,137 @@ Device::~Device()
 //      初期化処理を行います.
 //-------------------------------------------------------------------------------------------------
 bool Device::Init(const DeviceDesc* pDesc)
+{
+    // プラットフォーム依存の初期化処理.
+    if (!InitNative(pDesc))
+    { return false; }
+
+    // アロケータ生成.
+    {
+        D3D12MA::ALLOCATION_CALLBACKS allocationCallbacks = {};
+        allocationCallbacks.pAllocate   = &CustomAlloc;
+        allocationCallbacks.pFree       = &CustomFree;
+ 
+        D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+        allocatorDesc.pDevice               = m_pDevice;
+        allocatorDesc.pAdapter              = m_pAdapter;
+        allocatorDesc.pAllocationCallbacks  = &allocationCallbacks;
+
+        auto hr = D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator);
+        if ( FAILED(hr) )
+        {
+            A3D_LOG("Error : D3D12MA::CreateAllocator() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+    }
+
+    {
+        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+        desc.NumDescriptors = pDesc->MaxShaderResourceCount;
+        desc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false;
+        }
+    }
+
+    {
+        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+        desc.NumDescriptors = pDesc->MaxSamplerCount;
+        desc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false;
+        }
+    }
+
+    {
+        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+        desc.NumDescriptors = pDesc->MaxColorTargetCount;
+        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false; 
+        }
+    }
+
+    {
+        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+        desc.NumDescriptors = pDesc->MaxDepthTargetCount;
+        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
+        {
+            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
+            return false;
+        }
+    }
+
+    memcpy(&m_Desc, pDesc, sizeof(m_Desc));
+
+    if (!Queue::Create(
+        this,
+        COMMANDLIST_TYPE_DIRECT,
+        pDesc->MaxGraphicsQueueSubmitCount,
+        reinterpret_cast<IQueue**>(&m_pGraphicsQueue)))
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
+
+    if (!Queue::Create(
+        this,
+        COMMANDLIST_TYPE_COMPUTE,
+        pDesc->MaxComputeQueueSubmitCount,
+        reinterpret_cast<IQueue**>(&m_pComputeQueue)))
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
+
+    if (!Queue::Create(
+        this,
+        COMMANDLIST_TYPE_COPY,
+        pDesc->MaxCopyQueueSubmitCount,
+        reinterpret_cast<IQueue**>(&m_pCopyQueue)))
+    {
+        A3D_LOG("Error : Queue::Create() Failed.");
+        return false;
+    }
+
+    // デバイス情報の設定.
+    {
+        m_Info.ConstantBufferMemoryAlignment    = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
+        m_Info.MaxTargetWidth                   = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
+        m_Info.MaxTargetHeight                  = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
+        m_Info.MaxTargetArraySize               = D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
+        m_Info.MaxColorSampleCount              = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
+        m_Info.MaxDepthSampleCount              = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
+        m_Info.MaxStencilSampleCount            = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
+    }
+
+    // タイムスタンプ周波数取得.
+    {
+        auto hr = m_pGraphicsQueue->GetD3D12Queue()->GetTimestampFrequency(&m_TimeStampFrequency);
+        if (FAILED(hr))
+        {
+            A3D_LOG("Error : ID3D12CommandQueue::GetTimestampFrequency() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+#if A3D_IS_WIN
+//-------------------------------------------------------------------------------------------------
+//      プラットフォーム依存の初期化処理を行います.
+//-------------------------------------------------------------------------------------------------
+bool Device::InitNative(const DeviceDesc* pDesc)
 {
     if (pDesc == nullptr)
     {
@@ -236,123 +369,9 @@ bool Device::Init(const DeviceDesc* pDesc)
         SafeRelease(pInfoQueue);
     }
 
-    // アロケータ生成.
-    {
-        D3D12MA::ALLOCATION_CALLBACKS allocationCallbacks = {};
-        allocationCallbacks.pAllocate   = &CustomAlloc;
-        allocationCallbacks.pFree       = &CustomFree;
- 
-        D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
-        allocatorDesc.pDevice               = m_pDevice;
-        allocatorDesc.pAdapter              = m_pAdapter;
-        allocatorDesc.pAllocationCallbacks  = &allocationCallbacks;
-
-        hr = D3D12MA::CreateAllocator(&allocatorDesc, &m_pAllocator);
-        if ( FAILED(hr) )
-        {
-            A3D_LOG("Error : D3D12MA::CreateAllocator() Failed. errcode = 0x%x", hr);
-            return false;
-        }
-    }
-
-    {
-        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-        desc.NumDescriptors = pDesc->MaxShaderResourceCount;
-        desc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        {
-            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
-            return false;
-        }
-    }
-
-    {
-        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-        desc.NumDescriptors = pDesc->MaxSamplerCount;
-        desc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        {
-            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
-            return false;
-        }
-    }
-
-    {
-        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-        desc.NumDescriptors = pDesc->MaxColorTargetCount;
-        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        {
-            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
-            return false; 
-        }
-    }
-
-    {
-        D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-        desc.NumDescriptors = pDesc->MaxDepthTargetCount;
-        desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-        if ( !m_DescriptorHeap[desc.Type].Init(m_pDevice, &desc ) )
-        {
-            A3D_LOG("Error : DescriptorHeap::Init() Failed.");
-            return false;
-        }
-    }
-
-    memcpy(&m_Desc, pDesc, sizeof(m_Desc));
-
-    if (!Queue::Create(
-        this,
-        COMMANDLIST_TYPE_DIRECT,
-        pDesc->MaxGraphicsQueueSubmitCount,
-        reinterpret_cast<IQueue**>(&m_pGraphicsQueue)))
-    {
-        A3D_LOG("Error : Queue::Create() Failed.");
-        return false;
-    }
-
-    if (!Queue::Create(
-        this,
-        COMMANDLIST_TYPE_COMPUTE,
-        pDesc->MaxComputeQueueSubmitCount,
-        reinterpret_cast<IQueue**>(&m_pComputeQueue)))
-    {
-        A3D_LOG("Error : Queue::Create() Failed.");
-        return false;
-    }
-
-    if (!Queue::Create(
-        this,
-        COMMANDLIST_TYPE_COPY,
-        pDesc->MaxCopyQueueSubmitCount,
-        reinterpret_cast<IQueue**>(&m_pCopyQueue)))
-    {
-        A3D_LOG("Error : Queue::Create() Failed.");
-        return false;
-    }
-
-    // デバイス情報の設定.
-    {
-        m_Info.ConstantBufferMemoryAlignment    = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
-        m_Info.MaxTargetWidth                   = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
-        m_Info.MaxTargetHeight                  = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
-        m_Info.MaxTargetArraySize               = D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
-        m_Info.MaxColorSampleCount              = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
-        m_Info.MaxDepthSampleCount              = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
-        m_Info.MaxStencilSampleCount            = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
-    }
-
-    hr = m_pGraphicsQueue->GetD3D12Queue()->GetTimestampFrequency(&m_TimeStampFrequency);
-    if (FAILED(hr))
-    {
-        A3D_LOG("Error : ID3D12CommandQueue::GetTimestampFrequency() Failed. errcode = 0x%x", hr);
-        return false;
-    }
-
     return true;
 }
+#endif
 
 //-------------------------------------------------------------------------------------------------
 //      終了処理を行います.
@@ -584,25 +603,25 @@ void Device::WaitIdle()
 //-------------------------------------------------------------------------------------------------
 //      DXGIファクトリを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIFactory5* Device::GetDXGIFactory() const
+IDXGIFactoryA3D* Device::GetDXGIFactory() const
 { return m_pFactory; }
 
 //-------------------------------------------------------------------------------------------------
 //      デフォルトアダプターを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIAdapter4* Device::GetDXGIAdapter() const
+IDXGIAdapterA3D* Device::GetDXGIAdapter() const
 { return m_pAdapter; }
 
 //-------------------------------------------------------------------------------------------------
 //      デフォルトディスプレイを取得します.
 //-------------------------------------------------------------------------------------------------
-IDXGIOutput6* Device::GetDXGIOutput() const
+IDXGIOutputA3D* Device::GetDXGIOutput() const
 { return m_pOutput; }
 
 //-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
-ID3D12Device8* Device::GetD3D12Device() const
+ID3D12DeviceA3D* Device::GetD3D12Device() const
 { return m_pDevice; }
 
 //-------------------------------------------------------------------------------------------------

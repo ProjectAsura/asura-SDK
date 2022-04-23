@@ -4,6 +4,9 @@
 // Copyright(c) Project Asura. All right reseved.
 //-------------------------------------------------------------------------------------------------
 
+#if A3D_IS_WIN
+#define D3D12XBOX_RESOURCE_FLAG_ALLOW_INDIRECT_BUFFER (D3D12_RESOURCE_FLAG_NONE)
+#endif
 
 namespace /* anonymous */ {
 
@@ -378,6 +381,9 @@ D3D12_RESOURCE_FLAGS ToNativeResourceFlags(uint32_t usage)
 
     if (usage & RESOURCE_USAGE_UNORDERED_ACCESS)
     { result |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS; }
+
+    if (usage & RESOURCE_USAGE_INDIRECT_BUFFER)
+    { result |= D3D12XBOX_RESOURCE_FLAG_ALLOW_INDIRECT_BUFFER; }
 
     return result;
 }

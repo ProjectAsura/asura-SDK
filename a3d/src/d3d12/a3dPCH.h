@@ -27,9 +27,19 @@
 #include <mutex>
 #include <container/a3dPool.h>
 
+#if A3D_IS_WIN
 #include <d3d12.h>
 #include <dxgi1_5.h>
 #include <dxgi1_6.h>
+
+using IDXGIFactoryA3D   = IDXGIFactory5;
+using IDXGIAdapterA3D   = IDXGIAdapter4;
+using IDXGIOutputA3D    = IDXGIOutput6;
+using IDXGISwapChainA3D = IDXGISwapChain4;
+using ID3D12DeviceA3D   = ID3D12Device8;
+#else
+#include "a3dNative.h"
+#endif
 
 #include <D3D12MemAlloc.h>
 
