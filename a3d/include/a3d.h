@@ -962,7 +962,7 @@ struct InputElementDesc
 {
     const char*             SemanticName;   //!< セマンティクス名(D3D11, D3D12)
     uint32_t                SemanticIndex;  //!< セマンティクス番号(D3D11, D3D12)
-    uint32_t                LocationIndex;  //!< ロケーション番号(Vulkan).
+    uint32_t                Location;       //!< ロケーション番号(Vulkan).
     RESOURCE_FORMAT         Format;         //!< リソースフォーマットです.
     uint32_t                StreamIndex;    //!< ストリーム番号です.
     uint32_t                OffsetInBytes;  //!< 先頭要素からオフセットです.
@@ -1681,6 +1681,14 @@ struct A3D_API IDescriptorSet : public IDeviceChild
     //! @note       設定したサンプラーは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY SetSampler(uint32_t index, ISampler* const pSampler) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ディスクリプタセットを更新します.
+    //! @note       このAPIはVulkanのみでサポートされ将来削除予定される予定です. 
+    //!             Vulkan以外のその他の環境では呼び出し不要です.
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY Update()
+    { /* DO_NOTHING */ }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

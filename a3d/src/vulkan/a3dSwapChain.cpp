@@ -142,7 +142,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         bool isFind = false;
 
         auto nativeFormat     = ToNativeFormat(pDesc->Format);
-        auto nativeColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        auto nativeColorSpace = ToNativeColorSpace(pDesc->Format);
 
         for(auto i=0u; i<m_SurfaceFormatCount; ++i)
         {
@@ -157,7 +157,21 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         }
 
         if (!isFind)
-        { return false; }
+        {
+            A3D_LOG("Error : Not Found Supported Format and ColorSpace.");
+            A3D_LOG("    Specified Value : Format = %s, ColorSpace = %s",
+                ToString(nativeFormat),
+                ToString(nativeColorSpace));
+            for(auto i=0u; i<m_SurfaceFormatCount; ++i)
+            {
+                A3D_LOG("    [%u] Format = %s, ColorSpace = %s",
+                    i,
+                    ToString(m_pSurfaceFormats[i].format),
+                    ToString(m_pSurfaceFormats[i].colorSpace));
+            }
+
+            return false;
+        }
     }
 
     // バッファ数をチェック

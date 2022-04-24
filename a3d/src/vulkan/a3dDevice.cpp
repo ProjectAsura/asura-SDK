@@ -493,7 +493,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         appInfo.applicationVersion  = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName         = "a3d";
         appInfo.engineVersion       = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion          = VK_API_VERSION_1_2;
+        appInfo.apiVersion          = VK_API_VERSION_1_3;
 
         VkInstanceCreateInfo instanceInfo = {};
         instanceInfo.sType                      = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -818,16 +818,29 @@ bool Device::Init(const DeviceDesc* pDesc)
             }
         }
 
+        // VK_KHR_dynamic_renderingの設定.
+        VkPhysicalDeviceDynamicRenderingFeaturesKHR featureDynamicRendering = {};
+        featureDynamicRendering.sType               = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+        featureDynamicRendering.pNext               = nullptr;
+        featureDynamicRendering.dynamicRendering    = (m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING]) ? VK_TRUE : VK_FALSE;
+
+        // GPU機能を取得.
+        VkPhysicalDeviceFeatures features = {};
+        vkGetPhysicalDeviceFeatures(physicalDevice, &features);
+
+        // ジオメトリシェーダ無効化.
+        features.geometryShader = VK_FALSE;
+
         VkDeviceCreateInfo deviceInfo = {};
         deviceInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceInfo.pNext                    = nullptr;
+        deviceInfo.pNext                    = &featureDynamicRendering;
         deviceInfo.queueCreateInfoCount     = propCount;
         deviceInfo.pQueueCreateInfos        = pQueueInfos;
         deviceInfo.enabledLayerCount        = layerCount;
         deviceInfo.ppEnabledLayerNames      = (layerCount == 0) ? nullptr : layerNames;
         deviceInfo.enabledExtensionCount    = uint32_t(deviceExtensions.size());
         deviceInfo.ppEnabledExtensionNames  = deviceExtensions.data();
-        deviceInfo.pEnabledFeatures         = nullptr;
+        deviceInfo.pEnabledFeatures         = &features;
 
         auto ret = vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &m_Device);
 

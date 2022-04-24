@@ -303,7 +303,7 @@ void CommandList::BeginFrameBuffer
     info.viewMask               = 0;
     info.colorAttachmentCount   = renderTargetViewCount;
     info.pColorAttachments      = colorAttachments;
-    info.pDepthAttachment       = &depthAttachment;
+    info.pDepthAttachment       = (pDepthStencilView != nullptr) ? &depthAttachment : nullptr;
 
     vkCmdBeginRendering(m_CommandBuffer, &info);
     m_BindRenderPass = true;
