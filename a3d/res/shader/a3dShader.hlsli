@@ -16,4 +16,4 @@
 #define A3D_FLIP_Y(var)
 #endif
 
-#endif A3D_SHADER_HLSLI
+#endif//A3D_SHADER_HLSLI
