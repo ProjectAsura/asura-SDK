@@ -28,7 +28,6 @@ CommandList::CommandList()
 , m_pDevice             (nullptr)
 , m_pCommandAllocator   (nullptr)
 , m_pCommandList        (nullptr)
-, m_pFrameBuffer        (nullptr)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -148,7 +147,6 @@ void CommandList::Begin()
 {
     m_pCommandAllocator->Reset();
     m_pCommandList->Reset(m_pCommandAllocator, nullptr);
-    m_pFrameBuffer = nullptr;
 
     auto heapBuf = m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     auto heapSmp = m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
@@ -307,6 +305,7 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
     A3D_ASSERT(pWrapPipelineState != nullptr);
 
     pWrapPipelineState->Issue(this);
+    m_IsGraphics = pWrapPipelineState->IsGraphics();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -318,7 +317,9 @@ void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
     { return; }
 
     auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
-    pWrapDescriptorSet->Bind(this);
+    m_HandleCount       = pWrapDescriptorSet->GetHandleCount();
+    m_DirtyDescriptor   = true;
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -393,6 +394,66 @@ void CommandList::SetIndexBuffer
     view.SizeInBytes    = static_cast<uint32_t>(pWrapResource->GetDesc().Size);
 
     m_pCommandList->IASetIndexBuffer( &view );
+}
+
+//-------------------------------------------------------------------------------------------------
+//      定数バッファビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
+{
+    if (pResource == nullptr)
+    { return; }
+
+    auto pWrapView = static_cast<ConstantBufferView*>(pResource);
+    A3D_ASSERT(pWrapView != nullptr);
+
+    m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
+    m_DirtyDescriptor = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      シェーダリソースビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
+{
+    if (pResource == nullptr || index >= 64)
+    { return; }
+
+    auto pWrapView = static_cast<ShaderResourceView*>(pResource);
+    A3D_ASSERT(pWrapView != nullptr);
+
+    m_Handles[index]    = pWrapView->GetDescriptor()->GetHandleGPU();
+    m_DirtyDescriptor   = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      アンオーダードアクセスビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
+{
+    if (pResource == nullptr || index >= 64)
+    { return; }
+
+    auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
+    A3D_ASSERT(pWrapView != nullptr);
+
+    m_Handles[index]    = pWrapView->GetDescriptor()->GetHandleGPU();
+    m_DirtyDescriptor   = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      サンプラーを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetSampler(uint32_t index, ISampler* const pSampler)
+{
+    if (pSampler == nullptr || index >= 64)
+    { return; }
+
+    auto pWrapSmp = static_cast<Sampler*>(pSampler);
+    A3D_ASSERT(pWrapSmp != nullptr);
+
+    m_Handles[index]    = pWrapSmp->GetDescriptor()->GetHandleGPU();
+    m_DirtyDescriptor   = true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -490,7 +551,10 @@ void CommandList::DrawInstanced
     uint32_t firstVertex,
     uint32_t firstInstance
 )
-{ m_pCommandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance); }
+{
+    UpdateDescriptor();
+    m_pCommandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      インデックスバッファを用いてインスタンス描画します.
@@ -504,6 +568,7 @@ void CommandList::DrawIndexedInstanced
     uint32_t firstInstance
 )
 {
+    UpdateDescriptor();
     m_pCommandList->DrawIndexedInstanced(
         indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
@@ -512,13 +577,19 @@ void CommandList::DrawIndexedInstanced
 //      コンピュートシェーダを起動します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
-{ m_pCommandList->Dispatch(x, y, z); }
+{
+    UpdateDescriptor();
+    m_pCommandList->Dispatch(x, y, z);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      メッシュシェーダ(あるいは増幅シェーダ)を起動します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
-{ m_pCommandList->DispatchMesh(x, y, z); }
+{
+    UpdateDescriptor();
+    m_pCommandList->DispatchMesh(x, y, z);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      インダイレクトコマンドを実行します.
@@ -557,6 +628,8 @@ void CommandList::ExecuteIndirect
         pNativeCounterResource = pWrapCouterBuffer->GetD3D12Resource();
         A3D_ASSERT(pNativeCounterResource != nullptr);
     }
+
+    UpdateDescriptor();
 
     m_pCommandList->ExecuteIndirect(
         pNativeCommandSignature,
@@ -918,7 +991,8 @@ void CommandList::PopMarker()
 void CommandList::End()
 {
     m_pCommandList->Close();
-    m_pFrameBuffer = nullptr;
+    m_HandleCount       = 0;
+    m_DirtyDescriptor   = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -932,6 +1006,28 @@ ID3D12CommandAllocator* CommandList::GetD3D12Allocator() const
 //-------------------------------------------------------------------------------------------------
 ID3D12GraphicsCommandList6* CommandList::GetD3D12GraphicsCommandList() const
 { return m_pCommandList; }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタを更新します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::UpdateDescriptor()
+{
+    if (!m_DirtyDescriptor)
+    { return; }
+
+    if (m_IsGraphics)
+    {
+        for(auto i=0u; i<m_HandleCount; ++i)
+        { m_pCommandList->SetGraphicsRootDescriptorTable(i, m_Handles[i]); }
+    }
+    else
+    {
+        for(auto i=0u; i<m_HandleCount; ++i)
+        { m_pCommandList->SetComputeRootDescriptorTable(i, m_Handles[i]); }
+    }
+
+    m_DirtyDescriptor = false;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

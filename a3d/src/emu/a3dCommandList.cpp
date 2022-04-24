@@ -15,10 +15,12 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 CommandList::CommandList()
-: m_RefCount(1)
-, m_pDevice (nullptr)
-, m_Type    (COMMANDLIST_TYPE_DIRECT)
-, m_Buffer  ()
+: m_RefCount        (1)
+, m_pDevice         (nullptr)
+, m_Type            (COMMANDLIST_TYPE_DIRECT)
+, m_Buffer          ()
+, m_pDescriptorSet  (nullptr)
+, m_DirtyDescriptor (false)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -70,6 +72,8 @@ void CommandList::Begin()
     cmd.Id = (m_Type == COMMANDLIST_TYPE_DIRECT) ? CMD_BEGIN : CMD_SUB_BEGIN;
     
     m_Buffer.Push(&cmd, sizeof(cmd));
+    m_pDescriptorSet    = nullptr;
+    m_DirtyDescriptor   = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -191,13 +195,14 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
 {
     if (pDescriptorSet == nullptr)
-    { return; }
+    {
+        m_pDescriptorSet = nullptr;
+        return;
+    }
 
     auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
-    ImCmdSetDescriptorSet cmd = {};
-    pWrapDescriptorSet->MakeCommand(&cmd);
-
-    m_Buffer.Push(&cmd, sizeof(cmd));
+    m_pDescriptorSet    = pWrapDescriptorSet;
+    m_DirtyDescriptor   = true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -237,6 +242,54 @@ void CommandList::SetIndexBuffer(IBuffer* pResource, uint64_t offset)
     cmd.Offset  = offset;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
+//      定数バッファビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
+{
+    if (pResource == nullptr || index >= 64)
+    { return; }
+
+    m_pDescriptor[index]    = pResource;
+    m_DirtyDescriptor       = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      シェーダリソースビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
+{
+    if (pResource == nullptr || index >= 64)
+    { return; }
+
+    m_pDescriptor[index]    = pResource;
+    m_DirtyDescriptor       = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      アンオーダードアクセスビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
+{
+    if (pResource == nullptr || index >= 64)
+    { return; }
+
+    m_pDescriptor[index]    = pResource;
+    m_DirtyDescriptor       = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      サンプラーを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetSampler(uint32_t index, ISampler* const pSampler)
+{
+    if (pSampler == nullptr || index >= 64)
+    { return; }
+
+    m_pDescriptor[index]    = pSampler;
+    m_DirtyDescriptor       = true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -294,6 +347,8 @@ void CommandList::DrawInstanced
     uint32_t    firstInstance
 )
 {
+    UpdateDescriptor();
+
     ImCmdDrawInstanced cmd = {};
     cmd.Id              = CMD_DRAW_INSTANCED;
     cmd.VertexCount     = vertexCount;
@@ -316,6 +371,8 @@ void CommandList::DrawIndexedInstanced
     uint32_t    firstInstance
 )
 {
+    UpdateDescriptor();
+
     ImCmdDrawIndexedInstanced cmd = {};
     cmd.Id              = CMD_DRAW_INDEXED_INSTANCED;
     cmd.IndexCount      = indexCount;
@@ -332,6 +389,8 @@ void CommandList::DrawIndexedInstanced
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 {
+    UpdateDescriptor();
+
     ImCmdDispatch cmd = {};
     cmd.Id  = CMD_DISPATCH_COMPUTE;
     cmd.X   = x;
@@ -346,6 +405,8 @@ void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 {
+    UpdateDescriptor();
+
     ImCmdDispatch cmd = {};
     cmd.Id  = CMD_DISPATCH_MESH;
     cmd.X   = x;
@@ -370,6 +431,8 @@ void CommandList::ExecuteIndirect
 {
     if (pCommandSet == nullptr || pArgumentBuffer == nullptr)
     { return; }
+
+    UpdateDescriptor();
 
     ImCmdExecuteIndirect cmd = {};
     cmd.Id                      = CMD_EXECUTE_INDIRECT;
@@ -702,6 +765,24 @@ void CommandList::End()
 //-------------------------------------------------------------------------------------------------
 const CommandBuffer* CommandList::GetCommandBuffer() const
 { return &m_Buffer; }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタを更新します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::UpdateDescriptor()
+{
+    if (!m_DirtyDescriptor || m_pDescriptorSet == nullptr)
+    { return; }
+
+    ImCmdSetDescriptorSet cmd = {};
+    cmd.Id      = CMD_SET_DESCRIPTORSET;
+    cmd.pDesc   = m_pDescriptorSet->GetLayoutDesc();
+    for(auto i=0u; i<64; ++i)
+    { cmd.pDescriptor[i] = m_pDescriptor[i]; }
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+    m_DirtyDescriptor = false;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

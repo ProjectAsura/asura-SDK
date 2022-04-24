@@ -77,12 +77,12 @@ bool DescriptorSet::Init
     m_pDevice->AddRef();
 
     m_pLayoutDesc = pDesc;
-    m_pDescriptors = new void* [pDesc->EntryCount];
-    if (m_pDescriptors == nullptr)
-    { return false; }
+    //m_pDescriptors = new void* [pDesc->EntryCount];
+    //if (m_pDescriptors == nullptr)
+    //{ return false; }
 
-    for(auto i=0u; i<pDesc->EntryCount; ++i)
-    { m_pDescriptors[i] = nullptr; }
+    //for(auto i=0u; i<pDesc->EntryCount; ++i)
+    //{ m_pDescriptors[i] = nullptr; }
 
     return true;
 }
@@ -92,11 +92,11 @@ bool DescriptorSet::Init
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Term()
 {
-    if (m_pDescriptors != nullptr)
-    {
-        delete [] m_pDescriptors;
-        m_pDescriptors = nullptr;
-    }
+    //if (m_pDescriptors != nullptr)
+    //{
+    //    delete [] m_pDescriptors;
+    //    m_pDescriptors = nullptr;
+    //}
 
     if (m_pLayoutDesc != nullptr)
     { m_pLayoutDesc = nullptr; }
@@ -104,52 +104,52 @@ void DescriptorSet::Term()
     SafeRelease(m_pDevice);
 }
 
-//-------------------------------------------------------------------------------------------------
-//      定数バッファを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IConstantBufferView* const pResource)
-{
-    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
-    m_pDescriptors[index] = pResource;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      シェーダリソースビューを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IShaderResourceView* const pResource)
-{
-    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
-    m_pDescriptors[index] = pResource;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      アンオーダードアクセスを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
-{
-    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
-    m_pDescriptors[index] = pResource;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      サンプラーを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetSampler(uint32_t index, ISampler* const pSampler)
-{
-    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
-    m_pDescriptors[index] = pSampler;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      コマンドを生成します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::MakeCommand(ImCmdSetDescriptorSet* pCmd)
-{
-    pCmd->Id    = CMD_SET_DESCRIPTORSET;
-    pCmd->pDesc = m_pLayoutDesc;
-    for(auto i=0u; i<m_pLayoutDesc->EntryCount; ++i)
-    { pCmd->pDescriptor[i] = m_pDescriptors[i]; }
-}
+////-------------------------------------------------------------------------------------------------
+////      定数バッファを設定します.
+////-------------------------------------------------------------------------------------------------
+//void DescriptorSet::SetView(uint32_t index, IConstantBufferView* const pResource)
+//{
+//    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+//    m_pDescriptors[index] = pResource;
+//}
+//
+////-------------------------------------------------------------------------------------------------
+////      シェーダリソースビューを設定します.
+////-------------------------------------------------------------------------------------------------
+//void DescriptorSet::SetView(uint32_t index, IShaderResourceView* const pResource)
+//{
+//    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+//    m_pDescriptors[index] = pResource;
+//}
+//
+////-------------------------------------------------------------------------------------------------
+////      アンオーダードアクセスを設定します.
+////-------------------------------------------------------------------------------------------------
+//void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
+//{
+//    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+//    m_pDescriptors[index] = pResource;
+//}
+//
+////-------------------------------------------------------------------------------------------------
+////      サンプラーを設定します.
+////-------------------------------------------------------------------------------------------------
+//void DescriptorSet::SetSampler(uint32_t index, ISampler* const pSampler)
+//{
+//    A3D_ASSERT(index < m_pLayoutDesc->EntryCount);
+//    m_pDescriptors[index] = pSampler;
+//}
+//
+////-------------------------------------------------------------------------------------------------
+////      コマンドを生成します.
+////-------------------------------------------------------------------------------------------------
+//void DescriptorSet::MakeCommand(ImCmdSetDescriptorSet* pCmd)
+//{
+//    pCmd->Id    = CMD_SET_DESCRIPTORSET;
+//    pCmd->pDesc = m_pLayoutDesc;
+//    for(auto i=0u; i<m_pLayoutDesc->EntryCount; ++i)
+//    { pCmd->pDescriptor[i] = m_pDescriptors[i]; }
+//}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

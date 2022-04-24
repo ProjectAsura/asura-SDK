@@ -11,7 +11,7 @@ namespace a3d {
 //-------------------------------------------------------------------------------------------------
 // Forward Declarations.
 //-------------------------------------------------------------------------------------------------
-class FrameBuffer;
+class DescriptorSet;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,6 +162,42 @@ public:
     void A3D_APIENTRY SetIndexBuffer(
         IBuffer*    pResource,
         uint64_t    offset) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      定数バッファビューを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //! @note       設定したバッファは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetView(uint32_t index, IConstantBufferView* const pResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      シェーダリソースビューを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //! @note       設定したテクスチャは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetView(uint32_t index, IShaderResourceView* const pResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      アンオーダードアクセスビューを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //! @note       設定したストレージは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetView(uint32_t index, IUnorderedAccessView* const pResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      サンプラーを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pSampler    設定するサンプラーです.
+    //! @note       設定したサンプラーは ICommandList::SetDescriptorSet() 呼び出し時に反映されます.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetSampler(uint32_t index, ISampler* const pSampler) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースバリアを設定します.
@@ -451,14 +487,32 @@ public:
     VkCommandBuffer A3D_APIENTRY GetVulkanCommandBuffer() const;
 
 private:
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // DescriptorInfo union
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    struct DescriptorInfo
+    {
+        union
+        {
+            VkDescriptorImageInfo   Image;          //!< イメージ情報です.
+            VkDescriptorBufferInfo  Buffer;         //!< バッファ情報です.
+            VkBufferView            BufferView;     //!< バッファビューです.
+        };
+        bool StorageBuffer;
+    };
+
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>       m_RefCount;             //!< 参照カウントです.
-    Device*                     m_pDevice;              //!< デバイスです.
-    VkCommandPool               m_CommandPool;          //!< コマンドプールです.
-    VkCommandBuffer             m_CommandBuffer;        //!< コマンドバッファです.
-    bool                        m_BindRenderPass;       //!< レンダーパスバインド中か?
+    std::atomic<uint32_t>       m_RefCount;                     //!< 参照カウントです.
+    Device*                     m_pDevice;                      //!< デバイスです.
+    VkCommandPool               m_CommandPool;                  //!< コマンドプールです.
+    VkCommandBuffer             m_CommandBuffer;                //!< コマンドバッファです.
+    bool                        m_BindRenderPass;               //!< レンダーパスバインド中か?
+    bool                        m_DirtyDescriptor;              //!< ディスクリプタダーティフラグ.
+    DescriptorSet*              m_pDescriptorSet;               //!< ディスクリプタセット.
+    DescriptorInfo              m_DescriptorInfo    [64] = {};  //!< ディスクリプタ情報です.
+    VkWriteDescriptorSet        m_WriteDescriptorSet[64] = {};  //!< 書き込みディスクリプタセットです.
 
     //=============================================================================================
     // private methods.
@@ -489,6 +543,11 @@ private:
     //! @brief      終了処理を行います.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Term();
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ディスクリプタの更新を行います.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY UpdateDescriptor();
 
     CommandList     (const CommandList&) = delete;
     void operator = (const CommandList&) = delete;

@@ -131,12 +131,11 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         if (((pDesc->Entries[i].ShaderMask & SHADER_MASK_AS) == SHADER_MASK_AS)
          || ((pDesc->Entries[i].ShaderMask & SHADER_MASK_MS) == SHADER_MASK_MS))
         {
-            m_Type = PIPELINE_GEOMETRY;
+            m_Type = PIPELINE_MESHLET;
             if (isCompute)
             { return false; }
         }
     }
-
 
     {
         auto pEntries = new D3D12_DESCRIPTOR_RANGE [pDesc->EntryCount];
@@ -159,7 +158,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         }
 
         bool shaders[5] = {};
-        if (m_Type == PIPELINE_GEOMETRY)
+        if (m_Type == PIPELINE_MESHLET)
         {
             if ( mask & SHADER_MASK_AS )
             { shaders[0] = true; }
@@ -191,7 +190,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         
         if (pDesc->EntryCount >= 0)
         {
-            if (m_Type == PIPELINE_GEOMETRY)
+            if (m_Type == PIPELINE_MESHLET)
             {
                 desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 

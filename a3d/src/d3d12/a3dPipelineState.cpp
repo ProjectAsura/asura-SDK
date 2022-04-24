@@ -580,7 +580,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_Type = PIPELINE_COMPUTE;
+    m_Type = PIPELINE_MESHLET;
 
     auto pNativeDevice = m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
@@ -661,6 +661,12 @@ void PipelineState::Term()
     SafeRelease(m_pLayout);
     SafeRelease(m_pDevice);
 }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィクスパイプラインかどうか?
+//-------------------------------------------------------------------------------------------------
+bool PipelineState::IsGraphics() const
+{ return m_Type != PIPELINE_COMPUTE; }
 
 //-------------------------------------------------------------------------------------------------
 //      グラフィックスパイプラインステートとして生成します.

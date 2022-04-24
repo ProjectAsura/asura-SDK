@@ -25,6 +25,8 @@ CommandList::CommandList()
 , m_CommandPool     (null_handle)
 , m_CommandBuffer   (null_handle)
 , m_BindRenderPass  (false)
+, m_DirtyDescriptor (false)
+, m_pDescriptorSet  (nullptr)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -113,6 +115,20 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
             A3D_LOG("Error : VkAllocateCommandBuffers() Failed. VkResult = %s", ToString(ret));
             return false;
         }
+    }
+
+    for(auto i=0u; i<64; ++i)
+    {
+        m_WriteDescriptorSet[i].sType               = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        m_WriteDescriptorSet[i].pNext               = nullptr;
+        m_WriteDescriptorSet[i].dstSet              = null_handle;
+        m_WriteDescriptorSet[i].dstBinding          = 0;
+        m_WriteDescriptorSet[i].dstArrayElement     = 0;
+        m_WriteDescriptorSet[i].descriptorCount     = 0;
+        m_WriteDescriptorSet[i].descriptorType      = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        m_WriteDescriptorSet[i].pImageInfo          = nullptr;
+        m_WriteDescriptorSet[i].pBufferInfo         = nullptr;
+        m_WriteDescriptorSet[i].pTexelBufferView    = nullptr;
     }
 
     return true;
@@ -215,6 +231,9 @@ void CommandList::Begin()
     vkCmdSetBlendConstants( m_CommandBuffer, blendConstant );
 
     vkCmdSetStencilReference( m_CommandBuffer, VK_STENCIL_FRONT_AND_BACK, 0 );
+
+    m_pDescriptorSet    = nullptr;
+    m_DirtyDescriptor   = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -453,12 +472,16 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
 {
     if (pDescriptorSet == nullptr)
-    { return; }
+    {
+        m_pDescriptorSet = nullptr;
+        return;
+    }
 
     auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
     A3D_ASSERT( pWrapDescriptorSet != nullptr );
 
-    pWrapDescriptorSet->Issue( this );
+    m_pDescriptorSet  = pWrapDescriptorSet;
+    m_DirtyDescriptor = true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -519,6 +542,99 @@ void CommandList::SetIndexBuffer
                 : VK_INDEX_TYPE_UINT32;
 
     vkCmdBindIndexBuffer( m_CommandBuffer, pWrapResource->GetVulkanBuffer(), offset, type );
+}
+
+//-------------------------------------------------------------------------------------------------
+//      定数バッファビュー設定をします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
+{
+    A3D_ASSERT(index < 64);
+
+    auto pWrapCBV = static_cast<ConstantBufferView*>(pResource);
+    A3D_ASSERT(pWrapCBV != nullptr);
+
+    const auto& desc = pWrapCBV->GetDesc();
+
+    m_DescriptorInfo[index].Buffer.buffer = pWrapCBV->GetVulkanBuffer();
+    m_DescriptorInfo[index].Buffer.offset = desc.Offset;
+    m_DescriptorInfo[index].Buffer.range  = desc.Range;
+    m_DescriptorInfo[index].StorageBuffer = false;
+    m_DirtyDescriptor = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      シェーダリソースビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
+{
+    A3D_ASSERT(index < 64 );
+
+    auto pWrapSRV = static_cast<ShaderResourceView*>(pResource);
+    A3D_ASSERT(pWrapSRV != nullptr);
+
+    auto desc = pWrapSRV->GetDesc();
+
+    auto kind = pWrapSRV->GetResource()->GetKind();
+
+    if (kind == RESOURCE_KIND_BUFFER)
+
+    {
+        m_DescriptorInfo[index].Buffer.buffer   = pWrapSRV->GetVulkanBuffer();
+        m_DescriptorInfo[index].Buffer.offset   = desc.FirstElement;
+        m_DescriptorInfo[index].Buffer.range    = desc.ElementCount;
+        m_DescriptorInfo[index].StorageBuffer   = false;
+    }
+    else if (kind == RESOURCE_KIND_TEXTURE)
+    {
+        m_DescriptorInfo[index].Image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_DescriptorInfo[index].Image.imageView   = pWrapSRV->GetVulkanImageView();
+        m_DescriptorInfo[index].StorageBuffer     = false;
+    }
+    m_DirtyDescriptor = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      アンオーダードアクセスビューを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
+{
+    A3D_ASSERT(index < 64 );
+
+    auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
+    A3D_ASSERT(pWrapView != nullptr);
+
+    auto desc = pWrapView->GetDesc();
+
+    auto kind = pWrapView->GetResource()->GetKind();
+    if (kind == RESOURCE_KIND_BUFFER)
+    {
+        m_DescriptorInfo[index].Buffer.buffer = pWrapView->GetVulkanBuffer();
+        m_DescriptorInfo[index].Buffer.offset = desc.FirstElement;
+        m_DescriptorInfo[index].Buffer.range  = desc.ElementCount;
+        m_DescriptorInfo[index].StorageBuffer = true;
+    }
+    else if (kind == RESOURCE_KIND_TEXTURE)
+    {
+        m_DescriptorInfo[index].Image.imageLayout   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_DescriptorInfo[index].Image.imageView     = pWrapView->GetVulkanImageView();
+        m_DescriptorInfo[index].StorageBuffer       = false;
+    }
+    m_DirtyDescriptor = true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      サンプラーを設定します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::SetSampler(uint32_t index, ISampler* pSampler)
+{
+    A3D_ASSERT(index < 64 );
+
+    auto pWrapSampler = static_cast<Sampler*>(pSampler);
+    A3D_ASSERT(pWrapSampler != nullptr);
+
+    m_DescriptorInfo[index].Image.sampler = pWrapSampler->GetVulkanSampler();
+    m_DirtyDescriptor = true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -676,6 +792,8 @@ void CommandList::DrawInstanced
     if (vertexCount == 0 || instanceCount == 0)
     { return; }
 
+    UpdateDescriptor();
+
     vkCmdDraw(
         m_CommandBuffer,
         vertexCount,
@@ -699,6 +817,8 @@ void CommandList::DrawIndexedInstanced
     if (indexCount == 0 || instanceCount == 0)
     { return; }
 
+    UpdateDescriptor();
+
     vkCmdDrawIndexed(
         m_CommandBuffer,
         indexCount,
@@ -715,6 +835,8 @@ void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 {
     if (x == 0 && y == 0 && z == 0)
     { return; }
+
+    UpdateDescriptor();
 
     vkCmdDispatch( m_CommandBuffer, x, y, z );
 }
@@ -741,6 +863,8 @@ void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
     if (vkCmdDrawMeshTasks == nullptr)
     { return; }
 
+    UpdateDescriptor();
+
     vkCmdDrawMeshTasks( m_CommandBuffer, x, 0 );
 }
 
@@ -759,6 +883,8 @@ void CommandList::ExecuteIndirect
 {
     if (pCommandSet == nullptr || maxCommandCount == 0 || pArgumentBuffer == nullptr)
     { return; }
+
+    UpdateDescriptor();
 
     auto pWrapCommandSet = static_cast<CommandSet*>(pCommandSet);
     A3D_ASSERT(pWrapCommandSet != nullptr);
@@ -1321,6 +1447,66 @@ VkCommandPool CommandList::GetVulkanCommandPool() const
 //-------------------------------------------------------------------------------------------------
 VkCommandBuffer CommandList::GetVulkanCommandBuffer() const
 { return m_CommandBuffer; }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタを更新します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::UpdateDescriptor()
+{
+    if (!m_DirtyDescriptor || m_pDescriptorSet == nullptr)
+    { return; }
+
+    auto layout = m_pDescriptorSet->GetLayout();
+    auto desc   = layout->GetDesc();
+    auto count  = desc.EntryCount;
+
+    for(auto i=0u; i<count; ++i)
+    {
+        if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV)
+        {
+            m_WriteDescriptorSet[i].descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            m_WriteDescriptorSet[i].pBufferInfo     = &m_DescriptorInfo[i].Buffer;
+            m_WriteDescriptorSet[i].pImageInfo      = nullptr;
+        }
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV)
+        {
+            m_WriteDescriptorSet[i].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            m_WriteDescriptorSet[i].pImageInfo      = &m_DescriptorInfo[i].Image;
+            m_WriteDescriptorSet[i].pBufferInfo     = nullptr;
+        }
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+        {
+            if (m_DescriptorInfo[i].StorageBuffer)
+            {
+                m_WriteDescriptorSet[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                m_WriteDescriptorSet[i].pBufferInfo    = &m_DescriptorInfo[i].Buffer;
+                m_WriteDescriptorSet[i].pImageInfo     = nullptr;
+            }
+            else
+            {
+                m_WriteDescriptorSet[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                m_WriteDescriptorSet[i].pImageInfo     = &m_DescriptorInfo[i].Image;
+                m_WriteDescriptorSet[i].pBufferInfo    = nullptr;
+            }
+        }
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
+        {
+            m_WriteDescriptorSet[i].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLER;
+            m_WriteDescriptorSet[i].pImageInfo      = &m_DescriptorInfo[i].Image;
+            m_WriteDescriptorSet[i].pBufferInfo     = nullptr;
+        }
+    }
+
+    vkCmdPushDescriptorSet(
+        m_CommandBuffer,
+        layout->GetVulkanPipelineBindPoint(),
+        layout->GetVulkanPipelineLayout(),
+        0,                                      // 0番目を更新.
+        count,
+        m_WriteDescriptorSet);
+
+    m_DirtyDescriptor = false;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

@@ -167,6 +167,38 @@ public:
         uint64_t    offset) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      定数バッファビューを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetView(uint32_t index, IConstantBufferView* const pResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      シェーダリソースビューを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetView(uint32_t index, IShaderResourceView* const pResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      アンオーダードアクセスビューを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pResource   設定するリソースです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetView(uint32_t index, IUnorderedAccessView* const pResource) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      サンプラーを設定します.
+    //!
+    //! @param[in]      index       レイアウト番号です.
+    //! @param[in]      pSampler    設定するサンプラーです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetSampler(uint32_t index, ISampler* const pSampler) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      リソースバリアを設定します.
     //!
     //! @param[in]      pResource       リソースです.
@@ -439,8 +471,11 @@ private:
     Device*                     m_pDevice;              //!< デバイスです.
     ID3D12CommandAllocator*     m_pCommandAllocator;    //!< コマンドアロケータです.
     ID3D12GraphicsCommandList6* m_pCommandList;         //!< コマンドリストです.
-    FrameBuffer*                m_pFrameBuffer;         //!< 設定されているフレームバッファです.
     COMMANDLIST_TYPE            m_Type;                 //!< コマンドリストタイプ.
+    bool                        m_IsGraphics;           //!< グラフィックスパイプかどうか?
+    bool                        m_DirtyDescriptor;      //!< ディスクリプタダーティフラグ.
+    uint32_t                    m_HandleCount;          //!< ディスクリプタ数です.
+    D3D12_GPU_DESCRIPTOR_HANDLE m_Handles[64];          //!< ディスクリプタです.
 
     //=============================================================================================
     // private methods.
@@ -470,6 +505,11 @@ private:
     //! @brief      終了処理を行います.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY Term();
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ディスクリプタを更新します.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY UpdateDescriptor();
 
     CommandList     (const CommandList&) = delete;
     void operator = (const CommandList&) = delete;

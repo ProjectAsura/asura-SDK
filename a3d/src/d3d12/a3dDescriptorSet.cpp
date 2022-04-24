@@ -18,8 +18,6 @@ DescriptorSet::DescriptorSet()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
 , m_HandleCount (0)
-, m_Handles     (nullptr)
-, m_Type        (PIPELINE_GRAPHICS)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -81,13 +79,7 @@ bool DescriptorSet::Init
     m_pDevice->AddRef();
 
     auto& desc = pLayout->GetDesc();
-    auto size  = sizeof(D3D12_GPU_DESCRIPTOR_HANDLE) * desc.EntryCount;
-    auto align = alignof(D3D12_GPU_DESCRIPTOR_HANDLE);
-    m_Handles = static_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(a3d_alloc(size, align));
-    for(auto i=0u; i<m_HandleCount; ++i)
-    { m_Handles[i] = D3D12_GPU_DESCRIPTOR_HANDLE(); }
     m_HandleCount = desc.EntryCount;
-    m_Type = pLayout->GetType();
 
     return true;
 }
@@ -97,88 +89,8 @@ bool DescriptorSet::Init
 //-------------------------------------------------------------------------------------------------
 void DescriptorSet::Term()
 {
-    if (m_Handles != nullptr)
-    {
-        a3d_free(m_Handles);
-        m_Handles = nullptr;
-    }
     m_HandleCount = 0;
     SafeRelease(m_pDevice);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      定数バッファビューを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IConstantBufferView* const pResource)
-{
-    A3D_ASSERT(size_t(index) < m_HandleCount);
-
-    auto pWrapView = static_cast<ConstantBufferView*>(pResource);
-    A3D_ASSERT(pWrapView != nullptr);
-
-    m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
-}
-
-//-------------------------------------------------------------------------------------------------
-//      シェーダリソースビューを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IShaderResourceView* const pResource)
-{
-    A3D_ASSERT(size_t(index) < m_HandleCount);
-
-    auto pWrapView = static_cast<ShaderResourceView*>(pResource);
-    A3D_ASSERT(pWrapView != nullptr);
-
-    m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
-}
-
-//-------------------------------------------------------------------------------------------------
-//      アンオーダードアクセスビューを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetView(uint32_t index, IUnorderedAccessView* const pResource)
-{
-    A3D_ASSERT(size_t(index) < m_HandleCount);
-
-    auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
-    A3D_ASSERT(pWrapView != nullptr);
-
-    m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
-}
-
-//-------------------------------------------------------------------------------------------------
-//      サンプラーを設定します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::SetSampler(uint32_t index, ISampler* const pSampler)
-{
-    A3D_ASSERT(size_t(index) < m_HandleCount);
-
-    auto pWrapSampler = static_cast<Sampler*>(pSampler);
-    A3D_ASSERT( pWrapSampler != nullptr );
-
-    m_Handles[index] = pWrapSampler->GetDescriptor()->GetHandleGPU();
-}
-
-//-------------------------------------------------------------------------------------------------
-//      ディスクリプタテーブルを設定する描画コマンドを発行します.
-//-------------------------------------------------------------------------------------------------
-void DescriptorSet::Bind(ICommandList* pCommandList)
-{
-    auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
-    A3D_ASSERT(pWrapCommandList != nullptr);
-
-    auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
-    A3D_ASSERT(pNativeCommandList != nullptr);
-
-    if (m_Type != PIPELINE_COMPUTE)
-    {
-        for(auto i=0u; i<m_HandleCount; ++i)
-        { pNativeCommandList->SetGraphicsRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
-    }
-    else
-    {
-        for(auto i=0u; i<m_HandleCount; ++i)
-        { pNativeCommandList->SetComputeRootDescriptorTable( uint32_t(i), m_Handles[i] ); }
-    }
 }
 
 //-------------------------------------------------------------------------------------------------
