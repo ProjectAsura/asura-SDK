@@ -15,12 +15,12 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 CommandList::CommandList()
-: m_RefCount        (1)
-, m_pDevice         (nullptr)
-, m_Type            (COMMANDLIST_TYPE_DIRECT)
-, m_Buffer          ()
-, m_pDescriptorSet  (nullptr)
-, m_DirtyDescriptor (false)
+: m_RefCount                (1)
+, m_pDevice                 (nullptr)
+, m_Type                    (COMMANDLIST_TYPE_DIRECT)
+, m_Buffer                  ()
+, m_pDescriptorSetLayout    (nullptr)
+, m_DirtyDescriptor         (false)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -72,8 +72,8 @@ void CommandList::Begin()
     cmd.Id = (m_Type == COMMANDLIST_TYPE_DIRECT) ? CMD_BEGIN : CMD_SUB_BEGIN;
     
     m_Buffer.Push(&cmd, sizeof(cmd));
-    m_pDescriptorSet    = nullptr;
-    m_DirtyDescriptor   = false;
+    m_pDescriptorSetLayout  = nullptr;
+    m_DirtyDescriptor       = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -190,19 +190,19 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットを設定します.
+//      ディスクリプタセットレイアウトを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
+void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
 {
-    if (pDescriptorSet == nullptr)
+    if (pDescriptorSetLayout == nullptr)
     {
-        m_pDescriptorSet = nullptr;
+        m_pDescriptorSetLayout = nullptr;
         return;
     }
 
-    auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
-    m_pDescriptorSet    = pWrapDescriptorSet;
-    m_DirtyDescriptor   = true;
+    auto pWrapDescriptorSetLayout = static_cast<DescriptorSetLayout*>(pDescriptorSetLayout);
+    m_pDescriptorSetLayout  = pWrapDescriptorSetLayout;
+    m_DirtyDescriptor       = true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -771,12 +771,12 @@ const CommandBuffer* CommandList::GetCommandBuffer() const
 //-------------------------------------------------------------------------------------------------
 void CommandList::UpdateDescriptor()
 {
-    if (!m_DirtyDescriptor || m_pDescriptorSet == nullptr)
+    if (!m_DirtyDescriptor || m_pDescriptorSetLayout == nullptr)
     { return; }
 
-    ImCmdSetDescriptorSet cmd = {};
-    cmd.Id      = CMD_SET_DESCRIPTORSET;
-    cmd.pDesc   = m_pDescriptorSet->GetLayoutDesc();
+    ImCmdSetDescriptorSetLayout cmd = {};
+    cmd.Id      = CMD_SET_DESCRIPTORSET_LAYOUT;
+    cmd.pDesc   = m_pDescriptorSetLayout->GetDesc();
     for(auto i=0u; i<64; ++i)
     { cmd.pDescriptor[i] = m_pDescriptor[i]; }
 

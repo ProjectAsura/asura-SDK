@@ -216,10 +216,9 @@ void Queue::ParseCmd()
     auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pDeviceContext != nullptr);
 
-    bool end = false;
-    DescriptorSet*   pActiveDescriptorSet = nullptr;
-    float            blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    uint32_t         stencilRef     = 0;
+    bool     end = false;
+    float    blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    uint32_t stencilRef     = 0;
 
     for(auto i=0u; i<m_SubmitIndex; ++i)
     {
@@ -391,9 +390,9 @@ void Queue::ParseCmd()
                 }
                 break;
 
-            case CMD_SET_DESCRIPTORSET:
+            case CMD_SET_DESCRIPTORSET_LAYOUT:
                 {
-                    auto cmd = reinterpret_cast<ImCmdSetDescriptorSet*>(pCmd);
+                    auto cmd = reinterpret_cast<ImCmdSetDescriptorSetLayout*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
                     for(auto i=0u; i<cmd->pDesc->EntryCount; ++i)
@@ -653,7 +652,7 @@ void Queue::ParseCmd()
                         }
                     }
 
-                    pCmd += sizeof(ImCmdSetDescriptorSet);
+                    pCmd += sizeof(ImCmdSetDescriptorSetLayout);
                 }
                 break;
 

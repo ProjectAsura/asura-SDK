@@ -64,7 +64,6 @@ using ID3D12DeviceA3D   = ID3D12Device8;
 #include "a3dUnorderedAccessView.h"
 #include "a3dSampler.h"
 #include "a3dDescriptorSetLayout.h"
-#include "a3dDescriptorSet.h"
 #include "a3dPipelineState.h"
 #include "a3dQueryPool.h"
 #include "a3dDred.h"

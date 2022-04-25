@@ -55,6 +55,7 @@ DescriptorSetLayout::DescriptorSetLayout()
 , m_ImageCount          (0)
 , m_BufferCount         (0)
 , m_SamplerCount        (0)
+, m_DescriptorSet       (null_handle)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -178,10 +179,28 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         }
     }
 
-    if (!m_pDevice->CreateVulkanDescriptorPool(pDesc->MaxSetCount, &m_DescriptorPool))
+    if (!m_pDevice->CreateVulkanDescriptorPool(1, &m_DescriptorPool))
     {
         A3D_LOG("Error : Device::CreateVulknDescriptorPool() Failed.");
         return false;
+    }
+
+    // ディスクリプタセットを生成します.
+    if (!m_pDevice->IsSupportExtension(Device::EXT_KHR_PUSH_DESCRIPTOR))
+    {
+        VkDescriptorSetAllocateInfo info = {};
+        info.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        info.pNext              = nullptr;
+        info.descriptorPool     = m_DescriptorPool;
+        info.descriptorSetCount = 1;
+        info.pSetLayouts        = &m_DescriptorSetLayout;
+
+        auto ret = vkAllocateDescriptorSets( pNativeDevice, &info, &m_DescriptorSet );
+        if (ret != VK_SUCCESS)
+        {
+            A3D_LOG("Error : vkAllocateDescriptorSets() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
     }
 
     return true;
@@ -197,6 +216,12 @@ void DescriptorSetLayout::Term()
 
     auto pNativeDevice = m_pDevice->GetVulkanDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
+
+    if ( m_DescriptorSet != null_handle )
+    {
+        vkFreeDescriptorSets(pNativeDevice, m_DescriptorPool, 1, &m_DescriptorSet);
+        m_DescriptorSet = null_handle;
+    }
 
     if ( m_DescriptorSetLayout != null_handle )
     {
@@ -255,12 +280,6 @@ void DescriptorSetLayout::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットを生成します.
-//-------------------------------------------------------------------------------------------------
-bool DescriptorSetLayout::CreateDescriptorSet(IDescriptorSet** ppDescriptorSet)
-{ return DescriptorSet::Create(m_pDevice, this, ppDescriptorSet); }
-
-//-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
 //-------------------------------------------------------------------------------------------------
 DescriptorSetLayoutDesc DescriptorSetLayout::GetDesc() const
@@ -307,6 +326,12 @@ uint32_t DescriptorSetLayout::GetImageCount() const
 //-------------------------------------------------------------------------------------------------
 uint32_t DescriptorSetLayout::GetSamplerCount() const
 { return m_SamplerCount; }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタ―セットを取得します.
+//-------------------------------------------------------------------------------------------------
+VkDescriptorSet DescriptorSetLayout::GetVkDescriptorSet() const
+{ return m_DescriptorSet; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

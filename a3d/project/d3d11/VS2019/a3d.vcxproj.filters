@@ -60,9 +60,6 @@
     <ClInclude Include="..\..\..\src\d3d11\a3dCommandSet.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSet.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
@@ -135,9 +132,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\d3d11\a3dCommandSet.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSet.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.cpp">

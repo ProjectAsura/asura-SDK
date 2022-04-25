@@ -94,7 +94,6 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dCommandSet.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dConstantBufferView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDepthStencilView.cpp" />
-    <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSet.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDevice.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dFence.cpp" />
@@ -129,7 +128,6 @@
     <ClInclude Include="..\..\..\src\d3d11\a3dCommandSet.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dConstantBufferView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDepthStencilView.h" />
-    <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSet.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDevice.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dFence.h" />

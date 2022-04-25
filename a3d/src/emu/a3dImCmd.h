@@ -23,7 +23,7 @@ enum CMD_ID
     CMD_SET_VIEWPORTS,                  //!< ICommandList::SetViewports()
     CMD_SET_SCISSORS,                   //!< ICommandList::SetScissors()
     CMD_SET_PIPELINESTATE,              //!< ICommandList::SetPipelineState()
-    CMD_SET_DESCRIPTORSET,              //!< ICommandList::SetDescriptorSet()
+    CMD_SET_DESCRIPTORSET_LAYOUT,       //!< ICommandList::SetDescriptorSet()
     CMD_SET_VERTEX_BUFFERS,             //!< ICommandList::SetVertexBuffers()
     CMD_SET_INDEX_BUFFER,               //!< ICommandList::SetIndexBuffer()
     CMD_TEXTURE_BARRIER,                //!< ICommandList::TextureBarrier()
@@ -133,9 +133,9 @@ struct ImCmdSetPipelineState : ImCmdBase
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ImCmdSetDescriptorSet structure
+// ImCmdSetDescriptorSetLayout structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ImCmdSetDescriptorSet : ImCmdBase
+struct ImCmdSetDescriptorSetLayout : ImCmdBase
 {
     const DescriptorSetLayoutDesc*  pDesc;
     void*                           pDescriptor[64];

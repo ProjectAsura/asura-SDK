@@ -11,7 +11,7 @@ namespace a3d {
 //-------------------------------------------------------------------------------------------------
 // Forward Declarations.
 //-------------------------------------------------------------------------------------------------
-class DescriptorSet;
+class DescriptorSetLayout;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,11 +133,11 @@ public:
     void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを設定します.
+    //! @brief      ディスクリプタセットレイアウトを設定します.
     //!
-    //! @param[in]      pDescriptorSet      ディスクリプタセットです.
+    //! @param[in]      pDescriptorSetLayout    ディスクリプタセットレイアウトです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetDescriptorSet(IDescriptorSet* pDescriptorSet) override;
+    void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSet) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      頂点バッファを設定します.
@@ -510,7 +510,7 @@ private:
     VkCommandBuffer             m_CommandBuffer;                //!< コマンドバッファです.
     bool                        m_BindRenderPass;               //!< レンダーパスバインド中か?
     bool                        m_DirtyDescriptor;              //!< ディスクリプタダーティフラグ.
-    DescriptorSet*              m_pDescriptorSet;               //!< ディスクリプタセット.
+    DescriptorSetLayout*        m_pDescriptorSetLayout;         //!< ディスクリプタセットレイアウトです.
     DescriptorInfo              m_DescriptorInfo    [64] = {};  //!< ディスクリプタ情報です.
     VkWriteDescriptorSet        m_WriteDescriptorSet[64] = {};  //!< 書き込みディスクリプタセットです.
 

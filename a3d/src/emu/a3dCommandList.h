@@ -8,7 +8,11 @@
 
 namespace a3d {
 
-class DescriptorSet;
+//-------------------------------------------------------------------------------------------------
+// Forward Declarations.
+//-------------------------------------------------------------------------------------------------
+class DescriptorSetLayout;
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandList class 
@@ -118,11 +122,11 @@ public:
     void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを設定します.
+    //! @brief      ディスクリプタセットレイアウトを設定します.
     //!
-    //! @param[in]      pDescriptorSet      設定するディスクリプタセットです.
+    //! @param[in]      pDescriptorSetLayout        設定するディスクリプタセットレイアウトです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetDescriptorSet(IDescriptorSet* pDescriptorSet) override;
+    void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      頂点バッファを設定します.
@@ -461,13 +465,13 @@ private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>   m_RefCount;         //!< 参照カウントです.
-    IDevice*                m_pDevice;          //!< デバイスです.
-    COMMANDLIST_TYPE        m_Type;             //!< コマンドリストタイプです.
-    CommandBuffer           m_Buffer;           //!< コマンドバッファです.
-    DescriptorSet*          m_pDescriptorSet;   //!< ディスクリプタセットです.
-    void*                   m_pDescriptor[64];  //!< ディスクリプタです.
-    bool                    m_DirtyDescriptor;  //!< ディスクリプタダーティフラグ.
+    std::atomic<uint32_t>   m_RefCount;                 //!< 参照カウントです.
+    IDevice*                m_pDevice;                  //!< デバイスです.
+    COMMANDLIST_TYPE        m_Type;                     //!< コマンドリストタイプです.
+    CommandBuffer           m_Buffer;                   //!< コマンドバッファです.
+    DescriptorSetLayout*    m_pDescriptorSetLayout;     //!< ディスクリプタセットです.
+    void*                   m_pDescriptor[64] = {};     //!< ディスクリプタです.
+    bool                    m_DirtyDescriptor;          //!< ディスクリプタダーティフラグ.
 
     //=============================================================================================
     // private methods.

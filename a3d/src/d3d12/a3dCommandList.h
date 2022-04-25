@@ -136,11 +136,11 @@ public:
     void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを設定します.
+    //! @brief      ディスクリプタセットレイアウトを設定します.
     //!
-    //! @param[in]      pDescriptorSet      ディスクリプタセットです.
+    //! @param[in]      pDescriptorSetLayout    ディスクリプタセットレイアウトです.
     //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetDescriptorSet(IDescriptorSet* pDescriptorSet) override;
+    void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      頂点バッファを設定します.

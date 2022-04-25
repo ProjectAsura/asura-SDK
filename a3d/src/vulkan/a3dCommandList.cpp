@@ -20,13 +20,13 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 CommandList::CommandList()
-: m_RefCount        (1)
-, m_pDevice         (nullptr)
-, m_CommandPool     (null_handle)
-, m_CommandBuffer   (null_handle)
-, m_BindRenderPass  (false)
-, m_DirtyDescriptor (false)
-, m_pDescriptorSet  (nullptr)
+: m_RefCount                (1)
+, m_pDevice                 (nullptr)
+, m_CommandPool             (null_handle)
+, m_CommandBuffer           (null_handle)
+, m_BindRenderPass          (false)
+, m_DirtyDescriptor         (false)
+, m_pDescriptorSetLayout    (nullptr)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -75,8 +75,8 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
         info.queueFamilyIndex = queueFamilyIndex;
         info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        auto ret = vkCreateCommandPool( pNativeDevice, &info, nullptr, &m_CommandPool );
-        if ( ret != VK_SUCCESS )
+        auto ret = vkCreateCommandPool(pNativeDevice, &info, nullptr, &m_CommandPool);
+        if (ret != VK_SUCCESS)
         {
             A3D_LOG("Error : vkCreateCommandPool() Failed. VkResult = %s", ToString(ret));
             return false;
@@ -92,8 +92,8 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
         info.level              = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
         info.commandBufferCount = 1;
 
-        auto ret = vkAllocateCommandBuffers( pNativeDevice, &info, &m_CommandBuffer );
-        if ( ret != VK_SUCCESS )
+        auto ret = vkAllocateCommandBuffers(pNativeDevice, &info, &m_CommandBuffer);
+        if (ret != VK_SUCCESS)
         {
             A3D_LOG("Error : vkAllocateCommandBuffers() Failed. VkResult = %s", ToString(ret));
             return false;
@@ -109,8 +109,8 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
         info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         info.commandBufferCount = 1;
 
-        auto ret = vkAllocateCommandBuffers( pNativeDevice, &info, &m_CommandBuffer );
-        if ( ret != VK_SUCCESS )
+        auto ret = vkAllocateCommandBuffers(pNativeDevice, &info, &m_CommandBuffer);
+        if (ret != VK_SUCCESS)
         {
             A3D_LOG("Error : VkAllocateCommandBuffers() Failed. VkResult = %s", ToString(ret));
             return false;
@@ -214,26 +214,26 @@ void CommandList::Begin()
     beginInfo.pInheritanceInfo = &inheritanceInfo;
 
     auto result = vkBeginCommandBuffer(m_CommandBuffer, &beginInfo);
-    A3D_ASSERT( result == VK_SUCCESS );
-    A3D_UNUSED( result );
+    A3D_ASSERT(result == VK_SUCCESS);
+    A3D_UNUSED(result);
 
     VkViewport dummyViewport = {};
     dummyViewport.width    = 1;
     dummyViewport.height   = 1;
     dummyViewport.minDepth = 0.0f;
     dummyViewport.maxDepth = 1.0f;
-    vkCmdSetViewport( m_CommandBuffer, 0, 1, &dummyViewport );
+    vkCmdSetViewport(m_CommandBuffer, 0, 1, &dummyViewport);
 
     VkRect2D dummyScissor = {};
-    vkCmdSetScissor( m_CommandBuffer, 0, 1, &dummyScissor );
+    vkCmdSetScissor(m_CommandBuffer, 0, 1, &dummyScissor);
 
     float blendConstant[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    vkCmdSetBlendConstants( m_CommandBuffer, blendConstant );
+    vkCmdSetBlendConstants(m_CommandBuffer, blendConstant);
 
-    vkCmdSetStencilReference( m_CommandBuffer, VK_STENCIL_FRONT_AND_BACK, 0 );
+    vkCmdSetStencilReference(m_CommandBuffer, VK_STENCIL_FRONT_AND_BACK, 0);
 
-    m_pDescriptorSet    = nullptr;
-    m_DirtyDescriptor   = false;
+    m_pDescriptorSetLayout  = nullptr;
+    m_DirtyDescriptor       = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -390,13 +390,13 @@ void CommandList::EndFrameBuffer()
 //      ブレンド定数を設定します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetBlendConstant(const float blendConstant[4])
-{ vkCmdSetBlendConstants( m_CommandBuffer, blendConstant ); }
+{ vkCmdSetBlendConstants(m_CommandBuffer, blendConstant); }
 
 //-------------------------------------------------------------------------------------------------
 //      ステンシル参照値を設定します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetStencilReference(uint32_t stencilRef)
-{ vkCmdSetStencilReference( m_CommandBuffer, VK_STENCIL_FRONT_AND_BACK, stencilRef); }
+{ vkCmdSetStencilReference(m_CommandBuffer, VK_STENCIL_FRONT_AND_BACK, stencilRef); }
 
 //-------------------------------------------------------------------------------------------------
 //      ビューポートを設定します.
@@ -421,7 +421,7 @@ void CommandList::SetViewports(uint32_t count, Viewport* pViewports)
         viewports[i].maxDepth = pViewports[i].MaxDepth;
     }
 
-    vkCmdSetViewport( m_CommandBuffer, 0, count, viewports );
+    vkCmdSetViewport(m_CommandBuffer, 0, count, viewports);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -445,7 +445,7 @@ void CommandList::SetScissors(uint32_t count, Rect* pScissors)
         rects[i].extent.height = pScissors[i].Extent.Height;
     }
 
-    vkCmdSetScissor( m_CommandBuffer, 0, count, rects );
+    vkCmdSetScissor(m_CommandBuffer, 0, count, rects);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -463,25 +463,25 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
     auto pNativePipelineState = pWrapPipelineState->GetVulkanPipeline();
     A3D_ASSERT( pNativePipelineState != null_handle );
 
-    vkCmdBindPipeline( m_CommandBuffer, bindPoint, pNativePipelineState );
+    vkCmdBindPipeline(m_CommandBuffer, bindPoint, pNativePipelineState);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
+void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
 {
-    if (pDescriptorSet == nullptr)
+    if (pDescriptorSetLayout == nullptr)
     {
-        m_pDescriptorSet = nullptr;
+        m_pDescriptorSetLayout = nullptr;
         return;
     }
 
-    auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
-    A3D_ASSERT( pWrapDescriptorSet != nullptr );
+    auto pWrapDescriptorSetLayout = static_cast<DescriptorSetLayout*>(pDescriptorSetLayout);
+    A3D_ASSERT(pWrapDescriptorSetLayout != nullptr);
 
-    m_pDescriptorSet  = pWrapDescriptorSet;
-    m_DirtyDescriptor = true;
+    m_pDescriptorSetLayout  = pWrapDescriptorSetLayout;
+    m_DirtyDescriptor       = true;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -500,7 +500,7 @@ void CommandList::SetVertexBuffers
 
     if (count == 0 || ppResources == nullptr)
     {
-        vkCmdBindVertexBuffers( m_CommandBuffer, 0, 32, buffers, offsets );
+        vkCmdBindVertexBuffers(m_CommandBuffer, 0, 32, buffers, offsets);
         return;
     }
 
@@ -516,7 +516,7 @@ void CommandList::SetVertexBuffers
         offsets[i] = (pOffsets != nullptr) ? pOffsets[i] : 0;
     }
 
-    vkCmdBindVertexBuffers( m_CommandBuffer, startSlot, count, buffers, offsets );
+    vkCmdBindVertexBuffers(m_CommandBuffer, startSlot, count, buffers, offsets);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -530,7 +530,7 @@ void CommandList::SetIndexBuffer
 {
     if (pResource == nullptr)
     {
-        vkCmdBindIndexBuffer( m_CommandBuffer, null_handle, 0, VK_INDEX_TYPE_NONE_KHR );
+        vkCmdBindIndexBuffer(m_CommandBuffer, null_handle, 0, VK_INDEX_TYPE_NONE_KHR);
         return;
     }
 
@@ -541,7 +541,7 @@ void CommandList::SetIndexBuffer
                 ? VK_INDEX_TYPE_UINT16 
                 : VK_INDEX_TYPE_UINT32;
 
-    vkCmdBindIndexBuffer( m_CommandBuffer, pWrapResource->GetVulkanBuffer(), offset, type );
+    vkCmdBindIndexBuffer(m_CommandBuffer, pWrapResource->GetVulkanBuffer(), offset, type);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -748,13 +748,13 @@ void CommandList::BufferBarrier
     { return; }
 
     auto pWrapResource = static_cast<Buffer*>(pResource);
-    A3D_ASSERT( pWrapResource != nullptr );
+    A3D_ASSERT(pWrapResource != nullptr);
 
     auto pNativeBuffer = pWrapResource->GetVulkanBuffer();
-    A3D_ASSERT( pNativeBuffer != null_handle );
+    A3D_ASSERT(pNativeBuffer != null_handle);
 
-    auto srcAccess = ToNativeAccessFlags( prevState );
-    auto dstAccess = ToNativeAccessFlags( nextState );
+    auto srcAccess = ToNativeAccessFlags(prevState);
+    auto dstAccess = ToNativeAccessFlags(nextState);
 
     VkBufferMemoryBarrier barrier = {};
     barrier.sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -1453,16 +1453,15 @@ VkCommandBuffer CommandList::GetVulkanCommandBuffer() const
 //-------------------------------------------------------------------------------------------------
 void CommandList::UpdateDescriptor()
 {
-    if (!m_DirtyDescriptor || m_pDescriptorSet == nullptr)
+    if (!m_DirtyDescriptor || m_pDescriptorSetLayout == nullptr)
     { return; }
 
-    auto layout = m_pDescriptorSet->GetLayout();
-    auto desc   = layout->GetDesc();
+    auto desc   = m_pDescriptorSetLayout->GetDesc();
     auto count  = desc.EntryCount;
 
     for(auto i=0u; i<count; ++i)
     {
-        m_WriteDescriptorSet[i].dstSet          = m_pDescriptorSet->GetVkDescriptorSet();
+        m_WriteDescriptorSet[i].dstSet          = m_pDescriptorSetLayout->GetVkDescriptorSet();
         m_WriteDescriptorSet[i].dstBinding      = i;
         m_WriteDescriptorSet[i].descriptorCount = 1;
 
@@ -1503,8 +1502,8 @@ void CommandList::UpdateDescriptor()
 
     vkCmdPushDescriptorSet(
         m_CommandBuffer,
-        layout->GetVulkanPipelineBindPoint(),
-        layout->GetVulkanPipelineLayout(),
+        m_pDescriptorSetLayout->GetVulkanPipelineBindPoint(),
+        m_pDescriptorSetLayout->GetVulkanPipelineLayout(),
         0,                                      // 0番目を更新.
         count,
         m_WriteDescriptorSet);

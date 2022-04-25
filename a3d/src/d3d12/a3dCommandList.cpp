@@ -311,13 +311,13 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSet(IDescriptorSet* pDescriptorSet)
+void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
 {
-    if (pDescriptorSet == nullptr)
+    if (pDescriptorSetLayout == nullptr)
     { return; }
 
-    auto pWrapDescriptorSet = static_cast<DescriptorSet*>(pDescriptorSet);
-    m_HandleCount       = pWrapDescriptorSet->GetHandleCount();
+    auto pWrapDescriptorSetLayout = static_cast<DescriptorSetLayout*>(pDescriptorSetLayout);
+    m_HandleCount       = pWrapDescriptorSetLayout->GetDesc().EntryCount;
     m_DirtyDescriptor   = true;
 
 }

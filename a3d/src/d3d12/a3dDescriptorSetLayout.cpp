@@ -295,26 +295,6 @@ void DescriptorSetLayout::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットを割り当てます.
-//-------------------------------------------------------------------------------------------------
-bool DescriptorSetLayout::CreateDescriptorSet(IDescriptorSet** ppDesctiproSet)
-{
-    if (ppDesctiproSet == nullptr)
-    { return false; }
-
-    auto pWrapDevice = reinterpret_cast<Device*>(m_pDevice);
-    A3D_ASSERT(pWrapDevice != nullptr);
-
-    if (!DescriptorSet::Create(m_pDevice, this, ppDesctiproSet))
-    {
-        A3D_LOG("Error : DescriptorSet::Create() Failed.");
-        return false;
-    }
-
-    return true;
-}
-
-//-------------------------------------------------------------------------------------------------
 //      ルートシグニチャを取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D12RootSignature* DescriptorSetLayout::GetD3D12RootSignature() const

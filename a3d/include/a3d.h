@@ -997,7 +997,6 @@ struct DescriptorEntry
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct DescriptorSetLayoutDesc
 {
-    uint32_t            MaxSetCount;    //!< 生成可能な最大ディスクリプタセット数です.
     uint32_t            EntryCount;     //!< エントリー数です.
     DescriptorEntry     Entries[64];    //!< エントリー情報です.
 };
@@ -1635,19 +1634,6 @@ struct A3D_API IUnorderedAccessView : public IDeviceChild
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// IDescriptorSet interface
-//! @brief      ディスクリプタセットインタフェースです.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API IDescriptorSet : public IDeviceChild
-{
-    //---------------------------------------------------------------------------------------------
-    //! @brief      デストラクタです.
-    //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IDescriptorSet()
-    { /* DO_NOTHING */ }
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // IDescriptorSetLayout interface
 //! @brief      ディスクリプタセットインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1658,15 +1644,6 @@ struct A3D_API IDescriptorSetLayout : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     virtual A3D_APIENTRY ~IDescriptorSetLayout()
     { /* DO_NOTHING */ }
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを割り当てます.
-    //!
-    //! @param[out]     ppDescriptorSet     ディスクリプタセットの格納先です.
-    //! @retval true    割り当てに成功.
-    //! @retval false   割り当てに失敗.
-    //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CreateDescriptorSet(IDescriptorSet** ppDescriptorSet) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1820,11 +1797,11 @@ struct A3D_API ICommandList : public IDeviceChild
     virtual void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットを設定します.
+    //! @brief      ディスクリプタセットレイアウトを設定します.
     //!
-    //! @param[in]      pDescriptorSet      設定するディスクリプタセットです.
+    //! @param[in]      pDescriptorSetLayout    設定するディスクリプタセットレイアウトです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetDescriptorSet(IDescriptorSet* pDescriptorSet) = 0;
+    virtual void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      頂点バッファを設定します.
