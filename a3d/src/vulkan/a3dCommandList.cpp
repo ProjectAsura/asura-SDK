@@ -1462,6 +1462,10 @@ void CommandList::UpdateDescriptor()
 
     for(auto i=0u; i<count; ++i)
     {
+        m_WriteDescriptorSet[i].dstSet          = m_pDescriptorSet->GetVkDescriptorSet();
+        m_WriteDescriptorSet[i].dstBinding      = i;
+        m_WriteDescriptorSet[i].descriptorCount = 1;
+
         if (desc.Entries[i].Type == DESCRIPTOR_TYPE_CBV)
         {
             m_WriteDescriptorSet[i].descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

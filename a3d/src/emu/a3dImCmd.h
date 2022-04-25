@@ -137,8 +137,8 @@ struct ImCmdSetPipelineState : ImCmdBase
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ImCmdSetDescriptorSet : ImCmdBase
 {
-    DescriptorSetLayoutDesc*    pDesc;
-    void*                       pDescriptor[64];
+    const DescriptorSetLayoutDesc*  pDesc;
+    void*                           pDescriptor[64];
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
