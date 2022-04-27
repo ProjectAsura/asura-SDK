@@ -80,10 +80,10 @@ bool Buffer::Init(IDevice* pDevice, const BufferDesc* pDesc)
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    auto deviceMemoryProps = m_pDevice->GetVulkanPhysicalDeviceMemoryProperties(0);
+    auto deviceMemoryProps = m_pDevice->GetVkPhysicalDeviceMemoryProperties(0);
 
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
@@ -118,7 +118,7 @@ void Buffer::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (m_Buffer != null_handle)
@@ -176,7 +176,7 @@ BufferDesc Buffer::GetDesc() const
 //-------------------------------------------------------------------------------------------------
 void* Buffer::Map()
 {
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     VkResult ret;
@@ -194,7 +194,7 @@ void* Buffer::Map()
 //-------------------------------------------------------------------------------------------------
 void Buffer::Unmap()
 {
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     vmaUnmapMemory(m_pDevice->GetAllocator(), m_Allocation);
@@ -203,7 +203,7 @@ void Buffer::Unmap()
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
-VkBuffer Buffer::GetVulkanBuffer() const
+VkBuffer Buffer::GetVkBuffer() const
 { return m_Buffer; }
 
 //-------------------------------------------------------------------------------------------------

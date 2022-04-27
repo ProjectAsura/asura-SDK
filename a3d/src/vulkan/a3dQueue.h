@@ -99,7 +99,7 @@ public:
     //!
     //! @return     コマンドキューを返却します.
     //---------------------------------------------------------------------------------------------
-    VkQueue A3D_APIENTRY GetVulkanQueue() const;
+    VkQueue A3D_APIENTRY GetVkQueue() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      シグナルセマフォを取得します.
@@ -107,7 +107,7 @@ public:
     //! @param[in]      index       バッファ番号です.
     //! @return     シグナルセマフォを返却します.
     //---------------------------------------------------------------------------------------------
-    VkSemaphore A3D_APIENTRY GetVulkanSignalSemaphore(uint32_t index) const;
+    VkSemaphore A3D_APIENTRY GetVkSignalSemaphore(uint32_t index) const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ウェイトセマフォを取得します.
@@ -115,7 +115,7 @@ public:
     //! @param[in]      index       バッファ番号です.
     //! @return     ウェイトセマフォを返却します.
     //---------------------------------------------------------------------------------------------
-    VkSemaphore A3D_APIENTRY GetVulkanWaitSemaphore(uint32_t index) const;
+    VkSemaphore A3D_APIENTRY GetVkWaitSemaphore(uint32_t index) const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フェンスを取得します.
@@ -123,7 +123,7 @@ public:
     //! @param[in]      index       バッファ番号です.
     //! @return     フェンスを返却します.
     //---------------------------------------------------------------------------------------------
-    VkFence A3D_APIENTRY GetVulkanFence(uint32_t index) const;
+    VkFence A3D_APIENTRY GetVkFence(uint32_t index) const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ファミリーインデックスを取得します.

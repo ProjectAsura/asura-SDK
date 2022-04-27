@@ -48,7 +48,7 @@ bool RenderTargetView::Init(IDevice* pDevice, ITexture* pTexture, const TargetVi
     m_pTexture = pWrapTexture;
     m_pTexture->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -59,7 +59,7 @@ bool RenderTargetView::Init(IDevice* pDevice, ITexture* pTexture, const TargetVi
         info.sType        = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         info.pNext        = nullptr;
         info.flags        = 0;
-        info.image        = m_pTexture->GetVulkanImage();
+        info.image        = m_pTexture->GetVkImage();
         info.viewType     = ToNativeImageViewType(pDesc->Dimension);
         info.format       = ToNativeFormat(pDesc->Format);
         info.components.r = VK_COMPONENT_SWIZZLE_R;
@@ -91,7 +91,7 @@ void RenderTargetView::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     if ( m_ImageView != null_handle )
@@ -159,18 +159,18 @@ TextureDesc RenderTargetView::GetTextureDesc() const
 //-------------------------------------------------------------------------------------------------
 //      イメージを取得します.
 //-------------------------------------------------------------------------------------------------
-VkImage RenderTargetView::GetVulkanImage() const
+VkImage RenderTargetView::GetVkImage() const
 {
     if ( m_pTexture == nullptr )
     { return null_handle; }
 
-    return m_pTexture->GetVulkanImage(); 
+    return m_pTexture->GetVkImage(); 
 }
 
 //-------------------------------------------------------------------------------------------------
 //      イメージビューを取得します.
 //-------------------------------------------------------------------------------------------------
-VkImageView RenderTargetView::GetVulkanImageView() const
+VkImageView RenderTargetView::GetVkImageView() const
 { return m_ImageView; }
 
 //-------------------------------------------------------------------------------------------------

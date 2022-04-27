@@ -88,20 +88,6 @@ void DescriptorSetLayout::GetDevice(IDevice** ppDevice)
     { m_pDevice->AddRef(); }
 }
 
-////-------------------------------------------------------------------------------------------------
-////      ディスクリプタセットを割り当てます.
-////-------------------------------------------------------------------------------------------------
-//bool DescriptorSetLayout::CreateDescriptorSet(IDescriptorSet** ppDesctiproSet)
-//{
-//    if (ppDesctiproSet == nullptr)
-//    { return false; }
-//
-//    if (!DescriptorSet::Create(m_pDevice, &m_Desc, ppDesctiproSet))
-//    { return false; }
-//
-//    return true;
-//}
-
 //-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
 //-------------------------------------------------------------------------------------------------

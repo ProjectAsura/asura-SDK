@@ -111,7 +111,7 @@ VkImageViewType ToNativeImageViewType(const a3d::TextureDesc* pDesc)
 //-------------------------------------------------------------------------------------------------
 bool IsSupportFormat(a3d::Device* pDevice, const a3d::TextureDesc* pDesc)
 {
-    auto physicalDevice = pDevice->GetVulkanPhysicalDevice(0);
+    auto physicalDevice = pDevice->GetVkPhysicalDevice(0);
     A3D_ASSERT(physicalDevice != null_handle);
 
     auto format = a3d::ToNativeFormat(pDesc->Format);
@@ -227,7 +227,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (!IsSupportFormat(m_pDevice, pDesc))
@@ -236,7 +236,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
         return false;
     }
 
-    auto deviceMemoryProps = m_pDevice->GetVulkanPhysicalDeviceMemoryProperties(0);
+    auto deviceMemoryProps = m_pDevice->GetVkPhysicalDeviceMemoryProperties(0);
     memcpy(&m_Desc, pDesc, sizeof(m_Desc));
 
     auto imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -322,7 +322,7 @@ void Texture::Term()
 
     if (!m_IsExternal)
     {
-        auto pNativeDevice = m_pDevice->GetVulkanDevice();
+        auto pNativeDevice = m_pDevice->GetVkDevice();
         A3D_ASSERT(pNativeDevice != null_handle);
 
         if (m_Image != null_handle)
@@ -386,7 +386,7 @@ TextureDesc Texture::GetDesc() const
 //-------------------------------------------------------------------------------------------------
 void* Texture::Map()
 {
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     void* pData;
@@ -402,7 +402,7 @@ void* Texture::Map()
 //-------------------------------------------------------------------------------------------------
 void Texture::Unmap()
 {
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     vmaUnmapMemory(m_pDevice->GetAllocator(), m_Allocation);
@@ -428,7 +428,7 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
             subres.arrayLayer,
             placeSlice);
 
-        auto pNativeDevice = m_pDevice->GetVulkanDevice();
+        auto pNativeDevice = m_pDevice->GetVkDevice();
         A3D_ASSERT(pNativeDevice != null_handle);
 
         SubresourceLayout result = {};
@@ -468,13 +468,13 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
 //-------------------------------------------------------------------------------------------------
 //      イメージを取得します.
 //-------------------------------------------------------------------------------------------------
-VkImage Texture::GetVulkanImage() const
+VkImage Texture::GetVkImage() const
 { return m_Image; }
 
 //-------------------------------------------------------------------------------------------------
 //      イメージアスペクトフラグを取得します.
 //-------------------------------------------------------------------------------------------------
-VkImageAspectFlags Texture::GetVulkanImageAspectFlags() const
+VkImageAspectFlags Texture::GetVkImageAspectFlags() const
 { return m_ImageAspectFlags; }
 
 //-------------------------------------------------------------------------------------------------
@@ -540,7 +540,7 @@ bool Texture::Create
     auto pWrapDevice = static_cast<Device*>(pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);
 
-    auto pNativeDevice = pWrapDevice->GetVulkanDevice();
+    auto pNativeDevice = pWrapDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     bool isDepth = false;

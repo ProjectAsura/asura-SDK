@@ -101,12 +101,12 @@ ConstantBufferViewDesc ConstantBufferView::GetDesc() const
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
-VkBuffer ConstantBufferView::GetVulkanBuffer() const
+VkBuffer ConstantBufferView::GetVkBuffer() const
 {
     if (m_pBuffer == nullptr)
     { return null_handle; }
 
-    return m_pBuffer->GetVulkanBuffer();
+    return m_pBuffer->GetVkBuffer();
 }
 
 //-------------------------------------------------------------------------------------------------

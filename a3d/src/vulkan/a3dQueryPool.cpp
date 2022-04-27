@@ -41,7 +41,7 @@ bool QueryPool::Init(IDevice* pDevice, const QueryPoolDesc* pDesc)
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
     VkQueryType table[] = {
@@ -94,7 +94,7 @@ void QueryPool::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
     vkDestroyQueryPool(pNativeDevice, m_Pool, nullptr);
@@ -145,13 +145,13 @@ QueryPoolDesc QueryPool::GetDesc() const
 //-------------------------------------------------------------------------------------------------
 //      クエリプールを取得します.
 //-------------------------------------------------------------------------------------------------
-VkQueryPool QueryPool::GetVulkanQueryPool() const
+VkQueryPool QueryPool::GetVkQueryPool() const
 { return m_Pool; }
 
 //-------------------------------------------------------------------------------------------------
 //      クエリタイプを取得します.
 //-------------------------------------------------------------------------------------------------
-VkQueryType QueryPool::GetVulkanQueryType() const
+VkQueryType QueryPool::GetVkQueryType() const
 { return m_Type; }
 
 //-------------------------------------------------------------------------------------------------

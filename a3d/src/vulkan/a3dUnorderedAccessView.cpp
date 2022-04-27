@@ -49,7 +49,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
     m_pResource = pResource;
     m_pResource->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (pResource->GetKind() == RESOURCE_KIND_BUFFER)
@@ -64,7 +64,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
             return false;
         }
 
-        m_Buffer = pWrapBuffer->GetVulkanBuffer();
+        m_Buffer = pWrapBuffer->GetVkBuffer();
     }
     else if (pResource->GetKind() == RESOURCE_KIND_TEXTURE)
     {
@@ -83,7 +83,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         info.pNext                              = nullptr;
         info.flags                              = 0;
         info.format                             = ToNativeFormat(pDesc->Format);
-        info.image                              = pWrapTexture->GetVulkanImage();
+        info.image                              = pWrapTexture->GetVkImage();
         info.viewType                           = ToNativeImageViewType(pDesc->Dimension);
         info.components.r                       = VK_COMPONENT_SWIZZLE_R;
         info.components.g                       = VK_COMPONENT_SWIZZLE_G;
@@ -114,7 +114,7 @@ void UnorderedAccessView::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     if (m_ImageView != null_handle)
@@ -175,13 +175,13 @@ IResource* UnorderedAccessView::GetResource() const
 //-------------------------------------------------------------------------------------------------
 //      イメージビューを取得します.
 //-------------------------------------------------------------------------------------------------
-VkImageView UnorderedAccessView::GetVulkanImageView() const
+VkImageView UnorderedAccessView::GetVkImageView() const
 { return m_ImageView; }
 
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
-VkBuffer UnorderedAccessView::GetVulkanBuffer() const
+VkBuffer UnorderedAccessView::GetVkBuffer() const
 { return m_Buffer; }
 
 //-------------------------------------------------------------------------------------------------

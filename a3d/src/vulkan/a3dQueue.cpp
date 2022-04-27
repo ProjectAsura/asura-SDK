@@ -60,7 +60,7 @@ bool Queue::Init
     // AddRef() してしまうと Device が解放できなくなるため，AddRef() してはいけない !!
     m_pDevice = static_cast<Device*>(pDevice);
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     {
@@ -140,7 +140,7 @@ void Queue::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // 完了を待機する.
@@ -226,7 +226,7 @@ bool Queue::Submit(ICommandList* pCommandList)
     auto pWrapList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT( pWrapList != nullptr );
 
-    auto pNativeCommandBuffer = pWrapList->GetVulkanCommandBuffer();
+    auto pNativeCommandBuffer = pWrapList->GetVkCommandBuffer();
 
     m_pSubmitList[m_SubmitIndex] = pNativeCommandBuffer;
     m_SubmitIndex++;
@@ -258,7 +258,7 @@ void Queue::Execute(IFence* pFence)
         auto pWrapFence = reinterpret_cast<Fence*>(pFence);
         A3D_ASSERT(pWrapFence != nullptr);
 
-        nativeFence = pWrapFence->GetVulkanFence();
+        nativeFence = pWrapFence->GetVkFence();
     }
     else
     {
@@ -313,13 +313,13 @@ void Queue::Present(ISwapChain* pSwapChain)
 //-------------------------------------------------------------------------------------------------
 //      コマンドキューを取得します.
 //-------------------------------------------------------------------------------------------------
-VkQueue Queue::GetVulkanQueue() const
+VkQueue Queue::GetVkQueue() const
 { return m_Queue; }
 
 //-------------------------------------------------------------------------------------------------
 //      シグナルセマフォを取得します.
 //-------------------------------------------------------------------------------------------------
-VkSemaphore Queue::GetVulkanSignalSemaphore(uint32_t index) const
+VkSemaphore Queue::GetVkSignalSemaphore(uint32_t index) const
 {
     A3D_ASSERT(0 <= index && index < MaxBufferCount);
     return m_SignalSemaphore[index];
@@ -328,7 +328,7 @@ VkSemaphore Queue::GetVulkanSignalSemaphore(uint32_t index) const
 //-------------------------------------------------------------------------------------------------
 //      ウェイトセマフォを取得します.
 //-------------------------------------------------------------------------------------------------
-VkSemaphore Queue::GetVulkanWaitSemaphore(uint32_t index) const
+VkSemaphore Queue::GetVkWaitSemaphore(uint32_t index) const
 {
     A3D_ASSERT(0 <= index && index < MaxBufferCount);
     return m_WaitSemaphore[index];
@@ -337,7 +337,7 @@ VkSemaphore Queue::GetVulkanWaitSemaphore(uint32_t index) const
 //-------------------------------------------------------------------------------------------------
 //      フェンスを取得します.
 //-------------------------------------------------------------------------------------------------
-VkFence Queue::GetVulkanFence(uint32_t index) const
+VkFence Queue::GetVkFence(uint32_t index) const
 {
     A3D_ASSERT(0 <= index && index < MaxBufferCount);
     return m_Fence[index];
@@ -370,7 +370,7 @@ bool Queue::ResetSyncObject()
     // セマフォがシグナルでもウェイトでもどちらでもない状態になることがあるので，
     // バッファ番号をいったんリセットし，セマフォも正しい状態に戻すため再作成を行います.
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // 一旦破棄.

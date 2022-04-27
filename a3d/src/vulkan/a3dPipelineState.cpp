@@ -554,7 +554,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -715,7 +715,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         info.pDepthStencilState     = &depthStencilState;
         info.pColorBlendState       = &colorBlendState;
         info.pDynamicState          = &dynamicState;
-        info.layout                 = pWrapLayout->GetVulkanPipelineLayout();
+        info.layout                 = pWrapLayout->GetVkPipelineLayout();
         info.renderPass             = null_handle;
         info.subpass                = 0;
         info.basePipelineHandle     = null_handle;
@@ -768,7 +768,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
@@ -799,7 +799,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
         info.sType              = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
         info.pNext              = nullptr;
         info.flags              = 0;
-        info.layout             = pWrapLayout->GetVulkanPipelineLayout();
+        info.layout             = pWrapLayout->GetVkPipelineLayout();
         info.basePipelineHandle = null_handle;
         info.basePipelineIndex  = 0;
         ToNativeShaderStageInfo(pNativeDevice, pDesc->CS, VK_SHADER_STAGE_COMPUTE_BIT, &info.stage);
@@ -835,7 +835,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -971,7 +971,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
         info.pDepthStencilState     = &depthStencilState;
         info.pColorBlendState       = &colorBlendState;
         info.pDynamicState          = &dynamicState;
-        info.layout                 = pWrapLayout->GetVulkanPipelineLayout();
+        info.layout                 = pWrapLayout->GetVkPipelineLayout();
         info.renderPass             = null_handle;
         info.subpass                = 0;
         info.basePipelineHandle     = null_handle;
@@ -1010,7 +1010,7 @@ void PipelineState::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (m_PipelineState != null_handle)
@@ -1065,7 +1065,7 @@ void PipelineState::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 bool PipelineState::GetCachedBlob(IBlob** ppBlob)
 {
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     size_t  size  = 0;
@@ -1092,13 +1092,13 @@ bool PipelineState::GetCachedBlob(IBlob** ppBlob)
 //-------------------------------------------------------------------------------------------------
 //      パイプラインステートを取得します.
 //-------------------------------------------------------------------------------------------------
-VkPipeline PipelineState::GetVulkanPipeline() const
+VkPipeline PipelineState::GetVkPipeline() const
 { return m_PipelineState; }
 
 //-------------------------------------------------------------------------------------------------
 //      パイプラインバインドポイントを取得します.
 //-------------------------------------------------------------------------------------------------
-VkPipelineBindPoint PipelineState::GetVulkanPipelineBindPoint() const
+VkPipelineBindPoint PipelineState::GetVkPipelineBindPoint() const
 { return m_BindPoint; }
 
 //-------------------------------------------------------------------------------------------------

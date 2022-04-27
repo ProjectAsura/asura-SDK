@@ -477,14 +477,14 @@ public:
     //!
     //! @return     コマンドプールを返却します.
     //---------------------------------------------------------------------------------------------
-    VkCommandPool A3D_APIENTRY GetVulkanCommandPool() const;
+    VkCommandPool A3D_APIENTRY GetVkCommandPool() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドバッファを取得します.
     //!
     //! @return     コマンドバッファを返却します.
     //---------------------------------------------------------------------------------------------
-    VkCommandBuffer A3D_APIENTRY GetVulkanCommandBuffer() const;
+    VkCommandBuffer A3D_APIENTRY GetVkCommandBuffer() const;
 
 private:
     ///////////////////////////////////////////////////////////////////////////////////////////////

@@ -99,7 +99,7 @@ bool Sampler::Init(IDevice* pDevice, const SamplerDesc* pDesc)
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     VkSamplerCreateInfo info = {};
@@ -140,7 +140,7 @@ void Sampler::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     vkDestroySampler(pNativeDevice, m_Sampler, nullptr);
@@ -184,7 +184,7 @@ void Sampler::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      サンプラーを取得します.
 //-------------------------------------------------------------------------------------------------
-VkSampler Sampler::GetVulkanSampler() const
+VkSampler Sampler::GetVkSampler() const
 { return m_Sampler; }
 
 //-------------------------------------------------------------------------------------------------

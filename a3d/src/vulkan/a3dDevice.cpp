@@ -1268,25 +1268,25 @@ void Device::WaitIdle()
 //-------------------------------------------------------------------------------------------------
 //      インスタンスを取得します.
 //-------------------------------------------------------------------------------------------------
-VkInstance Device::GetVulkanInstance() const
+VkInstance Device::GetVkInstance() const
 { return m_Instance; }
 
 //-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
-VkDevice Device::GetVulkanDevice() const
+VkDevice Device::GetVkDevice() const
 { return m_Device; }
 
 //-------------------------------------------------------------------------------------------------
 //      物理デバイス数を取得します.
 //-------------------------------------------------------------------------------------------------
-uint32_t Device::GetVulkanPhysicalDeviceCount() const
+uint32_t Device::GetVkPhysicalDeviceCount() const
 { return m_PhysicalDeviceCount; }
 
 //-------------------------------------------------------------------------------------------------
 //      物理デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
-VkPhysicalDevice Device::GetVulkanPhysicalDevice(uint32_t index) const
+VkPhysicalDevice Device::GetVkPhysicalDevice(uint32_t index) const
 {
     A3D_ASSERT(index < m_PhysicalDeviceCount);
     return m_pPhysicalDeviceInfos[index].Device;
@@ -1295,7 +1295,7 @@ VkPhysicalDevice Device::GetVulkanPhysicalDevice(uint32_t index) const
 //-------------------------------------------------------------------------------------------------
 //      物理デバイスメモリプロパティを取得します.
 //-------------------------------------------------------------------------------------------------
-VkPhysicalDeviceMemoryProperties Device::GetVulkanPhysicalDeviceMemoryProperties(uint32_t index) const
+VkPhysicalDeviceMemoryProperties Device::GetVkPhysicalDeviceMemoryProperties(uint32_t index) const
 {
     A3D_ASSERT(index < m_PhysicalDeviceCount);
     return m_pPhysicalDeviceInfos[index].MemoryProperty;
@@ -1304,7 +1304,7 @@ VkPhysicalDeviceMemoryProperties Device::GetVulkanPhysicalDeviceMemoryProperties
 //-------------------------------------------------------------------------------------------------
 //      物理デバイスプロパティを取得します.
 //-------------------------------------------------------------------------------------------------
-VkPhysicalDeviceProperties Device::GetVulkanPhysicalDeviceProperties(uint32_t index) const
+VkPhysicalDeviceProperties Device::GetVkPhysicalDeviceProperties(uint32_t index) const
 {
     A3D_ASSERT(index < m_PhysicalDeviceCount);
     return m_pPhysicalDeviceInfos[index].DeviceProperty;
@@ -1313,7 +1313,7 @@ VkPhysicalDeviceProperties Device::GetVulkanPhysicalDeviceProperties(uint32_t in
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタプールを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool)
+bool Device::CreateVkDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool)
 {
     VkDescriptorPoolSize poolSize[10] = {};
     poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

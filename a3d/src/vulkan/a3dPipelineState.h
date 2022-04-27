@@ -106,14 +106,14 @@ public:
     //!
     //! @return     パイプラインステートを返却します.
     //---------------------------------------------------------------------------------------------
-    VkPipeline A3D_APIENTRY GetVulkanPipeline() const;
+    VkPipeline A3D_APIENTRY GetVkPipeline() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      パイプラインバインドポイントを取得します.
     //!
     //! @return     パイプラインバインドポイントを返却します.
     //---------------------------------------------------------------------------------------------
-    VkPipelineBindPoint A3D_APIENTRY GetVulkanPipelineBindPoint() const;
+    VkPipelineBindPoint A3D_APIENTRY GetVkPipelineBindPoint() const;
 
 private:
     //=============================================================================================

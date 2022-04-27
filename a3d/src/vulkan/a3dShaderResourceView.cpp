@@ -49,7 +49,7 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
     m_pResource = pResource;
     m_pResource->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     if (pResource->GetKind() == RESOURCE_KIND_BUFFER)
@@ -64,7 +64,7 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
             return false;
         }
 
-        m_Buffer = pWrapBuffer->GetVulkanBuffer();
+        m_Buffer = pWrapBuffer->GetVkBuffer();
     }
     else if (pResource->GetKind() == RESOURCE_KIND_TEXTURE)
     {
@@ -91,7 +91,7 @@ bool ShaderResourceView::Init(IDevice* pDevice, IResource* pResource, const Shad
         info.sType        = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         info.pNext        = nullptr;
         info.flags        = 0;
-        info.image        = pWrapTexture->GetVulkanImage();
+        info.image        = pWrapTexture->GetVkImage();
         info.viewType     = ToNativeImageViewType(pDesc->Dimension);
         info.format       = ToNativeFormat(pDesc->Format);
         info.components.r = VK_COMPONENT_SWIZZLE_R;
@@ -123,7 +123,7 @@ void ShaderResourceView::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     if ( m_ImageView != null_handle )
@@ -184,13 +184,13 @@ IResource* ShaderResourceView::GetResource() const
 //-------------------------------------------------------------------------------------------------
 //      イメージビューを取得します.
 //-------------------------------------------------------------------------------------------------
-VkImageView ShaderResourceView::GetVulkanImageView() const
+VkImageView ShaderResourceView::GetVkImageView() const
 { return m_ImageView; }
 
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
-VkBuffer ShaderResourceView::GetVulkanBuffer() const
+VkBuffer ShaderResourceView::GetVkBuffer() const
 { return m_Buffer; }
 
 //-------------------------------------------------------------------------------------------------

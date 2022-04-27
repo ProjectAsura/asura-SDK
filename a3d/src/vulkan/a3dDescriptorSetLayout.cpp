@@ -78,7 +78,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
@@ -179,7 +179,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         }
     }
 
-    if (!m_pDevice->CreateVulkanDescriptorPool(1, &m_DescriptorPool))
+    if (!m_pDevice->CreateVkDescriptorPool(1, &m_DescriptorPool))
     {
         A3D_LOG("Error : Device::CreateVulknDescriptorPool() Failed.");
         return false;
@@ -214,7 +214,7 @@ void DescriptorSetLayout::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     if ( m_DescriptorSet != null_handle )
@@ -288,25 +288,25 @@ DescriptorSetLayoutDesc DescriptorSetLayout::GetDesc() const
 //-------------------------------------------------------------------------------------------------
 //      パイプラインレイアウトを取得します.
 //-------------------------------------------------------------------------------------------------
-VkPipelineLayout DescriptorSetLayout::GetVulkanPipelineLayout() const
+VkPipelineLayout DescriptorSetLayout::GetVkPipelineLayout() const
 { return m_PipelineLayout; }
 
 //-------------------------------------------------------------------------------------------------
 //      パイプラインバインドポイントを取得します.
 //-------------------------------------------------------------------------------------------------
-VkPipelineBindPoint DescriptorSetLayout::GetVulkanPipelineBindPoint() const
+VkPipelineBindPoint DescriptorSetLayout::GetVkPipelineBindPoint() const
 { return m_BindPoint; }
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタプールを取得します.
 //-------------------------------------------------------------------------------------------------
-VkDescriptorPool DescriptorSetLayout::GetVulkanDescriptorPool() const
+VkDescriptorPool DescriptorSetLayout::GetVkDescriptorPool() const
 { return m_DescriptorPool; }
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを取得します.
 //-------------------------------------------------------------------------------------------------
-VkDescriptorSetLayout DescriptorSetLayout::GetVulkanDescriptorSetLayout() const
+VkDescriptorSetLayout DescriptorSetLayout::GetVkDescriptorSetLayout() const
 { return m_DescriptorSetLayout; }
 
 //-------------------------------------------------------------------------------------------------

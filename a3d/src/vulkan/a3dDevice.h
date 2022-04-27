@@ -350,21 +350,21 @@ public:
     //!
     //! @return     インスタンスを返却します.
     //---------------------------------------------------------------------------------------------
-    VkInstance A3D_APIENTRY GetVulkanInstance() const;
+    VkInstance A3D_APIENTRY GetVkInstance() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デバイスを取得します.
     //!
     //! @return     デバイスを返却します.
     //---------------------------------------------------------------------------------------------
-    VkDevice A3D_APIENTRY GetVulkanDevice() const;
+    VkDevice A3D_APIENTRY GetVkDevice() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      物理デバイス数を取得します.
     //!
     //! @return     物理デバイス数を返却します.
     //---------------------------------------------------------------------------------------------
-    uint32_t A3D_APIENTRY GetVulkanPhysicalDeviceCount() const;
+    uint32_t A3D_APIENTRY GetVkPhysicalDeviceCount() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      物理デバイスを取得します.
@@ -372,7 +372,7 @@ public:
     //! @param[in]      index       取得するインデックスです.
     //! @return     物理デバイスを返却します.
     //---------------------------------------------------------------------------------------------
-    VkPhysicalDevice A3D_APIENTRY GetVulkanPhysicalDevice(uint32_t index) const;
+    VkPhysicalDevice A3D_APIENTRY GetVkPhysicalDevice(uint32_t index) const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      物理デバイスメモリプロパティを取得します.
@@ -380,7 +380,7 @@ public:
     //! @param[in]      index       取得するインデックスです.
     //! @return     物理デバイスメモリプロパティを返却します.
     //---------------------------------------------------------------------------------------------
-    VkPhysicalDeviceMemoryProperties A3D_APIENTRY GetVulkanPhysicalDeviceMemoryProperties(uint32_t index) const;
+    VkPhysicalDeviceMemoryProperties A3D_APIENTRY GetVkPhysicalDeviceMemoryProperties(uint32_t index) const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      物理デバイスプロパティを取得します.
@@ -388,7 +388,7 @@ public:
     //! @param[in]      index       取得するインデックスです.
     //! @return     物理デバイスプロパティを返却します.
     //---------------------------------------------------------------------------------------------
-    VkPhysicalDeviceProperties A3D_APIENTRY GetVulkanPhysicalDeviceProperties(uint32_t index) const;
+    VkPhysicalDeviceProperties A3D_APIENTRY GetVkPhysicalDeviceProperties(uint32_t index) const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタプールを生成します.
@@ -398,7 +398,7 @@ public:
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateVulkanDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool);
+    bool A3D_APIENTRY CreateVkDescriptorPool(uint32_t maxSet, VkDescriptorPool* pPool);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      拡張機能をサポートしているかどうか?

@@ -78,28 +78,28 @@ public:
     //!
     //! @return     パイプラインレイアウトを返却します.
     //---------------------------------------------------------------------------------------------
-    VkPipelineLayout A3D_APIENTRY GetVulkanPipelineLayout() const;
+    VkPipelineLayout A3D_APIENTRY GetVkPipelineLayout() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      パイプラインバインドポイントを取得します.
     //!
     //! @return     パイプラインバインドポイントを返却します.
     //---------------------------------------------------------------------------------------------
-    VkPipelineBindPoint A3D_APIENTRY GetVulkanPipelineBindPoint() const;
+    VkPipelineBindPoint A3D_APIENTRY GetVkPipelineBindPoint() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタプールを取得します.
     //!
     //! @return     ディスクリプタプールを返却します.
     //---------------------------------------------------------------------------------------------
-    VkDescriptorPool A3D_APIENTRY GetVulkanDescriptorPool() const;
+    VkDescriptorPool A3D_APIENTRY GetVkDescriptorPool() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットレイアウトを取得します.
     //!
     //! @return     ディスクリプタセットレイアウトを返却します.
     //---------------------------------------------------------------------------------------------
-    VkDescriptorSetLayout A3D_APIENTRY GetVulkanDescriptorSetLayout() const;
+    VkDescriptorSetLayout A3D_APIENTRY GetVkDescriptorSetLayout() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファ数を取得します.

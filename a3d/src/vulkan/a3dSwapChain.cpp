@@ -97,10 +97,10 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     if (!InitSurface(&m_Surface))
     { return false; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    auto pNativePhysicalDevice = m_pDevice->GetVulkanPhysicalDevice(0);
+    auto pNativePhysicalDevice = m_pDevice->GetVkPhysicalDevice(0);
     A3D_ASSERT(pNativePhysicalDevice != null_handle);
 
     // フォーマットをチェック
@@ -433,7 +433,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
         pWrapCmdList->Begin();
 
-        auto cmdBuffer = pWrapCmdList->GetVulkanCommandBuffer();
+        auto cmdBuffer = pWrapCmdList->GetVkCommandBuffer();
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         { 
@@ -446,7 +446,7 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
             barrier.newLayout           = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             barrier.srcQueueFamilyIndex = 0;
             barrier.dstQueueFamilyIndex = 0;
-            barrier.image               = m_pBuffers[i]->GetVulkanImage();
+            barrier.image               = m_pBuffers[i]->GetVkImage();
 
             barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseArrayLayer = 0;
@@ -470,8 +470,8 @@ bool SwapChain::Init(IDevice* pDevice, const SwapChainDesc* pDesc)
     // バックバッファ取得.
     {
         auto index      = m_pQueue->GetCurrentBufferIndex();
-        auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
-        auto fence      = m_pQueue->GetVulkanFence(index);
+        auto semaphore  = m_pQueue->GetVkWaitSemaphore(index);
+        auto fence      = m_pQueue->GetVkFence(index);
 
         auto ret = vkAcquireNextImage(
             pNativeDevice,
@@ -514,16 +514,16 @@ void SwapChain::Term()
         }
     }
 
-    auto pNativeInstance = m_pDevice->GetVulkanInstance();
+    auto pNativeInstance = m_pDevice->GetVkInstance();
     A3D_ASSERT(pNativeInstance != null_handle);
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     // キューの完了を待機.
     if (m_pQueue != nullptr)
     {
-        auto pNativeQueue = m_pQueue->GetVulkanQueue();
+        auto pNativeQueue = m_pQueue->GetVkQueue();
         A3D_ASSERT(pNativeQueue != null_handle);
 
         vkQueueWaitIdle(pNativeQueue);
@@ -641,19 +641,19 @@ void SwapChain::Present()
     info.pSwapchains    = &m_SwapChain;
     info.pImageIndices  = &m_CurrentBufferIndex;
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     auto index      = m_pQueue->GetCurrentBufferIndex();
-    auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
+    auto semaphore  = m_pQueue->GetVkWaitSemaphore(index);
 
-    auto ret = vkQueuePresentKHR(m_pQueue->GetVulkanQueue(), &info);
+    auto ret = vkQueuePresentKHR(m_pQueue->GetVkQueue(), &info);
     if (ret != VK_SUCCESS)
     { return; }
 
     const uint64_t Infinite = 0xFFFFFFFF;
 
-    auto fence = m_pQueue->GetVulkanFence(index);
+    auto fence = m_pQueue->GetVkFence(index);
     A3D_ASSERT(fence != null_handle);
 
     ret = vkAcquireNextImageKHR(
@@ -712,12 +712,12 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 {
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_pQueue->WaitIdle();
 
-    auto pNativePhysicalDevice = m_pDevice->GetVulkanPhysicalDevice(0);
+    auto pNativePhysicalDevice = m_pDevice->GetVkPhysicalDevice(0);
     A3D_ASSERT(pNativePhysicalDevice != null_handle);
 
     m_Desc.Extent.Width  = width;
@@ -917,7 +917,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
         pWrapCmdList->Begin();
 
-        auto cmdBuffer = pWrapCmdList->GetVulkanCommandBuffer();
+        auto cmdBuffer = pWrapCmdList->GetVkCommandBuffer();
 
         for(auto i=0u; i<m_Desc.BufferCount; ++i)
         { 
@@ -930,7 +930,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
             barrier.newLayout           = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             barrier.srcQueueFamilyIndex = 0;
             barrier.dstQueueFamilyIndex = 0;
-            barrier.image               = m_pBuffers[i]->GetVulkanImage();
+            barrier.image               = m_pBuffers[i]->GetVkImage();
 
             barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseArrayLayer = 0;
@@ -959,8 +959,8 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
     // バックバッファ取得.
     {
         auto index      = m_pQueue->GetCurrentBufferIndex();
-        auto semaphore  = m_pQueue->GetVulkanWaitSemaphore(index);
-        auto fence      = m_pQueue->GetVulkanFence(index);
+        auto semaphore  = m_pQueue->GetVkWaitSemaphore(index);
+        auto fence      = m_pQueue->GetVkFence(index);
         A3D_ASSERT(semaphore != null_handle);
         A3D_ASSERT(fence != null_handle);
 
@@ -1010,7 +1010,7 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
             meta.maxContentLightLevel       = pWrap->MaxContentLightLevel;
             meta.maxFrameAverageLightLevel  = pWrap->MaxFrameAverageLightLevel;
 
-            auto pDevice = m_pDevice->GetVulkanDevice();
+            auto pDevice = m_pDevice->GetVkDevice();
             vkSetHdrMetadata( pDevice, 1, &m_SwapChain, &meta );
 
             return true;
@@ -1099,7 +1099,7 @@ bool SwapChain::Create
 //-------------------------------------------------------------------------------------------------
 bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 {
-    auto pNativeInstance = m_pDevice->GetVulkanInstance();
+    auto pNativeInstance = m_pDevice->GetVkInstance();
     A3D_ASSERT(pNativeInstance != null_handle);
 
     VkWin32SurfaceCreateInfoKHR info = {};

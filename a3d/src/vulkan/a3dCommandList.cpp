@@ -46,7 +46,7 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT( pNativeDevice != null_handle );
 
     {
@@ -142,7 +142,7 @@ void CommandList::Term()
     if (m_pDevice == nullptr)
     { return; }
 
-    auto pNativeDevice = m_pDevice->GetVulkanDevice();
+    auto pNativeDevice = m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     if (m_CommandBuffer != null_handle)
@@ -265,7 +265,7 @@ void CommandList::BeginFrameBuffer
 
         colorAttachments[i].sType               = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
         colorAttachments[i].pNext               = nullptr;
-        colorAttachments[i].imageView           = pWrapRTV->GetVulkanImageView();
+        colorAttachments[i].imageView           = pWrapRTV->GetVkImageView();
         colorAttachments[i].imageLayout         = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         colorAttachments[i].resolveMode         = VK_RESOLVE_MODE_NONE;
         colorAttachments[i].resolveImageView    = null_handle;
@@ -295,7 +295,7 @@ void CommandList::BeginFrameBuffer
 
         depthAttachment.sType               = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
         depthAttachment.pNext               = nullptr;
-        depthAttachment.imageView           = pWrapDSV->GetVulkanImageView();
+        depthAttachment.imageView           = pWrapDSV->GetVkImageView();
         depthAttachment.imageLayout         = imageLayout;
         depthAttachment.resolveMode         = VK_RESOLVE_MODE_NONE;
         depthAttachment.resolveImageView    = null_handle;
@@ -459,8 +459,8 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
     auto pWrapPipelineState = static_cast<PipelineState*>(pPipelineState);
     A3D_ASSERT( pWrapPipelineState != nullptr );
 
-    auto bindPoint = pWrapPipelineState->GetVulkanPipelineBindPoint();
-    auto pNativePipelineState = pWrapPipelineState->GetVulkanPipeline();
+    auto bindPoint = pWrapPipelineState->GetVkPipelineBindPoint();
+    auto pNativePipelineState = pWrapPipelineState->GetVkPipeline();
     A3D_ASSERT( pNativePipelineState != null_handle );
 
     vkCmdBindPipeline(m_CommandBuffer, bindPoint, pNativePipelineState);
@@ -512,7 +512,7 @@ void CommandList::SetVertexBuffers
         auto pWrapResource = static_cast<Buffer*>(ppResources[i]);
         A3D_ASSERT( pWrapResource != nullptr );
 
-        buffers[i] = pWrapResource->GetVulkanBuffer();
+        buffers[i] = pWrapResource->GetVkBuffer();
         offsets[i] = (pOffsets != nullptr) ? pOffsets[i] : 0;
     }
 
@@ -541,7 +541,7 @@ void CommandList::SetIndexBuffer
                 ? VK_INDEX_TYPE_UINT16 
                 : VK_INDEX_TYPE_UINT32;
 
-    vkCmdBindIndexBuffer(m_CommandBuffer, pWrapResource->GetVulkanBuffer(), offset, type);
+    vkCmdBindIndexBuffer(m_CommandBuffer, pWrapResource->GetVkBuffer(), offset, type);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -556,7 +556,7 @@ void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
 
     const auto& desc = pWrapCBV->GetDesc();
 
-    m_DescriptorInfo[index].Buffer.buffer = pWrapCBV->GetVulkanBuffer();
+    m_DescriptorInfo[index].Buffer.buffer = pWrapCBV->GetVkBuffer();
     m_DescriptorInfo[index].Buffer.offset = desc.Offset;
     m_DescriptorInfo[index].Buffer.range  = desc.Range;
     m_DescriptorInfo[index].StorageBuffer = false;
@@ -580,7 +580,7 @@ void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
     if (kind == RESOURCE_KIND_BUFFER)
 
     {
-        m_DescriptorInfo[index].Buffer.buffer   = pWrapSRV->GetVulkanBuffer();
+        m_DescriptorInfo[index].Buffer.buffer   = pWrapSRV->GetVkBuffer();
         m_DescriptorInfo[index].Buffer.offset   = desc.FirstElement;
         m_DescriptorInfo[index].Buffer.range    = desc.ElementCount;
         m_DescriptorInfo[index].StorageBuffer   = false;
@@ -588,7 +588,7 @@ void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
     else if (kind == RESOURCE_KIND_TEXTURE)
     {
         m_DescriptorInfo[index].Image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        m_DescriptorInfo[index].Image.imageView   = pWrapSRV->GetVulkanImageView();
+        m_DescriptorInfo[index].Image.imageView   = pWrapSRV->GetVkImageView();
         m_DescriptorInfo[index].StorageBuffer     = false;
     }
     m_DirtyDescriptor = true;
@@ -609,7 +609,7 @@ void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
     auto kind = pWrapView->GetResource()->GetKind();
     if (kind == RESOURCE_KIND_BUFFER)
     {
-        m_DescriptorInfo[index].Buffer.buffer = pWrapView->GetVulkanBuffer();
+        m_DescriptorInfo[index].Buffer.buffer = pWrapView->GetVkBuffer();
         m_DescriptorInfo[index].Buffer.offset = desc.FirstElement;
         m_DescriptorInfo[index].Buffer.range  = desc.ElementCount;
         m_DescriptorInfo[index].StorageBuffer = true;
@@ -617,7 +617,7 @@ void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
     else if (kind == RESOURCE_KIND_TEXTURE)
     {
         m_DescriptorInfo[index].Image.imageLayout   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        m_DescriptorInfo[index].Image.imageView     = pWrapView->GetVulkanImageView();
+        m_DescriptorInfo[index].Image.imageView     = pWrapView->GetVkImageView();
         m_DescriptorInfo[index].StorageBuffer       = false;
     }
     m_DirtyDescriptor = true;
@@ -633,7 +633,7 @@ void CommandList::SetSampler(uint32_t index, ISampler* pSampler)
     auto pWrapSampler = static_cast<Sampler*>(pSampler);
     A3D_ASSERT(pWrapSampler != nullptr);
 
-    m_DescriptorInfo[index].Image.sampler = pWrapSampler->GetVulkanSampler();
+    m_DescriptorInfo[index].Image.sampler = pWrapSampler->GetVkSampler();
     m_DirtyDescriptor = true;
 }
 
@@ -653,14 +653,14 @@ void CommandList::TextureBarrier
     auto pWrapResource = static_cast<Texture*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
 
-    auto pNativeImage = pWrapResource->GetVulkanImage();
+    auto pNativeImage = pWrapResource->GetVkImage();
     A3D_ASSERT( pNativeImage != null_handle );
 
     auto oldLayout = ToNativeImageLayout( prevState );
     auto newLayout = ToNativeImageLayout( nextState );
 
     VkImageSubresourceRange range = {};
-    range.aspectMask     = pWrapResource->GetVulkanImageAspectFlags();
+    range.aspectMask     = pWrapResource->GetVkImageAspectFlags();
     range.baseArrayLayer = 0;
     range.baseMipLevel   = 0;
     range.layerCount     = pWrapResource->GetDesc().DepthOrArraySize;
@@ -750,7 +750,7 @@ void CommandList::BufferBarrier
     auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
-    auto pNativeBuffer = pWrapResource->GetVulkanBuffer();
+    auto pNativeBuffer = pWrapResource->GetVkBuffer();
     A3D_ASSERT(pNativeBuffer != null_handle);
 
     auto srcAccess = ToNativeAccessFlags(prevState);
@@ -894,7 +894,7 @@ void CommandList::ExecuteIndirect
     auto pWrapArgumentBuffer = static_cast<Buffer*>(pArgumentBuffer);
     A3D_ASSERT(pWrapArgumentBuffer != nullptr);
 
-    auto pNativeArgumentBuffer = pWrapArgumentBuffer->GetVulkanBuffer();
+    auto pNativeArgumentBuffer = pWrapArgumentBuffer->GetVkBuffer();
     A3D_ASSERT(pNativeArgumentBuffer != null_handle);
 
     uint32_t* pCounters = nullptr;
@@ -942,10 +942,10 @@ void CommandList::BeginQuery(IQueryPool* pQuery, uint32_t index)
     auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
-    auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+    auto pNativeQueryPool = pWrapQueryPool->GetVkQueryPool();
     A3D_ASSERT(pNativeQueryPool != null_handle);
 
-    auto nativeQueryType = pWrapQueryPool->GetVulkanQueryType();
+    auto nativeQueryType = pWrapQueryPool->GetVkQueryType();
 
     if (nativeQueryType == VK_QUERY_TYPE_TIMESTAMP)
     { vkCmdWriteTimestamp( m_CommandBuffer, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, pNativeQueryPool, index ); }
@@ -964,10 +964,10 @@ void CommandList::EndQuery(IQueryPool* pQuery, uint32_t index)
     auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
-    auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+    auto pNativeQueryPool = pWrapQueryPool->GetVkQueryPool();
     A3D_ASSERT(pNativeQueryPool != null_handle);
 
-    auto nativeQueryType = pWrapQueryPool->GetVulkanQueryType();
+    auto nativeQueryType = pWrapQueryPool->GetVkQueryType();
 
     if (nativeQueryType == VK_QUERY_TYPE_TIMESTAMP)
     { vkCmdWriteTimestamp( m_CommandBuffer, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, pNativeQueryPool, index ); }
@@ -993,13 +993,13 @@ void CommandList::ResolveQuery
     auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
-    auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+    auto pNativeQueryPool = pWrapQueryPool->GetVkQueryPool();
     A3D_ASSERT(pNativeQueryPool != null_handle);
 
     auto pWrapBuffer = static_cast<Buffer*>(pDstBuffer);
     A3D_ASSERT(pWrapBuffer != nullptr);
 
-    auto pNativeBuffer = pWrapBuffer->GetVulkanBuffer();
+    auto pNativeBuffer = pWrapBuffer->GetVkBuffer();
     A3D_ASSERT(pNativeBuffer != null_handle);
 
     VkQueryResultFlags flags = 0; // TODO : 実装チェック.
@@ -1026,7 +1026,7 @@ void CommandList::ResetQuery(IQueryPool* pQuery)
     auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
-    auto pNativeQueryPool = pWrapQueryPool->GetVulkanQueryPool();
+    auto pNativeQueryPool = pWrapQueryPool->GetVkQueryPool();
     A3D_ASSERT(pNativeQueryPool != null_handle);
 
     vkCmdResetQueryPool( m_CommandBuffer, pNativeQueryPool, 0, pQuery->GetDesc().Count );
@@ -1082,8 +1082,8 @@ void CommandList::CopyTextureRegion
     A3D_ASSERT( pWrapSrc != nullptr );
     A3D_ASSERT( pWrapDst != nullptr );
 
-    auto pNativeSrc = pWrapSrc->GetVulkanImage();
-    auto pNativeDst = pWrapDst->GetVulkanImage();
+    auto pNativeSrc = pWrapSrc->GetVkImage();
+    auto pNativeDst = pWrapDst->GetVkImage();
     A3D_ASSERT( pNativeSrc != null_handle );
     A3D_ASSERT( pNativeDst != null_handle );
 
@@ -1099,7 +1099,7 @@ void CommandList::CopyTextureRegion
     region.dstOffset.z = dstOffset.Z;
     
     uint32_t placeSlice;
-    region.dstSubresource.aspectMask     = pWrapDst->GetVulkanImageAspectFlags();
+    region.dstSubresource.aspectMask     = pWrapDst->GetVkImageAspectFlags();
     region.dstSubresource.layerCount     = dstDesc.DepthOrArraySize;
     DecomposeSubresource(
         dstSubResource,
@@ -1113,7 +1113,7 @@ void CommandList::CopyTextureRegion
     region.srcOffset.y = srcOffset.Y;
     region.srcOffset.z = srcOffset.Z;
 
-    region.srcSubresource.aspectMask     = pWrapSrc->GetVulkanImageAspectFlags();
+    region.srcSubresource.aspectMask     = pWrapSrc->GetVkImageAspectFlags();
     region.srcSubresource.layerCount     = srcDesc.DepthOrArraySize;
     DecomposeSubresource(
         srcSubResource,
@@ -1157,8 +1157,8 @@ void CommandList::CopyBufferRegion
 
     vkCmdCopyBuffer( 
         m_CommandBuffer, 
-        pWrapSrc->GetVulkanBuffer(),
-        pWrapDst->GetVulkanBuffer(), 
+        pWrapSrc->GetVkBuffer(),
+        pWrapDst->GetVkBuffer(), 
         1, &region );
 }
 
@@ -1187,7 +1187,7 @@ void CommandList::CopyBufferToTexture
     auto nativeState = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
     VkBufferImageCopy region = {};
-    region.imageSubresource.aspectMask  = pWrapDst->GetVulkanImageAspectFlags();
+    region.imageSubresource.aspectMask  = pWrapDst->GetVkImageAspectFlags();
     region.imageSubresource.layerCount  = dstDesc.DepthOrArraySize;
     region.imageOffset.x                = dstOffset.X;
     region.imageOffset.y                = dstOffset.Y;
@@ -1208,8 +1208,8 @@ void CommandList::CopyBufferToTexture
 
     vkCmdCopyBufferToImage(
         m_CommandBuffer,
-        pWrapSrc->GetVulkanBuffer(),
-        pWrapDst->GetVulkanImage(),
+        pWrapSrc->GetVkBuffer(),
+        pWrapDst->GetVkImage(),
         nativeState,
         1, &region);
 }
@@ -1247,7 +1247,7 @@ void CommandList::CopyTextureToBuffer
     region.imageExtent.width            = srcExtent.Width;
     region.imageExtent.height           = srcExtent.Height;
     region.imageExtent.depth            = srcExtent.Depth;
-    region.imageSubresource.aspectMask  = pWrapSrc->GetVulkanImageAspectFlags();
+    region.imageSubresource.aspectMask  = pWrapSrc->GetVkImageAspectFlags();
     region.imageSubresource.layerCount  = srcDesc.DepthOrArraySize;
 
     uint32_t planeSlice;
@@ -1261,9 +1261,9 @@ void CommandList::CopyTextureToBuffer
 
     vkCmdCopyImageToBuffer(
         m_CommandBuffer,
-        pWrapSrc->GetVulkanImage(),
+        pWrapSrc->GetVkImage(),
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        pWrapDst->GetVulkanBuffer(),
+        pWrapDst->GetVkBuffer(),
         1, &region);
 }
 
@@ -1286,8 +1286,8 @@ void CommandList::ResolveSubresource
     A3D_ASSERT( pWrapSrc != nullptr );
     A3D_ASSERT( pWrapDst != nullptr );
 
-    auto pNativeSrc = pWrapSrc->GetVulkanImage();
-    auto pNativeDst = pWrapDst->GetVulkanImage();
+    auto pNativeSrc = pWrapSrc->GetVkImage();
+    auto pNativeDst = pWrapDst->GetVkImage();
     A3D_ASSERT( pNativeSrc != null_handle );
     A3D_ASSERT( pNativeDst != null_handle );
 
@@ -1298,7 +1298,7 @@ void CommandList::ResolveSubresource
     const auto &srcDesc = pWrapSrc->GetDesc();
 
     VkImageResolve region = {};
-    region.dstSubresource.aspectMask = pWrapDst->GetVulkanImageAspectFlags();
+    region.dstSubresource.aspectMask = pWrapDst->GetVkImageAspectFlags();
     region.dstSubresource.layerCount = dstDesc.DepthOrArraySize;
 
     uint32_t planeSlice;
@@ -1314,7 +1314,7 @@ void CommandList::ResolveSubresource
     region.dstOffset.y = 0;
     region.dstOffset.z = 0;
 
-    region.srcSubresource.aspectMask     = pWrapSrc->GetVulkanImageAspectFlags();
+    region.srcSubresource.aspectMask     = pWrapSrc->GetVkImageAspectFlags();
     region.srcSubresource.layerCount     = srcDesc.DepthOrArraySize;
     DecomposeSubresource(
         srcSubresource,
@@ -1346,7 +1346,7 @@ void CommandList::ExecuteBundle(ICommandList* pCommandList)
     auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
 
-    auto pNativeBundle = pWrapCommandList->GetVulkanCommandBuffer();
+    auto pNativeBundle = pWrapCommandList->GetVkCommandBuffer();
     A3D_ASSERT(pNativeBundle != null_handle);
 
     vkCmdExecuteCommands(m_CommandBuffer, 1, &pNativeBundle);
@@ -1392,7 +1392,7 @@ bool CommandList::UpdateConstantBuffer(IBuffer* pBuffer, size_t offset, size_t s
     if (pWrapBuffer == nullptr || size == 0 || pData == nullptr)
     { return false; }
 
-    vkCmdUpdateBuffer(m_CommandBuffer, pWrapBuffer->GetVulkanBuffer(), offset, size, pData);
+    vkCmdUpdateBuffer(m_CommandBuffer, pWrapBuffer->GetVkBuffer(), offset, size, pData);
     return true;
 }
 
@@ -1415,7 +1415,7 @@ void CommandList::Flush()
     auto pWrapQueue = static_cast<Queue*>(pQueue);
     A3D_ASSERT(pWrapQueue != nullptr);
 
-    auto pNativeQueue = pWrapQueue->GetVulkanQueue();
+    auto pNativeQueue = pWrapQueue->GetVkQueue();
     A3D_ASSERT(pNativeQueue != null_handle);
 
     VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -1439,13 +1439,13 @@ void CommandList::Flush()
 //-------------------------------------------------------------------------------------------------
 //      コマンドプールを取得します.
 //-------------------------------------------------------------------------------------------------
-VkCommandPool CommandList::GetVulkanCommandPool() const
+VkCommandPool CommandList::GetVkCommandPool() const
 { return m_CommandPool; }
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドバッファを取得します.
 //-------------------------------------------------------------------------------------------------
-VkCommandBuffer CommandList::GetVulkanCommandBuffer() const
+VkCommandBuffer CommandList::GetVkCommandBuffer() const
 { return m_CommandBuffer; }
 
 //-------------------------------------------------------------------------------------------------
@@ -1502,8 +1502,8 @@ void CommandList::UpdateDescriptor()
 
     vkCmdPushDescriptorSet(
         m_CommandBuffer,
-        m_pDescriptorSetLayout->GetVulkanPipelineBindPoint(),
-        m_pDescriptorSetLayout->GetVulkanPipelineLayout(),
+        m_pDescriptorSetLayout->GetVkPipelineBindPoint(),
+        m_pDescriptorSetLayout->GetVkPipelineLayout(),
         0,                                      // 0番目を更新.
         count,
         m_WriteDescriptorSet);
