@@ -1467,6 +1467,12 @@ void CommandList::UpdateDescriptor()
     auto desc   = m_pDescriptorSetLayout->GetDesc();
     auto count  = desc.EntryCount;
 
+    if (count == 0)
+    {
+        m_DirtyDescriptor = false;
+        return;
+    }
+
     for(auto i=0u; i<count; ++i)
     {
         m_WriteDescriptorSet[i].dstSet          = m_pDescriptorSetLayout->GetVkDescriptorSet();

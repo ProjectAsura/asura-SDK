@@ -301,6 +301,7 @@ void Queue::ParseCmd()
                     m_pLayoutDesc = nullptr;
                     for(auto i=0; i<64; ++i)
                     { m_pViews[i] = nullptr; }
+                    m_DirtyView = 0;
                 }
                 break;
 
@@ -378,9 +379,8 @@ void Queue::ParseCmd()
                 {
                     ResetDescriptor(pDeviceContext);
 
-                    //ID3D11RenderTargetView* pNullRTVs[8] = {};
-                    //pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
-                    pDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(0, nullptr, nullptr, 0, 0, nullptr, nullptr);
+                    ID3D11RenderTargetView* pNullRTVs[8] = {};
+                    pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
 
                     pCmd += sizeof(ImCmdBase);
                 }
@@ -1389,12 +1389,12 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
             switch(entry.Type)
             {
             case DESCRIPTOR_TYPE_CBV:
-                { pContext->VSSetConstantBuffers(entry.ShaderRegister, 1, pNullCBV); }
+                { pContext->CSSetConstantBuffers(entry.ShaderRegister, 1, pNullCBV); }
                 break;
 
             case DESCRIPTOR_TYPE_SRV_T:
             case DESCRIPTOR_TYPE_SRV_B:
-                { pContext->VSSetShaderResources(entry.ShaderRegister, 1, pNullSRV); }
+                { pContext->CSSetShaderResources(entry.ShaderRegister, 1, pNullSRV); }
                 break;
 
             case DESCRIPTOR_TYPE_UAV_T:
@@ -1403,7 +1403,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
     
             case DESCRIPTOR_TYPE_SMP:
-                { pContext->VSSetSamplers(entry.ShaderRegister, 1, pNullSmp); }
+                { pContext->CSSetSamplers(entry.ShaderRegister, 1, pNullSmp); }
                 break;
             }
         }
