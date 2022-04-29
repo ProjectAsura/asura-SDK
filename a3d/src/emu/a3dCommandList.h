@@ -469,9 +469,6 @@ private:
     IDevice*                m_pDevice;                  //!< デバイスです.
     COMMANDLIST_TYPE        m_Type;                     //!< コマンドリストタイプです.
     CommandBuffer           m_Buffer;                   //!< コマンドバッファです.
-    DescriptorSetLayout*    m_pDescriptorSetLayout;     //!< ディスクリプタセットです.
-    void*                   m_pDescriptor[64] = {};     //!< ディスクリプタです.
-    bool                    m_DirtyDescriptor;          //!< ディスクリプタダーティフラグ.
 
     //=============================================================================================
     // private methods.
@@ -486,11 +483,6 @@ private:
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
     ~CommandList();
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタを更新します.
-    //---------------------------------------------------------------------------------------------
-    void UpdateDescriptor();
 
     CommandList     (const CommandList&) = delete;
     void operator = (const CommandList&) = delete;

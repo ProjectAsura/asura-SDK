@@ -129,6 +129,7 @@
     <ClInclude Include="..\..\..\src\misc\a3dInlines.h" />
     <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
     <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h" />
+    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandList.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandSet.h" />

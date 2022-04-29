@@ -322,14 +322,14 @@ public:
     //!
     //! @return     デバイスを返却します.
     //---------------------------------------------------------------------------------------------
-    ID3D11Device* A3D_APIENTRY GetD3D11Device() const;
+    ID3D11DeviceA3D* A3D_APIENTRY GetD3D11Device() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デバイスコンテキストを取得します.
     //!
     //! @return     デバイスコンテキストを返却します.
     //---------------------------------------------------------------------------------------------
-    ID3D11DeviceContext* A3D_APIENTRY GetD3D11DeviceContext() const;
+    ID3D11DeviceContextA3D* A3D_APIENTRY GetD3D11DeviceContext() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      DXGIファクトリー3を取得します.
@@ -398,8 +398,8 @@ private:
     IDXGIFactory*           m_pFactory;             //!< ファクトリーです.
     IDXGIAdapter*           m_pAdapter;             //!< アダプターです.
     IDXGIOutput*            m_pOutput;              //!< アウトプットです.
-    ID3D11Device*           m_pDevice;              //!< デバイスです.
-    ID3D11DeviceContext*    m_pDeviceContext;       //!< デバイスコンテキストです.
+    ID3D11DeviceA3D*        m_pDevice;              //!< デバイスです.
+    ID3D11DeviceContextA3D* m_pDeviceContext;       //!< デバイスコンテキストです.
     D3D_FEATURE_LEVEL       m_FeatureLevel;         //!< 機能レベル.
     uint64_t                m_TimeStampFrequency;   //!< GPUタイムスタンプの更新頻度(Hz単位)です.
 #if defined(A3D_FOR_WINDOWS10)

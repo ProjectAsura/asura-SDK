@@ -148,6 +148,7 @@
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
     <ClInclude Include="..\..\..\src\misc\a3dInlines.h" />
     <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
+    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

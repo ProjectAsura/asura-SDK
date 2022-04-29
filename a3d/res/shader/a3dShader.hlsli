@@ -7,13 +7,19 @@
 #define A3D_SHADER_HLSLI
 
 #ifdef __spirv__
-#define A3D_LOCATION(x)              [[vk::location(x)]]
-#define A3D_RESOURCE(var, reg, x)    [[vk::binding(x)]] var
-#define A3D_FLIP_Y(var)              var.y = -var.y
+#define A3D_LOCATION(x)                    [[vk::location(x)]]
+#define A3D_RESOURCE(var, reg, x)          [[vk::binding(x)]] var
+#define A3D_COMBINED_RESOURCE(var, reg, x) [[vk::combinedImageSampler]][[vk::binding(x)]] var
+#define A3D_FLIP_Y(var)                    var.y = -var.y
 #else
 #define A3D_LOCATION(x)
-#define A3D_RESOURCE(var, reg, x)    var : register(reg)
+#define A3D_RESOURCE(var, reg, x)          var : register(reg)
+#define A3D_COMBINED_RESOURCE(var, reg, x) var : register(reg)
 #define A3D_FLIP_Y(var)
+#endif
+
+#ifdef __PSSL__
+#include "a3dPSSL.hlsli"
 #endif
 
 #endif//A3D_SHADER_HLSLI

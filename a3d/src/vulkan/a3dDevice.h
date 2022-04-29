@@ -438,6 +438,8 @@ public:
     //---------------------------------------------------------------------------------------------
     void EndFrameCapture(void* windowHandle);
 
+    VkSampler GetDefaultSampler() const;
+
 private:
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // PhysicalDeviceInfo structure
@@ -466,6 +468,7 @@ private:
     uint64_t                    m_TimeStampFrequency;           //!< GPUタイムスタンプの更新頻度(Hz単位)です.
     bool                        m_IsSupportExt[EXT_COUNT];      //!< 拡張機能.
     VmaAllocator                m_Allocator;                    //!< アロケータ.
+    VkSampler                   m_DefaultSampler;               //!< デフォルトサンプラー.
 
     //=============================================================================================
     // private methods.

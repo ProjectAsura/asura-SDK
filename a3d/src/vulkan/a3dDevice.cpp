@@ -401,6 +401,7 @@ Device::Device()
 , m_pGraphicsQueue      (nullptr)
 , m_pComputeQueue       (nullptr)
 , m_pCopyQueue          (nullptr)
+, m_DefaultSampler      (null_handle)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -965,6 +966,36 @@ bool Device::Init(const DeviceDesc* pDesc)
         }
     }
 
+    // デフォルトサンプラー.
+    {
+        VkSamplerCreateInfo info = {};
+        info.sType                      = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        info.pNext                      = nullptr;
+        info.flags                      = 0;
+        info.magFilter                  = VK_FILTER_NEAREST;
+        info.minFilter                  = VK_FILTER_NEAREST;
+        info.mipmapMode                 = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        info.addressModeU               = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.addressModeV               = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.addressModeW               = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        info.mipLodBias                 = 0;
+        info.anisotropyEnable           = VK_FALSE;
+        info.maxAnisotropy              = 0.0f;
+        info.compareEnable              = VK_FALSE;
+        info.compareOp                  = VK_COMPARE_OP_NEVER;
+        info.minLod                     = 0.0f;
+        info.maxLod                     = FLT_MAX;
+        info.borderColor                = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+        info.unnormalizedCoordinates    = VK_FALSE;
+
+        auto ret = vkCreateSampler(m_Device, &info, nullptr, &m_DefaultSampler);
+        if (ret != VK_SUCCESS)
+        {
+            A3D_LOG("Error : vkCreateSampler() Failed. vkResult = %s", ToString(ret));
+            return false;
+        }
+    }
+
     // デバイス情報の設定.
     {
         auto& limits = m_pPhysicalDeviceInfos[0].DeviceProperty.limits;
@@ -996,6 +1027,12 @@ void Device::Term()
     SafeRelease(m_pGraphicsQueue);
     SafeRelease(m_pComputeQueue);
     SafeRelease(m_pCopyQueue);
+
+    if (m_DefaultSampler != null_handle)
+    {
+        vkDestroySampler(m_Device, m_DefaultSampler, nullptr);
+        m_DefaultSampler = null_handle;
+    }
 
     if (m_Allocator != null_handle)
     {

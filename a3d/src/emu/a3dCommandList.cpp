@@ -15,12 +15,10 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 CommandList::CommandList()
-: m_RefCount                (1)
-, m_pDevice                 (nullptr)
-, m_Type                    (COMMANDLIST_TYPE_DIRECT)
-, m_Buffer                  ()
-, m_pDescriptorSetLayout    (nullptr)
-, m_DirtyDescriptor         (false)
+: m_RefCount    (1)
+, m_pDevice     (nullptr)
+, m_Type        (COMMANDLIST_TYPE_DIRECT)
+, m_Buffer      ()
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -72,8 +70,6 @@ void CommandList::Begin()
     cmd.Id = (m_Type == COMMANDLIST_TYPE_DIRECT) ? CMD_BEGIN : CMD_SUB_BEGIN;
     
     m_Buffer.Push(&cmd, sizeof(cmd));
-    m_pDescriptorSetLayout  = nullptr;
-    m_DirtyDescriptor       = false;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -194,15 +190,11 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
 {
-    if (pDescriptorSetLayout == nullptr)
-    {
-        m_pDescriptorSetLayout = nullptr;
-        return;
-    }
+    ImCmdSetDescriptorSetLayout cmd = {};
+    cmd.Id                      = CMD_SET_DESCRIPTORSET_LAYOUT;
+    cmd.pDescriptorSetLayout    = pDescriptorSetLayout;
 
-    auto pWrapDescriptorSetLayout = static_cast<DescriptorSetLayout*>(pDescriptorSetLayout);
-    m_pDescriptorSetLayout  = pWrapDescriptorSetLayout;
-    m_DirtyDescriptor       = true;
+    m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -247,37 +239,40 @@ void CommandList::SetIndexBuffer(IBuffer* pResource, uint64_t offset)
 //-------------------------------------------------------------------------------------------------
 //      定数バッファビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
+void CommandList::SetView(uint32_t index, IConstantBufferView* const pView)
 {
-    if (pResource == nullptr || index >= 64)
-    { return; }
+    ImCmdSetCBV cmd = {};
+    cmd.Id      = CMD_SET_CBV;
+    cmd.Index   = index;
+    cmd.pView   = pView;
 
-    m_pDescriptor[index]    = pResource;
-    m_DirtyDescriptor       = true;
+    m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
 //-------------------------------------------------------------------------------------------------
 //      シェーダリソースビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
+void CommandList::SetView(uint32_t index, IShaderResourceView* const pView)
 {
-    if (pResource == nullptr || index >= 64)
-    { return; }
+    ImCmdSetSRV cmd = {};
+    cmd.Id      = CMD_SET_SRV;
+    cmd.Index   = index;
+    cmd.pView   = pView;
 
-    m_pDescriptor[index]    = pResource;
-    m_DirtyDescriptor       = true;
+    m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
 //-------------------------------------------------------------------------------------------------
 //      アンオーダードアクセスビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
+void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pView)
 {
-    if (pResource == nullptr || index >= 64)
-    { return; }
+    ImCmdSetUAV cmd = {};
+    cmd.Id      = CMD_SET_UAV;
+    cmd.Index   = index;
+    cmd.pView   = pView;
 
-    m_pDescriptor[index]    = pResource;
-    m_DirtyDescriptor       = true;
+    m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -285,11 +280,12 @@ void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetSampler(uint32_t index, ISampler* const pSampler)
 {
-    if (pSampler == nullptr || index >= 64)
-    { return; }
+    ImCmdSetSampler cmd = {};
+    cmd.Id          = CMD_SET_SAMPLER;
+    cmd.Index       = index;
+    cmd.pSampler    = pSampler;
 
-    m_pDescriptor[index]    = pSampler;
-    m_DirtyDescriptor       = true;
+    m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -347,8 +343,6 @@ void CommandList::DrawInstanced
     uint32_t    firstInstance
 )
 {
-    UpdateDescriptor();
-
     ImCmdDrawInstanced cmd = {};
     cmd.Id              = CMD_DRAW_INSTANCED;
     cmd.VertexCount     = vertexCount;
@@ -371,8 +365,6 @@ void CommandList::DrawIndexedInstanced
     uint32_t    firstInstance
 )
 {
-    UpdateDescriptor();
-
     ImCmdDrawIndexedInstanced cmd = {};
     cmd.Id              = CMD_DRAW_INDEXED_INSTANCED;
     cmd.IndexCount      = indexCount;
@@ -389,8 +381,6 @@ void CommandList::DrawIndexedInstanced
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 {
-    UpdateDescriptor();
-
     ImCmdDispatch cmd = {};
     cmd.Id  = CMD_DISPATCH_COMPUTE;
     cmd.X   = x;
@@ -405,8 +395,6 @@ void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 //-------------------------------------------------------------------------------------------------
 void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 {
-    UpdateDescriptor();
-
     ImCmdDispatch cmd = {};
     cmd.Id  = CMD_DISPATCH_MESH;
     cmd.X   = x;
@@ -431,8 +419,6 @@ void CommandList::ExecuteIndirect
 {
     if (pCommandSet == nullptr || pArgumentBuffer == nullptr)
     { return; }
-
-    UpdateDescriptor();
 
     ImCmdExecuteIndirect cmd = {};
     cmd.Id                      = CMD_EXECUTE_INDIRECT;
@@ -766,23 +752,6 @@ void CommandList::End()
 const CommandBuffer* CommandList::GetCommandBuffer() const
 { return &m_Buffer; }
 
-//-------------------------------------------------------------------------------------------------
-//      ディスクリプタを更新します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::UpdateDescriptor()
-{
-    if (!m_DirtyDescriptor || m_pDescriptorSetLayout == nullptr)
-    { return; }
-
-    ImCmdSetDescriptorSetLayout cmd = {};
-    cmd.Id      = CMD_SET_DESCRIPTORSET_LAYOUT;
-    cmd.pDesc   = m_pDescriptorSetLayout->GetDesc();
-    for(auto i=0u; i<64; ++i)
-    { cmd.pDescriptor[i] = m_pDescriptor[i]; }
-
-    m_Buffer.Push(&cmd, sizeof(cmd));
-    m_DirtyDescriptor = false;
-}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

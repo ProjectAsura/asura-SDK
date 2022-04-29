@@ -14,16 +14,20 @@
 #include <allocator/a3dStdAllocator.h>
 #include <a3d.h>
 #include <cassert>
+#include <cfloat>
 #include <atomic>
-#include <mutex>
 
 #if defined(A3D_FOR_WINDOWS10)
 #include <d3d11_4.h>
 #include <dxgi1_5.h>
 #include <dxgi1_6.h>
+using ID3D11DeviceA3D           = ID3D11Device5;
+using ID3D11DeviceContextA3D    = ID3D11DeviceContext4;
 #else
 #include <d3d11_2.h>
 #include <dxgi1_3.h>
+using ID3D11DeviceA3D           = ID3D11Device2;
+using ID3D11DeviceContextA3D    = ID3D11DeviceContext2;
 #endif
 
 #include "emu/a3dImCmd.h"
@@ -32,6 +36,7 @@
 
 #include "misc/a3dBlob.h"
 #include "misc/a3dLogger.h"
+#include "misc/a3dSpinLock.h"
 
 #include "a3dUtil.h"
 #include "a3dDevice.h"

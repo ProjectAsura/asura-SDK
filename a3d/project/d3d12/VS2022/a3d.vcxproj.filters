@@ -200,5 +200,8 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dDred.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

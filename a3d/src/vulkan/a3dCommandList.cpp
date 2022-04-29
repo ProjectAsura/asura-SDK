@@ -559,7 +559,6 @@ void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
     m_DescriptorInfo[index].Buffer.buffer = pWrapCBV->GetVkBuffer();
     m_DescriptorInfo[index].Buffer.offset = desc.Offset;
     m_DescriptorInfo[index].Buffer.range  = desc.Range;
-    m_DescriptorInfo[index].StorageBuffer = false;
     m_DirtyDescriptor = true;
 }
 
@@ -583,13 +582,19 @@ void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
         m_DescriptorInfo[index].Buffer.buffer   = pWrapSRV->GetVkBuffer();
         m_DescriptorInfo[index].Buffer.offset   = desc.FirstElement;
         m_DescriptorInfo[index].Buffer.range    = desc.ElementCount;
-        m_DescriptorInfo[index].StorageBuffer   = false;
     }
     else if (kind == RESOURCE_KIND_TEXTURE)
     {
-        m_DescriptorInfo[index].Image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        auto pWrapTexture = static_cast<Texture*>(pWrapSRV->GetResource());
+        A3D_ASSERT(pWrapTexture != nullptr);
+
+        auto imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        if (pWrapTexture->GetDesc().Usage & RESOURCE_USAGE_UNORDERED_ACCESS)
+        { imageLayout = VK_IMAGE_LAYOUT_GENERAL; }
+
+        m_DescriptorInfo[index].Image.imageLayout = imageLayout;
         m_DescriptorInfo[index].Image.imageView   = pWrapSRV->GetVkImageView();
-        m_DescriptorInfo[index].StorageBuffer     = false;
     }
     m_DirtyDescriptor = true;
 }
@@ -612,13 +617,11 @@ void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
         m_DescriptorInfo[index].Buffer.buffer = pWrapView->GetVkBuffer();
         m_DescriptorInfo[index].Buffer.offset = desc.FirstElement;
         m_DescriptorInfo[index].Buffer.range  = desc.ElementCount;
-        m_DescriptorInfo[index].StorageBuffer = true;
     }
     else if (kind == RESOURCE_KIND_TEXTURE)
     {
-        m_DescriptorInfo[index].Image.imageLayout   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_DescriptorInfo[index].Image.imageLayout   = VK_IMAGE_LAYOUT_GENERAL;
         m_DescriptorInfo[index].Image.imageView     = pWrapView->GetVkImageView();
-        m_DescriptorInfo[index].StorageBuffer       = false;
     }
     m_DirtyDescriptor = true;
 }
@@ -650,6 +653,13 @@ void CommandList::TextureBarrier
     if (pResource == nullptr || prevState == nextState)
     { return; }
 
+    if ((prevState == RESOURCE_STATE_UNORDERED_ACCESS && nextState == RESOURCE_STATE_SHADER_READ)
+     || (prevState == RESOURCE_STATE_SHADER_READ      && nextState == RESOURCE_STATE_UNORDERED_ACCESS))
+    {
+        // VK_IMAGE_LAYOUT_GENERAL のままにしておく.
+        return;
+    }
+
     auto pWrapResource = static_cast<Texture*>(pResource);
     A3D_ASSERT( pWrapResource != nullptr );
 
@@ -658,6 +668,14 @@ void CommandList::TextureBarrier
 
     auto oldLayout = ToNativeImageLayout( prevState );
     auto newLayout = ToNativeImageLayout( nextState );
+
+    // UAV初回用.
+    if (newLayout == RESOURCE_STATE_SHADER_READ && (pResource->GetDesc().Usage & RESOURCE_USAGE_UNORDERED_ACCESS))
+    { newLayout = VK_IMAGE_LAYOUT_GENERAL; }
+
+    // 同じ場合は設定する必要が無い.
+    if (oldLayout == newLayout)
+    { return; }
 
     VkImageSubresourceRange range = {};
     range.aspectMask     = pWrapResource->GetVkImageAspectFlags();
@@ -849,23 +867,13 @@ void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
     if (x == 0 && y == 0 && z == 0)
     { return; }
 
-    // NVIDIA拡張ではVulkanでは y=1, z=1 に固定とのことなので，
-    // 条件を満たしていなければ実行できない扱いにする.
-    if (y != 1 || z != 1)
-    {
-        A3D_ASSERT(y == 1);
-        A3D_ASSERT(z == 1);
-
-        // Release版を考慮して処理を抜ける.
-        return;
-    }
-
     if (vkCmdDrawMeshTasks == nullptr)
     { return; }
 
     UpdateDescriptor();
 
-    vkCmdDrawMeshTasks( m_CommandBuffer, x, 0 );
+    auto taskCount = x * y * z;
+    vkCmdDrawMeshTasks( m_CommandBuffer, taskCount, 0 );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1471,26 +1479,29 @@ void CommandList::UpdateDescriptor()
             m_WriteDescriptorSet[i].pBufferInfo     = &m_DescriptorInfo[i].Buffer;
             m_WriteDescriptorSet[i].pImageInfo      = nullptr;
         }
-        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV)
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV_T)
         {
             m_WriteDescriptorSet[i].descriptorType  = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
             m_WriteDescriptorSet[i].pImageInfo      = &m_DescriptorInfo[i].Image;
             m_WriteDescriptorSet[i].pBufferInfo     = nullptr;
         }
-        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV)
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SRV_B)
         {
-            if (m_DescriptorInfo[i].StorageBuffer)
-            {
-                m_WriteDescriptorSet[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                m_WriteDescriptorSet[i].pBufferInfo    = &m_DescriptorInfo[i].Buffer;
-                m_WriteDescriptorSet[i].pImageInfo     = nullptr;
-            }
-            else
-            {
-                m_WriteDescriptorSet[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                m_WriteDescriptorSet[i].pImageInfo     = &m_DescriptorInfo[i].Image;
-                m_WriteDescriptorSet[i].pBufferInfo    = nullptr;
-            }
+            m_WriteDescriptorSet[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            m_WriteDescriptorSet[i].pImageInfo     = nullptr;
+            m_WriteDescriptorSet[i].pBufferInfo    = &m_DescriptorInfo[i].Buffer;
+        }
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV_T)
+        {
+            m_WriteDescriptorSet[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            m_WriteDescriptorSet[i].pImageInfo    = &m_DescriptorInfo[i].Image;
+            m_WriteDescriptorSet[i].pBufferInfo   = nullptr;
+        }
+        else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_UAV_B)
+        {
+            m_WriteDescriptorSet[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            m_WriteDescriptorSet[i].pImageInfo     = nullptr;
+            m_WriteDescriptorSet[i].pBufferInfo    = &m_DescriptorInfo[i].Buffer;
         }
         else if (desc.Entries[i].Type == DESCRIPTOR_TYPE_SMP)
         {

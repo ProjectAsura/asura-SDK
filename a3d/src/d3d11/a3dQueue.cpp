@@ -13,6 +13,13 @@
     #include <pix.h>
 #endif
 
+namespace {
+
+constexpr uint8_t DIRTY_DESCRIPTOR  = 0x1 << 0;
+constexpr uint8_t DIRTY_COMPUTE     = 0x1 << 1;
+
+} // namespace
+
 
 namespace a3d {
 
@@ -29,6 +36,7 @@ Queue::Queue()
 , m_MaxSubmitCount  (0)
 , m_SubmitIndex     (0)
 , m_Frequency       (0)
+, m_pLayoutDesc     (nullptr)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -76,6 +84,24 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
         }
     }
 
+#ifdef A3D_FOR_WINDOWS10
+    {
+        auto hr = pD3D11Device->CreateFence(0, D3D11_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_pFence));
+        if (FAILED(hr))
+        {
+            A3D_LOG("Error : ID3D11Device::CreateFence() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+
+        m_Event = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+        if (m_Event == nullptr)
+        {
+            A3D_LOG("Error : CreateEventEx() Failed.");
+            return false;
+        }
+    }
+#endif
+
     return true;
 }
 
@@ -86,6 +112,18 @@ void Queue::Term()
 {
     if (m_pDevice == nullptr)
     { return; }
+
+#ifdef A3D_FOR_WINDOWS10
+    if (m_pFence != nullptr && m_Event != nullptr)
+    { WaitIdle(); }
+
+    if (m_Event != nullptr)
+    {
+        CloseHandle(m_Event);
+        m_Event = nullptr;
+    }
+    SafeRelease(m_pFence);
+#endif
 
     m_pDevice->GetD3D11DeviceContext()->ClearState();
 
@@ -140,7 +178,7 @@ void Queue::GetDevice(IDevice** ppDevice)
 bool Queue::Submit( ICommandList* pCommandList )
 {
     A3D_UNUSED(pCommandList);
-    std::lock_guard<std::mutex> locker(m_Mutex);
+    LockGuard locker(&m_Lock);
 
     if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
     { return false; }
@@ -164,10 +202,24 @@ void Queue::Execute( IFence* pFence )
     if (pD3D11DeviceContext->GetData(m_pQuery, &data, sizeof(data), 0) != S_FALSE)
     { m_Frequency = data.Frequency; }
 
+#ifdef A3D_FOR_WINDOWS10
+    if (pFence != nullptr)
+    {
+        auto pWrapFence = static_cast<Fence*>(pFence);
+        A3D_ASSERT(pWrapFence != nullptr);
+
+        auto pD3D11Fence = pWrapFence->GetD3D11Fence();
+        auto fenceValue  = pWrapFence->GetFenceValue();
+        pD3D11DeviceContext->Signal(pD3D11Fence, fenceValue);
+        pWrapFence->AdvanceCount();
+    }
+    ParseCmd();
+    m_SubmitIndex = 0;
+#else
     ID3D11Query* pFecneQuery = nullptr;
     if (pFence != nullptr)
     {
-        auto pWrapFence = reinterpret_cast<Fence*>(pFence);
+        auto pWrapFence = static_cast<Fence*>(pFence);
         A3D_ASSERT(pWrapFence != nullptr);
         pFecneQuery = pWrapFence->GetD3D11Query();
     }
@@ -181,6 +233,7 @@ void Queue::Execute( IFence* pFence )
 
     if (pFecneQuery != nullptr)
     { pD3D11DeviceContext->End(pFecneQuery); }
+#endif
 
 }
 
@@ -192,8 +245,14 @@ void Queue::WaitIdle()
     auto pD3D11DeviceContext = m_pDevice->GetD3D11DeviceContext();
     A3D_ASSERT(pD3D11DeviceContext != nullptr);
 
+#ifdef A3D_FOR_WINDOWS10
+    m_pFence->SetEventOnCompletion(1, m_Event);
+    pD3D11DeviceContext->Signal(m_pFence, 1);
+    WaitForSingleObject(m_Event, INFINITE);
+#else
     while(pD3D11DeviceContext->GetData(m_pQuery, nullptr, 0, 0) == S_FALSE)
     { /* DO_NOTHING */ }
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -220,6 +279,8 @@ void Queue::ParseCmd()
     float    blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     uint32_t stencilRef     = 0;
 
+    ImCmdSetDescriptorSetLayout* pPrevDescriptorSetLayoutCmd = nullptr;
+
     for(auto i=0u; i<m_SubmitIndex; ++i)
     {
         auto pCmd = m_pCommandLists[i]->GetCommandBuffer()->GetBuffer();
@@ -236,6 +297,10 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdBegin*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
                     pCmd += sizeof(ImCmdBegin);
+
+                    m_pLayoutDesc = nullptr;
+                    for(auto i=0; i<64; ++i)
+                    { m_pViews[i] = nullptr; }
                 }
                 break;
 
@@ -250,6 +315,12 @@ void Queue::ParseCmd()
 
             case CMD_BEGIN_FRAME_BUFFER:
                 {
+                    if (m_DirtyView & DIRTY_COMPUTE)
+                    {
+                        ResetDescriptor(pDeviceContext);
+                        m_DirtyView &= ~DIRTY_COMPUTE;
+                    }
+
                     auto cmd = reinterpret_cast<ImCmdBeginFrameBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
@@ -305,11 +376,12 @@ void Queue::ParseCmd()
 
             case CMD_END_FRAME_BUFFER:
                 {
-                    ID3D11RenderTargetView* pNullRTVs[] = {
-                        nullptr, nullptr, nullptr, nullptr,
-                        nullptr, nullptr, nullptr, nullptr
-                    };
-                    pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
+                    ResetDescriptor(pDeviceContext);
+
+                    //ID3D11RenderTargetView* pNullRTVs[8] = {};
+                    //pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
+                    pDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(0, nullptr, nullptr, 0, 0, nullptr, nullptr);
+
                     pCmd += sizeof(ImCmdBase);
                 }
                 break;
@@ -341,7 +413,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetViewports*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    D3D11_VIEWPORT viewports[16];
+                    D3D11_VIEWPORT viewports[16] = {};
                     for(auto i=0u; i<cmd->Count; ++i)
                     {
                         viewports[i].TopLeftX   = cmd->Viewports[i].X;
@@ -363,7 +435,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetScissors*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    D3D11_RECT rects[16];
+                    D3D11_RECT rects[16] = {};
                     for(auto i=0u; i<cmd->Count; ++i)
                     {
                         rects[i].left   = cmd->Rects[i].Offset.X;
@@ -395,261 +467,14 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetDescriptorSetLayout*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    for(auto i=0u; i<cmd->pDesc->EntryCount; ++i)
+                    ResetDescriptor(pDeviceContext);
+
+                    if (cmd->pDescriptorSetLayout != nullptr)
                     {
-                        auto& entry = cmd->pDesc->Entries[i];
+                        auto descriptorSetLayout = static_cast<DescriptorSetLayout*>(cmd->pDescriptorSetLayout);
+                        A3D_ASSERT(descriptorSetLayout != nullptr);
 
-                        if (entry.ShaderMask & SHADER_MASK_VS)
-                        {
-                            switch(entry.Type)
-                            {
-                            case DESCRIPTOR_TYPE_CBV:
-                                {
-                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                                    auto pCBV = pWrapView->GetD3D11Buffer();
-                                    pDeviceContext->VSSetConstantBuffers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pCBV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SRV:
-                                {
-                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
-                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
-                                    pDeviceContext->VSSetShaderResources(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSRV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SMP:
-                                {
-                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
-                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
-                                    pDeviceContext->VSSetSamplers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSmp);
-                                }
-                                break;
-                            }
-                        }
-                        
-                        if (entry.ShaderMask & SHADER_MASK_DS)
-                        {
-                            switch(entry.Type)
-                            {
-                            case DESCRIPTOR_TYPE_CBV:
-                                {
-                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                                    auto pCBV = pWrapView->GetD3D11Buffer();
-                                    pDeviceContext->DSSetConstantBuffers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pCBV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SRV:
-                                {
-                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
-                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
-                                    pDeviceContext->DSSetShaderResources(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSRV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SMP:
-                                {
-                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
-                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
-                                    pDeviceContext->DSSetSamplers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSmp);
-                                }
-                                break;
-                            }
-                        }
-
-                        //if (entry.ShaderMask & SHADER_MASK_GS)
-                        //{
-                        //    switch(entry.Type)
-                        //    {
-                        //    case DESCRIPTOR_TYPE_CBV:
-                        //        {
-                        //            auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                        //            auto pCBV = pWrapView->GetD3D11Buffer();
-                        //            pDeviceContext->GSSetConstantBuffers(
-                        //                entry.ShaderRegister,
-                        //                1,
-                        //                &pCBV);
-                        //        }
-                        //        break;
-
-                        //    case DESCRIPTOR_TYPE_SRV:
-                        //        {
-                        //            auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
-                        //            auto pSRV = pWrapView->GetD3D11ShaderResourceView();
-                        //            pDeviceContext->GSSetShaderResources(
-                        //                entry.ShaderRegister,
-                        //                1,
-                        //                &pSRV);
-                        //        }
-                        //        break;
-
-                        //    case DESCRIPTOR_TYPE_SMP:
-                        //        {
-                        //            auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
-                        //            auto pSmp = pWrapSmp->GetD3D11SamplerState();
-                        //            pDeviceContext->GSSetSamplers(
-                        //                entry.ShaderRegister,
-                        //                1,
-                        //                &pSmp);
-                        //        }
-                        //        break;
-                        //    }
-                        //}
-
-                        if (entry.ShaderMask & SHADER_MASK_HS)
-                        {
-                            switch(entry.Type)
-                            {
-                            case DESCRIPTOR_TYPE_CBV:
-                                {
-                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                                    auto pCBV = pWrapView->GetD3D11Buffer();
-                                    pDeviceContext->HSSetConstantBuffers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pCBV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SRV:
-                                {
-                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
-                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
-                                    pDeviceContext->HSSetShaderResources(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSRV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SMP:
-                                {
-                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
-                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
-                                    pDeviceContext->HSSetSamplers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSmp);
-                                }
-                                break;
-                            }
-                        }
-
-                        if (entry.ShaderMask & SHADER_MASK_PS)
-                        {
-                            switch(entry.Type)
-                            {
-                            case DESCRIPTOR_TYPE_CBV:
-                                {
-                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                                    auto pCBV = pWrapView->GetD3D11Buffer();
-                                    pDeviceContext->PSSetConstantBuffers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pCBV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SRV:
-                                {
-                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
-                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
-                                    pDeviceContext->PSSetShaderResources(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSRV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SMP:
-                                {
-                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
-                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
-                                    pDeviceContext->PSSetSamplers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSmp);
-                                }
-                                break;
-                            }
-                        }
-
-                        if (entry.ShaderMask & SHADER_MASK_CS)
-                        {
-                            switch(entry.Type)
-                            {
-                            case DESCRIPTOR_TYPE_CBV:
-                                {
-                                    auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                                    auto pCBV = pWrapView->GetD3D11Buffer();
-                                    pDeviceContext->CSSetConstantBuffers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pCBV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SRV:
-                                {
-                                    auto pWrapView = static_cast<ShaderResourceView*>(cmd->pDescriptor[i]);
-                                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
-                                    pDeviceContext->CSSetShaderResources(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSRV);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_SMP:
-                                {
-                                    auto pWrapSmp = static_cast<Sampler*>(cmd->pDescriptor[i]);
-                                    auto pSmp = pWrapSmp->GetD3D11SamplerState();
-                                    pDeviceContext->CSSetSamplers(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pSmp);
-                                }
-                                break;
-
-                            case DESCRIPTOR_TYPE_UAV:
-                                {
-                                    auto pWrapView = static_cast<UnorderedAccessView*>(cmd->pDescriptor[i]);
-                                    auto pUAV = pWrapView->GetD3D11UnorderedAccessView();
-                                    pDeviceContext->CSGetUnorderedAccessViews(
-                                        entry.ShaderRegister,
-                                        1,
-                                        &pUAV);
-                                }
-                                break;
-                            }
-                        }
-
-
-                        if (entry.Type == DESCRIPTOR_TYPE_CBV)
-                        {
-                            auto pWrapView = static_cast<ConstantBufferView*>(cmd->pDescriptor[i]);
-                            pWrapView->UpdateSubsource(pDeviceContext);
-                        }
+                        m_pLayoutDesc = descriptorSetLayout->GetDesc();
                     }
 
                     pCmd += sizeof(ImCmdSetDescriptorSetLayout);
@@ -661,9 +486,9 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetVertexBuffers*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    ID3D11Buffer* pBuffers[32] = {};
-                    uint32_t strides[32] = {};
-                    uint32_t offsets[32] = {};
+                    ID3D11Buffer*   pBuffers[32] = {};
+                    uint32_t        strides [32] = {};
+                    uint32_t        offsets [32] = {};
 
                     for(auto i=0u; i<cmd->Count; ++i)
                     {
@@ -705,14 +530,66 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_SET_CBV:
+                {
+                    auto cmd = reinterpret_cast<ImCmdSetCBV*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    A3D_ASSERT(cmd->Index < 64);
+                    m_pViews[cmd->Index] = cmd->pView;
+                    m_DirtyView = true;
+
+                    pCmd += sizeof(ImCmdSetCBV);
+                }
+                break;
+
+            case CMD_SET_SRV:
+                {
+                    auto cmd = reinterpret_cast<ImCmdSetSRV*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    A3D_ASSERT(cmd->Index < 64);
+                    m_pViews[cmd->Index] = cmd->pView;
+                    m_DirtyView = true;
+
+                    pCmd += sizeof(ImCmdSetSRV);
+                }
+                break;
+
+            case CMD_SET_UAV:
+                {
+                    auto cmd = reinterpret_cast<ImCmdSetUAV*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    A3D_ASSERT(cmd->Index < 64);
+                    m_pViews[cmd->Index] = cmd->pView;
+                    m_DirtyView = true;
+
+                    pCmd += sizeof(ImCmdSetUAV);
+                }
+                break;
+
+            case CMD_SET_SAMPLER:
+                {
+                    auto cmd = reinterpret_cast<ImCmdSetSampler*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    A3D_ASSERT(cmd->Index < 64);
+                    m_pViews[cmd->Index] = cmd->pSampler;
+                    m_DirtyView = true;
+
+                    pCmd += sizeof(ImCmdSetSampler);
+                }
+                break;
+
             case CMD_TEXTURE_BARRIER:
                 {
                     auto cmd = reinterpret_cast<ImCmdTextureBarrier*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pTexture = static_cast<Texture*>(cmd->pResource);
-
-                    pDeviceContext->Flush();
+                    A3D_UNUSED(cmd);
+                    //auto pTexture = static_cast<Texture*>(cmd->pResource);
+                    //pDeviceContext->Flush();
 
                     pCmd += sizeof(ImCmdTextureBarrier);
                 }
@@ -723,9 +600,9 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdBufferBarrier*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    auto pBuffer = reinterpret_cast<Buffer*>(cmd->pResource);
-
-                    pDeviceContext->Flush();
+                    A3D_UNUSED(cmd);
+                    //auto pBuffer = reinterpret_cast<Buffer*>(cmd->pResource);
+                    //pDeviceContext->Flush();
 
                     pCmd += sizeof(ImCmdBufferBarrier);
                 }
@@ -733,6 +610,8 @@ void Queue::ParseCmd()
 
             case CMD_DRAW_INSTANCED:
                 {
+                    UpdateDescriptor(pDeviceContext);
+
                     auto cmd = reinterpret_cast<ImCmdDrawInstanced*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
@@ -748,6 +627,8 @@ void Queue::ParseCmd()
 
             case CMD_DRAW_INDEXED_INSTANCED:
                 {
+                    UpdateDescriptor(pDeviceContext);
+
                     auto cmd = reinterpret_cast<ImCmdDrawIndexedInstanced*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
@@ -764,6 +645,8 @@ void Queue::ParseCmd()
 
             case CMD_DISPATCH_COMPUTE:
                 {
+                    UpdateDescriptor(pDeviceContext);
+
                     auto cmd = reinterpret_cast<ImCmdDispatch*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
@@ -771,6 +654,8 @@ void Queue::ParseCmd()
                         cmd->X,
                         cmd->Y,
                         cmd->Z);
+
+                    m_DirtyView |= DIRTY_COMPUTE;
 
                     pCmd += sizeof(ImCmdDispatch);
                 }
@@ -791,6 +676,8 @@ void Queue::ParseCmd()
 
             case CMD_EXECUTE_INDIRECT:
                 {
+                    UpdateDescriptor(pDeviceContext);
+
                     auto cmd = reinterpret_cast<ImCmdExecuteIndirect*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
@@ -827,7 +714,10 @@ void Queue::ParseCmd()
                             break;
 
                         case INDIRECT_ARGUMENT_TYPE_DISPATCH_COMPUTE:
-                            { pDeviceContext->DispatchIndirect(pNativeArgumentBuffer, offset); }
+                            {
+                                pDeviceContext->DispatchIndirect(pNativeArgumentBuffer, offset);
+                                m_DirtyView |= DIRTY_COMPUTE;
+                            }
                             break;
 
                         case INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH:
@@ -1140,10 +1030,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdPushMarker*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    // ID3D11DeviceContext2じゃないと実行できない.
-                    #if 0
-                        //PIXBeginEvent(pDeviceContext, 0, cmd->Tag);
-                    #endif
+                    PIXBeginEvent(pDeviceContext, 0, cmd->Tag);
 
                     pCmd += sizeof(ImCmdPushMarker);
                 }
@@ -1154,10 +1041,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdPopMarker*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    // ID3D11DeviceContext2じゃないと実行できない.
-                    #if 0
-                        //PIXEndEvent(pDeviceContext);
-                    #endif
+                    PIXEndEvent(pDeviceContext);
 
                     pCmd += sizeof(ImCmdPopMarker);
                 }
@@ -1201,6 +1085,9 @@ void Queue::ParseCmd()
 
             case CMD_END:
                 {
+                    ResetDescriptor(pDeviceContext);
+                    m_pLayoutDesc = nullptr;
+
                     auto cmd = reinterpret_cast<ImCmdEnd*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
                     end = true;
@@ -1210,6 +1097,320 @@ void Queue::ParseCmd()
                 break;
             }
         }
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプターを更新します.
+//-------------------------------------------------------------------------------------------------
+void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
+{
+    if (!(m_DirtyView & DIRTY_DESCRIPTOR) || m_pLayoutDesc == nullptr) 
+    { return; }
+
+    auto count = m_pLayoutDesc->EntryCount;
+
+    for(auto i=0u; i<count; ++i)
+    {
+        auto& entry = m_pLayoutDesc->Entries[i];
+
+        if (entry.ShaderMask & SHADER_MASK_VS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                {
+                    auto pWrapView = static_cast<ConstantBufferView*>(m_pViews[i]);
+                    auto pCBV = pWrapView->GetD3D11Buffer();
+                    pContext->VSSetConstantBuffers(entry.ShaderRegister, 1, &pCBV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                {
+                    auto pWrapView = static_cast<ShaderResourceView*>(m_pViews[i]);
+                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                    pContext->VSSetShaderResources(entry.ShaderRegister, 1, &pSRV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SMP:
+                {
+                    auto pWrapView = static_cast<Sampler*>(m_pViews[i]);
+                    auto pSmp = pWrapView->GetD3D11SamplerState();
+                    pContext->VSSetSamplers(entry.ShaderRegister, 1, &pSmp);
+                }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_DS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                {
+                    auto pWrapView = static_cast<ConstantBufferView*>(m_pViews[i]);
+                    auto pCBV = pWrapView->GetD3D11Buffer();
+                    pContext->DSSetConstantBuffers(entry.ShaderRegister, 1, &pCBV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                {
+                    auto pWrapView = static_cast<ShaderResourceView*>(m_pViews[i]);
+                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                    pContext->DSSetShaderResources(entry.ShaderRegister, 1, &pSRV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SMP:
+                {
+                    auto pWrapView = static_cast<Sampler*>(m_pViews[i]);
+                    auto pSmp = pWrapView->GetD3D11SamplerState();
+                    pContext->DSSetSamplers(entry.ShaderRegister, 1, &pSmp);
+                }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_HS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                {
+                    auto pWrapView = static_cast<ConstantBufferView*>(m_pViews[i]);
+                    auto pCBV = pWrapView->GetD3D11Buffer();
+                    pContext->HSSetConstantBuffers(entry.ShaderRegister, 1, &pCBV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                {
+                    auto pWrapView = static_cast<ShaderResourceView*>(m_pViews[i]);
+                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                    pContext->HSSetShaderResources(entry.ShaderRegister, 1, &pSRV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SMP:
+                {
+                    auto pWrapView = static_cast<Sampler*>(m_pViews[i]);
+                    auto pSmp = pWrapView->GetD3D11SamplerState();
+                    pContext->HSSetSamplers(entry.ShaderRegister, 1, &pSmp);
+                }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_PS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                {
+                    auto pWrapView = static_cast<ConstantBufferView*>(m_pViews[i]);
+                    auto pCBV = pWrapView->GetD3D11Buffer();
+                    pContext->PSSetConstantBuffers(entry.ShaderRegister, 1, &pCBV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                {
+                    auto pWrapView = static_cast<ShaderResourceView*>(m_pViews[i]);
+                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                    pContext->PSSetShaderResources(entry.ShaderRegister, 1, &pSRV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SMP:
+                {
+                    auto pWrapView = static_cast<Sampler*>(m_pViews[i]);
+                    auto pSmp = pWrapView->GetD3D11SamplerState();
+                    pContext->PSSetSamplers(entry.ShaderRegister, 1, &pSmp);
+                }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_CS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                {
+                    auto pWrapView = static_cast<ConstantBufferView*>(m_pViews[i]);
+                    auto pCBV = pWrapView->GetD3D11Buffer();
+                    pContext->CSSetConstantBuffers(entry.ShaderRegister, 1, &pCBV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                {
+                    auto pWrapView = static_cast<ShaderResourceView*>(m_pViews[i]);
+                    auto pSRV = pWrapView->GetD3D11ShaderResourceView();
+                    pContext->CSSetShaderResources(entry.ShaderRegister, 1, &pSRV);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_UAV_T:
+            case DESCRIPTOR_TYPE_UAV_B:
+                {
+                    auto pWrapView  = static_cast<UnorderedAccessView*>(m_pViews[i]);
+                    auto pUAV       = pWrapView->GetD3D11UnorderedAccessView();
+                    auto count      = 0u;
+                    pContext->CSSetUnorderedAccessViews(entry.ShaderRegister, 1, &pUAV, &count);
+                }
+                break;
+
+            case DESCRIPTOR_TYPE_SMP:
+                {
+                    auto pWrapView = static_cast<Sampler*>(m_pViews[i]);
+                    auto pSmp = pWrapView->GetD3D11SamplerState();
+                    pContext->CSSetSamplers(entry.ShaderRegister, 1, &pSmp);
+                }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_AS)
+        {
+            /* DO_NOTHING */
+        }
+        else if (entry.ShaderMask & SHADER_MASK_MS)
+        {
+            /* DO_NOTHING */
+        }
+
+        if (entry.Type == DESCRIPTOR_TYPE_CBV)
+        {
+            auto pWrapView = static_cast<ConstantBufferView*>(m_pViews[i]);
+            pWrapView->UpdateSubsource(pContext);
+        }
+    }
+
+    m_DirtyView &= ~DIRTY_DESCRIPTOR;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプターをリセットします.
+//-------------------------------------------------------------------------------------------------
+void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
+{
+    ID3D11Buffer*               pNullCBV[1] = {};
+    ID3D11ShaderResourceView*   pNullSRV[1] = {};
+    ID3D11UnorderedAccessView*  pNullUAV[1] = {};
+    ID3D11SamplerState*         pNullSmp[1] = {};
+
+    if (m_pLayoutDesc == nullptr)
+    { return; }
+
+    auto count = m_pLayoutDesc->EntryCount;
+    for(auto i=0u; i<count; ++i)
+    {
+        auto& entry = m_pLayoutDesc->Entries[i];
+
+        if (entry.ShaderMask & SHADER_MASK_VS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                { pContext->VSSetConstantBuffers(entry.ShaderRegister, 1, pNullCBV); }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                { pContext->VSSetShaderResources(entry.ShaderRegister, 1, pNullSRV); }
+                break;
+    
+            case DESCRIPTOR_TYPE_SMP:
+                { pContext->VSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_DS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                { pContext->DSSetConstantBuffers(entry.ShaderRegister, 1, pNullCBV); }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                { pContext->DSSetShaderResources(entry.ShaderRegister, 1, pNullSRV); }
+                break;
+    
+            case DESCRIPTOR_TYPE_SMP:
+                { pContext->DSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_HS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                { pContext->HSSetConstantBuffers(entry.ShaderRegister, 1, pNullCBV); }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                { pContext->HSSetShaderResources(entry.ShaderRegister, 1, pNullSRV); }
+                break;
+    
+            case DESCRIPTOR_TYPE_SMP:
+                { pContext->HSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_PS)
+        {
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                { pContext->PSSetConstantBuffers(entry.ShaderRegister, 1, pNullCBV); }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                { pContext->PSSetShaderResources(entry.ShaderRegister, 1, pNullSRV); }
+                break;
+    
+            case DESCRIPTOR_TYPE_SMP:
+                { pContext->PSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_CS)
+        {
+            auto dummy = 0u;
+            switch(entry.Type)
+            {
+            case DESCRIPTOR_TYPE_CBV:
+                { pContext->VSSetConstantBuffers(entry.ShaderRegister, 1, pNullCBV); }
+                break;
+
+            case DESCRIPTOR_TYPE_SRV_T:
+            case DESCRIPTOR_TYPE_SRV_B:
+                { pContext->VSSetShaderResources(entry.ShaderRegister, 1, pNullSRV); }
+                break;
+
+            case DESCRIPTOR_TYPE_UAV_T:
+            case DESCRIPTOR_TYPE_UAV_B:
+                { pContext->CSSetUnorderedAccessViews(entry.ShaderRegister, 1, pNullUAV, &dummy); }
+                break;
+    
+            case DESCRIPTOR_TYPE_SMP:
+                { pContext->VSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                break;
+            }
+        }
+        else if (entry.ShaderMask & SHADER_MASK_AS)
+        { /* DO_NOTHING */ }
+        else if (entry.ShaderMask & SHADER_MASK_MS)
+        { /* DO_NOTHING */ }
     }
 }
 

@@ -159,7 +159,7 @@ private:
     // private variables.
     //=============================================================================================
     std::atomic<uint32_t>       m_RefCount;                         //!< 参照カウンタです.
-    std::mutex                  m_Mutex;                            //!< ミューテックスです.
+    SpinLock                    m_Lock;                             //!< スピンロックです.
     Device*                     m_pDevice;                          //!< デバイスです.
     VkQueue                     m_Queue;                            //!< コマンドキューです.
     uint32_t                    m_SubmitIndex;                      //!< サブミット番号です.

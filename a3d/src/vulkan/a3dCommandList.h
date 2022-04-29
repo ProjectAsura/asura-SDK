@@ -498,7 +498,6 @@ private:
             VkDescriptorBufferInfo  Buffer;         //!< バッファ情報です.
             VkBufferView            BufferView;     //!< バッファビューです.
         };
-        bool StorageBuffer;
     };
 
     //=============================================================================================

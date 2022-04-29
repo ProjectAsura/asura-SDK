@@ -218,7 +218,7 @@ void Queue::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 bool Queue::Submit(ICommandList* pCommandList)
 {
-    std::lock_guard<std::mutex> locker(m_Mutex);
+    LockGuard locker(&m_Lock);
 
     if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
     { return false; }

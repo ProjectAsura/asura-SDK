@@ -47,12 +47,14 @@ void ToNativeDescriptorRange( const a3d::DescriptorEntry& entry, D3D12_DESCRIPTO
         result.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
         break;
 
-    case a3d::DESCRIPTOR_TYPE_UAV:
-        result.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    case a3d::DESCRIPTOR_TYPE_SRV_T:
+    case a3d::DESCRIPTOR_TYPE_SRV_B:
+        result.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
         break;
 
-    case a3d::DESCRIPTOR_TYPE_SRV:
-        result.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    case a3d::DESCRIPTOR_TYPE_UAV_T:
+    case a3d::DESCRIPTOR_TYPE_UAV_B:
+        result.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
         break;
 
     case a3d::DESCRIPTOR_TYPE_SMP:

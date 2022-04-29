@@ -185,6 +185,9 @@ bool Device::Init(const DeviceDesc* pDesc)
             D3D_FEATURE_LEVEL_9_1
         };
 
+        ID3D11Device*           pDevice  = nullptr;
+        ID3D11DeviceContext*    pContext = nullptr;
+
         auto hr = D3D11CreateDevice(
             nullptr, 
             D3D_DRIVER_TYPE_HARDWARE,
@@ -193,14 +196,41 @@ bool Device::Init(const DeviceDesc* pDesc)
             featureLevels,
             _countof(featureLevels),
             D3D11_SDK_VERSION,
-            &m_pDevice,
+            &pDevice,
             &m_FeatureLevel,
-            &m_pDeviceContext );
+            &pContext );
         if ( FAILED(hr) )
         {
             A3D_LOG("Error : D3D11CreateDevice() Failed. errcode = 0x%x", hr);
             return false;
         }
+
+        hr = pDevice->QueryInterface(IID_PPV_ARGS(&m_pDevice));
+        if (FAILED(hr))
+        {
+            pContext->Release();
+            pDevice ->Release();
+            A3D_LOG("Error : ID3D11Device::QueryInterface() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+
+#ifdef A3D_FOR_WINDOWS10
+        ID3D11DeviceContext3* pContext3 = nullptr;
+        m_pDevice->GetImmediateContext3(&pContext3);
+        hr = pContext->QueryInterface(IID_PPV_ARGS(&m_pDeviceContext));
+        if (FAILED(hr))
+        {
+            pContext->Release();
+            pDevice->Release();
+            A3D_LOG("Error : ID3D11DeviceContext3::QueryInterface() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+#else
+        m_pDevice->GetImmediateContext2(&m_pDeviceContext);
+#endif
+
+        pContext->Release();
+        pDevice ->Release();
     }
 
     if (pDesc->EnableDebug)
@@ -529,13 +559,13 @@ void Device::WaitIdle()
 //-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
-ID3D11Device* Device::GetD3D11Device() const
+ID3D11DeviceA3D* Device::GetD3D11Device() const
 { return m_pDevice; }
 
 //-------------------------------------------------------------------------------------------------
 //      デバイスコンテキストを取得します.
 //-------------------------------------------------------------------------------------------------
-ID3D11DeviceContext* Device::GetD3D11DeviceContext() const
+ID3D11DeviceContextA3D* Device::GetD3D11DeviceContext() const
 { return m_pDeviceContext; }
 
 //-------------------------------------------------------------------------------------------------

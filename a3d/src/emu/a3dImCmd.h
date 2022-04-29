@@ -26,6 +26,10 @@ enum CMD_ID
     CMD_SET_DESCRIPTORSET_LAYOUT,       //!< ICommandList::SetDescriptorSet()
     CMD_SET_VERTEX_BUFFERS,             //!< ICommandList::SetVertexBuffers()
     CMD_SET_INDEX_BUFFER,               //!< ICommandList::SetIndexBuffer()
+    CMD_SET_CBV,                        //!< ICommandList::SetView()
+    CMD_SET_SRV,                        //!< ICommandList::SetView()
+    CMD_SET_UAV,                        //!< ICommandList::SetView()
+    CMD_SET_SAMPLER,                    //!< ICommandList::SetSampler()
     CMD_TEXTURE_BARRIER,                //!< ICommandList::TextureBarrier()
     CMD_BUFFER_BARRIER,                 //!< ICommandList::BufferBarrier()
     CMD_DRAW_INSTANCED,                 //!< ICommandList::DrawInstanced()
@@ -79,16 +83,6 @@ struct ImCmdBeginFrameBuffer : ImCmdBase
     ClearDepthStencilValue  ClearDepthStencil;
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//// ImCmdClearFrameBuffer structure
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//struct ImCmdClearFrameBuffer : ImCmdBase
-//{
-//    uint32_t                ClearColorCount;
-//    bool                    HasDepth;
-//    ClearColorValue         ClearColors[8];
-//    ClearDepthStencilValue  ClearDepthStencil;
-//};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // ImCmdSetBlendConstant structure
@@ -137,8 +131,43 @@ struct ImCmdSetPipelineState : ImCmdBase
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ImCmdSetDescriptorSetLayout : ImCmdBase
 {
-    const DescriptorSetLayoutDesc*  pDesc;
-    void*                           pDescriptor[64];
+    IDescriptorSetLayout* pDescriptorSetLayout;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdSetCBV structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdSetCBV : ImCmdBase
+{
+    uint32_t                Index;
+    IConstantBufferView*    pView;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdSetSRV structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdSetSRV : ImCmdBase
+{
+    uint32_t                Index;
+    IShaderResourceView*    pView;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdSetUAV structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdSetUAV : ImCmdBase
+{
+    uint32_t                Index;
+    IUnorderedAccessView*   pView;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdSetSampler structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdSetSampler : ImCmdBase
+{
+    uint32_t    Index;
+    ISampler*   pSampler;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

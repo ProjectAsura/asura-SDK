@@ -98,14 +98,22 @@ private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>       m_RefCount;         //!< 参照カウンタです.
-    std::mutex                  m_Mutex;            //!< ミューテックスです.
-    Device*                     m_pDevice;          //!< デバイスです.
-    uint32_t                    m_MaxSubmitCount;   //!< 最大サブミット数です.
-    uint32_t                    m_SubmitIndex;      //!< サブミット番号です.
-    CommandList**               m_pCommandLists;    //!< コマンドリストです.
-    ID3D11Query*                m_pQuery;           //!< クエリです.
-    uint64_t                    m_Frequency;        //!< GPU周期です.
+    std::atomic<uint32_t>           m_RefCount;         //!< 参照カウンタです.
+    SpinLock                        m_Lock;             //!< スピンロックです.
+    Device*                         m_pDevice;          //!< デバイスです.
+    uint32_t                        m_MaxSubmitCount;   //!< 最大サブミット数です.
+    uint32_t                        m_SubmitIndex;      //!< サブミット番号です.
+    CommandList**                   m_pCommandLists;    //!< コマンドリストです.
+    ID3D11Query*                    m_pQuery;           //!< クエリです.
+    uint64_t                        m_Frequency;        //!< GPU周期です.
+    const DescriptorSetLayoutDesc*  m_pLayoutDesc;      //!< ディスクリプタセットレイアウト構成です.
+    void*                           m_pViews[64] = {};  //!< ビューです.
+    uint8_t                         m_DirtyView = 0;    //!< ビューのダーティフラグです.
+
+#ifdef A3D_FOR_WINDOWS10
+    ID3D11Fence*                    m_pFence = nullptr; //!< フェンスです.
+    HANDLE                          m_Event  = nullptr; //!< イベントです.
+#endif
 
     //=============================================================================================
     // private methods.
@@ -144,6 +152,18 @@ private:
     //! @brief      コマンドを解析します.
     //---------------------------------------------------------------------------------------------
     void ParseCmd();
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ディスクリプターを更新します.
+    //! 
+    //! @param[in]      pContext        デバイスコンテキストです.
+    //---------------------------------------------------------------------------------------------
+    void UpdateDescriptor(ID3D11DeviceContext2* pContext);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      ディスクリプターをリセットします.
+    //---------------------------------------------------------------------------------------------
+    void ResetDescriptor(ID3D11DeviceContext2* pContext);
 
     Queue           (const Queue&) = delete;
     void operator = (const Queue&) = delete;

@@ -13,8 +13,8 @@
 #include <allocator/a3dStdAllocator.h>
 #include <a3d.h>
 #include <cassert>
+#include <cfloat>
 #include <atomic>
-#include <mutex>
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
@@ -23,6 +23,7 @@
 #include "misc/a3dInlines.h"
 #include "misc/a3dNullHandle.h"
 #include "misc/a3dLogger.h"
+#include "misc/a3dSpinLock.h"
 
 #include "a3dDevice.h"
 #include "a3dFence.h"

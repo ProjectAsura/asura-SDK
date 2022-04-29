@@ -78,6 +78,15 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
             return false;
         }
 
+        VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+        if (pDesc->Format == RESOURCE_FORMAT_D16_UNORM ||
+            pDesc->Format == RESOURCE_FORMAT_D24_UNORM_S8_UINT ||
+            pDesc->Format == RESOURCE_FORMAT_D32_FLOAT)
+        {
+            aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        }
+
         VkImageViewCreateInfo info = {};
         info.sType                              = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         info.pNext                              = nullptr;
@@ -89,7 +98,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
         info.components.g                       = VK_COMPONENT_SWIZZLE_G;
         info.components.b                       = VK_COMPONENT_SWIZZLE_B;
         info.components.a                       = VK_COMPONENT_SWIZZLE_A;
-        info.subresourceRange.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
+        info.subresourceRange.aspectMask        = aspectMask;
         info.subresourceRange.baseMipLevel      = pDesc->MipSlice;
         info.subresourceRange.levelCount        = pDesc->MipLevels;
         info.subresourceRange.baseArrayLayer    = uint32_t(pDesc->FirstElement);

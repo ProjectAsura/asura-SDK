@@ -179,5 +179,8 @@
     <ClInclude Include="..\..\..\src\misc\a3dLogger.h">
       <Filter>ソース ファイル\misc</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h">
+      <Filter>ソース ファイル\misc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

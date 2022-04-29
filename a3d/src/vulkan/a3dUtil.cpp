@@ -270,7 +270,7 @@ VkColorSpaceKHR ToNativeColorSpace(RESOURCE_FORMAT value)
 //-------------------------------------------------------------------------------------------------
 VkCompareOp ToNativeCompareOp(COMPARE_OP value)
 {
-    static VkCompareOp table[] = {
+    static const VkCompareOp table[] = {
         VK_COMPARE_OP_NEVER,
         VK_COMPARE_OP_LESS,
         VK_COMPARE_OP_EQUAL,
@@ -288,7 +288,7 @@ VkCompareOp ToNativeCompareOp(COMPARE_OP value)
 //-------------------------------------------------------------------------------------------------
 VkImageLayout ToNativeImageLayout(RESOURCE_STATE value)
 {
-    static VkImageLayout table[] = {
+    static const VkImageLayout table[] = {
         VK_IMAGE_LAYOUT_UNDEFINED,                                  // UNKNOWN
         VK_IMAGE_LAYOUT_GENERAL,                                    // GENERAL
         VK_IMAGE_LAYOUT_GENERAL,                                    // VERTEX_BUFFER
@@ -318,13 +318,15 @@ VkImageLayout ToNativeImageLayout(RESOURCE_STATE value)
 //-------------------------------------------------------------------------------------------------
 VkDescriptorType ToNativeDescriptorType(DESCRIPTOR_TYPE type)
 {
-    static VkDescriptorType table[] = {
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        VK_DESCRIPTOR_TYPE_SAMPLER,
-        VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
-        VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
+    static const VkDescriptorType table[] = {
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,          // DESCRIPTOR_TYPE_CBV
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,          // DESCRIPTOR_TYPE_SRV_B
+        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,           // DESCRIPTOR_TYPE_SRV_T
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,          // DESCRIPTOR_TYPE_UAV_B
+        VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,           // DESCRIPTOR_TYPE_UAV_T
+        VK_DESCRIPTOR_TYPE_SAMPLER,                 // DESCRIPTOR_TYPE_SMP
+        VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,        // DESCRIPTOR_TYPE_RTV
+        VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,        // DESCRIPTOR_TYPE_DSV
     };
 
     return table[type];

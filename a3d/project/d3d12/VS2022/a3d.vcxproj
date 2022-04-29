@@ -154,6 +154,7 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h" />
     <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
     <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
+    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

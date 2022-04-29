@@ -130,7 +130,8 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
             if (bindings[i].descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
                 bindings[i].descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER )
             { bufferCount++; }
-            else if (bindings[i].descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE)
+            else if (bindings[i].descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE ||
+                bindings[i].descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
             { imageCount++; }
             else if (bindings[i].descriptorType == VK_DESCRIPTOR_TYPE_SAMPLER)
             { samplerCount++; }

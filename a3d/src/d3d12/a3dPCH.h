@@ -24,7 +24,6 @@
 #include <a3d.h>
 
 #include <atomic>
-#include <mutex>
 #include <container/a3dPool.h>
 
 #if A3D_IS_WIN
@@ -45,6 +44,7 @@ using ID3D12DeviceA3D   = ID3D12Device8;
 
 #include "misc/a3dBlob.h"
 #include "misc/a3dLogger.h"
+#include "misc/a3dSpinLock.h"
 
 #include "a3dUtil.h"
 #include "a3dDescriptor.h"

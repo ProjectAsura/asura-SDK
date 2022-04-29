@@ -21,11 +21,7 @@ VkImageUsageFlags ToNativeImageUsage(uint32_t usage)
     { result |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; }
 
     if (usage & a3d::RESOURCE_USAGE_UNORDERED_ACCESS)
-    {
-        // TODO : 要確認.
-        result |= VK_IMAGE_USAGE_STORAGE_BIT;
-        result |= VK_IMAGE_USAGE_SAMPLED_BIT;
-    }
+    { result |= VK_IMAGE_USAGE_STORAGE_BIT; }
 
     if (usage & a3d::RESOURCE_USAGE_SHADER_RESOURCE)
     { result |= VK_IMAGE_USAGE_SAMPLED_BIT; }
@@ -285,7 +281,7 @@ bool Texture::Init(IDevice* pDevice, const TextureDesc* pDesc)
     }
 
     // イメージレイアウトを変更
-    if (a3d::RESOURCE_STATE_UNKNOWN != pDesc->InitState)
+    if (RESOURCE_STATE_UNKNOWN != pDesc->InitState)
     {
         ICommandList* pCmdList;
         CommandListDesc desc = {};
