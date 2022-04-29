@@ -1325,7 +1325,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
     
             case DESCRIPTOR_TYPE_SMP:
-                { pContext->VSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                { pContext->VSSetSamplers(entry.ShaderRegister, 1, pNullSmp); }
                 break;
             }
         }
@@ -1343,7 +1343,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
     
             case DESCRIPTOR_TYPE_SMP:
-                { pContext->DSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                { pContext->DSSetSamplers(entry.ShaderRegister, 1, pNullSmp); }
                 break;
             }
         }
@@ -1361,7 +1361,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
     
             case DESCRIPTOR_TYPE_SMP:
-                { pContext->HSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                { pContext->HSSetSamplers(entry.ShaderRegister, 1, pNullSmp); }
                 break;
             }
         }
@@ -1379,7 +1379,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
     
             case DESCRIPTOR_TYPE_SMP:
-                { pContext->PSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                { pContext->PSSetSamplers(entry.ShaderRegister, 1, pNullSmp); }
                 break;
             }
         }
@@ -1403,7 +1403,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
     
             case DESCRIPTOR_TYPE_SMP:
-                { pContext->VSSetSamplers(entry.ShaderMask, 1, pNullSmp); }
+                { pContext->VSSetSamplers(entry.ShaderRegister, 1, pNullSmp); }
                 break;
             }
         }
