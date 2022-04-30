@@ -18,7 +18,7 @@ UnorderedAccessView::UnorderedAccessView()
 : m_RefCount    (1)
 , m_pDevice     (nullptr)
 , m_pResource   (nullptr)
-, m_pSRV        (nullptr)
+, m_pUAV        (nullptr)
 { memset(&m_Desc, 0, sizeof(m_Desc)); }
 
 //-------------------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ bool UnorderedAccessView::Init(IDevice* pDevice, IResource* pResource, const Uno
 //-------------------------------------------------------------------------------------------------
 void UnorderedAccessView::Term()
 {
-    SafeRelease( m_pSRV );
+    SafeRelease( m_pUAV );
     SafeRelease( m_pResource );
     SafeRelease( m_pDevice );
 }

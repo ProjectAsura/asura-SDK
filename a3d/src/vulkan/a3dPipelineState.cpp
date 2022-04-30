@@ -937,7 +937,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
             colorAttachments,
             &colorBlendState );
 
-        VkFormat colorFormats[8] = {};
+        VkFormat colorFormats[MAX_RTV_COUNT] = {};
         for(auto i=0u; i<pDesc->RenderTargetCount; ++i)
         { colorFormats[i] = ToNativeFormat(pDesc->RenderTarget[i]); }
 

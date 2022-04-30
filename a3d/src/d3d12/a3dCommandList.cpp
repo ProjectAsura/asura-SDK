@@ -186,7 +186,7 @@ void CommandList::BeginFrameBuffer
     const ClearDepthStencilValue*   pClearDepthStencil
 )
 {
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[8] = {};
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[MAX_RTV_COUNT] = {};
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
 
     if (pRenderTargetViews != nullptr) {
@@ -416,7 +416,7 @@ void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
 {
-    if (pResource == nullptr || index >= 64)
+    if (pResource == nullptr || index >= MAX_DESCRIPTOR_COUNT)
     { return; }
 
     auto pWrapView = static_cast<ShaderResourceView*>(pResource);
@@ -431,7 +431,7 @@ void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {
-    if (pResource == nullptr || index >= 64)
+    if (pResource == nullptr || index >= MAX_DESCRIPTOR_COUNT)
     { return; }
 
     auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
@@ -446,7 +446,7 @@ void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetSampler(uint32_t index, ISampler* const pSampler)
 {
-    if (pSampler == nullptr || index >= 64)
+    if (pSampler == nullptr || index >= MAX_DESCRIPTOR_COUNT)
     { return; }
 
     auto pWrapSmp = static_cast<Sampler*>(pSampler);

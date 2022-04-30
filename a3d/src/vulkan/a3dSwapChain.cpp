@@ -999,12 +999,12 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
             A3D_ASSERT(pWrap != nullptr);
 
             VkHdrMetadataEXT meta = {};
-            meta.displayPrimaryRed.x        = pWrap->PrimaryR[0];
-            meta.displayPrimaryRed.y        = pWrap->PrimaryR[1];
-            meta.displayPrimaryGreen.x      = pWrap->PrimaryG[0];
-            meta.displayPrimaryGreen.y      = pWrap->PrimaryG[1];
-            meta.displayPrimaryBlue.x       = pWrap->PrimaryB[0];
-            meta.displayPrimaryBlue.y       = pWrap->PrimaryB[1];
+            meta.displayPrimaryRed.x        = pWrap->PrimaryR.X;
+            meta.displayPrimaryRed.y        = pWrap->PrimaryR.Y;
+            meta.displayPrimaryGreen.x      = pWrap->PrimaryG.X;
+            meta.displayPrimaryGreen.y      = pWrap->PrimaryG.Y;
+            meta.displayPrimaryBlue.x       = pWrap->PrimaryB.X;
+            meta.displayPrimaryBlue.y       = pWrap->PrimaryB.Y;
             meta.maxLuminance               = pWrap->MaxMasteringLuminance;
             meta.minLuminance               = pWrap->MinMasteringLuminance;
             meta.maxContentLightLevel       = pWrap->MaxContentLightLevel;

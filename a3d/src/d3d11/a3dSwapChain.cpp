@@ -354,14 +354,14 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
                 A3D_ASSERT(pData != nullptr);
 
                 DXGI_HDR_METADATA_HDR10 meta = {};
-                meta.RedPrimary[0]              = GetCoord(pData->PrimaryR[0]);
-                meta.RedPrimary[1]              = GetCoord(pData->PrimaryR[1]);
-                meta.BluePrimary[0]             = GetCoord(pData->PrimaryB[0]);
-                meta.BluePrimary[1]             = GetCoord(pData->PrimaryB[1]);
-                meta.GreenPrimary[0]            = GetCoord(pData->PrimaryG[0]);
-                meta.GreenPrimary[1]            = GetCoord(pData->PrimaryG[1]);
-                meta.WhitePoint[0]              = GetCoord(pData->WhitePoint[0]);
-                meta.WhitePoint[1]              = GetCoord(pData->WhitePoint[1]);
+                meta.RedPrimary[0]              = GetCoord(pData->PrimaryR.X);
+                meta.RedPrimary[1]              = GetCoord(pData->PrimaryR.Y);
+                meta.BluePrimary[0]             = GetCoord(pData->PrimaryB.X);
+                meta.BluePrimary[1]             = GetCoord(pData->PrimaryB.Y);
+                meta.GreenPrimary[0]            = GetCoord(pData->PrimaryG.X);
+                meta.GreenPrimary[1]            = GetCoord(pData->PrimaryG.Y);
+                meta.WhitePoint[0]              = GetCoord(pData->WhitePoint.X);
+                meta.WhitePoint[1]              = GetCoord(pData->WhitePoint.Y);
                 meta.MaxMasteringLuminance      = static_cast<UINT>(pData->MaxMasteringLuminance / 10000.0);
                 meta.MinMasteringLuminance      = static_cast<UINT>(pData->MinMasteringLuminance / 100000.0);
                 meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);

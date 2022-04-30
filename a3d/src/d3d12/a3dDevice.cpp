@@ -653,9 +653,9 @@ bool Device::CheckDisplayHDRSupport(RECT region)
     { return false; }
 
     UINT i=0;
-    IDXGIOutput* pCurrentOutput = nullptr;
-    IDXGIOutput* pBestOutput    = nullptr;
-    int          bestIntersectArea = -1;
+    IDXGIOutput* pCurrentOutput     = nullptr;
+    IDXGIOutput* pBestOutput        = nullptr;
+    int          bestIntersectArea  = -1;
 
     auto ax1 = region.left;
     auto ay1 = region.top;

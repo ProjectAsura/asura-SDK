@@ -467,15 +467,15 @@ private:
     //=============================================================================================
     // private variables.
     //=============================================================================================
-    std::atomic<uint32_t>       m_RefCount;             //!< 参照カウントです.
-    Device*                     m_pDevice;              //!< デバイスです.
-    ID3D12CommandAllocator*     m_pCommandAllocator;    //!< コマンドアロケータです.
-    ID3D12GraphicsCommandList6* m_pCommandList;         //!< コマンドリストです.
-    COMMANDLIST_TYPE            m_Type;                 //!< コマンドリストタイプ.
-    bool                        m_IsGraphics;           //!< グラフィックスパイプかどうか?
-    bool                        m_DirtyDescriptor;      //!< ディスクリプタダーティフラグ.
-    uint32_t                    m_HandleCount;          //!< ディスクリプタ数です.
-    D3D12_GPU_DESCRIPTOR_HANDLE m_Handles[64];          //!< ディスクリプタです.
+    std::atomic<uint32_t>       m_RefCount;                         //!< 参照カウントです.
+    Device*                     m_pDevice;                          //!< デバイスです.
+    ID3D12CommandAllocator*     m_pCommandAllocator;                //!< コマンドアロケータです.
+    ID3D12GraphicsCommandList6* m_pCommandList;                     //!< コマンドリストです.
+    COMMANDLIST_TYPE            m_Type;                             //!< コマンドリストタイプ.
+    bool                        m_IsGraphics;                       //!< グラフィックスパイプかどうか?
+    bool                        m_DirtyDescriptor;                  //!< ディスクリプタダーティフラグ.
+    uint32_t                    m_HandleCount;                      //!< ディスクリプタ数です.
+    D3D12_GPU_DESCRIPTOR_HANDLE m_Handles[MAX_DESCRIPTOR_COUNT];    //!< ディスクリプタです.
 
     //=============================================================================================
     // private methods.

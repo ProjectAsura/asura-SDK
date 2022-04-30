@@ -97,7 +97,6 @@ private:
     Device*                     m_pDevice;      //!< デバイスです.
     UnorderedAccessViewDesc     m_Desc;         //!< 構成設定です.
     IResource*                  m_pResource;    //!< リソースです.
-    ID3D11ShaderResourceView*   m_pSRV;         //!< シェーダリソースビューです.
     ID3D11UnorderedAccessView*  m_pUAV;         //!< アンオーダードアクセスビューです.
 
     //=============================================================================================

@@ -325,7 +325,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdBeginFrameBuffer*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    ID3D11RenderTargetView* pRTVs[8] = {};
+                    ID3D11RenderTargetView* pRTVs[MAX_RTV_COUNT] = {};
 
                     auto count = cmd->RenderTargetViewCount;
                     for(auto i=0u; i<count; ++i)
@@ -379,8 +379,8 @@ void Queue::ParseCmd()
                 {
                     ResetDescriptor(pDeviceContext);
 
-                    ID3D11RenderTargetView* pNullRTVs[8] = {};
-                    pDeviceContext->OMSetRenderTargets(8, pNullRTVs, nullptr);
+                    ID3D11RenderTargetView* pNullRTVs[MAX_RTV_COUNT] = {};
+                    pDeviceContext->OMSetRenderTargets(MAX_RTV_COUNT, pNullRTVs, nullptr);
 
                     pCmd += sizeof(ImCmdBase);
                 }
@@ -535,7 +535,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetCBV*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    A3D_ASSERT(cmd->Index < 64);
+                    A3D_ASSERT(cmd->Index < MAX_DESCRIPTOR_COUNT);
                     m_pViews[cmd->Index] = cmd->pView;
                     m_DirtyView = true;
 
@@ -548,7 +548,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetSRV*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    A3D_ASSERT(cmd->Index < 64);
+                    A3D_ASSERT(cmd->Index < MAX_DESCRIPTOR_COUNT);
                     m_pViews[cmd->Index] = cmd->pView;
                     m_DirtyView = true;
 
@@ -561,7 +561,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetUAV*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    A3D_ASSERT(cmd->Index < 64);
+                    A3D_ASSERT(cmd->Index < MAX_DESCRIPTOR_COUNT);
                     m_pViews[cmd->Index] = cmd->pView;
                     m_DirtyView = true;
 
@@ -574,7 +574,7 @@ void Queue::ParseCmd()
                     auto cmd = reinterpret_cast<ImCmdSetSampler*>(pCmd);
                     A3D_ASSERT(cmd != nullptr);
 
-                    A3D_ASSERT(cmd->Index < 64);
+                    A3D_ASSERT(cmd->Index < MAX_DESCRIPTOR_COUNT);
                     m_pViews[cmd->Index] = cmd->pSampler;
                     m_DirtyView = true;
 

@@ -130,7 +130,6 @@
     <ClInclude Include="..\..\..\src\d3d11\a3dDepthStencilView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDevice.h" />
-    <ClInclude Include="..\..\..\src\d3d11\a3dDeviceContext.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dFence.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dPCH.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dPipelineState.h" />

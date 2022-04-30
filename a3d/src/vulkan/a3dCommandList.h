@@ -510,8 +510,8 @@ private:
     bool                        m_BindRenderPass;               //!< レンダーパスバインド中か?
     bool                        m_DirtyDescriptor;              //!< ディスクリプタダーティフラグ.
     DescriptorSetLayout*        m_pDescriptorSetLayout;         //!< ディスクリプタセットレイアウトです.
-    DescriptorInfo              m_DescriptorInfo    [64] = {};  //!< ディスクリプタ情報です.
-    VkWriteDescriptorSet        m_WriteDescriptorSet[64] = {};  //!< 書き込みディスクリプタセットです.
+    DescriptorInfo              m_DescriptorInfo    [MAX_DESCRIPTOR_COUNT] = {};  //!< ディスクリプタ情報です.
+    VkWriteDescriptorSet        m_WriteDescriptorSet[MAX_DESCRIPTOR_COUNT] = {};  //!< 書き込みディスクリプタセットです.
 
     //=============================================================================================
     // private methods.

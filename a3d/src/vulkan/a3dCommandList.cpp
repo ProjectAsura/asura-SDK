@@ -117,7 +117,7 @@ bool CommandList::Init(IDevice* pDevice, COMMANDLIST_TYPE listType)
         }
     }
 
-    for(auto i=0u; i<64; ++i)
+    for(auto i=0u; i<MAX_DESCRIPTOR_COUNT; ++i)
     {
         m_WriteDescriptorSet[i].sType               = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         m_WriteDescriptorSet[i].pNext               = nullptr;
@@ -257,7 +257,7 @@ void CommandList::BeginFrameBuffer
     uint32_t width  = 0;
     uint32_t height = 0;
 
-    VkRenderingAttachmentInfoKHR colorAttachments[8] = {};
+    VkRenderingAttachmentInfoKHR colorAttachments[MAX_RTV_COUNT] = {};
     for(auto i=0u; i<renderTargetViewCount; ++i)
     {
         auto pWrapRTV = static_cast<RenderTargetView*>(pRenderTargetViews[i]);
@@ -327,8 +327,8 @@ void CommandList::BeginFrameBuffer
     vkCmdBeginRendering(m_CommandBuffer, &info);
     m_BindRenderPass = true;
 
-    VkClearAttachment clearAttachments[9] = {};
-    VkClearRect       clearRects[9] = {};
+    VkClearAttachment clearAttachments[MAX_RTV_COUNT + 1] = {};
+    VkClearRect       clearRects[MAX_RTV_COUNT + 1] = {};
 
     auto count = 0u;
     if (pClearColors != nullptr && clearColorCount > 0)
@@ -549,7 +549,7 @@ void CommandList::SetIndexBuffer
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
 {
-    A3D_ASSERT(index < 64);
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
 
     auto pWrapCBV = static_cast<ConstantBufferView*>(pResource);
     A3D_ASSERT(pWrapCBV != nullptr);
@@ -567,7 +567,7 @@ void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
 {
-    A3D_ASSERT(index < 64 );
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
 
     auto pWrapSRV = static_cast<ShaderResourceView*>(pResource);
     A3D_ASSERT(pWrapSRV != nullptr);
@@ -604,7 +604,7 @@ void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {
-    A3D_ASSERT(index < 64 );
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
 
     auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
@@ -631,7 +631,7 @@ void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetSampler(uint32_t index, ISampler* pSampler)
 {
-    A3D_ASSERT(index < 64 );
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
 
     auto pWrapSampler = static_cast<Sampler*>(pSampler);
     A3D_ASSERT(pWrapSampler != nullptr);

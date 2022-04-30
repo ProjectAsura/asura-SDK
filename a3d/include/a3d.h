@@ -84,6 +84,13 @@ using TimeStamp   = uint64_t;       //!< タイムスタンプです.
 using QuerySample = uint64_t;       //!< オクルージョンクエリのサンプル数です.
 
 
+//-------------------------------------------------------------------------------------------------
+// Constant Values.
+//-------------------------------------------------------------------------------------------------
+constexpr uint32_t      MAX_DESCRIPTOR_COUNT    = 64;
+constexpr uint32_t      MAX_RTV_COUNT           = 8;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //! @enum   INDIRECT_ARGUMENT_TYPE
 //! @brief  インダイレクト引数タイプです.
@@ -551,6 +558,16 @@ enum COLOR_SPACE_TYPE
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// Coord2D structure
+//! @brief  2次元座標です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct Coord2D
+{
+    float   X;      //!< X座標.
+    float   Y;      //!< Y座標.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // Offset2D structure
 //! @brief  2次元のオフセットです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,10 +700,10 @@ using DispatchComputeArguments = DispatchArguments;
 //! @brief  メッシュシェーダディスパッチの引数です.
 using DispatchMeshArguments = DispatchArguments;
 
-///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandListDesc structure
 //! @brief  コマンドリストの構成設定です.
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 struct CommandListDesc
 {
     COMMANDLIST_TYPE        Type;           //!< コマンドリストタイプです.
@@ -735,6 +752,7 @@ struct TextureDesc
     uint32_t                Usage;              //!< 使用用途です.
     RESOURCE_STATE          InitState;          //!< 初期状態です.
     HEAP_TYPE               HeapType;           //!< ヒープタイプです.
+    uint32_t                Option;             //!< オプションデータです. 通常は 0 を設定します.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -924,10 +942,10 @@ struct ColorBlendState
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct BlendState
 {
-    bool            IndependentBlendEnable; //!< RGB値とアルファ値の独立したブレンディングを有効します.
-    bool            LogicOpEnable;          //!< 論理操作を有効にします.
-    LOGIC_OP        LogicOp;                //!< 論理操作です.
-    ColorBlendState RenderTarget[8];        //!< カラーターゲットのブレンド設定です.
+    bool            IndependentBlendEnable;         //!< RGB値とアルファ値の独立したブレンディングを有効します.
+    bool            LogicOpEnable;                  //!< 論理操作を有効にします.
+    LOGIC_OP        LogicOp;                        //!< 論理操作です.
+    ColorBlendState RenderTarget[MAX_RTV_COUNT];    //!< カラーターゲットのブレンド設定です.
 
     static BlendState Default();
 };
@@ -999,8 +1017,8 @@ struct DescriptorEntry
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct DescriptorSetLayoutDesc
 {
-    uint32_t            EntryCount;     //!< エントリー数です.
-    DescriptorEntry     Entries[64];    //!< エントリー情報です.
+    uint32_t            EntryCount;                     //!< エントリー数です.
+    DescriptorEntry     Entries[MAX_DESCRIPTOR_COUNT];  //!< エントリー情報です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1019,23 +1037,23 @@ struct ShaderBinary
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct GraphicsPipelineStateDesc
 {
-    IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
-    ShaderBinary            VS;                     //!< 頂点シェーダです.
-    ShaderBinary            PS;                     //!< ピクセルシェーダです.
-    ShaderBinary            DS;                     //!< ドメインシェーダです.
-    ShaderBinary            HS;                     //!< ハルシェーダです.
-    BlendState              BlendState;             //!< ブレンドステートです.
-    RasterizerState         RasterizerState;        //!< ラスタライザ―ステートです.
-    MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.
-    DepthState              DepthState;             //!< 深度ステートです.
-    StencilState            StencilState;           //!< ステンシルステートです.
-    TessellationState       TessellationState;      //!< テッセレーションステートです.
-    InputLayoutDesc         InputLayout;            //!< 入力レイアウトステートです.
-    PRIMITIVE_TOPOLOGY      PrimitiveTopology;      //!< プリミティブトポロジーです.
-    uint32_t                RenderTargetCount;      //!< レンダーターゲット数です.
-    RESOURCE_FORMAT         RenderTarget[8];        //!< レンダーターゲットです.
-    RESOURCE_FORMAT         DepthTarget;            //!< 深度ターゲットです
-    IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
+    IDescriptorSetLayout*   pLayout;                        //!< ディスクリプタセットレイアウトです.
+    ShaderBinary            VS;                             //!< 頂点シェーダです.
+    ShaderBinary            PS;                             //!< ピクセルシェーダです.
+    ShaderBinary            DS;                             //!< ドメインシェーダです.
+    ShaderBinary            HS;                             //!< ハルシェーダです.
+    BlendState              BlendState;                     //!< ブレンドステートです.
+    RasterizerState         RasterizerState;                //!< ラスタライザ―ステートです.
+    MultiSampleState        MultiSampleState;               //!< マルチサンプルステートです.
+    DepthState              DepthState;                     //!< 深度ステートです.
+    StencilState            StencilState;                   //!< ステンシルステートです.
+    TessellationState       TessellationState;              //!< テッセレーションステートです.
+    InputLayoutDesc         InputLayout;                    //!< 入力レイアウトステートです.
+    PRIMITIVE_TOPOLOGY      PrimitiveTopology;              //!< プリミティブトポロジーです.
+    uint32_t                RenderTargetCount;              //!< レンダーターゲット数です.
+    RESOURCE_FORMAT         RenderTarget[MAX_RTV_COUNT];    //!< レンダーターゲットです.
+    RESOURCE_FORMAT         DepthTarget;                    //!< 深度ターゲットです
+    IBlob*                  pCachedPSO;                     //!< パイプラインステートキャッシュです.
 
     static GraphicsPipelineStateDesc Default();
 };
@@ -1059,19 +1077,19 @@ struct ComputePipelineStateDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct MeshShaderPipelineStateDesc
 {
-    IDescriptorSetLayout*   pLayout;                //!< ディスクリプタセットレイアウトです.
-    ShaderBinary            AS;                     //!< アンプリフィケーションシェーダです.
-    ShaderBinary            MS;                     //!< メッシュシェーダです.
-    ShaderBinary            PS;                     //!< ピクセルシェーダです.
-    BlendState              BlendState;             //!< ブレンドステートです.
-    RasterizerState         RasterizerState;        //!< ラスタライザ―ステートです.
-    MultiSampleState        MultiSampleState;       //!< マルチサンプルステートです.
-    DepthState              DepthState;             //!< 深度ステートです.
-    StencilState            StencilState;           //!< ステンシルステートです.
-    uint32_t                RenderTargetCount;      //!< レンダーターゲット数です.
-    RESOURCE_FORMAT         RenderTarget[8];        //!< レンダーターゲットです.
-    RESOURCE_FORMAT         DepthTarget;            //!< 深度ターゲットです
-    IBlob*                  pCachedPSO;             //!< パイプラインステートキャッシュです.
+    IDescriptorSetLayout*   pLayout;                        //!< ディスクリプタセットレイアウトです.
+    ShaderBinary            AS;                             //!< アンプリフィケーションシェーダです.
+    ShaderBinary            MS;                             //!< メッシュシェーダです.
+    ShaderBinary            PS;                             //!< ピクセルシェーダです.
+    BlendState              BlendState;                     //!< ブレンドステートです.
+    RasterizerState         RasterizerState;                //!< ラスタライザ―ステートです.
+    MultiSampleState        MultiSampleState;               //!< マルチサンプルステートです.
+    DepthState              DepthState;                     //!< 深度ステートです.
+    StencilState            StencilState;                   //!< ステンシルステートです.
+    uint32_t                RenderTargetCount;              //!< レンダーターゲット数です.
+    RESOURCE_FORMAT         RenderTarget[MAX_RTV_COUNT];    //!< レンダーターゲットです.
+    RESOURCE_FORMAT         DepthTarget;                    //!< 深度ターゲットです
+    IBlob*                  pCachedPSO;                     //!< パイプラインステートキャッシュです.
 
     static MeshShaderPipelineStateDesc Default();
 };
@@ -1109,14 +1127,14 @@ struct SwapChainDesc
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct MetaDataHDR10
 {
-    float       PrimaryR[2];                    //!< 色座標の赤値です(配列番号0がX座標, 配列番号1がY座標となります).
-    float       PrimaryG[2];                    //!< 色座標の緑値です(配列番号0がX座標, 配列番号1がY座標となります).
-    float       PrimaryB[2];                    //!< 色座標の青値です(配列番号0がX座標, 配列番号1がY座標となります).
-    float       WhitePoint[2];                  //!< 色座標の白色点です(配列番号0がX座標, 配列番号1がY座標となります).
-    float       MaxMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最大ニト[nit]数です(数値の単位は1nitです).
-    float       MinMasteringLuminance;          //!< コンテンツをマスタリングするためのディスプレイの最小ニト[nit]数です(数値の単位は1nitです).
-    float       MaxContentLightLevel;           //!< コンテンツの最大ニト[nit]数です.
-    float       MaxFrameAverageLightLevel;      //!< フレーム平均の最大ニト[nit]数です.
+    Coord2D     PrimaryR;                   //!< 色座標の赤値です.
+    Coord2D     PrimaryG;                   //!< 色座標の緑値です.
+    Coord2D     PrimaryB;                   //!< 色座標の青値です.
+    Coord2D     WhitePoint;                 //!< 色座標の白色点です.
+    float       MaxMasteringLuminance;      //!< コンテンツをマスタリングするためのディスプレイの最大ニト[nit]数です(数値の単位は1nitです).
+    float       MinMasteringLuminance;      //!< コンテンツをマスタリングするためのディスプレイの最小ニト[nit]数です(数値の単位は1nitです).
+    float       MaxContentLightLevel;       //!< コンテンツの最大ニト[nit]数です.
+    float       MaxFrameAverageLightLevel;  //!< フレーム平均の最大ニト[nit]数です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
