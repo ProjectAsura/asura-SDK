@@ -344,12 +344,14 @@ void PipelineState::Bind
     }
     else
     {
+        pDeviceContext->IASetInputLayout(nullptr);
         pDeviceContext->VSSetShader(nullptr, nullptr, 0);
         pDeviceContext->DSSetShader(nullptr, nullptr, 0);
         pDeviceContext->GSSetShader(nullptr, nullptr, 0);
         pDeviceContext->HSSetShader(nullptr, nullptr, 0);
         pDeviceContext->PSSetShader(nullptr, nullptr, 0);
         pDeviceContext->CSSetShader(m_pCS, nullptr, 0);
+        pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
     }
 }
 
