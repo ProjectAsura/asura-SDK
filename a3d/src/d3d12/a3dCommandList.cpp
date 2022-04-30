@@ -306,20 +306,9 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 
     pWrapPipelineState->Issue(this);
     m_IsGraphics = pWrapPipelineState->IsGraphics();
-}
 
-//-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットを設定します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
-{
-    if (pDescriptorSetLayout == nullptr)
-    { return; }
-
-    auto pWrapDescriptorSetLayout = static_cast<DescriptorSetLayout*>(pDescriptorSetLayout);
-    m_HandleCount       = pWrapDescriptorSetLayout->GetDesc().EntryCount;
-    m_DirtyDescriptor   = true;
-
+    m_HandleCount = pWrapPipelineState->GetDescriptorSetLayout()->GetDesc().EntryCount;
+    m_DirtyDescriptor = true;
 }
 
 //-------------------------------------------------------------------------------------------------

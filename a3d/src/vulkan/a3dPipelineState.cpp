@@ -743,6 +743,9 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         }
     }
 
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout->AddRef();
+
     return true;
 }
 
@@ -811,6 +814,9 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
             return false;
         }
     }
+
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout->AddRef();
 
     return true;
 }
@@ -999,6 +1005,9 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDe
         }
     }
 
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout->AddRef();
+
     return true;
 }
 
@@ -1025,6 +1034,7 @@ void PipelineState::Term()
         m_PipelineCache = null_handle;
     }
 
+    SafeRelease(m_pLayout);
     SafeRelease(m_pDevice);
 }
 
@@ -1100,6 +1110,12 @@ VkPipeline PipelineState::GetVkPipeline() const
 //-------------------------------------------------------------------------------------------------
 VkPipelineBindPoint PipelineState::GetVkPipelineBindPoint() const
 { return m_BindPoint; }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタセットレイアウトを取得します.
+//-------------------------------------------------------------------------------------------------
+DescriptorSetLayout* PipelineState::GetDescriptorSetLayout() const
+{ return m_pLayout; }
 
 //-------------------------------------------------------------------------------------------------
 //      グラフィクスパイプランステートとして生成します.

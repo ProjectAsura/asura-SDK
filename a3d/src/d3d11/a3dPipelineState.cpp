@@ -525,6 +525,9 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     m_Topology = ToNativePrimitive( pDesc->PrimitiveTopology, pDesc->TessellationState.PatchControlCount );
 
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout->AddRef();
+
     return true;
 }
 
@@ -535,7 +538,8 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 {
     if (pDevice == nullptr || pDesc == nullptr ||
         pDesc->CS.pByteCode == nullptr ||
-        pDesc->CS.ByteCodeSize == 0)
+        pDesc->CS.ByteCodeSize == 0 ||
+        pDesc->pLayout == nullptr)
     {
         A3D_LOG("Error : Invalid Argument.");
         return false;
@@ -564,6 +568,9 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
         }
     }
 
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout->AddRef();
+
     return true;
 }
 
@@ -572,6 +579,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 //-------------------------------------------------------------------------------------------------
 void PipelineState::Term()
 {
+    SafeRelease(m_pLayout);
     SafeRelease(m_pVS);
     SafeRelease(m_pDS);
     SafeRelease(m_pGS);
@@ -584,6 +592,12 @@ void PipelineState::Term()
     SafeRelease(m_pIL);
     SafeRelease(m_pDevice);
 }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタセットレイアウトを取得します.
+//-------------------------------------------------------------------------------------------------
+DescriptorSetLayout* PipelineState::GetDescriptorSetLayout() const
+{ return m_pLayout; }
 
 //-------------------------------------------------------------------------------------------------
 //      グラフィックスパイプラインステートとして生成します.

@@ -186,18 +186,6 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットレイアウトを設定します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
-{
-    ImCmdSetDescriptorSetLayout cmd = {};
-    cmd.Id                      = CMD_SET_DESCRIPTORSET_LAYOUT;
-    cmd.pDescriptorSetLayout    = pDescriptorSetLayout;
-
-    m_Buffer.Push(&cmd, sizeof(cmd));
-}
-
-//-------------------------------------------------------------------------------------------------
 //      頂点バッファを設定します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::SetVertexBuffers

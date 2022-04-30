@@ -1817,13 +1817,6 @@ struct A3D_API ICommandList : public IDeviceChild
     virtual void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットレイアウトを設定します.
-    //!
-    //! @param[in]      pDescriptorSetLayout    設定するディスクリプタセットレイアウトです.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout) = 0;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      頂点バッファを設定します.
     //!
     //! @param[in]      startSlot       開始スロット番号です.

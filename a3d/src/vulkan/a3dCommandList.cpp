@@ -464,24 +464,9 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
     A3D_ASSERT( pNativePipelineState != null_handle );
 
     vkCmdBindPipeline(m_CommandBuffer, bindPoint, pNativePipelineState);
-}
 
-//-------------------------------------------------------------------------------------------------
-//      ディスクリプタセットを設定します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSetLayout)
-{
-    if (pDescriptorSetLayout == nullptr)
-    {
-        m_pDescriptorSetLayout = nullptr;
-        return;
-    }
-
-    auto pWrapDescriptorSetLayout = static_cast<DescriptorSetLayout*>(pDescriptorSetLayout);
-    A3D_ASSERT(pWrapDescriptorSetLayout != nullptr);
-
-    m_pDescriptorSetLayout  = pWrapDescriptorSetLayout;
-    m_DirtyDescriptor       = true;
+    m_pDescriptorSetLayout = pWrapPipelineState->GetDescriptorSetLayout();
+    m_DirtyDescriptor      = true;
 }
 
 //-------------------------------------------------------------------------------------------------

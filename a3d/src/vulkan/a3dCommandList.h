@@ -133,13 +133,6 @@ public:
     void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      ディスクリプタセットレイアウトを設定します.
-    //!
-    //! @param[in]      pDescriptorSetLayout    ディスクリプタセットレイアウトです.
-    //---------------------------------------------------------------------------------------------
-    void A3D_APIENTRY SetDescriptorSetLayout(IDescriptorSetLayout* pDescriptorSet) override;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      頂点バッファを設定します.
     //!
     //! @param[in]      startSlot       開始スロット番号です.

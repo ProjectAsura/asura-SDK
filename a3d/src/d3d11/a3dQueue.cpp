@@ -279,8 +279,6 @@ void Queue::ParseCmd()
     float    blendFactor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     uint32_t stencilRef     = 0;
 
-    ImCmdSetDescriptorSetLayout* pPrevDescriptorSetLayoutCmd = nullptr;
-
     for(auto i=0u; i<m_SubmitIndex; ++i)
     {
         auto pCmd = m_pCommandLists[i]->GetCommandBuffer()->GetBuffer();
@@ -458,26 +456,12 @@ void Queue::ParseCmd()
                     auto pPipelineState = static_cast<PipelineState*>(cmd->pPipelineState);
                     pPipelineState->Bind(pDeviceContext, blendFactor, stencilRef);
 
-                    pCmd += sizeof(ImCmdSetPipelineState);
-                }
-                break;
-
-            case CMD_SET_DESCRIPTORSET_LAYOUT:
-                {
-                    auto cmd = reinterpret_cast<ImCmdSetDescriptorSetLayout*>(pCmd);
-                    A3D_ASSERT(cmd != nullptr);
-
                     ResetDescriptor(pDeviceContext);
 
-                    if (cmd->pDescriptorSetLayout != nullptr)
-                    {
-                        auto descriptorSetLayout = static_cast<DescriptorSetLayout*>(cmd->pDescriptorSetLayout);
-                        A3D_ASSERT(descriptorSetLayout != nullptr);
+                    auto pLayout = pPipelineState->GetDescriptorSetLayout();
+                    m_pLayoutDesc = pLayout->GetDesc();
 
-                        m_pLayoutDesc = descriptorSetLayout->GetDesc();
-                    }
-
-                    pCmd += sizeof(ImCmdSetDescriptorSetLayout);
+                    pCmd += sizeof(ImCmdSetPipelineState);
                 }
                 break;
 
