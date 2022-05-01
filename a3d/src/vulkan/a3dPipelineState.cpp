@@ -822,9 +822,9 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 }
 
 //-------------------------------------------------------------------------------------------------
-//      メッシュパイプランステートとして初期化します.
+//      メッシュレットパイプランステートとして初期化します.
 //-------------------------------------------------------------------------------------------------
-bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDesc* pDesc)
+bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc* pDesc)
 {
     if (pDevice == nullptr || pDesc == nullptr)
     {
@@ -1190,9 +1190,9 @@ bool PipelineState::CreateAsCompute
 //-------------------------------------------------------------------------------------------------
 bool PipelineState::CreateAsMesh
 (
-    IDevice*                            pDevice,
-    const MeshShaderPipelineStateDesc*  pDesc,
-    IPipelineState**                    ppPipelineState
+    IDevice*                        pDevice,
+    const MeshletPipelineStateDesc* pDesc,
+    IPipelineState**                ppPipelineState
 )
 {
     if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)

@@ -57,16 +57,16 @@ public:
         IPipelineState**                ppPipelineState);
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      メッシュシェーダパイプラインとして生成します.
+    //! @brief      メッシュレットパイプラインとして生成します.
     //!
     //! @param[in]      pDevice             デバイスです.
     //! @param[in]      pDesc               構成設定です.
     //! @param[out]     ppPipelineState     パイプラインステートの格納先です.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY CreateAsMesh(
-        IDevice*                            pDevice,
-        const MeshShaderPipelineStateDesc*  pDesc,
-        IPipelineState**                    ppPipelineState);
+        IDevice*                        pDevice,
+        const MeshletPipelineStateDesc* pDesc,
+        IPipelineState**                ppPipelineState);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウントを増やします.
@@ -168,14 +168,14 @@ private:
     bool A3D_APIENTRY InitAsCompute(IDevice* pDevice, const ComputePipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      メッシュシェーダパイプラインとして初期化します.
+    //! @brief      メッシュレットパイプラインとして初期化します.
     //!
     //! @param[in]      pDevice         デバイスです.
     //! @param[in]      pDesc           構成設定です.
     //! @retval true    初期化に成功.
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY InitAsMesh(IDevice* pDevice, const MeshShaderPipelineStateDesc* pDesc);
+    bool A3D_APIENTRY InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

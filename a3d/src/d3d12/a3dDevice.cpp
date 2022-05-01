@@ -561,9 +561,9 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsCompute(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
-//      メッシュシェーダパイプラインを生成します.
+//      メッシュレットパイプラインを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateMeshShaderPipeline(const MeshShaderPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+bool Device::CreateMeshletPipeline(const MeshletPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
 { return PipelineState::CreateAsMesh(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------

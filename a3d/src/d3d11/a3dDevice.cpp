@@ -508,9 +508,9 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsCompute(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
-//      メッシュシェーダパイプラインを生成します.
+//      メッシュレットパイプラインを生成します.
 //-------------------------------------------------------------------------------------------------
-bool Device::CreateMeshShaderPipeline(const MeshShaderPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+bool Device::CreateMeshletPipeline(const MeshletPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
 {
     // D3D11ではメッシュシェーダパイプラインがサポートされないため常に失敗扱いにする.
     A3D_UNUSED(pDesc);

@@ -1072,10 +1072,10 @@ struct ComputePipelineStateDesc
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// MeshShaderPipelineStateDesc structure
-//! @brief メッシュシェーダパイプラインステートの設定.
+// MeshletPipelineStateDesc structure
+//! @brief メッシュレットパイプラインステートの設定.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-struct MeshShaderPipelineStateDesc
+struct MeshletPipelineStateDesc
 {
     IDescriptorSetLayout*   pLayout;                        //!< ディスクリプタセットレイアウトです.
     ShaderBinary            AS;                             //!< アンプリフィケーションシェーダです.
@@ -1091,7 +1091,7 @@ struct MeshShaderPipelineStateDesc
     RESOURCE_FORMAT         DepthTarget;                    //!< 深度ターゲットです
     IBlob*                  pCachedPSO;                     //!< パイプラインステートキャッシュです.
 
-    static MeshShaderPipelineStateDesc Default();
+    static MeshletPipelineStateDesc Default();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2471,16 +2471,16 @@ struct A3D_API IDevice : public IReference
         IPipelineState**                ppPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      メッシュシェーダパイプラインを生成します.
+    //! @brief      メッシュレットパイプラインを生成します.
     //!
     //! @param[in]      pDesc           構成設定です.
     //! @param[out]     ppPipelineState パイプラインステートの格納先です.
     //! @retval true    生成に成功.
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CreateMeshShaderPipeline(
-        const MeshShaderPipelineStateDesc*  pDesc,
-        IPipelineState**                    ppPipelineState) = 0;
+    virtual bool A3D_APIENTRY CreateMeshletPipeline(
+        const MeshletPipelineStateDesc* pDesc,
+        IPipelineState**                ppPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットレイアウトを生成します.

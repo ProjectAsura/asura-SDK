@@ -572,11 +572,11 @@ ComputePipelineStateDesc ComputePipelineStateDesc::Default()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// MeshShaderPipelineStateDesc structure
+// MeshletPipelineStateDesc structure
 ///////////////////////////////////////////////////////////////////////////////
-MeshShaderPipelineStateDesc MeshShaderPipelineStateDesc::Default()
+MeshletPipelineStateDesc MeshletPipelineStateDesc::Default()
 {
-    MeshShaderPipelineStateDesc result = {};
+    MeshletPipelineStateDesc result = {};
     result.pLayout              = nullptr;
     result.AS                   = {};
     result.MS                   = {};
