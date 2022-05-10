@@ -99,6 +99,13 @@ public:
     void A3D_APIENTRY EndFrameBuffer() override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      加速機構を構築します.
+    //! 
+    //! @param[in]      pAS         構築したい加速機構.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY BuildAccelerationStructure(IAccelerationStructure* pAS) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      ブレンド定数を設定します.
     //!
     //! @param[in]      blendConstant       ブレンド定数です.
@@ -264,6 +271,13 @@ public:
     void A3D_APIENTRY DispatchMesh(uint32_t x, uint32_t y, uint32_t z) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      レイトレーシングパイプラインを起動します.
+    //! 
+    //! @param[in]      pArgs   起動引数.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY TraceRays(const TraceRayArguments* pArgs) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      インダイレクトコマンドを実行します.
     //!
     //! @param[in]      pCommandSet     インダイレクトコマンドセットです.
@@ -403,6 +417,18 @@ public:
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
         Extent3D        srcExtent) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      加速機構をコピーします.
+    //! 
+    //! @param[in]      pDstAS      コピー先の加速機構.
+    //! @param[in]      pSrcAS      コピー元の加速機構.
+    //! @param[in]      mode        コピーモード.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY CopyAccelerationStructure(
+        IAccelerationStructure*             pDstAS,
+        IAccelerationStructure*             pSrcAS,
+        ACCELERATION_STRUCTURE_COPY_MODE    mode) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします

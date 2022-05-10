@@ -96,6 +96,7 @@ Device::Device()
 , m_pAdapter3       (nullptr)
 , m_pOutput4        (nullptr)
 #endif
+, m_UniqueId        (1)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -512,7 +513,18 @@ bool Device::CreateComputePipeline(const ComputePipelineStateDesc* pDesc, IPipel
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateMeshletPipeline(const MeshletPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
 {
-    // D3D11ではメッシュシェーダパイプラインがサポートされないため常に失敗扱いにする.
+    // D3D11ではメッシュシェーダパイプラインがサポートされていないため常に失敗扱いにする.
+    A3D_UNUSED(pDesc);
+    A3D_UNUSED(ppPipelineState);
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      レイトレーシングパイプラインを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateRayTracingPipeline(const RayTracingPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+{
+    // D3D11ではレイトレーシングパイプラインがサポートされていないため常に失敗扱いにする.
     A3D_UNUSED(pDesc);
     A3D_UNUSED(ppPipelineState);
     return false;
@@ -546,6 +558,21 @@ bool Device::CreateCommandSet(const CommandSetDesc* pDesc, ICommandSet** ppComma
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateFence(IFence** ppFence)
 { return Fence::Create(this, ppFence); }
+
+//-------------------------------------------------------------------------------------------------
+//      加速機構を生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateAccelerationStructure
+(
+    const AccelerationStructureDesc*    pDesc,
+    IAccelerationStructure**            ppAS
+)
+{
+    // D3D11ではレイトレーシングパイプラインがサポートされていないため常に失敗扱いにする.
+    A3D_UNUSED(pDesc);
+    A3D_UNUSED(ppAS);
+    return false;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      アイドル状態になるまで待機します.
@@ -683,6 +710,12 @@ bool Device::CheckDisplayHDRSupport(RECT region)
 }
 
 #endif// defined(A3D_FOR_WINDOWS10)
+
+//-------------------------------------------------------------------------------------------------
+//      ユニークIDを割り当てます.
+//-------------------------------------------------------------------------------------------------
+uint64_t Device::AllocUniqueId() 
+{ return m_UniqueId++; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

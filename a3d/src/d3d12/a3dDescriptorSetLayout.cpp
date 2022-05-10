@@ -12,25 +12,25 @@ namespace /* anonymous */ {
 //-------------------------------------------------------------------------------------------------
 D3D12_SHADER_VISIBILITY ToNativeShaderVisibility( uint32_t mask )
 {
-    if ( mask == a3d::SHADER_MASK_VS )
+    if ( mask == a3d::SHADER_STAGE_VS )
     { return D3D12_SHADER_VISIBILITY_VERTEX; }
 
-    else if ( mask == a3d::SHADER_MASK_DS )
+    else if ( mask == a3d::SHADER_STAGE_DS )
     { return D3D12_SHADER_VISIBILITY_DOMAIN; }
 
-    else if ( mask == a3d::SHADER_MASK_HS )
+    else if ( mask == a3d::SHADER_STAGE_HS )
     { return D3D12_SHADER_VISIBILITY_HULL; }
 
     //else if ( mask == a3d::SHADER_MASK_GS )
     //{ return D3D12_SHADER_VISIBILITY_GEOMETRY; }
 
-    else if ( mask == a3d::SHADER_MASK_PS )
+    else if ( mask == a3d::SHADER_STAGE_PS )
     { return D3D12_SHADER_VISIBILITY_PIXEL; }
 
-    else if ( mask == a3d::SHADER_MASK_AS )
+    else if ( mask == a3d::SHADER_STAGE_AS )
     { return D3D12_SHADER_VISIBILITY_AMPLIFICATION; }
 
-    else if ( mask == a3d::SHADER_MASK_MS )
+    else if ( mask == a3d::SHADER_STAGE_MS )
     { return D3D12_SHADER_VISIBILITY_MESH; }
 
     return D3D12_SHADER_VISIBILITY_ALL;
@@ -84,7 +84,7 @@ DescriptorSetLayout::DescriptorSetLayout()
 : m_RefCount            (1)
 , m_pDevice             (nullptr)
 , m_pRootSignature      (nullptr)
-, m_Type                (PIPELINE_GRAPHICS)
+, m_Type                (PIPELINE_STATE_TYPE_GRAPHICS)
 { memset( &m_Desc, 0, sizeof(m_Desc) ); }
 
 //-------------------------------------------------------------------------------------------------
@@ -117,23 +117,23 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     bool isCompute = false;
     for(auto i=0u; i<pDesc->EntryCount; ++i)
     {
-        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_CS) == SHADER_MASK_CS)
+        if (pDesc->Entries[i].ShaderStage == SHADER_STAGE_CS)
         {
-            m_Type = PIPELINE_COMPUTE;
+            m_Type = PIPELINE_STATE_TYPE_COMPUTE;
             isCompute = true;
         }
 
-        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_VS) == SHADER_MASK_VS)
+        if (pDesc->Entries[i].ShaderStage == SHADER_STAGE_VS)
         {
-            m_Type = PIPELINE_GRAPHICS;
+            m_Type = PIPELINE_STATE_TYPE_GRAPHICS;
             if (isCompute)
             { return false; }
         }
 
-        if (((pDesc->Entries[i].ShaderMask & SHADER_MASK_AS) == SHADER_MASK_AS)
-         || ((pDesc->Entries[i].ShaderMask & SHADER_MASK_MS) == SHADER_MASK_MS))
+        if ((pDesc->Entries[i].ShaderStage == SHADER_STAGE_AS)
+         || (pDesc->Entries[i].ShaderStage == SHADER_STAGE_MS))
         {
-            m_Type = PIPELINE_MESHLET;
+            m_Type = PIPELINE_STATE_TYPE_MESHLET;
             if (isCompute)
             { return false; }
         }
@@ -147,6 +147,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         A3D_ASSERT(pParams);
 
         auto mask = 0;
+        bool shaders[6] = {};
 
         for(auto i=0u; i<pDesc->EntryCount; ++i)
         {
@@ -154,69 +155,58 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
             pParams[i].ParameterType                       = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
             pParams[i].DescriptorTable.NumDescriptorRanges = 1;
             pParams[i].DescriptorTable.pDescriptorRanges   = &pEntries[i];
-            pParams[i].ShaderVisibility = ToNativeShaderVisibility( pDesc->Entries[i].ShaderMask );
+            pParams[i].ShaderVisibility = ToNativeShaderVisibility( pDesc->Entries[i].ShaderStage );
 
-            mask |= pDesc->Entries[i].ShaderMask;
+            switch (pDesc->Entries[i].ShaderStage)
+            {
+            case SHADER_STAGE_VS:
+                shaders[0] = true;
+                break;
+
+            case SHADER_STAGE_DS:
+                shaders[1] = true;
+                break;
+
+            case SHADER_STAGE_HS:
+                shaders[2] = true;
+                break;
+
+            case SHADER_STAGE_PS:
+                shaders[3] = true;
+                break;
+
+            case SHADER_STAGE_AS:
+                shaders[4] = true;
+                break;
+
+            case SHADER_STAGE_MS:
+                shaders[5] = true;
+                break;
+            }
         }
 
-        bool shaders[5] = {};
-        if (m_Type == PIPELINE_MESHLET)
-        {
-            if ( mask & SHADER_MASK_AS )
-            { shaders[0] = true; }
-            if ( mask & SHADER_MASK_MS )
-            { shaders[1] = true; }
-            if ( mask & SHADER_MASK_PS )
-            { shaders[2] = true; }
-        }
+        D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+        if (shaders[0])
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT; }
         else
-        {
-            if ( mask & SHADER_MASK_VS )
-            { shaders[0] = true; }
-            if ( mask & SHADER_MASK_HS )
-            { shaders[1] = true; }
-            if ( mask & SHADER_MASK_DS )
-            { shaders[2] = true; }
-            //if ( mask & SHADER_MASK_GS )
-            //{ shaders[3] = true; }
-            if ( mask & SHADER_MASK_PS )
-            { shaders[4] = true; }
-        }
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS; }
+        if (!shaders[1])
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS; }
+        if (!shaders[2])
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS; }
+        if (!shaders[3])
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS; }
+        if (!shaders[4])
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS; }
+        if (!shaders[5])
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS; }
 
         D3D12_ROOT_SIGNATURE_DESC desc = {};
         desc.NumParameters      = pDesc->EntryCount;
         desc.pParameters        = pParams;
         desc.NumStaticSamplers  = 0;
         desc.pStaticSamplers    = nullptr;
-        desc.Flags              = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-        
-        if (pDesc->EntryCount >= 0)
-        {
-            if (m_Type == PIPELINE_MESHLET)
-            {
-                desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
-
-                if (shaders[0] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS; }
-                if (shaders[1] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS; }
-                if (shaders[2] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS; }
-            }
-            else
-            {
-                if (shaders[0] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS; }
-                if (shaders[1] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS; }
-                if (shaders[2] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS; }
-                if (shaders[3] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS; }
-                if (shaders[4] == false)
-                { desc.Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS; }
-            }
-        }
+        desc.Flags              = flags;
 
         ID3DBlob* pSignatureBlob = nullptr;
         ID3DBlob* pErrorBlob = nullptr;

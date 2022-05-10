@@ -14,6 +14,23 @@
 #endif
 
 
+namespace {
+
+D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE ToNativeCopyMode(a3d::ACCELERATION_STRUCTURE_COPY_MODE mode)
+{
+    static const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE kMode[] = {
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE_CLONE,
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE_COMPACT,
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE_SERIALIZE,
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE_DESERIALIZE
+    };
+
+    return kMode[mode];
+}
+
+} // namespace
+
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,6 +265,20 @@ void CommandList::BeginFrameBuffer
 void CommandList::EndFrameBuffer()
 { m_pCommandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr); }
 
+//------------------------------------------------------------------------------------------------
+//      加速機構を構築します.
+//------------------------------------------------------------------------------------------------
+void CommandList::BuildAccelerationStructure(IAccelerationStructure* pAS)
+{
+    if (pAS == nullptr)
+    { return; }
+
+    auto pWrapAS = static_cast<AccelerationStructure*>(pAS);
+    A3D_ASSERT(pWrapAS != nullptr);
+
+    pWrapAS->Build(m_pCommandList);
+}
+
 //-------------------------------------------------------------------------------------------------
 //      ブレンド定数を設定します.
 //-------------------------------------------------------------------------------------------------
@@ -301,14 +332,28 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
     if (pPipelineState == nullptr)
     { return; }
 
-    auto pWrapPipelineState = static_cast<PipelineState*>(pPipelineState);
-    A3D_ASSERT(pWrapPipelineState != nullptr);
+    if (pPipelineState->GetType() == PIPELINE_STATE_TYPE_RAYTRACING)
+    {
+        auto pWrapPipelineState = static_cast<RayTracingPipelineState*>(pPipelineState);
+        A3D_ASSERT(pWrapPipelineState != nullptr);
 
-    pWrapPipelineState->Issue(this);
-    m_IsGraphics = pWrapPipelineState->IsGraphics();
+        pWrapPipelineState->Issue(this);
+        m_IsGraphics = false;
 
-    m_HandleCount = pWrapPipelineState->GetDescriptorSetLayout()->GetDesc().EntryCount;
-    m_DirtyDescriptor = true;
+        m_HandleCount = pWrapPipelineState->GetDescriptorSetLayout()->GetDesc().EntryCount;
+        m_DirtyDescriptor = true;
+    }
+    else
+    {
+        auto pWrapPipelineState = static_cast<PipelineState*>(pPipelineState);
+        A3D_ASSERT(pWrapPipelineState != nullptr);
+
+        pWrapPipelineState->Issue(this);
+        m_IsGraphics = pWrapPipelineState->IsGraphics();
+
+        m_HandleCount = pWrapPipelineState->GetDescriptorSetLayout()->GetDesc().EntryCount;
+        m_DirtyDescriptor = true;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -578,6 +623,37 @@ void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 {
     UpdateDescriptor();
     m_pCommandList->DispatchMesh(x, y, z);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      レイトレーシングを行います.
+//-------------------------------------------------------------------------------------------------
+void CommandList::TraceRays(const TraceRayArguments* pArgs)
+{
+    if (pArgs == nullptr)
+    { return; }
+
+    D3D12_DISPATCH_RAYS_DESC desc = {};
+    desc.RayGenerationShaderRecord.StartAddress = pArgs->RayGeneration.StartAddress;
+    desc.RayGenerationShaderRecord.SizeInBytes  = pArgs->RayGeneration.Size;
+
+    desc.MissShaderTable.StartAddress       = pArgs->MissShaders.StartAddress;
+    desc.MissShaderTable.SizeInBytes        = pArgs->MissShaders.Size;
+    desc.MissShaderTable.StrideInBytes      = pArgs->MissShaders.Stride;
+
+    desc.HitGroupTable.StartAddress         = pArgs->HitShaders.StartAddress;
+    desc.HitGroupTable.SizeInBytes          = pArgs->HitShaders.Size;
+    desc.HitGroupTable.StrideInBytes        = pArgs->HitShaders.Stride;
+
+    desc.CallableShaderTable.StartAddress   = pArgs->CallableShaders.StartAddress;
+    desc.CallableShaderTable.SizeInBytes    = pArgs->CallableShaders.Size;
+    desc.CallableShaderTable.StrideInBytes  = pArgs->CallableShaders.Stride;
+
+    desc.Width  = pArgs->Width;
+    desc.Height = pArgs->Height;
+    desc.Depth  = pArgs->Depth;
+
+    m_pCommandList->DispatchRays(&desc);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -912,6 +988,33 @@ void CommandList::CopyTextureToBuffer
         pWrapSrc->GetD3D12Resource(),
         offset,
         byteCount);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      加速機構をコピーします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::CopyAccelerationStructure
+(
+    IAccelerationStructure*             pDstAS,
+    IAccelerationStructure*             pSrcAS,
+    ACCELERATION_STRUCTURE_COPY_MODE    mode
+)
+{
+    if (pDstAS == nullptr || pSrcAS == nullptr)
+    { return; }
+
+    auto pWrapDstAS = static_cast<AccelerationStructure*>(pDstAS);
+    auto pWrapSrcAS = static_cast<AccelerationStructure*>(pSrcAS);
+    A3D_ASSERT(pWrapDstAS != nullptr);
+    A3D_ASSERT(pWrapSrcAS != nullptr);
+
+    auto dstAddress = pWrapDstAS->GetD3D12Resource()->GetGPUVirtualAddress();
+    auto srcAddress = pWrapSrcAS->GetD3D12Resource()->GetGPUVirtualAddress();
+
+    m_pCommandList->CopyRaytracingAccelerationStructure(
+        dstAddress,
+        srcAddress,
+        ToNativeCopyMode(mode));
 }
 
 //-------------------------------------------------------------------------------------------------

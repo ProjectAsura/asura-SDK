@@ -94,6 +94,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp" />
     <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dAccelerationStructure.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dCommandList.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dCommandSet.cpp" />
@@ -112,6 +113,7 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dPipelineState.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dQueryPool.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dQueue.cpp" />
+    <ClCompile Include="..\..\..\src\d3d12\a3dRayTracingPipelineState.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dRenderTargetView.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dSampler.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dShaderResourceView.cpp" />
@@ -130,6 +132,7 @@
     <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />
     <ClInclude Include="..\..\..\src\container\a3dList.h" />
     <ClInclude Include="..\..\..\src\container\a3dPool.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dAccelerationStructure.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dCommandList.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dCommandSet.h" />
@@ -145,6 +148,7 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dPipelineState.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dQueryPool.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dQueue.h" />
+    <ClInclude Include="..\..\..\src\d3d12\a3dRayTracingPipelineState.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dRenderTargetView.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dSampler.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dShaderResourceView.h" />

@@ -567,6 +567,12 @@ bool Device::CreateMeshletPipeline(const MeshletPipelineStateDesc* pDesc, IPipel
 { return PipelineState::CreateAsMesh(this, pDesc, ppPipelineState); }
 
 //-------------------------------------------------------------------------------------------------
+//      レイトレーシングパイプラインステートを生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateRayTracingPipeline(const RayTracingPipelineStateDesc* pDesc, IPipelineState** ppPipelineState)
+{ return RayTracingPipelineState::Create(this, pDesc, ppPipelineState); }
+
+//-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateDescriptorSetLayout
@@ -593,6 +599,16 @@ bool Device::CreateCommandSet(const CommandSetDesc* pDesc, ICommandSet** ppComma
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateFence(IFence** ppFence)
 { return Fence::Create(this, ppFence); }
+
+//-------------------------------------------------------------------------------------------------
+//      加速機構を生成します.
+//-------------------------------------------------------------------------------------------------
+bool Device::CreateAccelerationStructure
+(
+    const AccelerationStructureDesc*    pDesc,
+    IAccelerationStructure**            ppAccelerationStructure
+)
+{ return AccelerationStructure::Create(this, pDesc, ppAccelerationStructure); }
 
 //-------------------------------------------------------------------------------------------------
 //      アイドル状態になるまで待機します.

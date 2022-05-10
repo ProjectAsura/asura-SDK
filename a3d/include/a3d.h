@@ -75,6 +75,8 @@ struct IUnorderedAccessView;
 struct ISwapChain;
 struct IColorTargetView;
 struct IDepthStencilView;
+struct IShaderTable;
+struct IAccelerationStructure;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -89,6 +91,7 @@ using QuerySample = uint64_t;       //!< オクルージョンクエリのサン
 //-------------------------------------------------------------------------------------------------
 constexpr uint32_t      MAX_DESCRIPTOR_COUNT    = 64;
 constexpr uint32_t      MAX_RTV_COUNT           = 8;
+constexpr uint32_t      SHADER_UNUSED           = ~0;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,17 +162,19 @@ enum RESOURCE_LAYOUT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum RESOURCE_USAGE
 {
-    RESOURCE_USAGE_RENDER_TARGET        = 0x001,   //!< レンダーターゲットとして使用します.
-    RESOURCE_USAGE_DEPTH_STENCIL        = 0x002,   //!< 深度ステンシルターゲットとして使用します.
-    RESOURCE_USAGE_UNORDERED_ACCESS     = 0x004,   //!< アンオーダードアクセスビューとして使用します.
-    RESOURCE_USAGE_INDEX_BUFFER         = 0x008,   //!< インデックスバッファとして使用します.
-    RESOURCE_USAGE_VERTEX_BUFFER        = 0x010,   //!< 頂点バッファとして使用します.
-    RESOURCE_USAGE_CONSTANT_BUFFER      = 0x020,   //!< 定数バッファとして使用します.
-    RESOURCE_USAGE_INDIRECT_BUFFER      = 0x040,   //!< インダイレクトバッファとして使用します.
-    RESOURCE_USAGE_SHADER_RESOURCE      = 0x080,   //!< シェーダリソースビューとして使用します.
-    RESOURCE_USAGE_COPY_SRC             = 0x100,   //!< コピー元として使用します.
-    RESOURCE_USAGE_COPY_DST             = 0x200,   //!< コピー先として使用します.
-    RESOURCE_USAGE_QUERY_BUFFER         = 0x300,   //!< クエリバッファとして使用します.
+    RESOURCE_USAGE_RENDER_TARGET            = 0x001,    //!< レンダーターゲットとして使用します.
+    RESOURCE_USAGE_DEPTH_STENCIL            = 0x002,    //!< 深度ステンシルターゲットとして使用します.
+    RESOURCE_USAGE_UNORDERED_ACCESS         = 0x004,    //!< アンオーダードアクセスビューとして使用します.
+    RESOURCE_USAGE_INDEX_BUFFER             = 0x008,    //!< インデックスバッファとして使用します.
+    RESOURCE_USAGE_VERTEX_BUFFER            = 0x010,    //!< 頂点バッファとして使用します.
+    RESOURCE_USAGE_CONSTANT_BUFFER          = 0x020,    //!< 定数バッファとして使用します.
+    RESOURCE_USAGE_INDIRECT_BUFFER          = 0x040,    //!< インダイレクトバッファとして使用します.
+    RESOURCE_USAGE_SHADER_RESOURCE          = 0x080,    //!< シェーダリソースビューとして使用します.
+    RESOURCE_USAGE_COPY_SRC                 = 0x100,    //!< コピー元として使用します.
+    RESOURCE_USAGE_COPY_DST                 = 0x200,    //!< コピー先として使用します.
+    RESOURCE_USAGE_QUERY_BUFFER             = 0x400,    //!< クエリバッファとして使用します.
+    RESOURCE_USAGE_ACCELERATION_STRUCTURE   = 0x800,    //!< 高速化機構のビルド入力として使用します. 
+    RESOURCE_USAGE_SHADER_BINDING_TABLE     = 0x1000,   //!< シェーダバインディングテーブルとして使用します.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -265,24 +270,25 @@ enum RESOURCE_FORMAT
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum RESOURCE_STATE
 {
-    RESOURCE_STATE_UNKNOWN              = 0,    //!< 未定義状態です.
-    RESOURCE_STATE_GENERAL              = 1,    //!< 共通状態です.
-    RESOURCE_STATE_VERTEX_BUFFER        = 2,    //!< 頂点バッファです.
-    RESOURCE_STATE_INDEX_BUFFER         = 3,    //!< インデックスバッファです.
-    RESOURCE_STATE_CONSTANT_BUFFER      = 4,    //!< 定数バッファです.
-    RESOURCE_STATE_COLOR_WRITE          = 5,    //!< カラー書き込み状態です.  
-    RESOURCE_STATE_COLOR_READ           = 6,    //!< カラー読み込み状態です.
-    RESOURCE_STATE_UNORDERED_ACCESS     = 7,    //!< アンオーダードアクセス状態です.
-    RESOURCE_STATE_DEPTH_WRITE          = 8,    //!< 深度書き込み状態です.
-    RESOURCE_STATE_DEPTH_READ           = 9,    //!< 深度読み込み状態です.
-    RESOURCE_STATE_SHADER_READ          = 10,   //!< シェーダで読み込み可能な状態です.
-    RESOURCE_STATE_INDIRECT_ARGUMENT    = 12,   //!< インダイレクトコマンド引数です.
-    RESOURCE_STATE_COPY_DST             = 13,   //!< 転送先の状態です.
-    RESOURCE_STATE_COPY_SRC             = 14,   //!< 転送元の状態です.
-    RESOURCE_STATE_RESOLVE_DST          = 15,   //!< 解決先の状態です.
-    RESOURCE_STATE_RESOLVE_SRC          = 16,   //!< 解決元の状態です.
-    RESOURCE_STATE_PRESENT              = 17,   //!< 表示状態です.
-    RESOURCE_STATE_PREDICATION          = 18,   //!< 予測状態です.
+    RESOURCE_STATE_UNKNOWN                  = 0,    //!< 未定義状態です.
+    RESOURCE_STATE_GENERAL                  = 1,    //!< 共通状態です.
+    RESOURCE_STATE_VERTEX_BUFFER            = 2,    //!< 頂点バッファです.
+    RESOURCE_STATE_INDEX_BUFFER             = 3,    //!< インデックスバッファです.
+    RESOURCE_STATE_CONSTANT_BUFFER          = 4,    //!< 定数バッファです.
+    RESOURCE_STATE_COLOR_WRITE              = 5,    //!< カラー書き込み状態です.
+    RESOURCE_STATE_COLOR_READ               = 6,    //!< カラー読み込み状態です.
+    RESOURCE_STATE_UNORDERED_ACCESS         = 7,    //!< アンオーダードアクセス状態です.
+    RESOURCE_STATE_DEPTH_WRITE              = 8,    //!< 深度書き込み状態です.
+    RESOURCE_STATE_DEPTH_READ               = 9,    //!< 深度読み込み状態です.
+    RESOURCE_STATE_SHADER_READ              = 10,   //!< シェーダで読み込み可能な状態です.
+    RESOURCE_STATE_INDIRECT_ARGUMENT        = 12,   //!< インダイレクトコマンド引数です.
+    RESOURCE_STATE_COPY_DST                 = 13,   //!< 転送先の状態です.
+    RESOURCE_STATE_COPY_SRC                 = 14,   //!< 転送元の状態です.
+    RESOURCE_STATE_RESOLVE_DST              = 15,   //!< 解決先の状態です.
+    RESOURCE_STATE_RESOLVE_SRC              = 16,   //!< 解決元の状態です.
+    RESOURCE_STATE_PRESENT                  = 17,   //!< 表示状態です.
+    RESOURCE_STATE_PREDICATION              = 18,   //!< 予測状態です.
+    RESOURCE_STATE_ACCELERATION_STRUCTURE   = 19,   //!< 加速機構状態です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,18 +333,24 @@ enum PRIMITIVE_TOPOLOGY
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//! @enum   SHADER_MASK
+//! @enum   SHADER_STAGE
 //! @brief  シェーダマスクです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-enum SHADER_MASK
+enum SHADER_STAGE
 {
-    SHADER_MASK_VS  = 0x1,        //!< 頂点シェーダステージです.
-    SHADER_MASK_DS  = 0x2,        //!< ドメインシェーダステージです.
-    SHADER_MASK_HS  = 0x4,        //!< ハルシェーダシェーダステージです.
-    SHADER_MASK_PS  = 0x10,       //!< ピクセルシェーダステージです.
-    SHADER_MASK_CS  = 0x20,       //!< コンピュートシェーダステージです.
-    SHADER_MASK_AS  = 0x40,       //!< アンプリフィケーションシェーダステージです.
-    SHADER_MASK_MS  = 0x80,       //!< メッシュシェーダステージです.
+    SHADER_STAGE_VS              = 1,     //!< 頂点シェーダステージです.
+    SHADER_STAGE_DS              = 2,     //!< ドメインシェーダステージです.
+    SHADER_STAGE_HS              = 3,     //!< ハルシェーダシェーダステージです.
+    SHADER_STAGE_PS              = 4,     //!< ピクセルシェーダステージです.
+    SHADER_STAGE_CS              = 5,     //!< コンピュートシェーダステージです.
+    SHADER_STAGE_AS              = 6,     //!< 増幅シェーダステージです.
+    SHADER_STAGE_MS              = 7,     //!< メッシュシェーダステージです.
+    SHADER_STAGE_RAYGEN          = 8,     //!< レイ生成シェーダステージです.
+    SHADER_STAGE_MISS            = 9,     //!< ミスシェーダステージです.
+    SHADER_STAGE_INTERSECTION    = 10,    //!< 交差シェーダステージです.
+    SHADER_STAGE_CLOSEST_HIT     = 11,    //!< 最近接ヒットシェーダステージです.
+    SHADER_STAGE_ANY_HIT         = 12,    //!< 任意ヒットシェーダステージです.
+    SHADER_STAGE_CALLABLE        = 13     //!< 呼び出し可能シェーダステージです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -532,7 +544,19 @@ enum QUERY_TYPE
 enum INPUT_CLASSIFICATION
 {
     INPUT_CLASSIFICATION_PER_VERTEX   = 0,  //!< 頂点データ単位で入力します.
-    INPUT_CLASSIFICATION_PER_INSTANCE = 1   //!< インスタンスデータ単位で入力します.
+    INPUT_CLASSIFICATION_PER_INSTANCE = 1,  //!< インスタンスデータ単位で入力します.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   PIPELINE_STATE_TYPE
+//! @brief  パイプラインステートタイプです.
+//////////////////////////////////////////////////////////////////////////////////////////////////
+enum PIPELINE_STATE_TYPE
+{
+    PIPELINE_STATE_TYPE_GRAPHICS    = 0,
+    PIPELINE_STATE_TYPE_COMPUTE     = 1,
+    PIPELINE_STATE_TYPE_MESHLET     = 2,
+    PIPELINE_STATE_TYPE_RAYTRACING  = 3,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -555,6 +579,73 @@ enum COLOR_SPACE_TYPE
     COLOR_SPACE_BT709_170M,     //!< BT.709  SMPTE 170M
     COLOR_SPACE_BT2100_PQ,      //!< BT.2100 PQ System
     COLOR_SPACE_BT2100_HLG,     //!< BT.2100 HLG System
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   GEOMETRY_TYPE
+//! @brief  ジオメトリタイプです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum GEOMETRY_TYPE
+{
+    GEOMETRY_TYPE_TRIANGLES = 0,
+    GEOMETRY_TYPE_AABBS,
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   GEOMETRY_FLAGS
+//! @brief  ジオメトリフラグです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum GEOMETRY_FLAGS
+{
+    GEOMETRY_FLAGS_NONE                             = 0,
+    GEOMETRY_FLAGS_OPAQUE                           = 0x1 << 0,
+    GEOMETRY_FLAGS_NO_DUPLICATE_ANYHIT_INVOCATION   = 0x1 << 1,
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   ACCELERATION_STRUCTURE_TYPE
+//! @brief  加速機構タイプです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum ACCELERATION_STRUCTURE_TYPE
+{
+    ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL    = 0,       //!< 上位レベルです.
+    ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL = 0x1,     //!< 下位レベルです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   ACCELERATION_STRUCTURE_BUILD_FLAGS
+//! @brief  加速機構のビルドフラグです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum ACCELERATION_STRUCTURE_BUILD_FLAGS
+{
+    ACCELERATION_STRUCTURE_BUILD_FLAG_NONE              = 0,            //!< 指定なし.
+    ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE      = 0x1 << 0,     //!< 更新を許可.
+    ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_COMPACTION  = 0x1 << 1,     //!< コンパクションを許可.
+    ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE = 0x1 << 2,     //!< トレース優先.
+    ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_BUILD = 0x1 << 3,     //!< ビルド優先.
+    ACCELERATION_STRUCTURE_BUILD_FLAG_MINIMIZE_MEMORY   = 0x1 << 4,     //!< メモリ最小化.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   ACCELERATION_STRUCTURE_COPY_MODE
+//! @brief  加速機構のコピーモードです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum ACCELERATION_STRUCTURE_COPY_MODE
+{
+    ACCELERATION_STRUCTURE_COPY_MODE_CLONE,         //!<
+    ACCELERATION_STRUCTURE_COPY_MODE_COMPACT,       //!< 
+    ACCELERATION_STRUCTURE_COPY_MODE_SERIALIZE,     //!<
+    ACCELERATION_STRUCTURE_COPY_MODE_DESERIALIZE,   //!<
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   RAYTRACING_SHADER_GROUP_TYPE
+//! @brief  レイトレーシングシェーダグループタイプです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum RAYTRACING_SHADER_GROUP_TYPE
+{
+    RAYTRACING_SHADER_GROUP_TYPE_TRIANGLE_HIT   = 0,
+    RAYTRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT = 1,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1006,7 +1097,7 @@ struct InputLayoutDesc
 struct DescriptorEntry
 {
     uint32_t            ShaderRegister;     //!< シェーダのレジスタ番号です.
-    uint32_t            ShaderMask;         //!< シェーダマスクです.
+    SHADER_STAGE        ShaderStage;        //!< シェーダマスクです.
     uint32_t            BindLocation;       //!< バインド番号です.
     DESCRIPTOR_TYPE     Type;               //!< ディスクリプタタイプです.
 };
@@ -1173,6 +1264,144 @@ struct PipelineStatistics
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// GeometryTriangleDesc structure
+//! @brief  ジオメトリトライアングル設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct GeometryTrianglesDesc
+{
+    uint64_t        VertexAddress;      //!< 頂点バッファアドレス.
+    uint32_t        VertexCount;        //!< 頂点数.
+    uint64_t        VertexStride;       //!< 1頂点あたりのサイズ.
+    RESOURCE_FORMAT VertexFormat;       //!< 頂点バッファフォーマット.
+    uint64_t        IndexAddress;       //!< インデックスバッファアドレス.
+    uint32_t        IndexCount;         //!< インデックス数.
+    RESOURCE_FORMAT IndexFormat;        //!< インデックスフォーマット.
+    uint64_t        TransformAddress;   //!< 変換行列バッファアドレス.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// GeometryAABBsDesc structure
+//! @brief  ジオメトリ軸平行バウンディングボックス設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct GeometryAABBsDesc
+{
+    uint64_t    StartAddress;   //!< 開始デバイスアドレスです.
+    uint32_t    BoxCount;       //!< ボックス数.
+    uint32_t    Stride;         //!< 1ボックスあたりのサイズ.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// GeometryInstanceDesc structure
+//! @brief  ジオメトリインスタンス設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct GeometryInstanceDesc
+{
+    float       Transform[3][4];                            //!< 変換行列.
+    uint32_t    InstanceId                          : 24;   //!< インスタンスID.
+    uint32_t    InstanceMask                        : 8;    //!< インスタンスマスク.
+    uint32_t    InstanceContributionToHitGroupIndex : 24;   //!< ヒットグループ番号.
+    uint32_t    Flags                               : 8;    //!< フラグ.
+    uint64_t    BlasDeviceAddress;                          //!< 下位加速機構のデバイスアドレスです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// GeometryDesc structure
+//! @brief  ジオメトリ設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct GeometryDesc
+{
+    GEOMETRY_TYPE   Type;   //!< ジオメトリタイプ.
+    uint32_t        Flags;  //!< ジオメトリフラグ.
+    union 
+    {
+        GeometryTrianglesDesc   Triangles;  //!< トライアングル設定.
+        GeometryAABBsDesc       AABBs;      //!< AABB設定.
+    };
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// AccelerationStructureDesc structure
+//! @brief  加速機構設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct AccelerationStructureDesc
+{
+    ACCELERATION_STRUCTURE_TYPE         Type;       //!< 加速機構タイプ.
+    ACCELERATION_STRUCTURE_BUILD_FLAGS  Flags;      //!< ビルドフラグ.
+    uint32_t                            Count;      //!< ジオメトリ数 または インスタンス数です.
+    union
+    {
+        const GeometryDesc*     pDescs;             //!< ジオメトリ設定.
+        uint64_t                InstanceAddress;    //!< インスタンスバッファのデバイスアドレスです.
+    };
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// RayTracingShaderDesc structure
+//! @brief  シェーダ設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct RayTracingShaderDesc
+{
+    SHADER_STAGE    Stage;          //!< シェーダステージです.
+    ShaderBinary    Binary;         //!< シェーダバイナリです.
+    const char*     EntryPoint;     //!< エントリーポイント名です.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// RayTracingShaderGroup structure
+//! @brief  レイトレーシングシェーダグループ設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct RayTracingShaderGroup
+{
+    RAYTRACING_SHADER_GROUP_TYPE    Type;               //!< グループタイプです.
+    uint32_t                        HitGroupShader;     //!< ヒットグループシェーダ番号です.
+    uint32_t                        AnyHitShader;       //!< 任意ヒットシェーダ番号です.
+    uint32_t                        ClosestHitShader;   //!< 最近接ヒットシェーダ番号です.
+    uint32_t                        IntersectionShader; //!< 交差シェーダ番号です.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// RayTracingPipelineStateDesc structure
+//! @brief  レイトレーシングパイプラインステート設定です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct RayTracingPipelineStateDesc
+{
+    IDescriptorSetLayout*   pLayout;                    //!< ディスクリプタセットレイアウトです.
+    uint32_t                MaxPayloadSize;             //!< 最大ペイロードサイズです.
+    uint32_t                MaxAttributeSize;           //!< 最大アトリビュートサイズです.
+    uint32_t                MaxTraceRecursionDepth;     //!< 最大トレース再帰数.
+    uint32_t                StageCount;                 //!< シェーダステージ数.
+    RayTracingShaderDesc*   pStages;                    //!< シェーダ設定.
+    uint32_t                GroupCount;                 //!< シェーダグループ数.
+    RayTracingShaderGroup*  pGroups;                    //!< シェーダグループ設定.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ShaderTable structure
+//! @brief  シェーダテーブルです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ShaderTable
+{
+    uint64_t    StartAddress;   //!< 開始デバイスアドレスです.
+    uint64_t    Size;           //!< バッファサイズです.
+    uint64_t    Stride;         //!< バッファストライズです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// TraceRayArguments structure
+//! @brief  ディスパッチレイコマンドの引数です.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct TraceRayArguments
+{
+    ShaderTable RayGeneration;      //!< レイ生成シェーダ.
+    ShaderTable MissShaders;        //!< ミスシェーダテーブル.
+    ShaderTable HitShaders;         //!< ヒットシェーダテーブル.
+    ShaderTable CallableShaders;    //!< 呼び出し可能シェーダテーブル.
+    uint32_t    Width;              //!< スレッド横幅.
+    uint32_t    Height;             //!< スレッド縦幅.
+    uint32_t    Depth;              //!< スレッド奥行.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // DeviceInfo structure
 //! @brief  デバイス情報です.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1305,8 +1534,7 @@ struct IAllocator
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual ~IAllocator()
-    { /* DO_NOTHING */ }
+    virtual ~IAllocator() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      メモリを確保します.
@@ -1344,8 +1572,7 @@ struct A3D_API IReference
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IReference()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IReference() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウントを増やします.
@@ -1374,8 +1601,7 @@ struct A3D_API IBlob : public IReference
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IBlob()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IBlob() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファポインタを取得します.
@@ -1401,8 +1627,7 @@ struct A3D_API IDeviceChild : public IReference
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IDeviceChild()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IDeviceChild() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デバイスを取得します.
@@ -1421,8 +1646,7 @@ struct A3D_API ICommandSet : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~ICommandSet()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~ICommandSet() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1434,8 +1658,7 @@ struct A3D_API ISampler : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~ISampler()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~ISampler() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1447,8 +1670,7 @@ struct A3D_API IResource : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IResource()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IResource() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      メモリマッピングを行います.
@@ -1479,8 +1701,7 @@ struct A3D_API IBuffer : public IResource
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IBuffer()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IBuffer() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1488,6 +1709,13 @@ struct A3D_API IBuffer : public IResource
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
     virtual BufferDesc A3D_APIENTRY GetDesc() const = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      デバイスアドレスを取得します.
+    //! 
+    //! @return     デバイスアドレスを返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual uint64_t A3D_APIENTRY GetDeviceAddress() const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1499,8 +1727,7 @@ struct A3D_API ITexture : public IResource
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~ITexture()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~ITexture() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1527,8 +1754,7 @@ struct A3D_API IConstantBufferView : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IConstantBufferView()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IConstantBufferView() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1554,8 +1780,7 @@ struct A3D_API IRenderTargetView : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IRenderTargetView()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IRenderTargetView() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1581,8 +1806,7 @@ struct A3D_API IDepthStencilView : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IDepthStencilView()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IDepthStencilView() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1608,8 +1832,7 @@ struct A3D_API IShaderResourceView  : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IShaderResourceView()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IShaderResourceView() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1635,8 +1858,7 @@ struct A3D_API IUnorderedAccessView : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IUnorderedAccessView()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IUnorderedAccessView() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1662,8 +1884,7 @@ struct A3D_API IDescriptorSetLayout : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IDescriptorSetLayout()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IDescriptorSetLayout() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1675,13 +1896,17 @@ struct A3D_API IPipelineState : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IPipelineState()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IPipelineState() = default;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      パイプラインステートタイプを取得します.
+    //---------------------------------------------------------------------------------------------
+    virtual PIPELINE_STATE_TYPE GetType() const = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      キャッシュデータを取得します.
     //!
-    //! @param[out]     ppBlob      キャッシュデータの角の先です.
+    //! @param[out]     ppBlob      キャッシュデータの格納先です.
     //! @retval true    取得に成功.
     //! @retval false   取得に失敗.
     //! @note       Vulkan, D3D12環境でのみサポートされます.
@@ -1698,8 +1923,7 @@ struct A3D_API IQueryPool : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IQueryPool()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IQueryPool() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -1718,8 +1942,7 @@ struct A3D_API IFence : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IFence()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IFence() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      シグナル状態かどうかをチェックします.
@@ -1740,6 +1963,25 @@ struct A3D_API IFence : public IDeviceChild
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// IAccelerationStructure interface
+//! @brief      高速化機構インタフェースです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct A3D_API IAccelerationStructure : public IDeviceChild
+{
+    //---------------------------------------------------------------------------------------------
+    //! @brief      デストラクタです.
+    //---------------------------------------------------------------------------------------------
+    virtual A3D_APIENTRY ~IAccelerationStructure() = default;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      デバイスアドレスを取得します.
+    //! 
+    //! @return     デバイスアドレスを返却します.
+    //---------------------------------------------------------------------------------------------
+    virtual uint64_t A3D_APIENTRY GetDeviceAddress() const = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // ICommandList interface
 //! @brief      コマンドリストインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1748,8 +1990,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual ~ICommandList()
-    { /* DO_NOTHING */ }
+    virtual ~ICommandList() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストへの記録を開始します.
@@ -1778,6 +2019,13 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @brief      フレームバッファを解除します.
     //---------------------------------------------------------------------------------------------
     virtual void A3D_APIENTRY EndFrameBuffer() = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      高速化機構を構築します.
+    //! 
+    //! @param[in]      pAS         構築したい加速機構.
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY BuildAccelerationStructure(IAccelerationStructure* pAS) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ブレンド定数を設定します.
@@ -1945,6 +2193,13 @@ struct A3D_API ICommandList : public IDeviceChild
     virtual void A3D_APIENTRY DispatchMesh(uint32_t x, uint32_t y, uint32_t z) = 0;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      レイトレーシングパイプラインを起動します.
+    //! 
+    //! @param[in]      pArgs   起動引数.
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY TraceRays(const TraceRayArguments* pArgs) = 0;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      インダイレクトコマンドを実行します.
     //!
     //! @param[in]      pCommandSet             インダイレクトコマンドセットです.
@@ -2090,6 +2345,18 @@ struct A3D_API ICommandList : public IDeviceChild
         Extent3D        srcExtent) = 0;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      高速化機構をコピーします.
+    //! 
+    //! @param[in]      pDstAS      コピー先の高速化機構.
+    //! @param[in]      pSrcAS      コピー元の高速化機構.
+    //! @param[in]      mode        コピーモード.
+    //---------------------------------------------------------------------------------------------
+    virtual void A3D_APIENTRY CopyAccelerationStructure(
+        IAccelerationStructure*             pDstAS,
+        IAccelerationStructure*             pSrcAS,
+        ACCELERATION_STRUCTURE_COPY_MODE    mode) = 0;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
     //!
     //! @param[in]      pDstResource        コピー先のリソースです
@@ -2137,8 +2404,7 @@ struct A3D_API IQueue : IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IQueue()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IQueue() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストを登録します.
@@ -2178,8 +2444,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~ISwapChain()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~ISwapChain() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -2271,8 +2536,7 @@ struct A3D_API IDevice : public IReference
     //---------------------------------------------------------------------------------------------
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~IDevice()
-    { /* DO_NOTHING */ }
+    virtual A3D_APIENTRY ~IDevice() = default;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      構成設定を取得します.
@@ -2483,6 +2747,18 @@ struct A3D_API IDevice : public IReference
         IPipelineState**                ppPipelineState) = 0;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      レイトレーシングパイプラインを生成します.
+    //! 
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppPipelineState パイプラインステートの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CreateRayTracingPipeline(
+        const RayTracingPipelineStateDesc*  pDesc,
+        IPipelineState**                    ppPipelineState) = 0;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットレイアウトを生成します.
     //!
     //! @param[in]      pDesc                   構成設定です.
@@ -2493,7 +2769,6 @@ struct A3D_API IDevice : public IReference
     virtual bool A3D_APIENTRY CreateDescriptorSetLayout(
         const DescriptorSetLayoutDesc*  pDesc,
         IDescriptorSetLayout**          ppDescriptorSetLayout) = 0;
-
 
     //---------------------------------------------------------------------------------------------
     //! @brief      クエリプールを生成します.
@@ -2527,6 +2802,18 @@ struct A3D_API IDevice : public IReference
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     virtual bool A3D_APIENTRY CreateFence(IFence** ppFence) = 0;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      加速機構を生成します.
+    //! 
+    //! @param[in]      pDesc       構成設定です.
+    //! @param[in]      ppAS        加速機構の格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //-----------------------------------------------------------------------------------------
+    virtual bool A3D_APIENTRY CreateAccelerationStructure(
+        const AccelerationStructureDesc*    pDesc,
+        IAccelerationStructure**            ppAS) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      アイドル状態になるまで待機します.

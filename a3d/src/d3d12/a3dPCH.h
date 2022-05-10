@@ -67,5 +67,7 @@ using ID3D12DeviceA3D   = ID3D12Device8;
 #include "a3dPipelineState.h"
 #include "a3dQueryPool.h"
 #include "a3dDred.h"
+#include "a3dAccelerationStructure.h"
+#include "a3dRayTracingPipelineState.h"
 
 

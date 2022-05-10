@@ -96,6 +96,7 @@
     <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
     <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp" />
+    <ClCompile Include="..\..\..\src\vulkan\a3dAccelerationStructure.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandList.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandSet.cpp" />
@@ -131,6 +132,7 @@
     <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
     <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h" />
     <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h" />
+    <ClInclude Include="..\..\..\src\vulkan\a3dAccelerationStructure.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandList.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandSet.h" />

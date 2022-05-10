@@ -41,6 +41,19 @@ VkBufferUsageFlags ToNativeBufferUsage(uint32_t usage)
     if (usage & a3d::RESOURCE_USAGE_QUERY_BUFFER)
     { result |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; }
 
+    if (usage & a3d::RESOURCE_USAGE_ACCELERATION_STRUCTURE)
+    {
+        result |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+        result |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
+    }
+
+    if (usage & a3d::RESOURCE_USAGE_SHADER_BINDING_TABLE)
+    {
+        result |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+        result |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        result |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
+    }
+
     return result;
 }
 
@@ -124,8 +137,8 @@ void Buffer::Term()
     if (m_Buffer != null_handle)
     {
         vmaDestroyBuffer(m_pDevice->GetAllocator(), m_Buffer, m_Allocation);
-        m_Buffer = null_handle;
-        m_Allocation = null_handle;
+        m_Buffer        = null_handle;
+        m_Allocation    = null_handle;
     }
 
     memset( &m_Desc, 0, sizeof(m_Desc) );
@@ -172,6 +185,26 @@ BufferDesc Buffer::GetDesc() const
 { return m_Desc; }
 
 //-------------------------------------------------------------------------------------------------
+//      リソースタイプを取得します.
+//-------------------------------------------------------------------------------------------------
+RESOURCE_KIND Buffer::GetKind() const
+{ return RESOURCE_KIND_BUFFER; }
+
+//-------------------------------------------------------------------------------------------------
+//      デバイスアドレスを取得します.
+//-------------------------------------------------------------------------------------------------
+uint64_t Buffer::GetDeviceAddress() const
+{
+    if (m_Buffer == null_handle)
+    { return 0; }
+
+    VkBufferDeviceAddressInfoKHR addressInfo = {};
+    addressInfo.sType   = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR;
+    addressInfo.buffer  = m_Buffer;
+    return vkGetBufferDeviceAddressKHR(m_pDevice->GetVkDevice(), &addressInfo);
+}
+
+//-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
 //-------------------------------------------------------------------------------------------------
 void* Buffer::Map()
@@ -206,11 +239,6 @@ void Buffer::Unmap()
 VkBuffer Buffer::GetVkBuffer() const
 { return m_Buffer; }
 
-//-------------------------------------------------------------------------------------------------
-//      リソースタイプを取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_KIND Buffer::GetKind() const
-{ return RESOURCE_KIND_BUFFER; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

@@ -14,23 +14,30 @@ VkShaderStageFlags ToNativeShaderFlags(uint32_t mask)
 {
     VkShaderStageFlags result = 0;
 
-    if ( mask & a3d::SHADER_MASK_VS )
+    if ( mask == a3d::SHADER_STAGE_VS )
     { result |= VK_SHADER_STAGE_VERTEX_BIT; }
-
-    if ( mask & a3d::SHADER_MASK_DS )
+    else if ( mask == a3d::SHADER_STAGE_DS )
     { result |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT; }
-
-    if ( mask & a3d::SHADER_MASK_HS )
+    else if ( mask == a3d::SHADER_STAGE_HS )
     { result |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT; }
-
-    //if ( mask & a3d::SHADER_MASK_GS )
+    //else if ( mask == a3d::SHADER_STAGE_GS )
     //{ result |= VK_SHADER_STAGE_GEOMETRY_BIT; }
-
-    if ( mask & a3d::SHADER_MASK_PS )
+    else if ( mask == a3d::SHADER_STAGE_PS )
     { result |= VK_SHADER_STAGE_FRAGMENT_BIT; }
-
-    if ( mask & a3d::SHADER_MASK_CS )
+    else if ( mask == a3d::SHADER_STAGE_CS )
     { result |= VK_SHADER_STAGE_COMPUTE_BIT; }
+    else if ( mask == a3d::SHADER_STAGE_RAYGEN )
+    { result |= VK_SHADER_STAGE_RAYGEN_BIT_KHR; }
+    else if ( mask == a3d::SHADER_STAGE_MISS )
+    { result |= VK_SHADER_STAGE_MISS_BIT_KHR; }
+    else if ( mask == a3d::SHADER_STAGE_INTERSECTION )
+    { result |= VK_SHADER_STAGE_INTERSECTION_BIT_KHR; }
+    else if ( mask == a3d::SHADER_STAGE_CLOSEST_HIT )
+    { result |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR; }
+    else if ( mask == a3d::SHADER_STAGE_ANY_HIT )
+    { result |= VK_SHADER_STAGE_ANY_HIT_BIT_KHR; }
+    else if ( mask == a3d::SHADER_STAGE_CALLABLE )
+    { result |= VK_SHADER_STAGE_CALLABLE_BIT_KHR; }
 
     return result;
 }
@@ -86,10 +93,10 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
     bool isGraphics = true;
     for(auto i=0u; i<pDesc->EntryCount; ++i)
     {
-        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_CS)
+        if (pDesc->Entries[i].ShaderStage == SHADER_STAGE_CS)
         { isGraphics = false; }
 
-        if (pDesc->Entries[i].ShaderMask & SHADER_MASK_VS)
+        if (pDesc->Entries[i].ShaderStage == SHADER_STAGE_VS)
         {
             if (!isGraphics)
             {
@@ -98,8 +105,8 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
             }
         }
 
-        if ((pDesc->Entries[i].ShaderMask & SHADER_MASK_AS)
-         || (pDesc->Entries[i].ShaderMask & SHADER_MASK_MS))
+        if ((pDesc->Entries[i].ShaderStage == SHADER_STAGE_AS)
+         || (pDesc->Entries[i].ShaderStage == SHADER_STAGE_MS))
         {
             if (!isGraphics)
             {
@@ -123,7 +130,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         {
             bindings[i].binding             = pDesc->Entries[i].BindLocation;
             bindings[i].descriptorType      = ToNativeDescriptorType(pDesc->Entries[i].Type);
-            bindings[i].stageFlags          = ToNativeShaderFlags(pDesc->Entries[i].ShaderMask);
+            bindings[i].stageFlags          = ToNativeShaderFlags(pDesc->Entries[i].ShaderStage);
             bindings[i].descriptorCount     = 1;
             bindings[i].pImmutableSamplers  = nullptr;
 

@@ -96,6 +96,9 @@
     <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp">
       <Filter>ソース ファイル\misc</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\vulkan\a3dAccelerationStructure.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\vulkan\a3dBuffer.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h">
       <Filter>ソース ファイル\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\vulkan\a3dAccelerationStructure.h">
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

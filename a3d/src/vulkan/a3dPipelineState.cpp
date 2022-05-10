@@ -509,6 +509,85 @@ void ToNativeColorBlendState
     pInfo->blendConstants[3] = 0.0f;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      シェーダステージフラグに変換します.
+//-------------------------------------------------------------------------------------------------
+VkShaderStageFlagBits ToNativeShaderStageFlag(a3d::SHADER_STAGE stage)
+{
+    uint32_t result = 0;
+    switch(stage)
+    {
+    case a3d::SHADER_STAGE_VS:
+        result |= VK_SHADER_STAGE_VERTEX_BIT;
+        break;
+
+    case a3d::SHADER_STAGE_DS:
+        result |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+        break;
+
+    case a3d::SHADER_STAGE_HS:
+        result |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+        break;
+
+    case a3d::SHADER_STAGE_PS:
+        result |= VK_SHADER_STAGE_FRAGMENT_BIT;
+        break;
+
+    case a3d::SHADER_STAGE_CS:
+        result |= VK_SHADER_STAGE_COMPUTE_BIT;
+        break;
+
+    case a3d::SHADER_STAGE_AS:
+        result |= VK_SHADER_STAGE_TASK_BIT_NV;
+        break;
+
+    case a3d::SHADER_STAGE_MS:
+        result |= VK_SHADER_STAGE_MESH_BIT_NV;
+        break;
+
+    case a3d::SHADER_STAGE_RAYGEN:
+        result |= VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+        break;
+
+    case a3d::SHADER_STAGE_MISS:
+        result |= VK_SHADER_STAGE_MISS_BIT_KHR;
+        break;
+
+    case a3d::SHADER_STAGE_INTERSECTION:
+        result |= VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+        break;
+
+    case a3d::SHADER_STAGE_CLOSEST_HIT:
+        result |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+        break;
+
+    case a3d::SHADER_STAGE_ANY_HIT:
+        result |= VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+        break;
+
+    case a3d::SHADER_STAGE_CALLABLE:
+        result |= VK_SHADER_STAGE_CALLABLE_BIT_KHR;
+        break;
+    }
+    return VkShaderStageFlagBits(result);
+}
+
+VkRayTracingShaderGroupTypeKHR ToNativeShaderGroupType(a3d::RAYTRACING_SHADER_GROUP_TYPE type)
+{
+    switch(type)
+    {
+    case a3d::RAYTRACING_SHADER_GROUP_TYPE_TRIANGLE_HIT:
+        return VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+
+    case a3d::RAYTRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT:
+        return VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR;
+        break;
+    }
+
+    return VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+}
+
+
 } // namespace /* anonymous */
 
 namespace a3d {
@@ -523,6 +602,7 @@ namespace a3d {
 PipelineState::PipelineState()
 : m_RefCount        (1)
 , m_pDevice         (nullptr)
+, m_Type            (PIPELINE_STATE_TYPE_GRAPHICS)
 , m_PipelineState   (null_handle)
 , m_BindPoint       (VK_PIPELINE_BIND_POINT_GRAPHICS)
 , m_PipelineCache   (null_handle)
@@ -558,6 +638,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    m_Type = PIPELINE_STATE_TYPE_GRAPHICS;
 
     // パイプラインキャッシュを生成.
     {
@@ -775,6 +856,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+    m_Type      = PIPELINE_STATE_TYPE_COMPUTE;
 
     // パイプラインキャッシュを生成.
     {
@@ -845,6 +927,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
     A3D_ASSERT(pNativeDevice != null_handle);
 
     m_BindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    m_Type      = PIPELINE_STATE_TYPE_MESHLET;
 
     // パイプラインキャッシュを生成.
     {
@@ -1012,6 +1095,150 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
 }
 
 //-------------------------------------------------------------------------------------------------
+//      レイトレーシングパイプラインとして初期化します.
+//-------------------------------------------------------------------------------------------------
+bool PipelineState::InitAsRayTracing(IDevice* pDevice, const RayTracingPipelineStateDesc* pDesc)
+{
+    if (pDevice == nullptr || pDesc == nullptr) 
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
+
+    if (pDesc->pLayout      == nullptr 
+     || pDesc->GroupCount   == 0
+     || pDesc->StageCount   == 0)
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
+
+    m_pDevice = static_cast<Device*>(pDevice);
+    m_pDevice->AddRef();
+
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout->AddRef();
+
+    auto pNativeDevice = m_pDevice->GetVkDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+    m_BindPoint = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
+    m_Type      = PIPELINE_STATE_TYPE_RAYTRACING;
+
+    // パイプラインキャッシュを生成.
+    {
+        VkPipelineCacheCreateInfo info = {};
+        info.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+        info.pNext           = nullptr;
+        info.flags           = 0;
+        //info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? size_t(pDesc->pCachedPSO->GetBufferSize()) : 0;
+        //info.pInitialData    = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferPointer() : nullptr;
+
+        auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
+        if ( ret != VK_SUCCESS )
+        {
+            A3D_LOG("Error : vkCreatePipelineCache() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
+    }
+
+    auto stages = new VkPipelineShaderStageCreateInfo [pDesc->StageCount];
+    A3D_ASSERT(stages != nullptr);
+
+    for(auto i=0u; i<pDesc->StageCount; ++i)
+    {
+        auto& info = stages[i];
+
+        VkShaderModuleCreateInfo moduleInfo = {};
+        moduleInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        moduleInfo.pNext    = nullptr;
+        moduleInfo.flags    = 0;
+        moduleInfo.codeSize = pDesc->pStages[i].Binary.ByteCodeSize;
+        moduleInfo.pCode    = reinterpret_cast<const uint32_t*>(pDesc->pStages[i].Binary.pByteCode);
+
+        auto ret = vkCreateShaderModule(pNativeDevice, &moduleInfo, nullptr, &info.module);
+        if (ret != VK_SUCCESS)
+        {
+            for(auto j=0u; j<i; ++j)
+            {
+                if (stages[j].module != null_handle)
+                {
+                    vkDestroyShaderModule(pNativeDevice, stages[j].module, nullptr);
+                    stages[j].module = null_handle;
+                }
+            }
+
+            SafeDeleteArray(stages);
+            A3D_LOG("Error : vkCreateShaderModule() Failed. VkResult = %s", ToString(ret));
+            return false;
+        }
+
+        info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        info.pNext                  = nullptr;
+        info.flags                  = 0;
+        info.stage                  = ToNativeShaderStageFlag(pDesc->pStages[i].Stage);
+        info.pName                  = pDesc->pStages[i].EntryPoint;
+        info.pSpecializationInfo    = nullptr;
+    }
+
+    auto groups = new VkRayTracingShaderGroupCreateInfoKHR [pDesc->GroupCount];
+    A3D_ASSERT(groups != nullptr);
+
+    for(auto i=0u; i<pDesc->GroupCount; ++i)
+    {
+        auto& info = groups[i];
+
+        info.sType                              = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+        info.pNext                              = nullptr;
+        info.type                               = ToNativeShaderGroupType(pDesc->pGroups[i].Type);
+        info.generalShader                      = pDesc->pGroups[i].HitGroupShader;;
+        info.closestHitShader                   = pDesc->pGroups[i].ClosestHitShader;
+        info.anyHitShader                       = pDesc->pGroups[i].AnyHitShader;
+        info.intersectionShader                 = pDesc->pGroups[i].IntersectionShader;
+        info.pShaderGroupCaptureReplayHandle    = nullptr;
+    }
+
+    VkRayTracingPipelineCreateInfoKHR createInfo = {};
+    createInfo.sType                        = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
+    createInfo.pNext                        = nullptr;
+    createInfo.flags                        = 0;
+    createInfo.stageCount                   = pDesc->StageCount;
+    createInfo.pStages                      = stages;
+    createInfo.groupCount                   = pDesc->GroupCount;
+    createInfo.pGroups                      = groups;
+    createInfo.maxPipelineRayRecursionDepth = pDesc->MaxTraceRecursionDepth;
+    createInfo.layout                       = m_pLayout->GetVkPipelineLayout();
+
+    auto ret = vkCreateRayTracingPipelinesKHR(
+        m_pDevice->GetVkDevice(),
+        null_handle,
+        m_PipelineCache,
+        1,
+        &createInfo,
+        nullptr,
+        &m_PipelineState);
+
+    for(auto i=0u; i<pDesc->StageCount; ++i)
+    {
+        if (stages[i].module != null_handle)
+        {
+            vkDestroyShaderModule(pNativeDevice, stages[i].module, nullptr);
+            stages[i].module = null_handle;
+        }
+    }
+    SafeDeleteArray(stages);
+    SafeDeleteArray(groups);
+
+    if (ret != VK_SUCCESS)
+    {
+        A3D_LOG("Error : vkCreateRayTracingPipelinesKHR() Failed. VkResult = %s", ToString(ret));
+        return false;
+    }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      終了処理を行います.
 //-------------------------------------------------------------------------------------------------
 void PipelineState::Term()
@@ -1069,6 +1296,12 @@ void PipelineState::GetDevice(IDevice** ppDevice)
     if (m_pDevice != nullptr)
     { m_pDevice->AddRef(); }
 }
+
+//-------------------------------------------------------------------------------------------------
+//      パイプラインステートタイプを取得します.
+//-------------------------------------------------------------------------------------------------
+PIPELINE_STATE_TYPE PipelineState::GetType() const
+{ return m_Type; }
 
 //-------------------------------------------------------------------------------------------------
 //      キャッシュを取得します.
@@ -1218,6 +1451,41 @@ bool PipelineState::CreateAsMesh
     *ppPipelineState = instance;
     return true;
 }
+
+//-------------------------------------------------------------------------------------------------
+//      レイトレーシングパイプラインステートとして生成します.
+//-------------------------------------------------------------------------------------------------
+bool PipelineState::CreateAsRayTracing
+(
+    IDevice*                            pDevice,
+    const RayTracingPipelineStateDesc*  pDesc,
+    IPipelineState**                    ppPipelineState
+)
+{
+    if (pDevice == nullptr || pDesc == nullptr || ppPipelineState == nullptr)
+    {
+        A3D_LOG("Error : Invalid Argument.");
+        return false;
+    }
+
+    auto instance = new PipelineState;
+    if (instance == nullptr)
+    {
+        A3D_LOG("Error : Out Of Memory.");
+        return false;
+    }
+
+    if (!instance->InitAsRayTracing(pDevice, pDesc))
+    {
+        SafeRelease(instance);
+        A3D_LOG("Error : InitAsRayTracing() Failed.");
+        return false;
+    }
+
+    *ppPipelineState = instance;
+    return true;
+}
+
 
 
 } // namespace a3d

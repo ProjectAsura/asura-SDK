@@ -384,6 +384,18 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_BUILD_ACCELERATION_STRUCTURE:
+                {
+                    auto cmd = reinterpret_cast<ImCmdBuildAccelerationStructure*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    /* 対応するコマンドはありません. */
+                    A3D_UNUSED(cmd);
+
+                    pCmd += sizeof(ImCmdBuildAccelerationStructure);
+                }
+                break;
+
             case CMD_SET_BLEND_CONSTANT:
                 {
                     auto cmd = reinterpret_cast<ImCmdSetBlendConstant*>(pCmd);
@@ -655,6 +667,18 @@ void Queue::ParseCmd()
                     A3D_UNUSED(cmd);
 
                     pCmd += sizeof(ImCmdDispatch);
+                }
+                break;
+
+            case CMD_TRACE_RAYS:
+                {
+                    auto cmd = reinterpret_cast<ImCmdTraceRays*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    /* 対応するコマンドはありません. */
+                    A3D_UNUSED(cmd);
+
+                    pCmd += sizeof(ImCmdTraceRays);
                 }
                 break;
 
@@ -988,6 +1012,18 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_COPY_ACCELERATION_STRUCTURE:
+                {
+                    auto cmd = reinterpret_cast<ImCmdCopyAccelerationStructure*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    /* 対応するコマンドはありません. */
+                    A3D_UNUSED(cmd);
+
+                    pCmd += sizeof(ImCmdCopyAccelerationStructure);
+                }
+                break;
+
             case CMD_RESOLVE_SUBRESOURCE:
                 {
                     auto cmd = reinterpret_cast<ImCmdResolveSubresource*>(pCmd);
@@ -1098,7 +1134,7 @@ void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
     {
         auto& entry = m_pLayoutDesc->Entries[i];
 
-        if (entry.ShaderMask & SHADER_MASK_VS)
+        if (entry.ShaderStage == SHADER_STAGE_VS)
         {
             switch(entry.Type)
             {
@@ -1128,7 +1164,7 @@ void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_DS)
+        else if (entry.ShaderStage == SHADER_STAGE_DS)
         {
             switch(entry.Type)
             {
@@ -1158,7 +1194,7 @@ void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_HS)
+        else if (entry.ShaderStage == SHADER_STAGE_HS)
         {
             switch(entry.Type)
             {
@@ -1188,7 +1224,7 @@ void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_PS)
+        else if (entry.ShaderStage == SHADER_STAGE_PS)
         {
             switch(entry.Type)
             {
@@ -1218,7 +1254,7 @@ void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_CS)
+        else if (entry.ShaderStage == SHADER_STAGE_CS)
         {
             switch(entry.Type)
             {
@@ -1258,11 +1294,11 @@ void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_AS)
+        else if (entry.ShaderStage == SHADER_STAGE_AS)
         {
             /* DO_NOTHING */
         }
-        else if (entry.ShaderMask & SHADER_MASK_MS)
+        else if (entry.ShaderStage == SHADER_STAGE_MS)
         {
             /* DO_NOTHING */
         }
@@ -1295,7 +1331,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
     {
         auto& entry = m_pLayoutDesc->Entries[i];
 
-        if (entry.ShaderMask & SHADER_MASK_VS)
+        if (entry.ShaderStage == SHADER_STAGE_VS)
         {
             switch(entry.Type)
             {
@@ -1313,7 +1349,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_DS)
+        else if (entry.ShaderStage == SHADER_STAGE_DS)
         {
             switch(entry.Type)
             {
@@ -1331,7 +1367,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_HS)
+        else if (entry.ShaderStage == SHADER_STAGE_HS)
         {
             switch(entry.Type)
             {
@@ -1349,7 +1385,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_PS)
+        else if (entry.ShaderStage == SHADER_STAGE_PS)
         {
             switch(entry.Type)
             {
@@ -1367,7 +1403,7 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_CS)
+        else if (entry.ShaderStage == SHADER_STAGE_CS)
         {
             auto dummy = 0u;
             switch(entry.Type)
@@ -1391,9 +1427,9 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
                 break;
             }
         }
-        else if (entry.ShaderMask & SHADER_MASK_AS)
+        else if (entry.ShaderStage == SHADER_STAGE_AS)
         { /* DO_NOTHING */ }
-        else if (entry.ShaderMask & SHADER_MASK_MS)
+        else if (entry.ShaderStage == SHADER_STAGE_MS)
         { /* DO_NOTHING */ }
     }
 }

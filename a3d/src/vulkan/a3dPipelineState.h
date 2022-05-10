@@ -62,11 +62,27 @@ public:
     //! @param[in]      pDevice             デバイスです.
     //! @param[in]      pDesc               構成設定です.
     //! @param[out]     ppPipelineState     パイプラインステートの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     static bool A3D_APIENTRY CreateAsMesh(
         IDevice*                        pDevice,
         const MeshletPipelineStateDesc* pDesc,
         IPipelineState**                ppPipelineState);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      レイトレーシングパイプラインとして生成します.
+    //! 
+    //! @param[in]      pDevice             デバイスです.
+    //! @param[in]      pDesc               構成設定です.
+    //! @param[out]     ppPipelineState     パイプラインステートの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    static bool A3D_APIENTRY CreateAsRayTracing(
+        IDevice*                            pDevice,
+        const RayTracingPipelineStateDesc*  pDesc,
+        IPipelineState**                    ppPipelineState);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      参照カウントを増やします.
@@ -91,6 +107,13 @@ public:
     //! @param[out]     ppDevice        デバイスの格納先です.
     //---------------------------------------------------------------------------------------------
     void A3D_APIENTRY GetDevice(IDevice** ppDevice) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      パイプラインステートタイプを取得します.
+    //! 
+    //! @return     パイプラインステートタイプを返却します.
+    //---------------------------------------------------------------------------------------------
+    PIPELINE_STATE_TYPE A3D_APIENTRY GetType() const override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      キャッシュデータを取得します.
@@ -128,6 +151,7 @@ private:
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;             //!< 参照カウンタです.
     Device*                 m_pDevice;              //!< デバイスです.
+    PIPELINE_STATE_TYPE     m_Type;                 //!< パイプラインステートタイプです.
     VkPipeline              m_PipelineState;        //!< パイプラインステートです.
     VkPipelineBindPoint     m_BindPoint;            //!< バインドポイントです.
     VkPipelineCache         m_PipelineCache;        //!< パイプラインキャッシュです.
@@ -176,6 +200,16 @@ private:
     //! @retval false   初期化に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc* pDesc);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      レイトレーシングパイプラインとして初期化します.
+    //! 
+    //! @param[in]      pDevice         デバイスです.
+    //! @param[in]      pDesc           構成設定です.
+    //! @retval true    初期化に成功.
+    //! @retval false   初期化に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY InitAsRayTracing(IDevice* pDevice, const RayTracingPipelineStateDesc* pDesc);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      終了処理を行います.

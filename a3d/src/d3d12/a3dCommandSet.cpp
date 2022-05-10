@@ -53,6 +53,7 @@ bool CommandSet::Init(IDevice* pDevice, const CommandSetDesc* pDesc)
             D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED,
             D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH,
             D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH,
+            D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_RAYS,
         };
 
         //size_t structSizeTable[] = {

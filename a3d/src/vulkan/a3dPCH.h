@@ -44,6 +44,7 @@
 #include "a3dQueryPool.h"
 #include "a3dUtil.h"
 #include "a3dSpirv.h"
+#include "a3dAccelerationStructure.h"
 
 
 #ifndef A3D_ASSERT

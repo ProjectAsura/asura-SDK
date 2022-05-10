@@ -273,6 +273,18 @@ public:
         IPipelineState**                ppPipelineState) override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      レイトレーシングパイプラインを生成します.
+    //! 
+    //! @param[in]      pDesc           構成設定です.
+    //! @param[out]     ppPipelineState パイプラインステートの格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateRayTracingPipeline(
+        const RayTracingPipelineStateDesc*  pDesc,
+        IPipelineState**                    ppPipelineState) override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      ディスクリプタセットレイアウトを生成します.
     //!
     //! @param[in]      pDesc                   構成設定です.
@@ -316,6 +328,18 @@ public:
     //! @retval false   生成に失敗.
     //---------------------------------------------------------------------------------------------
     bool A3D_APIENTRY CreateFence(IFence** ppFence) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      加速機構を生成します.
+    //! 
+    //! @param[in]      pDesc                       加速機構の設定です.
+    //! @param[out]     ppAccelerationStructure     加速機構の格納先です.
+    //! @retval true    生成に成功.
+    //! @retval false   生成に失敗.
+    //---------------------------------------------------------------------------------------------
+    bool A3D_APIENTRY CreateAccelerationStructure(
+        const AccelerationStructureDesc*    pDesc,
+        IAccelerationStructure**            ppAccelerationStructure) override;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      アイドル状態になるまで待機します

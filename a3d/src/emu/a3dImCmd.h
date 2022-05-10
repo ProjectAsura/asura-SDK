@@ -18,6 +18,7 @@ enum CMD_ID
     CMD_SUB_BEGIN,                      //!< ICommandList::Begin() For COMMANDLIST_TYPE_BUNDLE
     CMD_BEGIN_FRAME_BUFFER,             //!< ICommandList::BginFrameBuffer()
     CMD_END_FRAME_BUFFER,               //!< ICommandList::EndFrameBuffer()
+    CMD_BUILD_ACCELERATION_STRUCTURE,   //!< ICommandList::BuildAccelerationStructure()
     CMD_SET_BLEND_CONSTANT,             //!< ICommandList::SetBlendConstant()
     CMD_SET_STENCIL_REFERENCE,          //!< ICommandList::SetStencilReference()
     CMD_SET_VIEWPORTS,                  //!< ICommandList::SetViewports()
@@ -35,6 +36,7 @@ enum CMD_ID
     CMD_DRAW_INDEXED_INSTANCED,         //!< ICommandList::DrawIndexedInstanced()
     CMD_DISPATCH_COMPUTE,               //!< ICommandList::DispatchCompute()
     CMD_DISPATCH_MESH,                  //!< ICommandList::DispatchMesh()
+    CMD_TRACE_RAYS,                     //!< ICommandList::TraceRays()
     CMD_EXECUTE_INDIRECT,               //!< ICommandList::ExecuteIndirect()
     CMD_BEGIN_QUERY,                    //!< ICommandList::BeginQuery()
     CMD_END_QUERY,                      //!< ICommandList::EndQuery()
@@ -46,6 +48,7 @@ enum CMD_ID
     CMD_COPY_BUFFER_REGION,             //!< ICommandList::CopyBufferRegion()
     CMD_COPY_BUFFER_TO_TEXTURE,         //!< ICommandList::CopyBufferToTexture()
     CMD_COPY_TEXTURE_TO_BUFFER,         //!< ICommandList::CopyTextureToBuffer()
+    CMD_COPY_ACCELERATION_STRUCTURE,    //!< ICommandList::CopyAccelerationStructure()
     CMD_RESOLVE_SUBRESOURCE,            //!< ICommandList::ResolveSubresource()
     CMD_EXECUTE_BUNDLE,                 //!< ICommandList::ExecuteBundle()
     CMD_PUSH_MARKER,                    //!< ICommandList::PushMarker()
@@ -82,6 +85,13 @@ struct ImCmdBeginFrameBuffer : ImCmdBase
     ClearDepthStencilValue  ClearDepthStencil;
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdBuildAccelerationStructure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdBuildAccelerationStructure : ImCmdBase
+{
+    IAccelerationStructure* pAS;
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // ImCmdSetBlendConstant structure
@@ -236,6 +246,14 @@ struct ImCmdDispatch : ImCmdBase
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdTraceRays structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdTraceRays : ImCmdBase
+{
+    TraceRayArguments Args;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // ImCmdExecuteIndirect structure
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct ImCmdExecuteIndirect : ImCmdBase
@@ -353,6 +371,16 @@ struct ImCmdCopyTextureToBuffer : ImCmdBase
     uint32_t        SrcSubresource;
     Offset3D        SrcOffset;
     Extent3D        SrcExtent;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdCopyAccelerationStructure structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdCopyAccelerationStructure : ImCmdBase
+{
+    IAccelerationStructure*             pDstAS;
+    IAccelerationStructure*             pSrcAS;
+    ACCELERATION_STRUCTURE_COPY_MODE    Mode;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

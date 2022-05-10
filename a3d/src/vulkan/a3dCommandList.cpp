@@ -10,6 +10,22 @@
 #include "a3dVulkanFunc.h"
 
 
+namespace {
+
+VkCopyAccelerationStructureModeKHR ToNativeCopyMode(a3d::ACCELERATION_STRUCTURE_COPY_MODE mode)
+{
+    static const VkCopyAccelerationStructureModeKHR table[] = {
+        VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR,
+        VK_COPY_ACCELERATION_STRUCTURE_MODE_COMPACT_KHR,
+        VK_COPY_ACCELERATION_STRUCTURE_MODE_SERIALIZE_KHR,
+        VK_COPY_ACCELERATION_STRUCTURE_MODE_DESERIALIZE_KHR,
+    };
+    return table[mode];
+}
+
+} // namespace
+
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -384,6 +400,19 @@ void CommandList::EndFrameBuffer()
     A3D_ASSERT(vkCmdEndRendering != nullptr);
     vkCmdEndRendering(m_CommandBuffer);
     m_BindRenderPass = false;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      高速化機構を構築します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::BuildAccelerationStructure(IAccelerationStructure* pAS)
+{
+    if (pAS == nullptr)
+    { return; }
+
+    auto pWrapAS = static_cast<AccelerationStructure*>(pAS);
+    A3D_ASSERT(pWrapAS != nullptr);
+    pWrapAS->Issue(this);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -862,6 +891,46 @@ void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      レイトレーシングパイプラインを起動します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::TraceRays(const TraceRayArguments* pArgs)
+{
+    if (pArgs == nullptr)
+    { return; }
+
+    VkStridedDeviceAddressRegionKHR rayGenShaderTable   = {};
+    VkStridedDeviceAddressRegionKHR missShaderTable     = {};
+    VkStridedDeviceAddressRegionKHR hitShaderTable      = {};
+    VkStridedDeviceAddressRegionKHR callableShaderTable = {};
+
+    rayGenShaderTable.deviceAddress     = pArgs->RayGeneration.StartAddress;
+    rayGenShaderTable.size              = pArgs->RayGeneration.Size;
+    rayGenShaderTable.stride            = pArgs->RayGeneration.Stride;
+
+    missShaderTable.deviceAddress       = pArgs->MissShaders.StartAddress;
+    missShaderTable.size                = pArgs->MissShaders.Size;
+    missShaderTable.stride              = pArgs->MissShaders.Stride;
+
+    hitShaderTable.deviceAddress        = pArgs->HitShaders.StartAddress;
+    hitShaderTable.size                 = pArgs->HitShaders.Size;
+    hitShaderTable.stride               = pArgs->HitShaders.Stride;
+
+    callableShaderTable.deviceAddress   = pArgs->CallableShaders.StartAddress;
+    callableShaderTable.size            = pArgs->CallableShaders.Size;
+    callableShaderTable.stride          = pArgs->CallableShaders.Stride;
+
+    vkCmdTraceRaysKHR(
+        m_CommandBuffer,
+        &rayGenShaderTable,
+        &missShaderTable,
+        &hitShaderTable,
+        &callableShaderTable,
+        pArgs->Width,
+        pArgs->Height,
+        pArgs->Depth);
+}
+
+//-------------------------------------------------------------------------------------------------
 //      インダイレクトコマンドを実行します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::ExecuteIndirect
@@ -918,6 +987,23 @@ void CommandList::ExecuteIndirect
         case INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH:
             { vkCmdDrawMeshTasksIndirect( m_CommandBuffer, pNativeArgumentBuffer, offset, count, desc.ByteStride ); }
             break;
+
+#if 0
+        //case INDIRECT_ARGUMENT_TYPE_TRACE_RAYS:
+        //    {
+        //        // TODO : Implement.
+        //        A3D_ASSERT(false);
+        //        //vkCmdTraceRaysIndirectKHR(
+        //        //    m_CommandBuffer,
+        //        //    raygenShderTable,
+        //        //    missShaderTable,
+        //        //    hitShadertable,
+        //        //    callableShaderTable,
+        //        //    indirectAddress);
+        //    }
+        //    break;
+#endif
+
         }
 
         offset += desc.ByteStride;
@@ -1258,6 +1344,34 @@ void CommandList::CopyTextureToBuffer
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         pWrapDst->GetVkBuffer(),
         1, &region);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      高速化機構をコピーします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::CopyAccelerationStructure
+(
+    IAccelerationStructure*             pDstAS,
+    IAccelerationStructure*             pSrcAS,
+    ACCELERATION_STRUCTURE_COPY_MODE    mode
+)
+{
+    if (pDstAS == nullptr || pSrcAS == nullptr)
+    { return; }
+
+    auto pWrapDst = static_cast<AccelerationStructure*>(pDstAS);
+    auto pWrapSrc = static_cast<AccelerationStructure*>(pSrcAS);
+    A3D_ASSERT(pWrapDst != nullptr);
+    A3D_ASSERT(pWrapSrc != nullptr);
+
+    VkCopyAccelerationStructureInfoKHR info = {};
+    info.sType  = VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR;
+    info.pNext  = nullptr;
+    info.src    = pWrapSrc->GetVkAccelerationStructure();
+    info.dst    = pWrapDst->GetVkAccelerationStructure();
+    info.mode   = ToNativeCopyMode(mode);
+
+    vkCmdCopyAccelerationStructureKHR(m_CommandBuffer, &info);
 }
 
 //-------------------------------------------------------------------------------------------------

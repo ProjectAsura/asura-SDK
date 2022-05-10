@@ -308,6 +308,12 @@ void PipelineState::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      パイプラインステートタイプを取得します.
+//-------------------------------------------------------------------------------------------------
+PIPELINE_STATE_TYPE PipelineState::GetType() const
+{ return m_Type; }
+
+//-------------------------------------------------------------------------------------------------
 //      キャッシュデータを取得します.
 //-------------------------------------------------------------------------------------------------
 bool PipelineState::GetCachedBlob(IBlob** ppBlob)
@@ -528,6 +534,8 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     m_pLayout->AddRef();
 
+    m_Type = PIPELINE_STATE_TYPE_GRAPHICS;
+
     return true;
 }
 
@@ -570,6 +578,8 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
 
     m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     m_pLayout->AddRef();
+
+    m_Type = PIPELINE_STATE_TYPE_COMPUTE;
 
     return true;
 }

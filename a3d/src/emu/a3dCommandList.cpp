@@ -114,6 +114,22 @@ void CommandList::EndFrameBuffer()
 {
     ImCmdBase cmd = {};
     cmd.Id = CMD_END_FRAME_BUFFER;
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
+//      加速機構を構築します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::BuildAccelerationStructure(IAccelerationStructure* pAS)
+{
+    if (pAS == nullptr)
+    { return; }
+
+    ImCmdBuildAccelerationStructure cmd = {};
+    cmd.Id  = CMD_BUILD_ACCELERATION_STRUCTURE;
+    cmd.pAS = pAS;
+
     m_Buffer.Push(&cmd, sizeof(cmd));
 }
 
@@ -393,6 +409,21 @@ void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      レイトレーシングパイプラインを起動します.
+//-------------------------------------------------------------------------------------------------
+void CommandList::TraceRays(const TraceRayArguments* pArgs)
+{
+    if (pArgs == nullptr)
+    { return; }
+
+    ImCmdTraceRays cmd = {};
+    cmd.Id   = CMD_TRACE_RAYS;
+    cmd.Args = *pArgs;
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
 //      インダイレクトコマンドを実行します.
 //-------------------------------------------------------------------------------------------------
 void CommandList::ExecuteIndirect
@@ -635,6 +666,28 @@ void CommandList::CopyTextureToBuffer
     cmd.SrcSubresource  = srcSubresource;
     cmd.SrcOffset       = srcOffset;
     cmd.SrcExtent       = srcExtent;
+
+    m_Buffer.Push(&cmd, sizeof(cmd));
+}
+
+//-------------------------------------------------------------------------------------------------
+//      加速機構をコピーします.
+//-------------------------------------------------------------------------------------------------
+void CommandList::CopyAccelerationStructure
+(
+    IAccelerationStructure*             pDstAS,
+    IAccelerationStructure*             pSrcAS,
+    ACCELERATION_STRUCTURE_COPY_MODE    mode
+)
+{
+    if (pDstAS == nullptr || pSrcAS == nullptr)
+    { return; }
+
+    ImCmdCopyAccelerationStructure cmd = {};
+    cmd.Id      = CMD_COPY_ACCELERATION_STRUCTURE;
+    cmd.pDstAS  = pDstAS;
+    cmd.pSrcAS  = pSrcAS;
+    cmd.Mode    = mode;
 
     m_Buffer.Push(&cmd, sizeof(cmd));
 }

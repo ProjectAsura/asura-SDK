@@ -358,7 +358,7 @@ PipelineState::PipelineState()
 , m_pPipelineState      (nullptr)
 , m_PrimitiveTopology   (D3D_PRIMITIVE_TOPOLOGY_UNDEFINED)
 , m_pLayout             (nullptr)
-, m_Type                (PIPELINE_GRAPHICS)
+, m_Type                (PIPELINE_STATE_TYPE_GRAPHICS)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -400,6 +400,12 @@ void PipelineState::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      パイプラインステートタイプを取得します.
+//-------------------------------------------------------------------------------------------------
+PIPELINE_STATE_TYPE PipelineState::GetType() const
+{ return m_Type; }
+
+//-------------------------------------------------------------------------------------------------
 //      キャッシュデータを取得します.
 //-------------------------------------------------------------------------------------------------
 bool PipelineState::GetCachedBlob(IBlob** ppBlob)
@@ -436,14 +442,14 @@ void PipelineState::Issue(ICommandList* pCommandList)
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
-    if (m_Type == PIPELINE_GRAPHICS)
+    if (IsGraphics())
     { pNativeCommandList->SetGraphicsRootSignature(m_pLayout->GetD3D12RootSignature()); }
-    else if (m_Type == PIPELINE_COMPUTE)
+    else if (m_Type == PIPELINE_STATE_TYPE_COMPUTE)
     { pNativeCommandList->SetComputeRootSignature(m_pLayout->GetD3D12RootSignature()); }
 
     pNativeCommandList->SetPipelineState(m_pPipelineState);
 
-    if (m_Type == PIPELINE_GRAPHICS)
+    if (m_Type == PIPELINE_STATE_TYPE_GRAPHICS)
     { pNativeCommandList->IASetPrimitiveTopology(m_PrimitiveTopology); }
 }
 
@@ -469,7 +475,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_Type = PIPELINE_GRAPHICS;
+    m_Type = PIPELINE_STATE_TYPE_GRAPHICS;
 
     m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     m_pLayout->AddRef();
@@ -541,7 +547,7 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_Type = PIPELINE_COMPUTE;
+    m_Type = PIPELINE_STATE_TYPE_COMPUTE;
 
     m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     m_pLayout->AddRef();
@@ -583,7 +589,7 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
     m_pDevice = static_cast<Device*>(pDevice);
     m_pDevice->AddRef();
 
-    m_Type = PIPELINE_MESHLET;
+    m_Type = PIPELINE_STATE_TYPE_MESHLET;
 
     m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     m_pLayout->AddRef();
@@ -672,7 +678,7 @@ void PipelineState::Term()
 //      グラフィクスパイプラインかどうか?
 //-------------------------------------------------------------------------------------------------
 bool PipelineState::IsGraphics() const
-{ return m_Type != PIPELINE_COMPUTE; }
+{ return m_Type == PIPELINE_STATE_TYPE_GRAPHICS || m_Type == PIPELINE_STATE_TYPE_MESHLET; }
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタセットレイアウトを取得します.
