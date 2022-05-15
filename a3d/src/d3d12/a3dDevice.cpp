@@ -4,29 +4,32 @@
 // Copyright(c) Project Asura. All right reserved.
 //-------------------------------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 // Includes
-//-----------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 #include <ShlObj.h>
 #include <strsafe.h>
 
 namespace {
 
-inline int Max(int a, int b)
-{ return (a > b) ? a : b; }
-
-inline int Min(int a, int b)
-{ return (a < b) ? a : b; }
-
+//-------------------------------------------------------------------------------------------------
+//      交差領域を計算します.
+//-------------------------------------------------------------------------------------------------
 inline int ComputeIntersectionArea(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2)
-{ return Max(0, Min(ax2, bx2) - Max(ax1, bx1)) * Max(0, Min(ay2, by2) - Max(ay1, by1)); }
+{ return a3d::Max(0, a3d::Min(ax2, bx2) - a3d::Max(ax1, bx1)) * a3d::Max(0, a3d::Min(ay2, by2) - a3d::Max(ay1, by1)); }
 
+//-------------------------------------------------------------------------------------------------
+//      メモリ確保のラッパー関数です.
+//-------------------------------------------------------------------------------------------------
 void* CustomAlloc(size_t size, size_t alignment, void* pUser)
 { 
     A3D_UNUSED(pUser);
     return a3d_alloc(size, alignment); 
 }
 
+//-------------------------------------------------------------------------------------------------
+//      メモリ解放のラッパー関数です.
+//-------------------------------------------------------------------------------------------------
 void CustomFree(void* ptr, void* pUser)
 {
     A3D_UNUSED(pUser);
@@ -34,6 +37,9 @@ void CustomFree(void* ptr, void* pUser)
 }
 
 #if A3D_IS_WIN
+//-------------------------------------------------------------------------------------------------
+//      PIXキャプチャー用のDLLをロードします.
+//-------------------------------------------------------------------------------------------------
 void LoadPixGpuCpatureDll()
 {
     LPWSTR programFilesPath = nullptr;
@@ -105,7 +111,9 @@ Device::Device()
 , m_pComputeQueue   (nullptr)
 , m_pCopyQueue      (nullptr)
 , m_TearingSupport  (false)
-{ /* DO_NOTHING */ }
+{
+    memset(&m_Info, 0, sizeof(m_Info));
+}
 
 //-------------------------------------------------------------------------------------------------
 //      デストラクタです.
@@ -221,13 +229,16 @@ bool Device::Init(const DeviceDesc* pDesc)
 
     // デバイス情報の設定.
     {
-        m_Info.ConstantBufferMemoryAlignment    = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
+        m_Info.ConstantBufferAlignment          = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
         m_Info.MaxTargetWidth                   = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
         m_Info.MaxTargetHeight                  = D3D12_REQ_RENDER_TO_BUFFER_WINDOW_WIDTH;
         m_Info.MaxTargetArraySize               = D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
         m_Info.MaxColorSampleCount              = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
         m_Info.MaxDepthSampleCount              = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
         m_Info.MaxStencilSampleCount            = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT;
+        m_Info.ShaderIdentifierSize             = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+        m_Info.RayTracingShaderRecordAlignment  = D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT;
+        m_Info.RayTracingShaderTableAlignment   = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
     }
 
     // タイムスタンプ周波数取得.
@@ -339,7 +350,8 @@ bool Device::InitNative(const DeviceDesc* pDesc)
         return false;
     }
 
-    hr = D3D12CreateDevice( nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_pDevice) );
+    // デバイス生成.
+    hr = D3D12CreateDevice( nullptr, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_pDevice) );
     if ( FAILED(hr) )
     {
         A3D_LOG("Error : D3D12CreateDevice() Failed. errcode = 0x%x", hr);
@@ -369,6 +381,37 @@ bool Device::InitNative(const DeviceDesc* pDesc)
         SafeRelease(pInfoQueue);
     }
 
+    // 非同期コンピュートのサポート.
+    {
+        m_Info.SupportAsycCompute = true;
+    }
+
+    // ハードウェアレイトレーシングがサポートされているかどうかチェック.
+    {
+        D3D12_FEATURE_DATA_D3D12_OPTIONS5 options = {};
+        hr = m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &options, sizeof(options));
+        if (SUCCEEDED(hr))
+        { m_Info.SupportRayTracing = (options.RaytracingTier != D3D12_RAYTRACING_TIER_NOT_SUPPORTED); }
+    }
+
+    // メッシュシェーダがサポートされているかどうかチェック.
+    {
+        // シェーダモデルをチェック.
+        {
+            D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = { D3D_SHADER_MODEL_6_5 };
+            hr = m_pDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
+            if (SUCCEEDED(hr) && (shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_5))
+            {
+                // レイトレ機能をチェック.
+                D3D12_FEATURE_DATA_D3D12_OPTIONS7 options = {};
+                hr = m_pDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options, sizeof(options));
+                if (SUCCEEDED(hr))
+                { m_Info.SupportMeshShader = (options.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED); }
+            }
+        }
+    }
+
+    // 正常終了.
     return true;
 }
 #endif

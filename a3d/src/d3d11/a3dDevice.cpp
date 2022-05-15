@@ -97,7 +97,9 @@ Device::Device()
 , m_pOutput4        (nullptr)
 #endif
 , m_UniqueId        (1)
-{ /* DO_NOTHING */ }
+{
+    memset(&m_Info, 0, sizeof(m_Info));
+}
 
 //-------------------------------------------------------------------------------------------------
 //      デストラクタです.
@@ -278,13 +280,16 @@ bool Device::Init(const DeviceDesc* pDesc)
 
     // デバイス情報の設定.
     {
-        m_Info.ConstantBufferMemoryAlignment    = 16;
+        m_Info.ConstantBufferAlignment          = 16;
         m_Info.MaxTargetWidth                   = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
         m_Info.MaxTargetHeight                  = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
         m_Info.MaxTargetArraySize               = D3D11_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
         m_Info.MaxColorSampleCount              = D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT;
         m_Info.MaxDepthSampleCount              = D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT;
         m_Info.MaxStencilSampleCount            = D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT;
+        m_Info.SupportAsycCompute               = false;
+        m_Info.SupportRayTracing                = false;
+        m_Info.SupportMeshShader                = false;
     }
 
     {

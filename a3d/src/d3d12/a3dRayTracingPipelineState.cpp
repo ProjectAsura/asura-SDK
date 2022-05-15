@@ -76,6 +76,12 @@ bool RayTracingPipelineState::Init(IDevice* pDevice, const RayTracingPipelineSta
     auto pWrapDevice = static_cast<Device*>(pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);
 
+    if (!pWrapDevice->GetInfo().SupportRayTracing)
+    {
+        A3D_LOG("Error : RayTracing feature is not supported by hardware.");
+        return false;
+    }
+
     m_pDevice = pWrapDevice;
     m_pDevice->AddRef();
 

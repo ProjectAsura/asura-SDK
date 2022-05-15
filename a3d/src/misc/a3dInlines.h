@@ -29,30 +29,4 @@ template<typename T, size_t Count> inline
 size_t CountOf(const T (&)[Count])
 { return Count; }
 
-//-------------------------------------------------------------------------------------------------
-//      nullptr を考慮して delete を呼び出します.
-//-------------------------------------------------------------------------------------------------
-template<typename T> inline
-void SafeDelete(T*& ptr)
-{
-    if (ptr != nullptr)
-    {
-        delete ptr;
-        ptr = nullptr;
-    }
-}
-
-//-------------------------------------------------------------------------------------------------
-//      nullptr を考慮して delete[] を呼び出します.
-//-------------------------------------------------------------------------------------------------
-template<typename T> inline
-void SafeDeleteArray(T*& ptr)
-{
-    if (ptr != nullptr)
-    {
-        delete [] ptr;
-        ptr = nullptr;
-    }
-}
-
 } // namespace a3d

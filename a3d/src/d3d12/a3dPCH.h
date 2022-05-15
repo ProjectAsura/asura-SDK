@@ -45,6 +45,7 @@ using ID3D12DeviceA3D   = ID3D12Device8;
 #include "misc/a3dBlob.h"
 #include "misc/a3dLogger.h"
 #include "misc/a3dSpinLock.h"
+#include "misc/a3dInlines.h"
 
 #include "a3dUtil.h"
 #include "a3dDescriptor.h"

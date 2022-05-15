@@ -402,7 +402,9 @@ Device::Device()
 , m_pComputeQueue       (nullptr)
 , m_pCopyQueue          (nullptr)
 , m_DefaultSampler      (null_handle)
-{ /* DO_NOTHING */ }
+{
+    memset(&m_Info, 0, sizeof(m_Info));
+}
 
 //-------------------------------------------------------------------------------------------------
 //      デストラクタです.
@@ -998,14 +1000,29 @@ bool Device::Init(const DeviceDesc* pDesc)
 
     // デバイス情報の設定.
     {
-        auto& limits = m_pPhysicalDeviceInfos[0].DeviceProperty.limits;
-        m_Info.ConstantBufferMemoryAlignment    = static_cast<uint32_t>(limits.minUniformBufferOffsetAlignment);
+        VkPhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingProps = {};
+        rayTracingProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
+        rayTracingProps.pNext = nullptr;
+
+        VkPhysicalDeviceProperties2 props2 = {};
+        props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        props2.pNext = &rayTracingProps;
+
+        vkGetPhysicalDeviceProperties2(physicalDevice, &props2);
+
+        auto& limits = props2.properties.limits;
+        m_Info.ConstantBufferAlignment          = static_cast<uint32_t>(limits.minUniformBufferOffsetAlignment);
         m_Info.MaxTargetWidth                   = limits.maxFramebufferWidth;
         m_Info.MaxTargetHeight                  = limits.maxFramebufferHeight;
         m_Info.MaxTargetArraySize               = limits.maxFramebufferLayers;
         m_Info.MaxColorSampleCount              = static_cast<uint32_t>(limits.framebufferColorSampleCounts);
         m_Info.MaxDepthSampleCount              = static_cast<uint32_t>(limits.framebufferDepthSampleCounts);
         m_Info.MaxStencilSampleCount            = static_cast<uint32_t>(limits.framebufferStencilSampleCounts);
+        m_Info.RayTracingShaderRecordAlignment  = rayTracingProps.shaderGroupHandleAlignment;
+        m_Info.RayTracingShaderTableAlignment   = rayTracingProps.shaderGroupBaseAlignment;
+        m_Info.SupportAsycCompute               = true;
+        m_Info.SupportMeshShader                = m_IsSupportExt[EXT_NV_MESH_SHADER];
+        m_Info.SupportRayTracing                = m_IsSupportExt[EXT_KHR_RAY_TRACING];
 
         if (limits.timestampComputeAndGraphics)
         {

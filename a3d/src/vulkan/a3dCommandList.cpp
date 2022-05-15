@@ -12,6 +12,9 @@
 
 namespace {
 
+//-------------------------------------------------------------------------------------------------
+//      VkCopyAccelerationStructureModeKHRに変換します.
+//-------------------------------------------------------------------------------------------------
 VkCopyAccelerationStructureModeKHR ToNativeCopyMode(a3d::ACCELERATION_STRUCTURE_COPY_MODE mode)
 {
     static const VkCopyAccelerationStructureModeKHR table[] = {

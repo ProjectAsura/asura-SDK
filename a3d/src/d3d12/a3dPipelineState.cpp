@@ -584,9 +584,19 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
         return false;
     }
 
+    auto pWrapDevice = static_cast<Device*>(pDevice);
+    A3D_ASSERT(pWrapDevice != nullptr);
+
+    // レイトレ機能が有効化チェック.
+    if (!m_pDevice->GetInfo().SupportMeshShader)
+    {
+        A3D_LOG("Error : Mesh Shader feature is not supported by hardware.");
+        return false;
+    }
+
     Term();
 
-    m_pDevice = static_cast<Device*>(pDevice);
+    m_pDevice = pWrapDevice;
     m_pDevice->AddRef();
 
     m_Type = PIPELINE_STATE_TYPE_MESHLET;
@@ -599,28 +609,6 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
 
     auto pWrapDescriptorLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     A3D_ASSERT(pWrapDescriptorLayout != nullptr);
-
-    // シェーダモデルをチェック.
-    {
-        D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = { D3D_SHADER_MODEL_6_5 };
-        auto hr = pNativeDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
-        if (FAILED(hr) || (shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_5))
-        {
-            A3D_LOG("Error : D3D_SHADER_MODEL_6_5 is not supported. errcode = 0x%x", hr);
-            return false;
-        }
-    }
-
-    // メッシュシェーダをサポートしているかどうかチェック.
-    {
-        D3D12_FEATURE_DATA_D3D12_OPTIONS7 features = {};
-        auto hr = pNativeDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &features, sizeof(features));
-        if (FAILED(hr) || (features.MeshShaderTier == D3D12_MESH_SHADER_TIER_NOT_SUPPORTED))
-        {
-            A3D_LOG("Error : D3D12_MESH_SHADER_TIER_NOT_SUPPROTED. errcode = 0x%x", hr);
-            return false;
-        }
-    }
 
     D3D12_CACHED_PIPELINE_STATE cachedPSO = {};
     if (pDesc->pCachedPSO != nullptr)

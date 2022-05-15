@@ -315,6 +315,7 @@ bool AccelerationStructure::InitAsBlas(const AccelerationStructureDesc* pDesc)
         { m_AllowUpdate = true; }
     }
 
+    // 正常終了.
     return true;
 }
 
@@ -324,7 +325,7 @@ bool AccelerationStructure::InitAsBlas(const AccelerationStructureDesc* pDesc)
 bool AccelerationStructure::InitAsTlas(const AccelerationStructureDesc* pDesc)
 {
     VkDeviceOrHostAddressConstKHR addressIB = {};
-    addressIB.deviceAddress = pDesc->InstanceAddress;
+    addressIB.deviceAddress = pDesc->InstanceDescs;
 
     m_GeometryCount     = 1;
     m_pBuildRangeInfos  = new VkAccelerationStructureBuildRangeInfoKHR [m_GeometryCount];
@@ -347,6 +348,7 @@ bool AccelerationStructure::InitAsTlas(const AccelerationStructureDesc* pDesc)
     m_BuildGeometryInfo.geometryCount = 1;
     m_BuildGeometryInfo.pGeometries   = m_pGeometries;
 
+    // ビルド範囲情報.
    {
         m_pBuildRangeInfos[0].primitiveCount    = 1;
         m_pBuildRangeInfos[0].primitiveOffset   = 0;
@@ -434,6 +436,7 @@ bool AccelerationStructure::InitAsTlas(const AccelerationStructureDesc* pDesc)
         { m_AllowUpdate = true; }
     }
 
+    // 正常終了.
     return true;
 }
 

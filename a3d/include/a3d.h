@@ -1331,7 +1331,7 @@ struct AccelerationStructureDesc
     union
     {
         const GeometryDesc*     pDescs;             //!< ジオメトリ設定.
-        uint64_t                InstanceAddress;    //!< インスタンスバッファのデバイスアドレスです.
+        uint64_t                InstanceDescs;      //!< インスタンス設定のデバイスアドレスです.
     };
 };
 
@@ -1407,16 +1407,19 @@ struct TraceRayArguments
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct DeviceInfo
 {
-    uint32_t    ConstantBufferMemoryAlignment;  //!< 定数バッファアライメントです.
-    uint32_t    MaxTargetWidth;                 //!< ターゲットの最大横幅です.
-    uint32_t    MaxTargetHeight;                //!< ターゲットの最大縦幅です.
-    uint32_t    MaxTargetArraySize;             //!< ターゲットの最大配列数です.
-    uint32_t    MaxColorSampleCount;            //!< 最大カラーサンプル数です.
-    uint32_t    MaxDepthSampleCount;            //!< 最大深度サンプル数です.
-    uint32_t    MaxStencilSampleCount;          //!< 最大ステンシルサンプル数です.
-    bool        SupportAsycCompute;             //!< 非同期コンピュートのサポート.
-    bool        SupportRayTracing;              //!< レイトレーシングパイプラインのサポート.
-    bool        SupportMeshShader;              //!< メッシュシェーダのサポート.
+    uint32_t    ConstantBufferAlignment;            //!< 定数バッファアライメントです.
+    uint32_t    MaxTargetWidth;                     //!< ターゲットの最大横幅です.
+    uint32_t    MaxTargetHeight;                    //!< ターゲットの最大縦幅です.
+    uint32_t    MaxTargetArraySize;                 //!< ターゲットの最大配列数です.
+    uint32_t    MaxColorSampleCount;                //!< 最大カラーサンプル数です.
+    uint32_t    MaxDepthSampleCount;                //!< 最大深度サンプル数です.
+    uint32_t    MaxStencilSampleCount;              //!< 最大ステンシルサンプル数です.
+    uint32_t    ShaderIdentifierSize;               //!< シェーダ識別子サイズです.
+    uint32_t    RayTracingShaderRecordAlignment;    //!< レイトレーシングシェーダレコードのアライメントです.
+    uint32_t    RayTracingShaderTableAlignment;     //!< レイトレーシングシェーダテーブルのアライメントです.
+    bool        SupportAsycCompute;                 //!< 非同期コンピュートのサポート.
+    bool        SupportRayTracing;                  //!< レイトレーシングパイプラインのサポート.
+    bool        SupportMeshShader;                  //!< メッシュシェーダのサポート.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

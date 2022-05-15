@@ -46,6 +46,9 @@ bool CreateBufferUAV
     return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPEに変換します.
+//-------------------------------------------------------------------------------------------------
 D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE ToNativeType(a3d::ACCELERATION_STRUCTURE_TYPE type)
 {
     return type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL
@@ -53,6 +56,9 @@ D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE ToNativeType(a3d::ACCELERATION_STRU
         : D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      D3D12_RAYTRACING_GEOMETRY_FLAGSに変換します.
+//-------------------------------------------------------------------------------------------------
 D3D12_RAYTRACING_GEOMETRY_FLAGS ToNativeFlags(uint32_t flags)
 {
     D3D12_RAYTRACING_GEOMETRY_FLAGS result = D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
@@ -65,6 +71,9 @@ D3D12_RAYTRACING_GEOMETRY_FLAGS ToNativeFlags(uint32_t flags)
     return result;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      D3D12_RAYTRACING_GEOMETRY_DESCに変換します.
+//-------------------------------------------------------------------------------------------------
 void ToNativeGeometryDescs
 (
     uint32_t                        count,
@@ -78,50 +87,26 @@ void ToNativeGeometryDescs
         auto& dst = pResults[i];
         if (src.Type == a3d::GEOMETRY_TYPE_TRIANGLES)
         {
-            auto pWrapVB = static_cast<a3d::Buffer*>(src.Triangles.pVertexBuffer);
-            auto pWrapIB = static_cast<a3d::Buffer*>(src.Triangles.pIndexBuffer);
-            auto pWrapTB = static_cast<a3d::Buffer*>(src.Triangles.pTransformBuffer);
-            A3D_ASSERT(pWrapVB != nullptr);
-
             dst.Type                                    = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
             dst.Flags                                   = ToNativeFlags(src.Flags);
-            dst.Triangles.VertexBuffer.StartAddress     = pWrapVB->GetD3D12Resource()->GetGPUVirtualAddress() + src.Triangles.VertexOffset;
+            dst.Triangles.VertexBuffer.StartAddress     = src.Triangles.VertexAddress;
             dst.Triangles.VertexBuffer.StrideInBytes    = src.Triangles.VertexStride;
             dst.Triangles.VertexCount                   = src.Triangles.VertexCount;
             dst.Triangles.VertexFormat                  = ToNativeFormat(src.Triangles.VertexFormat);
 
-            if (pWrapIB != nullptr)
-            {
-                dst.Triangles.IndexBuffer   = pWrapIB->GetD3D12Resource()->GetGPUVirtualAddress() + src.Triangles.IndexOffset;
-                dst.Triangles.IndexCount    = src.Triangles.IndexCount;
-                dst.Triangles.IndexFormat   = ToNativeFormat(src.Triangles.IndexFormat);
-            }
-            else
-            {
-                dst.Triangles.IndexBuffer   = 0;
-                dst.Triangles.IndexCount    = 0;
-                dst.Triangles.IndexFormat   = DXGI_FORMAT_UNKNOWN;
-            }
+            dst.Triangles.IndexBuffer   = src.Triangles.IndexAddress;
+            dst.Triangles.IndexCount    = src.Triangles.IndexCount;
+            dst.Triangles.IndexFormat   = ToNativeFormat(src.Triangles.IndexFormat);
 
-            if (pWrapTB != nullptr)
-            {
-                dst.Triangles.Transform3x4 = pWrapTB->GetD3D12Resource()->GetGPUVirtualAddress() + src.Triangles.TransformOffset;
-            }
-            else
-            {
-                dst.Triangles.Transform3x4 = 0;
-            }
+            dst.Triangles.Transform3x4  = src.Triangles.TransformAddress;
         }
         else if (src.Type == a3d::GEOMETRY_TYPE_AABBS)
         {
-            auto pWrapBuffer = static_cast<a3d::Buffer*>(src.AABBs.pBuffer);
-            A3D_ASSERT(pWrapBuffer != nullptr);
-
             dst.Type  = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
             dst.Flags = ToNativeFlags(src.Flags);
 
             dst.AABBs.AABBCount             = src.AABBs.BoxCount;
-            dst.AABBs.AABBs.StartAddress    = pWrapBuffer->GetD3D12Resource()->GetGPUVirtualAddress() + src.AABBs.Offset;
+            dst.AABBs.AABBs.StartAddress    = src.AABBs.StartAddress;
             dst.AABBs.AABBs.StrideInBytes   = src.AABBs.Stride;
         }
     }
@@ -158,7 +143,13 @@ bool AccelerationStructure::Init(IDevice* pDevice, const AccelerationStructureDe
 {
     if (pDevice == nullptr || pDesc == nullptr)
     {
-        A3D_LOG("Error : Invalid Argument.");
+        A3D_LOG("Error : Invalid Arguments.");
+        return false;
+    }
+
+    if (pDesc->Count == 0)
+    {
+        A3D_LOG("Error : Invalid Arguments.");
         return false;
     }
 
@@ -177,15 +168,13 @@ bool AccelerationStructure::Init(IDevice* pDevice, const AccelerationStructureDe
 
     if (pDesc->Type == ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL)
     {
-        m_pGeometryDescs = static_cast<D3D12_RAYTRACING_GEOMETRY_DESC*>(a3d_alloc(sizeof(D3D12_RAYTRACING_GEOMETRY_DESC) * pDesc->Count, alignof(D3D12_RAYTRACING_GEOMETRY_DESC)));
+        m_pGeometryDescs = new D3D12_RAYTRACING_GEOMETRY_DESC[pDesc->Count];
         ToNativeGeometryDescs(pDesc->Count, pDesc->pDescs, m_pGeometryDescs);
         inputs.pGeometryDescs = m_pGeometryDescs;
     }
     else
     {
-        auto pWrapBuffer = static_cast<Buffer*>(pDesc->pInstanceBuffer);
-        A3D_ASSERT(pWrapBuffer != nullptr);
-        inputs.InstanceDescs = pWrapBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+        inputs.InstanceDescs = pDesc->InstanceDescs;
     }
 
     // ビルド前情報を取得.
@@ -236,12 +225,7 @@ void AccelerationStructure::Term()
     m_Scratch  .Release();
     m_Structure.Release();
     SafeRelease(m_pDevice);
-
-    if (m_pGeometryDescs != nullptr)
-    {
-        a3d_free(m_pGeometryDescs);
-        m_pGeometryDescs = nullptr;
-    }
+    SafeDeleteArray(m_pGeometryDescs);
 
     memset(&m_BuildDesc, 0, sizeof(m_BuildDesc));
 }

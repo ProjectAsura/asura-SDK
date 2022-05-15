@@ -572,6 +572,9 @@ VkShaderStageFlagBits ToNativeShaderStageFlag(a3d::SHADER_STAGE stage)
     return VkShaderStageFlagBits(result);
 }
 
+//-------------------------------------------------------------------------------------------------
+//      レイトレーシングシェーダグループタイプに変換します.
+//-------------------------------------------------------------------------------------------------
 VkRayTracingShaderGroupTypeKHR ToNativeShaderGroupType(a3d::RAYTRACING_SHADER_GROUP_TYPE type)
 {
     switch(type)
@@ -709,6 +712,7 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
             shaderCount++;
         }
 
+    // ジオメトリシェーダ非サポート.
     #if 0
         //if (pDesc->GS.pByteCode != nullptr && pDesc->GS.ByteCodeSize != 0)
         //{
@@ -920,7 +924,16 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
         return false;
     }
 
-    m_pDevice = static_cast<Device*>(pDevice);
+    auto pWrapDevice = static_cast<Device*>(pDevice);
+    A3D_ASSERT(pWrapDevice != nullptr);
+
+    if (!pWrapDevice->GetInfo().SupportMeshShader)
+    {
+        A3D_LOG("Error : Mesh Shader Feature is not supported by hardware.");
+        return false;
+    }
+
+    m_pDevice = pWrapDevice;
     m_pDevice->AddRef();
 
     auto pNativeDevice = m_pDevice->GetVkDevice();
@@ -1113,7 +1126,16 @@ bool PipelineState::InitAsRayTracing(IDevice* pDevice, const RayTracingPipelineS
         return false;
     }
 
-    m_pDevice = static_cast<Device*>(pDevice);
+    auto pWrapDevice = static_cast<Device*>(pDevice);
+    A3D_ASSERT(pWrapDevice != nullptr);
+
+    if (!pWrapDevice->GetInfo().SupportRayTracing)
+    {
+        A3D_LOG("Error : RayTracing Feature is not supported by hardwared.");
+        return false;
+    }
+
+    m_pDevice = pWrapDevice;
     m_pDevice->AddRef();
 
     m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
