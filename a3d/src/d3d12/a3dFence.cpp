@@ -199,4 +199,16 @@ bool Fence::Create(IDevice* pDevice, IFence** ppFence)
     return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      ネイティブフェンスを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12Fence* A3D_APIENTRY GetD3D12Fence(IFence* pFence)
+{
+    auto pWrapFence = static_cast<Fence*>(pFence);
+    if (pWrapFence == nullptr)
+    { return nullptr; }
+
+    return pWrapFence->GetD3D12Fence();
+}
+
 } // namespace a3d

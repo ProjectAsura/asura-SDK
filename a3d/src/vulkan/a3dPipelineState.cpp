@@ -1118,9 +1118,9 @@ bool PipelineState::InitAsRayTracing(IDevice* pDevice, const RayTracingPipelineS
         return false;
     }
 
-    if (pDesc->pLayout      == nullptr 
-     || pDesc->GroupCount   == 0
-     || pDesc->StageCount   == 0)
+    if (pDesc->pGlobalLayout    == nullptr 
+     || pDesc->GroupCount       == 0
+     || pDesc->StageCount       == 0)
     {
         A3D_LOG("Error : Invalid Argument.");
         return false;
@@ -1138,7 +1138,7 @@ bool PipelineState::InitAsRayTracing(IDevice* pDevice, const RayTracingPipelineS
     m_pDevice = pWrapDevice;
     m_pDevice->AddRef();
 
-    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
+    m_pLayout = static_cast<DescriptorSetLayout*>(pDesc->pGlobalLayout);
     m_pLayout->AddRef();
 
     auto pNativeDevice = m_pDevice->GetVkDevice();
@@ -1507,7 +1507,5 @@ bool PipelineState::CreateAsRayTracing
     *ppPipelineState = instance;
     return true;
 }
-
-
 
 } // namespace a3d

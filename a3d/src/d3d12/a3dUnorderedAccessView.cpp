@@ -268,4 +268,30 @@ bool UnorderedAccessView::Create
     return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      D3D12_CPU_DESCRIPTOR_HANDLEを取得します.
+//-------------------------------------------------------------------------------------------------
+D3D12_CPU_DESCRIPTOR_HANDLE A3D_APIENTRY GetD3D12CpuDescriptorHandle(IUnorderedAccessView* pUAV)
+{
+    auto pWrapUAV = static_cast<UnorderedAccessView*>(pUAV);
+    if (pWrapUAV == nullptr)
+    { return D3D12_CPU_DESCRIPTOR_HANDLE(); }
+
+    A3D_ASSERT(pWrapUAV->GetDescriptor() != nullptr);
+    return pWrapUAV->GetDescriptor()->GetHandleCPU();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      D3D12_GPU_DESCRIPTOR_HANDLEを取得します.
+//-------------------------------------------------------------------------------------------------
+D3D12_GPU_DESCRIPTOR_HANDLE A3D_APIENTRY GetD3D12GpuDescriptorHandle(IUnorderedAccessView* pUAV)
+{
+    auto pWrapUAV = static_cast<UnorderedAccessView*>(pUAV);
+    if (pWrapUAV == nullptr)
+    { return D3D12_GPU_DESCRIPTOR_HANDLE(); }
+
+    A3D_ASSERT(pWrapUAV->GetDescriptor() != nullptr);
+    return pWrapUAV->GetDescriptor()->GetHandleGPU();
+}
+
 } // namespace a3d

@@ -102,7 +102,8 @@ private:
     //=============================================================================================
     std::atomic<uint32_t>   m_RefCount;
     Device*                 m_pDevice;
-    DescriptorSetLayout*    m_pLayout;
+    DescriptorSetLayout*    m_pGlobalLayout;
+    DescriptorSetLayout*    m_pLocalLayout;
     ID3D12StateObject*      m_pStateObject;
 
     //=============================================================================================

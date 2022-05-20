@@ -582,6 +582,16 @@ enum COLOR_SPACE_TYPE
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+//! @enum   DESCRIPTORSET_LAYOUT_FLAGS
+//! @brief  ディスクリプタセットレイアウトフラグです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+enum DESCRIPTORSET_LAYOUT_FLAGS
+{
+    DESCRIPTORSET_LAYOUT_FLAG_NONE  = 0,            //!< 指定なし.
+    DESCRIPTORSET_LAYOUT_FLAG_LOCAL = 0x1 << 0,     //!< ローカルレイアウトとして使用(D3D12専用).
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 //! @enum   GEOMETRY_TYPE
 //! @brief  ジオメトリタイプです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1110,6 +1120,7 @@ struct DescriptorSetLayoutDesc
 {
     uint32_t            EntryCount;                     //!< エントリー数です.
     DescriptorEntry     Entries[MAX_DESCRIPTOR_COUNT];  //!< エントリー情報です.
+    uint32_t            Flags;                          //!< ディスクリプタセットレイアウトフラグです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1365,7 +1376,8 @@ struct RayTracingShaderGroup
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 struct RayTracingPipelineStateDesc
 {
-    IDescriptorSetLayout*   pLayout;                    //!< ディスクリプタセットレイアウトです.
+    IDescriptorSetLayout*   pGlobalLayout;              //!< グローバルディスクリプタセットレイアウトです.
+    IDescriptorSetLayout*   pLocalLayout;               //!< ローカルディスクリプタセットレイアウトです (D3D12専用).
     uint32_t                MaxPayloadSize;             //!< 最大ペイロードサイズです.
     uint32_t                MaxAttributeSize;           //!< 最大アトリビュートサイズです.
     uint32_t                MaxTraceRecursionDepth;     //!< 最大トレース再帰数.

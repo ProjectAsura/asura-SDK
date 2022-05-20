@@ -47,9 +47,11 @@ namespace a3d {
 //      コンストラクタです.
 //-------------------------------------------------------------------------------------------------
 RayTracingPipelineState::RayTracingPipelineState()
-: m_RefCount    (1)
-, m_pDevice     (nullptr)
-, m_pStateObject(nullptr)
+: m_RefCount        (1)
+, m_pDevice         (nullptr)
+, m_pGlobalLayout   (nullptr)
+, m_pLocalLayout    (nullptr)
+, m_pStateObject    (nullptr)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -63,11 +65,11 @@ RayTracingPipelineState::~RayTracingPipelineState()
 //-------------------------------------------------------------------------------------------------
 bool RayTracingPipelineState::Init(IDevice* pDevice, const RayTracingPipelineStateDesc* pDesc)
 {
-    if (pDesc->StageCount   == 0 
-     || pDesc->GroupCount   == 0 
-     || pDesc->pLayout      == nullptr
-     || pDesc->pStages      == nullptr
-     || pDesc->pGroups      == nullptr)
+    if (pDesc->StageCount       == 0 
+     || pDesc->GroupCount       == 0 
+     || pDesc->pGlobalLayout    == nullptr
+     || pDesc->pStages          == nullptr
+     || pDesc->pGroups          == nullptr)
     {
         A3D_LOG("Error : Invalid Argument");
         return false;
@@ -86,23 +88,40 @@ bool RayTracingPipelineState::Init(IDevice* pDevice, const RayTracingPipelineSta
     m_pDevice->AddRef();
 
     {
-        auto subObjectCount = pDesc->GroupCount + 4;
+        auto subObjectCount = pDesc->GroupCount + 5;
         auto subObjects     = new D3D12_STATE_SUBOBJECT[subObjectCount];
         auto subObjectIndex = 0;
 
-        auto pWrapLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
-        A3D_ASSERT(pWrapLayout != nullptr);
+        auto pWrapGlobalLayout = static_cast<DescriptorSetLayout*>(pDesc->pGlobalLayout);
+        A3D_ASSERT(pWrapGlobalLayout != nullptr);
 
-        m_pLayout = pWrapLayout;
-        m_pLayout->AddRef();
+        m_pGlobalLayout = pWrapGlobalLayout;
+        m_pGlobalLayout->AddRef();
 
         // グローバルルートシグニチャの設定.
         D3D12_GLOBAL_ROOT_SIGNATURE globalRootSig = {};
-        globalRootSig.pGlobalRootSignature = pWrapLayout->GetD3D12RootSignature();
+        globalRootSig.pGlobalRootSignature = pWrapGlobalLayout->GetD3D12RootSignature();
 
         subObjects[subObjectIndex].pDesc = &globalRootSig;
         subObjects[subObjectIndex].Type  = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
         subObjectIndex++;
+
+        // ローカルルートシグニチャの設定.
+        D3D12_LOCAL_ROOT_SIGNATURE localRootSig = {};
+        if (pDesc->pLocalLayout != nullptr)
+        {
+            auto pWrapLocalLayout = static_cast<DescriptorSetLayout*>(pDesc->pLocalLayout);
+            A3D_ASSERT(pWrapLocalLayout != nullptr);
+
+            m_pLocalLayout = pWrapLocalLayout;
+            m_pLocalLayout->AddRef();
+
+            localRootSig.pLocalRootSignature = pWrapLocalLayout->GetD3D12RootSignature();
+
+            subObjects[subObjectIndex].pDesc = &localRootSig;
+            subObjects[subObjectIndex].Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
+            subObjectIndex++;
+        }
 
         auto exports = new D3D12_EXPORT_DESC[pDesc->StageCount];
         A3D_ASSERT(exports != nullptr);
@@ -212,7 +231,8 @@ bool RayTracingPipelineState::Init(IDevice* pDevice, const RayTracingPipelineSta
 //-------------------------------------------------------------------------------------------------
 void RayTracingPipelineState::Term()
 {
-    SafeRelease(m_pLayout);
+    SafeRelease(m_pGlobalLayout);
+    SafeRelease(m_pLocalLayout);
     SafeRelease(m_pStateObject);
     SafeRelease(m_pDevice);
 }
@@ -272,7 +292,7 @@ void RayTracingPipelineState::Issue(ICommandList* pCommandList)
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
-    pNativeCommandList->SetGraphicsRootSignature(m_pLayout->GetD3D12RootSignature());
+    pNativeCommandList->SetComputeRootSignature(m_pGlobalLayout->GetD3D12RootSignature());
     pNativeCommandList->SetPipelineState1(m_pStateObject);
 }
 
@@ -280,7 +300,7 @@ void RayTracingPipelineState::Issue(ICommandList* pCommandList)
 //      ディスクリプタセットレイアウトを取得します.
 //-------------------------------------------------------------------------------------------------
 DescriptorSetLayout* RayTracingPipelineState::GetDescriptorSetLayout() const
-{ return m_pLayout; }
+{ return m_pGlobalLayout; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

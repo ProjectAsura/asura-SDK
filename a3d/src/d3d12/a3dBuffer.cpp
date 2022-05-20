@@ -221,4 +221,15 @@ bool Buffer::Create(IDevice* pDevice, const BufferDesc* pDesc, IBuffer** ppResou
     return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      ネイティブリソースを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12Resource* A3D_APIENTRY GetD3D12Resource(IBuffer* pBuffer)
+{
+    auto pWrapBuffer = static_cast<Buffer*>(pBuffer);
+    if (pWrapBuffer == nullptr)
+    { return nullptr; }
+
+    return pWrapBuffer->GetD3D12Resource();
+}
 } // namespace a3d

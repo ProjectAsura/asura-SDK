@@ -534,5 +534,4 @@ private:
     void operator = (const CommandList&) = delete;
 };
 
-
 } // namepsace a3d

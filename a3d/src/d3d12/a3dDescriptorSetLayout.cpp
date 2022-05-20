@@ -10,27 +10,27 @@ namespace /* anonymous */ {
 //-------------------------------------------------------------------------------------------------
 //      ネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-D3D12_SHADER_VISIBILITY ToNativeShaderVisibility( uint32_t mask )
+D3D12_SHADER_VISIBILITY ToNativeShaderVisibility( uint32_t stage )
 {
-    if ( mask == a3d::SHADER_STAGE_VS )
+    if ( stage == a3d::SHADER_STAGE_VS )
     { return D3D12_SHADER_VISIBILITY_VERTEX; }
 
-    else if ( mask == a3d::SHADER_STAGE_DS )
+    else if ( stage == a3d::SHADER_STAGE_DS )
     { return D3D12_SHADER_VISIBILITY_DOMAIN; }
 
-    else if ( mask == a3d::SHADER_STAGE_HS )
+    else if ( stage == a3d::SHADER_STAGE_HS )
     { return D3D12_SHADER_VISIBILITY_HULL; }
 
-    //else if ( mask == a3d::SHADER_MASK_GS )
+    //else if ( stage == a3d::SHADER_MASK_GS )
     //{ return D3D12_SHADER_VISIBILITY_GEOMETRY; }
 
-    else if ( mask == a3d::SHADER_STAGE_PS )
+    else if ( stage == a3d::SHADER_STAGE_PS )
     { return D3D12_SHADER_VISIBILITY_PIXEL; }
 
-    else if ( mask == a3d::SHADER_STAGE_AS )
+    else if ( stage == a3d::SHADER_STAGE_AS )
     { return D3D12_SHADER_VISIBILITY_AMPLIFICATION; }
 
-    else if ( mask == a3d::SHADER_STAGE_MS )
+    else if ( stage == a3d::SHADER_STAGE_MS )
     { return D3D12_SHADER_VISIBILITY_MESH; }
 
     return D3D12_SHADER_VISIBILITY_ALL;
@@ -200,6 +200,9 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS; }
         if (!shaders[5])
         { flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS; }
+
+        if (pDesc->Flags & DESCRIPTORSET_LAYOUT_FLAG_LOCAL)
+        { flags |= D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE; }
 
         D3D12_ROOT_SIGNATURE_DESC desc = {};
         desc.NumParameters      = pDesc->EntryCount;

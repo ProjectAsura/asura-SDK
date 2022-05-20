@@ -302,4 +302,16 @@ bool Texture::CreateFromNative
     return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      ネイティブリソースを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12Resource* A3D_APIENTRY GetNativeResource(ITexture* pTexture)
+{
+    auto pWrapTexture = static_cast<Texture*>(pTexture);
+    if (pWrapTexture == nullptr)
+    { return nullptr; }
+
+    return pWrapTexture->GetD3D12Resource();
+}
+
 } // namespace a3d

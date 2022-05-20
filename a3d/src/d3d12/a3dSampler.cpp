@@ -234,4 +234,30 @@ bool Sampler::Create(IDevice* pDevice, const SamplerDesc* pDesc, ISampler** ppSa
     return true;
 }
 
+//-------------------------------------------------------------------------------------------------
+//      D3D12_CPU_DESCRIPTOR_HANDLEを取得します.
+//-------------------------------------------------------------------------------------------------
+D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle(ISampler* pSampler)
+{
+    auto pWrapSampler = static_cast<Sampler*>(pSampler);
+    if (pWrapSampler == nullptr)
+    { return D3D12_CPU_DESCRIPTOR_HANDLE(); }
+
+    A3D_ASSERT(pWrapSampler->GetDescriptor() != nullptr);
+    return pWrapSampler->GetDescriptor()->GetHandleCPU();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      D3D12_GPU_DESCRIPTOR_HANDLEを取得します.
+//-------------------------------------------------------------------------------------------------
+D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGpuDescriptorHandle(ISampler* pSampler)
+{
+    auto pWrapSampler = static_cast<Sampler*>(pSampler);
+    if (pWrapSampler == nullptr)
+    { return D3D12_GPU_DESCRIPTOR_HANDLE(); }
+
+    A3D_ASSERT(pWrapSampler->GetDescriptor() != nullptr);
+    return pWrapSampler->GetDescriptor()->GetHandleGPU();
+}
+
 } // namespace a3d
