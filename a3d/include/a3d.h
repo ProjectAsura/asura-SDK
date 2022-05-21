@@ -587,8 +587,9 @@ enum COLOR_SPACE_TYPE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum DESCRIPTORSET_LAYOUT_FLAGS
 {
-    DESCRIPTORSET_LAYOUT_FLAG_NONE  = 0,            //!< 指定なし.
-    DESCRIPTORSET_LAYOUT_FLAG_LOCAL = 0x1 << 0,     //!< ローカルレイアウトとして使用(D3D12専用).
+    DESCRIPTORSET_LAYOUT_FLAG_NONE              = 0,            //!< 指定なし.
+    DESCRIPTORSET_LAYOUT_FLAG_LOCAL             = 0x1 << 0,     //!< ローカルレイアウトとして使用(D3D12専用).
+    DESCRIPTORSET_LAYOUT_FLAG_NO_INPUT_LAYOUT   = 0x1 << 1,     //!< 入力レイアウトを使用しない(D3D12専用).
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
