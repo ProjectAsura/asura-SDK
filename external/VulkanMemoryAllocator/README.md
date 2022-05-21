@@ -1,4 +1,4 @@
-# Vulkan Memory Allocator
+﻿# Vulkan Memory Allocator
 
 Easy to integrate Vulkan memory allocation library.
 

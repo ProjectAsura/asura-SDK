@@ -1,4 +1,4 @@
-Notices and licenses file
+﻿Notices and licenses file
 _________________________
 
 AMD copyrighted code (MIT) 

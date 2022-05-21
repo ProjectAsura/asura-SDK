@@ -1,4 +1,4 @@
-# D3D12 Memory Allocator
+﻿# D3D12 Memory Allocator
 
 Easy to integrate memory allocation library for Direct3D 12.
 

@@ -201,7 +201,7 @@ uint64_t Buffer::GetDeviceAddress() const
     VkBufferDeviceAddressInfoKHR addressInfo = {};
     addressInfo.sType   = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR;
     addressInfo.buffer  = m_Buffer;
-    return vkGetBufferDeviceAddressKHR(m_pDevice->GetVkDevice(), &addressInfo);
+    return vkGetBufferDeviceAddress(m_pDevice->GetVkDevice(), &addressInfo);
 }
 
 //-------------------------------------------------------------------------------------------------

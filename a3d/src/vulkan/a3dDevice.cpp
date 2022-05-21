@@ -21,6 +21,8 @@
 #define VMA_ASSERT(expr)    A3D_ASSERT(expr)
 #include <vk_mem_alloc.h>
 
+#define A3D_VK_API_VERSION  VK_API_VERSION_1_3
+
 
 namespace a3d {
 
@@ -383,6 +385,34 @@ PFN_vkCmdDrawMeshTasksIndirectCountNV    vkCmdDrawMeshTasksIndirectCount    = nu
 //PFN_vkCmdEndRenderingKHR                 vkCmdEndRendering      = nullptr;
 //#endif
 
+#if defined(VK_KHR_acceleration_structure)
+PFN_vkCreateAccelerationStructureKHR                 vkCreateAccelerationStructure                  = nullptr;
+PFN_vkDestroyAccelerationStructureKHR                vkDestroyAccelerationStructure                 = nullptr;
+PFN_vkCmdBuildAccelerationStructuresKHR              vkCmdBuildAccelerationStructures               = nullptr;
+PFN_vkCmdBuildAccelerationStructuresIndirectKHR      vkCmdBuildAccelerationStructuresIndirect       = nullptr;
+PFN_vkBuildAccelerationStructuresKHR                 vkBuildAccelerationStructures                  = nullptr;
+PFN_vkCopyAccelerationStructureKHR                   vkCopyAccelerationStructure                    = nullptr;
+PFN_vkCopyAccelerationStructureToMemoryKHR           vkCopyAccelerationStructureToMemory            = nullptr;
+PFN_vkCopyMemoryToAccelerationStructureKHR           vkCopyMemoryToAccelerationStructure            = nullptr;
+PFN_vkWriteAccelerationStructuresPropertiesKHR       vkWriteAccelerationStructuresProperties        = nullptr;
+PFN_vkCmdCopyAccelerationStructureKHR                vkCmdCopyAccelerationStructure                 = nullptr;
+PFN_vkCmdCopyAccelerationStructureToMemoryKHR        vkCmdCopyAccelerationStructureToMemory         = nullptr;
+PFN_vkCmdCopyMemoryToAccelerationStructureKHR        vkCmdCopyMemoryToAccelerationStructure         = nullptr;
+PFN_vkGetAccelerationStructureDeviceAddressKHR       vkGetAccelerationStructureDeviceAddress        = nullptr;
+PFN_vkCmdWriteAccelerationStructuresPropertiesKHR    vkCmdWriteAccelerationStructuresProperties     = nullptr;
+PFN_vkGetDeviceAccelerationStructureCompatibilityKHR vkGetDeviceAccelerationStructureCompatibility  = nullptr;
+PFN_vkGetAccelerationStructureBuildSizesKHR          vkGetAccelerationStructureBuildSizes           = nullptr;
+#endif
+
+#if defined(VK_KHR_ray_tracing_pipeline)
+PFN_vkCmdTraceRaysKHR                                    vkCmdTraceRays                                 = nullptr;
+PFN_vkCreateRayTracingPipelinesKHR                       vkCreateRayTracingPipelines                    = nullptr;
+PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR    vkGetRayTracingCaptureReplayShaderGroupHandles = nullptr;
+PFN_vkCmdTraceRaysIndirectKHR                            vkCmdTraceRaysIndirect                         = nullptr;
+PFN_vkGetRayTracingShaderGroupStackSizeKHR               vkGetRayTracingShaderGroupStackSize            = nullptr;
+PFN_vkCmdSetRayTracingPipelineStackSizeKHR               vkCmdSetRayTracingPipelineStackSize            = nullptr;
+#endif
+
 namespace a3d {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -496,7 +526,7 @@ bool Device::Init(const DeviceDesc* pDesc)
         appInfo.applicationVersion  = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName         = "a3d";
         appInfo.engineVersion       = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion          = VK_API_VERSION_1_3;
+        appInfo.apiVersion          = A3D_VK_API_VERSION;
 
         VkInstanceCreateInfo instanceInfo = {};
         instanceInfo.sType                      = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -866,8 +896,10 @@ bool Device::Init(const DeviceDesc* pDesc)
 
         // アロケータ生成.
         VmaAllocatorCreateInfo allocatorInfo = {};
-        allocatorInfo.physicalDevice = m_pPhysicalDeviceInfos[0].Device;
-        allocatorInfo.device         = m_Device;
+        allocatorInfo.physicalDevice    = m_pPhysicalDeviceInfos[0].Device;
+        allocatorInfo.device            = m_Device;
+        allocatorInfo.instance          = m_Instance;
+        allocatorInfo.vulkanApiVersion  = A3D_VK_API_VERSION;
 
         ret = vmaCreateAllocator(&allocatorInfo, &m_Allocator);
         if (ret != VK_SUCCESS)
@@ -927,6 +959,44 @@ bool Device::Init(const DeviceDesc* pDesc)
         //    }
         //}
         //#endif
+
+        #if defined(VK_KHR_acceleration_structure)
+        {
+            if (m_IsSupportExt[EXT_KHR_ACCELERATION_STRUCTURE])
+            {
+                vkCreateAccelerationStructure                   = GET_DEVICE_PROC(m_Device, vkCreateAccelerationStructureKHR);
+                vkDestroyAccelerationStructure                  = GET_DEVICE_PROC(m_Device, vkDestroyAccelerationStructureKHR);
+                vkCmdBuildAccelerationStructures                = GET_DEVICE_PROC(m_Device, vkCmdBuildAccelerationStructuresKHR);
+                vkCmdBuildAccelerationStructuresIndirect        = GET_DEVICE_PROC(m_Device, vkCmdBuildAccelerationStructuresIndirectKHR);
+                vkBuildAccelerationStructures                   = GET_DEVICE_PROC(m_Device, vkBuildAccelerationStructuresKHR);
+                vkCopyAccelerationStructure                     = GET_DEVICE_PROC(m_Device, vkCopyAccelerationStructureKHR);
+                vkCopyAccelerationStructureToMemory             = GET_DEVICE_PROC(m_Device, vkCopyAccelerationStructureToMemoryKHR);
+                vkCopyMemoryToAccelerationStructure             = GET_DEVICE_PROC(m_Device, vkCopyMemoryToAccelerationStructureKHR);
+                vkWriteAccelerationStructuresProperties         = GET_DEVICE_PROC(m_Device, vkWriteAccelerationStructuresPropertiesKHR);
+                vkCmdCopyAccelerationStructure                  = GET_DEVICE_PROC(m_Device, vkCmdCopyAccelerationStructureKHR);
+                vkCmdCopyAccelerationStructureToMemory          = GET_DEVICE_PROC(m_Device, vkCmdCopyAccelerationStructureToMemoryKHR);
+                vkCmdCopyMemoryToAccelerationStructure          = GET_DEVICE_PROC(m_Device, vkCmdCopyMemoryToAccelerationStructureKHR);
+                vkGetAccelerationStructureDeviceAddress         = GET_DEVICE_PROC(m_Device, vkGetAccelerationStructureDeviceAddressKHR);
+                vkCmdWriteAccelerationStructuresProperties      = GET_DEVICE_PROC(m_Device, vkCmdWriteAccelerationStructuresPropertiesKHR);
+                vkGetDeviceAccelerationStructureCompatibility   = GET_DEVICE_PROC(m_Device, vkGetDeviceAccelerationStructureCompatibilityKHR);
+                vkGetAccelerationStructureBuildSizes            = GET_DEVICE_PROC(m_Device, vkGetAccelerationStructureBuildSizesKHR);
+            }
+        }
+        #endif
+
+        #if defined(VK_KHR_ray_tracing_pipeline)
+        {
+            if (m_IsSupportExt[EXT_KHR_RAY_TRACING])
+            {
+                vkCmdTraceRays                                  = GET_DEVICE_PROC(m_Device, vkCmdTraceRaysKHR);
+                vkCreateRayTracingPipelines                     = GET_DEVICE_PROC(m_Device, vkCreateRayTracingPipelinesKHR);
+                vkGetRayTracingCaptureReplayShaderGroupHandles  = GET_DEVICE_PROC(m_Device, vkGetRayTracingCaptureReplayShaderGroupHandlesKHR);
+                vkCmdTraceRaysIndirect                          = GET_DEVICE_PROC(m_Device, vkCmdTraceRaysIndirectKHR);
+                vkGetRayTracingShaderGroupStackSize             = GET_DEVICE_PROC(m_Device, vkGetRayTracingShaderGroupStackSizeKHR);
+                vkCmdSetRayTracingPipelineStackSize             = GET_DEVICE_PROC(m_Device, vkCmdSetRayTracingPipelineStackSizeKHR);
+            }
+        }
+        #endif
 
         if (!m_IsSupportExt[EXT_KHR_DYNAMIC_RENDERING])
         {

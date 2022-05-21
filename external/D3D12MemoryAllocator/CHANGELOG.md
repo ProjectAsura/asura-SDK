@@ -1,4 +1,4 @@
-# 2.0.1 (2022-04-05)
+﻿# 2.0.1 (2022-04-05)
 
 A maintenance release with some bug fixes and improvements. There are no changes in the library API.
 

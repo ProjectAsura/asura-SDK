@@ -922,7 +922,7 @@ void CommandList::TraceRays(const TraceRayArguments* pArgs)
     callableShaderTable.size            = pArgs->CallableShaders.Size;
     callableShaderTable.stride          = pArgs->CallableShaders.Stride;
 
-    vkCmdTraceRaysKHR(
+    vkCmdTraceRays(
         m_CommandBuffer,
         &rayGenShaderTable,
         &missShaderTable,
@@ -1374,7 +1374,7 @@ void CommandList::CopyAccelerationStructure
     info.dst    = pWrapDst->GetVkAccelerationStructure();
     info.mode   = ToNativeCopyMode(mode);
 
-    vkCmdCopyAccelerationStructureKHR(m_CommandBuffer, &info);
+    vkCmdCopyAccelerationStructure(m_CommandBuffer, &info);
 }
 
 //-------------------------------------------------------------------------------------------------

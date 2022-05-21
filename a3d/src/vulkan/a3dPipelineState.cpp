@@ -894,6 +894,13 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
         ToNativeShaderStageInfo(pNativeDevice, pDesc->CS, VK_SHADER_STAGE_COMPUTE_BIT, &info.stage);
 
         auto ret = vkCreateComputePipelines(pNativeDevice, m_PipelineCache, 1, &info, nullptr, &m_PipelineState);
+
+        if (info.stage.module != null_handle)
+        {
+            vkDestroyShaderModule(pNativeDevice, info.stage.module, nullptr);
+            info.stage.module = null_handle;
+        }
+
         if ( ret != VK_SUCCESS )
         {
             A3D_LOG("Error : vkCreateComputePipelines() Failed. VkResult = %s", ToString(ret));
@@ -1231,7 +1238,7 @@ bool PipelineState::InitAsRayTracing(IDevice* pDevice, const RayTracingPipelineS
     createInfo.maxPipelineRayRecursionDepth = pDesc->MaxTraceRecursionDepth;
     createInfo.layout                       = m_pLayout->GetVkPipelineLayout();
 
-    auto ret = vkCreateRayTracingPipelinesKHR(
+    auto ret = vkCreateRayTracingPipelines(
         m_pDevice->GetVkDevice(),
         null_handle,
         m_PipelineCache,

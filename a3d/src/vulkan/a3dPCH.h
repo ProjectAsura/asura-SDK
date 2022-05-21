@@ -19,6 +19,8 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
+#include "a3dVulkanFunc.h"
+
 #include "misc/a3dBlob.h"
 #include "misc/a3dInlines.h"
 #include "misc/a3dNullHandle.h"

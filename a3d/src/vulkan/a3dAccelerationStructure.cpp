@@ -140,7 +140,7 @@ void AccelerationStructure::Term()
 
     if (m_AS != null_handle)
     {
-        vkDestroyAccelerationStructureKHR(pNativeDevice, m_AS, nullptr);
+        vkDestroyAccelerationStructure(pNativeDevice, m_AS, nullptr);
         m_AS = null_handle;
     }
 
@@ -230,7 +230,7 @@ bool AccelerationStructure::InitAsBlas(const AccelerationStructureDesc* pDesc)
     VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo = {};
     buildSizeInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
     buildSizeInfo.pNext = nullptr;
-    vkGetAccelerationStructureBuildSizesKHR(
+    vkGetAccelerationStructureBuildSizes(
         m_pDevice->GetVkDevice(),
         VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
         &m_BuildGeometryInfo,
@@ -280,7 +280,7 @@ bool AccelerationStructure::InitAsBlas(const AccelerationStructureDesc* pDesc)
         createInfo.buffer = m_Structure.Buffer;
         createInfo.size = buildSizeInfo.accelerationStructureSize;
         createInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
-        auto ret = vkCreateAccelerationStructureKHR(
+        auto ret = vkCreateAccelerationStructure(
             m_pDevice->GetVkDevice(),
             &createInfo,
             nullptr, 
@@ -360,7 +360,7 @@ bool AccelerationStructure::InitAsTlas(const AccelerationStructureDesc* pDesc)
     VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo = {};
     buildSizeInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
     buildSizeInfo.pNext = nullptr;
-    vkGetAccelerationStructureBuildSizesKHR(
+    vkGetAccelerationStructureBuildSizes(
         m_pDevice->GetVkDevice(),
         VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
         &m_BuildGeometryInfo,
@@ -401,7 +401,7 @@ bool AccelerationStructure::InitAsTlas(const AccelerationStructureDesc* pDesc)
         createInfo.size     = buildSizeInfo.accelerationStructureSize;
         createInfo.type     = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
 
-        auto ret = vkCreateAccelerationStructureKHR(
+        auto ret = vkCreateAccelerationStructure(
             m_pDevice->GetVkDevice(),
             &createInfo,
             nullptr,
@@ -483,7 +483,7 @@ uint64_t AccelerationStructure::GetDeviceAddress() const
     VkBufferDeviceAddressInfoKHR addressInfo = {};
     addressInfo.sType   = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR;
     addressInfo.buffer  = m_Structure.Buffer;
-    return vkGetBufferDeviceAddressKHR(m_pDevice->GetVkDevice(), &addressInfo);
+    return vkGetBufferDeviceAddress(m_pDevice->GetVkDevice(), &addressInfo);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -503,7 +503,7 @@ void AccelerationStructure::Issue(ICommandList* pCommandList)
     auto commandBuffer = pWrapCmdList->GetVkCommandBuffer();
     A3D_ASSERT(commandBuffer != null_handle);
 
-    vkCmdBuildAccelerationStructuresKHR(
+    vkCmdBuildAccelerationStructures(
         commandBuffer,
         m_GeometryCount,
         &m_BuildGeometryInfo,

@@ -1,4 +1,4 @@
-# 3.0.0 (2022-03-25)
+﻿# 3.0.0 (2022-03-25)
 
 It has been a long time since the previous official release, so hopefully everyone has been using the latest code from "master" branch, which is always maintained in a good state, not the old version. For completeness, here is the list of changes since v2.3.0. The major version number has changed, so there are some compatibility-breaking changes, but the basic API stays the same and is mostly backward-compatible.
 

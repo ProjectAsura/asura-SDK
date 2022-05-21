@@ -43,3 +43,31 @@ extern PFN_vkCmdDrawMeshTasksIndirectCountNV        vkCmdDrawMeshTasksIndirectCo
 //extern PFN_vkCmdBeginRenderingKHR                   vkCmdBeginRendering;
 //extern PFN_vkCmdEndRenderingKHR                     vkCmdEndRendering;
 //#endif
+
+#if defined(VK_KHR_acceleration_structure)
+extern PFN_vkCreateAccelerationStructureKHR                 vkCreateAccelerationStructure;
+extern PFN_vkDestroyAccelerationStructureKHR                vkDestroyAccelerationStructure;
+extern PFN_vkCmdBuildAccelerationStructuresKHR              vkCmdBuildAccelerationStructures;
+extern PFN_vkCmdBuildAccelerationStructuresIndirectKHR      vkCmdBuildAccelerationStructuresIndirect;
+extern PFN_vkBuildAccelerationStructuresKHR                 vkBuildAccelerationStructures;
+extern PFN_vkCopyAccelerationStructureKHR                   vkCopyAccelerationStructure;
+extern PFN_vkCopyAccelerationStructureToMemoryKHR           vkCopyAccelerationStructureToMemory;
+extern PFN_vkCopyMemoryToAccelerationStructureKHR           vkCopyMemoryToAccelerationStructure;
+extern PFN_vkWriteAccelerationStructuresPropertiesKHR       vkWriteAccelerationStructuresProperties;
+extern PFN_vkCmdCopyAccelerationStructureKHR                vkCmdCopyAccelerationStructure;
+extern PFN_vkCmdCopyAccelerationStructureToMemoryKHR        vkCmdCopyAccelerationStructureToMemory;
+extern PFN_vkCmdCopyMemoryToAccelerationStructureKHR        vkCmdCopyMemoryToAccelerationStructure;
+extern PFN_vkGetAccelerationStructureDeviceAddressKHR       vkGetAccelerationStructureDeviceAddress;
+extern PFN_vkCmdWriteAccelerationStructuresPropertiesKHR    vkCmdWriteAccelerationStructuresProperties;
+extern PFN_vkGetDeviceAccelerationStructureCompatibilityKHR vkGetDeviceAccelerationStructureCompatibility;
+extern PFN_vkGetAccelerationStructureBuildSizesKHR          vkGetAccelerationStructureBuildSizes;
+#endif
+
+#if defined(VK_KHR_ray_tracing_pipeline)
+extern PFN_vkCmdTraceRaysKHR                                    vkCmdTraceRays;
+extern PFN_vkCreateRayTracingPipelinesKHR                       vkCreateRayTracingPipelines;
+extern PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR    vkGetRayTracingCaptureReplayShaderGroupHandles;
+extern PFN_vkCmdTraceRaysIndirectKHR                            vkCmdTraceRaysIndirect;
+extern PFN_vkGetRayTracingShaderGroupStackSizeKHR               vkGetRayTracingShaderGroupStackSize;
+extern PFN_vkCmdSetRayTracingPipelineStackSizeKHR               vkCmdSetRayTracingPipelineStackSize;
+#endif
