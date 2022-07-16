@@ -322,11 +322,24 @@ D3D12_CPU_DESCRIPTOR_HANDLE A3D_APIENTRY GetD3D12CpuDescriptorHandle(IShaderReso
 D3D12_GPU_DESCRIPTOR_HANDLE A3D_APIENTRY GetD3D12GpuDescriptorHandle(IShaderResourceView* pSRV)
 {
     auto pWrapSRV = static_cast<ShaderResourceView*>(pSRV);
-    if (pWrapSRV != nullptr)
+    if (pWrapSRV == nullptr)
     { return D3D12_GPU_DESCRIPTOR_HANDLE(); }
 
     A3D_ASSERT(pWrapSRV->GetDescriptor() != nullptr);
     return pWrapSRV->GetDescriptor()->GetHandleGPU();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタ番号を取得します.
+//-------------------------------------------------------------------------------------------------
+uint32_t APIENTRY GetD3D12DescriptorIndex(IShaderResourceView* pSRV)
+{
+    auto pWrapSRV = static_cast<ShaderResourceView*>(pSRV);
+    if (pWrapSRV == nullptr)
+    { return UINT32_MAX; }
+
+    A3D_ASSERT(pWrapSRV->GetDescriptor() != nullptr);
+    return pWrapSRV->GetDescriptor()->GetDescriptorIndex();
 }
 
 } // namespace a3d

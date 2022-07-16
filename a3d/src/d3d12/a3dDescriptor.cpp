@@ -19,6 +19,7 @@ Descriptor::Descriptor()
 , m_HandleCPU   ()
 , m_HandleGPU   ()
 , m_RefCount    (1)
+, m_Index       (UINT32_MAX)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -64,5 +65,11 @@ D3D12_CPU_DESCRIPTOR_HANDLE Descriptor::GetHandleCPU() const
 //-------------------------------------------------------------------------------------------------
 D3D12_GPU_DESCRIPTOR_HANDLE Descriptor::GetHandleGPU() const
 { return m_HandleGPU; }
+
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタ番号を取得します.
+//-------------------------------------------------------------------------------------------------
+uint32_t Descriptor::GetDescriptorIndex() const
+{ return m_Index; }
 
 } // namespace a3d

@@ -83,6 +83,9 @@ Descriptor* DescriptorHeap::CreateDescriptor()
         // ヒープを設定.
         value->m_pHeap = this;
 
+        // ディスクリプタ番号を設定.
+        value->m_Index = index;
+
         // CPUハンドルをディスクリプタを割り当て.
         {
             auto handleCPU = m_pHeap->GetCPUDescriptorHandleForHeapStart();

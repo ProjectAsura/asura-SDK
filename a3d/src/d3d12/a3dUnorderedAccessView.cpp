@@ -294,4 +294,17 @@ D3D12_GPU_DESCRIPTOR_HANDLE A3D_APIENTRY GetD3D12GpuDescriptorHandle(IUnorderedA
     return pWrapUAV->GetDescriptor()->GetHandleGPU();
 }
 
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタ番号を取得します.
+//-------------------------------------------------------------------------------------------------
+uint32_t APIENTRY GetD3D12DescriptorIndex(IUnorderedAccessView* pUAV)
+{
+    auto pWrapUAV = static_cast<UnorderedAccessView*>(pUAV);
+    if (pWrapUAV == nullptr)
+    { return UINT32_MAX; }
+
+    A3D_ASSERT(pWrapUAV->GetDescriptor() != nullptr);
+    return pWrapUAV->GetDescriptor()->GetDescriptorIndex();
+}
+
 } // namespace a3d

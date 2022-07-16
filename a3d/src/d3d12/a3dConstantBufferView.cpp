@@ -188,4 +188,17 @@ D3D12_GPU_DESCRIPTOR_HANDLE A3D_APIENTRY GetD3D12GpuDescriptorHandle(IConstantBu
     return pWrapCBV->GetDescriptor()->GetHandleGPU();
 }
 
+//-------------------------------------------------------------------------------------------------
+//      ディスクリプタ番号を取得します.
+//-------------------------------------------------------------------------------------------------
+uint32_t APIENTRY GetD3D12DescriptorIndex(IConstantBufferView* pCBV)
+{
+    auto pWrapCBV = static_cast<ConstantBufferView*>(pCBV);
+    if (pWrapCBV == nullptr)
+    { return UINT32_MAX; }
+
+    A3D_ASSERT(pWrapCBV->GetDescriptor() != nullptr);
+    return pWrapCBV->GetDescriptor()->GetDescriptorIndex();
+}
+
 } // namespace a3d
