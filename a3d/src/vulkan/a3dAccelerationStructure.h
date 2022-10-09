@@ -60,6 +60,20 @@ public:
     uint32_t A3D_APIENTRY GetCount() const override;
 
     //---------------------------------------------------------------------------------------------
+    //! @brief      デバッグ名を設定します.
+    //! 
+    //! @param[in]      name        設定するデバッグ名.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetName(const char* name) override;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      デバッグ名を取得します.
+    //! 
+    //! @return     デバッグ名を返却します.
+    //---------------------------------------------------------------------------------------------
+    const char* A3D_APIENTRY GetName() const override;
+
+    //---------------------------------------------------------------------------------------------
     //! @brief      デバイスを取得します.
     //! 
     //! @param[out]     ppDevice        デバイスの格納先です.
@@ -106,6 +120,7 @@ private:
     BufferHolder                m_Structure;    //!< 高速化機構用バッファです.
     BufferHolder                m_Scratch;      //!< スクラッチバッファです.
     bool                        m_AllowUpdate;  //!< 更新が有効なら true.
+    ObjectName                  m_Name;         //!< デバッグ名です.
 
     uint32_t                                    m_GeometryCount;        //!< ジオメトリ数.
     VkAccelerationStructureBuildGeometryInfoKHR m_BuildGeometryInfo;    //!< ビルドジオメトリ情報.

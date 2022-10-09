@@ -17,6 +17,7 @@
 #include "core/a3dStdAllocator.h"
 #include "core/a3dLogger.h"
 #include "core/a3dSpinLock.h"
+#include "core/a3dFixString.h"
 
 #include <a3d.h>
 
@@ -63,4 +64,3 @@ using ID3D11DeviceContextA3D    = ID3D11DeviceContext2;
         #define     A3D_ASSERT(expression)
     #endif
 #endif
-

@@ -1207,6 +1207,30 @@ uint32_t Device::GetCount() const
 { return m_RefCount; }
 
 //-------------------------------------------------------------------------------------------------
+//      デバッグ名を設定します.
+//-------------------------------------------------------------------------------------------------
+void Device::SetName(const char* name)
+{
+    m_Name = name;
+    if (vkDebugMarkerSetObjectName != nullptr)
+    {
+        VkDebugMarkerObjectNameInfoEXT info = {};
+        info.sType          = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+        info.objectType     = VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT;
+        info.object         = uint64_t(m_Device);
+        info.pObjectName    = name;
+
+        vkDebugMarkerSetObjectName(m_Device, &info);
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバッグ名を取得します.
+//-------------------------------------------------------------------------------------------------
+const char* Device::GetName() const
+{ return m_Name.c_str(); }
+
+//-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
 //-------------------------------------------------------------------------------------------------
 DeviceDesc Device::GetDesc() const

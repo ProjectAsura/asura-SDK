@@ -173,5 +173,8 @@
     <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h">
       <Filter>ソース ファイル\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dFixString.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -463,6 +463,33 @@ uint32_t AccelerationStructure::GetCount() const
 { return m_RefCount; }
 
 //-------------------------------------------------------------------------------------------------
+//      デバッグ名を設定します.
+//-------------------------------------------------------------------------------------------------
+void AccelerationStructure::SetName(const char* name)
+{
+    m_Name = name;
+    if (vkDebugMarkerSetObjectName != nullptr)
+    {
+        auto pWrapDevice = static_cast<Device*>(m_pDevice);
+        A3D_ASSERT(pWrapDevice != nullptr);
+
+        VkDebugMarkerObjectNameInfoEXT info = {};
+        info.sType          = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+        info.objectType     = VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT;
+        info.object         = uint64_t(m_AS);
+        info.pObjectName    = name;
+
+        vkDebugMarkerSetObjectName(pWrapDevice->GetVkDevice(), &info);
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバッグ名を取得します.
+//-------------------------------------------------------------------------------------------------
+const char* AccelerationStructure::GetName() const
+{ return m_Name.c_str(); }
+
+//-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
 void AccelerationStructure::GetDevice(IDevice** ppDevice)

@@ -17,6 +17,7 @@
 #include "core/a3dNullHandle.h"
 #include "core/a3dLogger.h"
 #include "core/a3dSpinLock.h"
+#include "core/a3dFixString.h"
 
 #include <a3d.h>
 

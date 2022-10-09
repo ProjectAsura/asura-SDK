@@ -131,6 +131,33 @@ uint32_t DepthStencilView::GetCount() const
 { return m_RefCount; }
 
 //-------------------------------------------------------------------------------------------------
+//      デバッグ名を設定します.
+//-------------------------------------------------------------------------------------------------
+void DepthStencilView::SetName(const char* name)
+{
+    m_Name = name;
+    if (vkDebugMarkerSetObjectName != nullptr)
+    {
+        auto pWrapDevice = static_cast<Device*>(m_pDevice);
+        A3D_ASSERT(pWrapDevice != nullptr);
+
+        VkDebugMarkerObjectNameInfoEXT info = {};
+        info.sType          = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+        info.objectType     = VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT;
+        info.object         = uint64_t(m_ImageView);
+        info.pObjectName    = name;
+
+        vkDebugMarkerSetObjectName(pWrapDevice->GetVkDevice(), &info);
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバッグ名を取得します.
+//-------------------------------------------------------------------------------------------------
+const char* DepthStencilView::GetName() const
+{ return m_Name.c_str(); }
+
+//-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
 void DepthStencilView::GetDevice(IDevice** ppDevice)

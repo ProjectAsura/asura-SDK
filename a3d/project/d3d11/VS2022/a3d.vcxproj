@@ -122,6 +122,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\include\a3d.h" />
     <ClInclude Include="..\..\..\src\core\a3dBaseAllocator.h" />
+    <ClInclude Include="..\..\..\src\core\a3dFixString.h" />
     <ClInclude Include="..\..\..\src\core\a3dList.h" />
     <ClInclude Include="..\..\..\src\core\a3dLogger.h" />
     <ClInclude Include="..\..\..\src\core\a3dSpinLock.h" />

@@ -172,6 +172,33 @@ uint32_t Sampler::GetCount() const
 { return m_RefCount; }
 
 //-------------------------------------------------------------------------------------------------
+//      デバッグ名を設定します.
+//-------------------------------------------------------------------------------------------------
+void Sampler::SetName(const char* name)
+{
+    m_Name = name;
+    if (vkDebugMarkerSetObjectName != nullptr)
+    {
+        auto pWrapDevice = static_cast<Device*>(m_pDevice);
+        A3D_ASSERT(pWrapDevice != nullptr);
+
+        VkDebugMarkerObjectNameInfoEXT info = {};
+        info.sType          = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+        info.objectType     = VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT;
+        info.object         = uint64_t(m_Sampler);
+        info.pObjectName    = name;
+
+        vkDebugMarkerSetObjectName(pWrapDevice->GetVkDevice(), &info);
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバッグ名を取得します.
+//-------------------------------------------------------------------------------------------------
+const char* Sampler::GetName() const
+{ return m_Name.c_str(); }
+
+//-------------------------------------------------------------------------------------------------
 //      デバイスを取得します.
 //-------------------------------------------------------------------------------------------------
 void Sampler::GetDevice(IDevice** ppDevice)

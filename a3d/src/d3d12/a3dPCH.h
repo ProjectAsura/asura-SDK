@@ -26,6 +26,7 @@
 #include "core/a3dSpinLock.h"
 #include "core/a3dList.h"
 #include "core/a3dLogger.h"
+#include "core/a3dFixString.h"
 
 #include <a3d.h>
 
