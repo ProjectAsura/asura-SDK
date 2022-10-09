@@ -220,7 +220,9 @@ bool Device::Init(const DeviceDesc* pDesc)
 #ifdef A3D_FOR_WINDOWS10
         ID3D11DeviceContext3* pContext3 = nullptr;
         m_pDevice->GetImmediateContext3(&pContext3);
-        hr = pContext->QueryInterface(IID_PPV_ARGS(&m_pDeviceContext));
+        hr = pContext3->QueryInterface(IID_PPV_ARGS(&m_pDeviceContext));
+
+        pContext3->Release();
         if (FAILED(hr))
         {
             pContext->Release();
