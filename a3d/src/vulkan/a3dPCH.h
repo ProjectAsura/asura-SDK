@@ -9,23 +9,21 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
-#include <allocator/a3dBaseAllocator.h>
-#include <allocator/a3dStdAllocator.h>
-#include <a3d.h>
 #include <cassert>
-#include <cfloat>
 #include <atomic>
+
+#include "core/a3dBaseAllocator.h"
+#include "core/a3dStdAllocator.h"
+#include "core/a3dNullHandle.h"
+#include "core/a3dLogger.h"
+#include "core/a3dSpinLock.h"
+
+#include <a3d.h>
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
 #include "a3dVulkanFunc.h"
-
-#include "misc/a3dBlob.h"
-#include "misc/a3dInlines.h"
-#include "misc/a3dNullHandle.h"
-#include "misc/a3dLogger.h"
-#include "misc/a3dSpinLock.h"
 
 #include "a3dDevice.h"
 #include "a3dFence.h"

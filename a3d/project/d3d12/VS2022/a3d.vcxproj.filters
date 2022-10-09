@@ -13,17 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ソース ファイル\allocator">
-      <UniqueIdentifier>{73db27ac-cfe5-43ef-b241-d88a72d47594}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\D3D12MemoryAllocator">
       <UniqueIdentifier>{2ed19669-a4ea-4744-a90f-c5e54ce909e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\container">
-      <UniqueIdentifier>{7a6d7131-1dee-4997-a547-a177cbb87d95}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\misc">
-      <UniqueIdentifier>{d242ddfb-5538-41c3-9ce5-c3888d88d3eb}</UniqueIdentifier>
+    <Filter Include="ソース ファイル\core">
+      <UniqueIdentifier>{2b8d5caf-397d-4451-a4d4-330ff6c01978}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -78,14 +72,8 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dUtil.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp">
       <Filter>ソース ファイル\D3D12MemoryAllocator</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
-      <Filter>ソース ファイル\misc</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\d3d12\a3dConstantBufferView.cpp">
       <Filter>ソース ファイル</Filter>
@@ -99,12 +87,6 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dDepthStencilView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\d3d12\a3dDred.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -113,6 +95,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\d3d12\a3dRayTracingPipelineState.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core\a3dLogger.cpp">
+      <Filter>ソース ファイル\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,23 +161,8 @@
     <ClInclude Include="..\..\..\include\a3d.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h">
       <Filter>ソース ファイル\D3D12MemoryAllocator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\container\a3dList.h">
-      <Filter>ソース ファイル\container</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\container\a3dPool.h">
-      <Filter>ソース ファイル\container</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dBlob.h">
-      <Filter>ソース ファイル\misc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d12\a3dConstantBufferView.h">
       <Filter>ソース ファイル</Filter>
@@ -200,20 +176,29 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dDepthStencilView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dLogger.h">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\d3d12\a3dDred.h">
       <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h">
-      <Filter>ソース ファイル\misc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d12\a3dAccelerationStructure.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d12\a3dRayTracingPipelineState.h">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dBaseAllocator.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dList.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dSpinLock.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dLogger.h">
+      <Filter>ソース ファイル\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -13,14 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ソース ファイル\allocator">
-      <UniqueIdentifier>{98f4c804-4e41-4917-83f7-5d9e876b5f7e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\misc">
-      <UniqueIdentifier>{43197c22-3972-46b4-a47c-28d3f91fec3d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\emu">
       <UniqueIdentifier>{40569ecb-e677-4612-a120-e24459f587b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\core">
+      <UniqueIdentifier>{43ebebd5-2c04-443d-a04a-34422c50c851}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -66,12 +63,6 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dUtil.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\emu\a3dCommandBuffer.cpp">
       <Filter>ソース ファイル\emu</Filter>
     </ClCompile>
@@ -90,11 +81,14 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dShaderResourceView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp">
-      <Filter>ソース ファイル\misc</Filter>
+    <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp">
+      <Filter>ソース ファイル\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp">
-      <Filter>ソース ファイル\misc</Filter>
+    <ClCompile Include="..\..\..\src\core\a3dLogger.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp">
+      <Filter>ソース ファイル\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,15 +137,6 @@
     <ClInclude Include="..\..\..\include\a3d.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dBlob.h">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\emu\a3dCommandBuffer.h">
       <Filter>ソース ファイル\emu</Filter>
     </ClInclude>
@@ -173,11 +158,20 @@
     <ClInclude Include="..\..\..\src\d3d11\a3dShaderResourceView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dLogger.h">
-      <Filter>ソース ファイル\misc</Filter>
+    <ClInclude Include="..\..\..\src\core\a3dBaseAllocator.h">
+      <Filter>ソース ファイル\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h">
-      <Filter>ソース ファイル\misc</Filter>
+    <ClInclude Include="..\..\..\src\core\a3dList.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dLogger.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dSpinLock.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h">
+      <Filter>ソース ファイル\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

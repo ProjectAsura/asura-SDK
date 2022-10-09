@@ -86,8 +86,11 @@ private:
     // private variables.
     //=============================================================================================
     ID3D12DescriptorHeap*   m_pHeap;            //!< ディスクリプタヒープです.
-    Pool<Descriptor>        m_Pool;             //!< プールです
     uint32_t                m_IncrementSize;    //!< インクリメントサイズです.
+    List<Descriptor>        m_FreeList;         //!< 未使用リスト.
+    Descriptor*             m_pDescriptors;     //!< ディスクリプタ.
+    uint32_t                m_TotalHandleCount; //!< 総ハンドル数.
+    SpinLock                m_SpinLock;         //!< スピンロック.
 
     //=============================================================================================
     // private methods.

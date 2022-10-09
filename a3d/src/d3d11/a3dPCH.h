@@ -10,12 +10,15 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
-#include <allocator/a3dBaseAllocator.h>
-#include <allocator/a3dStdAllocator.h>
-#include <a3d.h>
 #include <cassert>
-#include <cfloat>
 #include <atomic>
+
+#include "core/a3dBaseAllocator.h"
+#include "core/a3dStdAllocator.h"
+#include "core/a3dLogger.h"
+#include "core/a3dSpinLock.h"
+
+#include <a3d.h>
 
 #if defined(A3D_FOR_WINDOWS10)
 #include <d3d11_4.h>
@@ -34,9 +37,6 @@ using ID3D11DeviceContextA3D    = ID3D11DeviceContext2;
 #include "emu/a3dCommandBuffer.h"
 #include "emu/a3dCommandList.h"
 
-#include "misc/a3dBlob.h"
-#include "misc/a3dLogger.h"
-#include "misc/a3dSpinLock.h"
 
 #include "a3dUtil.h"
 #include "a3dDevice.h"

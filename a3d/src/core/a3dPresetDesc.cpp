@@ -4,6 +4,9 @@
 // Copyright(c) Project Asura. All right reserved.
 //-----------------------------------------------------------------------------
 
+namespace {
+constexpr float A3D_FLT_MAX = 3.402823466e+38F;        // max value
+} 
 
 namespace a3d {
 
@@ -25,7 +28,7 @@ SamplerDesc SamplerDesc::PointClamp()
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -45,7 +48,7 @@ SamplerDesc SamplerDesc::PointRepeat()
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -65,7 +68,7 @@ SamplerDesc SamplerDesc::PointMirror()
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -85,7 +88,7 @@ SamplerDesc SamplerDesc::LinearClamp()
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -105,7 +108,7 @@ SamplerDesc SamplerDesc::LinearRepeat()
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -125,7 +128,7 @@ SamplerDesc SamplerDesc::LinearMirror()
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -145,7 +148,7 @@ SamplerDesc SamplerDesc::AnisotropicClamp(uint32_t maxAnisotropy)
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -165,7 +168,7 @@ SamplerDesc SamplerDesc::AnisotropicRepeat(uint32_t maxAnisotropy)
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -185,7 +188,7 @@ SamplerDesc SamplerDesc::AnisotropicMirror(uint32_t maxAnisotropy)
     result.CompareEnable    = false;
     result.CompareOp        = COMPARE_OP_ALWAYS;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -205,7 +208,7 @@ SamplerDesc SamplerDesc::PointClampCmp(COMPARE_OP op)
     result.CompareEnable    = true;
     result.CompareOp        = op;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -225,7 +228,7 @@ SamplerDesc SamplerDesc::LinearClampCmp(COMPARE_OP op)
     result.CompareEnable    = true;
     result.CompareOp        = op;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -245,7 +248,7 @@ SamplerDesc SamplerDesc::AnisotropicClampCmp(COMPARE_OP op, uint32_t maxAnisotro
     result.CompareEnable    = true;
     result.CompareOp        = op;
     result.MinLod           = 0;
-    result.MaxLod           = FLT_MAX;
+    result.MaxLod           = A3D_FLT_MAX;
     result.BorderColor      = BORDER_COLOR_OPAQUE_BLACK;
     return result;
 }
@@ -555,7 +558,6 @@ GraphicsPipelineStateDesc GraphicsPipelineStateDesc::Default()
     for(auto i=0; i<8; ++i)
     { result.RenderTarget[i]        = RESOURCE_FORMAT_UNKNOWN; }
     result.DepthTarget              = RESOURCE_FORMAT_UNKNOWN;
-    result.pCachedPSO               = nullptr;
     return result;
 }
 
@@ -567,7 +569,6 @@ ComputePipelineStateDesc ComputePipelineStateDesc::Default()
     ComputePipelineStateDesc result = {};
     result.pLayout      = nullptr;
     result.CS           = {};
-    result.pCachedPSO   = nullptr;
     return result;
 }
 
@@ -590,7 +591,6 @@ MeshletPipelineStateDesc MeshletPipelineStateDesc::Default()
     for(auto i=0; i<8; ++i)
     { result.RenderTarget[i]    = RESOURCE_FORMAT_UNKNOWN; }
     result.DepthTarget          = RESOURCE_FORMAT_UNKNOWN;
-    result.pCachedPSO           = nullptr;
     return result;
 }
 

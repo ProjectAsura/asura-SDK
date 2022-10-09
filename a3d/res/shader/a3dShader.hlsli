@@ -14,7 +14,7 @@
 #else
 #define A3D_LOCATION(idx)
 #define A3D_BINDING(idx)
-#define A3D_COMBIEND
+#define A3D_COMBINED
 #define A3D_FLIP_Y(var)
 #endif
 

@@ -151,12 +151,6 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
         for(auto i=0u; i<pDesc->EntryCount; ++i)
         {
-            ToNativeDescriptorRange(pDesc->Entries[i], pEntries[i]);
-            pParams[i].ParameterType                       = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-            pParams[i].DescriptorTable.NumDescriptorRanges = 1;
-            pParams[i].DescriptorTable.pDescriptorRanges   = &pEntries[i];
-            pParams[i].ShaderVisibility = ToNativeShaderVisibility( pDesc->Entries[i].ShaderStage );
-
             switch (pDesc->Entries[i].ShaderStage)
             {
             case SHADER_STAGE_VS:
@@ -182,6 +176,14 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
             case SHADER_STAGE_MS:
                 shaders[5] = true;
                 break;
+            }
+
+            {
+                ToNativeDescriptorRange(pDesc->Entries[i], pEntries[i]);
+                pParams[i].ParameterType                       = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+                pParams[i].DescriptorTable.NumDescriptorRanges = 1;
+                pParams[i].DescriptorTable.pDescriptorRanges   = &pEntries[i];
+                pParams[i].ShaderVisibility                    = ToNativeShaderVisibility( pDesc->Entries[i].ShaderStage );
             }
         }
 

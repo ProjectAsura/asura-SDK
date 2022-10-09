@@ -92,7 +92,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dLogger.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dCommandSet.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dConstantBufferView.cpp" />
@@ -116,14 +118,14 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dUtil.cpp" />
     <ClCompile Include="..\..\..\src\emu\a3dCommandBuffer.cpp" />
     <ClCompile Include="..\..\..\src\emu\a3dCommandList.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\a3d.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />
+    <ClInclude Include="..\..\..\src\core\a3dBaseAllocator.h" />
+    <ClInclude Include="..\..\..\src\core\a3dList.h" />
+    <ClInclude Include="..\..\..\src\core\a3dLogger.h" />
+    <ClInclude Include="..\..\..\src\core\a3dSpinLock.h" />
+    <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dCommandSet.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dConstantBufferView.h" />
@@ -145,9 +147,6 @@
     <ClInclude Include="..\..\..\src\emu\a3dCommandBuffer.h" />
     <ClInclude Include="..\..\..\src\emu\a3dCommandList.h" />
     <ClInclude Include="..\..\..\src\emu\a3dImCmd.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

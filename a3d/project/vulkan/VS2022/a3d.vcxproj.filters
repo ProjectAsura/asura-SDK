@@ -13,14 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ソース ファイル\allocator">
-      <UniqueIdentifier>{d0637729-ba8d-4056-8302-de982b7062fd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\misc">
-      <UniqueIdentifier>{9aba0ec9-fca0-4d35-be55-1f29c7d76dc2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\VulkanAllocator">
       <UniqueIdentifier>{6d30ab7e-0b9d-42db-a41a-806c21af6f93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\core">
+      <UniqueIdentifier>{9ad02b76-e5e2-4426-826c-732b49c2efb1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -72,12 +69,6 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dUtil.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\vulkan\a3dRenderTargetView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -90,14 +81,17 @@
     <ClCompile Include="..\..\..\src\vulkan\a3dShaderResourceView.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\vulkan\a3dAccelerationStructure.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core\a3dLogger.cpp">
+      <Filter>ソース ファイル\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp">
+      <Filter>ソース ファイル\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -152,24 +146,6 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dVulkanFunc.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h">
-      <Filter>ソース ファイル\allocator</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dBlob.h">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dInlines.h">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.h">
       <Filter>ソース ファイル\VulkanAllocator</Filter>
     </ClInclude>
@@ -188,14 +164,26 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dShaderResourceView.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dLogger.h">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h">
-      <Filter>ソース ファイル\misc</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\vulkan\a3dAccelerationStructure.h">
       <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dBaseAllocator.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dList.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dLogger.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dNullHandle.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dSpinLock.h">
+      <Filter>ソース ファイル\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h">
+      <Filter>ソース ファイル\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

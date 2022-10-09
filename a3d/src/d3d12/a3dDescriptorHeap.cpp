@@ -16,7 +16,6 @@ namespace a3d {
 //-------------------------------------------------------------------------------------------------
 DescriptorHeap::DescriptorHeap()
 : m_pHeap   (nullptr)
-, m_Pool    ()
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -52,10 +51,27 @@ bool DescriptorHeap::Init(ID3D12Device* pDevice, const D3D12_DESCRIPTOR_HEAP_DES
     // インクリメントサイズを取得.
     m_IncrementSize = pDevice->GetDescriptorHandleIncrementSize(pDesc->Type);
 
-    if (!m_Pool.Init(pDesc->NumDescriptors))
+    // 総ハンドル数設定.
+    m_TotalHandleCount = pDesc->NumDescriptors;
+
+    // ディスクリプタ生成.
+    m_pDescriptors = new Descriptor[m_TotalHandleCount];
+
+    auto hasHandleGPU = (pDesc->Flags == D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+
+    for(auto i=0u; i<m_TotalHandleCount; ++i)
     {
-        A3D_LOG("Error : Pool::Init() Failed.");
-        return false;
+        m_pDescriptors[i].m_Index = i;
+        m_pDescriptors[i].m_HandleCPU = m_pHeap->GetCPUDescriptorHandleForHeapStart();
+        m_pDescriptors[i].m_HandleCPU.ptr += (SIZE_T)m_IncrementSize * i;
+
+        if (hasHandleGPU)
+        {
+            m_pDescriptors[i].m_HandleGPU = m_pHeap->GetGPUDescriptorHandleForHeapStart();
+            m_pDescriptors[i].m_HandleGPU.ptr += (UINT64)m_IncrementSize * i;
+        }
+
+        m_FreeList.PushBack(&m_pDescriptors[i]);
     }
 
     return true;
@@ -66,7 +82,14 @@ bool DescriptorHeap::Init(ID3D12Device* pDevice, const D3D12_DESCRIPTOR_HEAP_DES
 //-------------------------------------------------------------------------------------------------
 void DescriptorHeap::Term()
 {
-    m_Pool.Term();
+    LockGuard locker(&m_SpinLock);
+    m_TotalHandleCount = 0;
+    m_FreeList.Clear();
+    if (m_pDescriptors)
+    {
+        delete[] m_pDescriptors;
+        m_pDescriptors = nullptr;
+    }
     SafeRelease(m_pHeap);
 }
 
@@ -75,41 +98,18 @@ void DescriptorHeap::Term()
 //-------------------------------------------------------------------------------------------------
 Descriptor* DescriptorHeap::CreateDescriptor()
 {
-    auto desc = m_pHeap->GetDesc();
-    auto hasHandleGPU = (desc.Flags == D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-
-    auto initializer = [&](uint32_t index, Descriptor* value)
-    {
-        // ヒープを設定.
-        value->m_pHeap = this;
-
-        // ディスクリプタ番号を設定.
-        value->m_Index = index;
-
-        // CPUハンドルをディスクリプタを割り当て.
-        {
-            auto handleCPU = m_pHeap->GetCPUDescriptorHandleForHeapStart();
-            handleCPU.ptr += m_IncrementSize * index;
-            value->m_HandleCPU = handleCPU;
-        }
-
-        // GPUハンドルをディスクリプタを割り当て
-        if (hasHandleGPU)
-        {
-            auto handleGPU = m_pHeap->GetGPUDescriptorHandleForHeapStart();
-            handleGPU.ptr += m_IncrementSize * index;
-            value->m_HandleGPU = handleGPU;
-        }
-    };
-
-    return m_Pool.Alloc(initializer);
+    LockGuard locker(&m_SpinLock);
+    return m_FreeList.PopFront();
 }
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタを破棄します.
 //-------------------------------------------------------------------------------------------------
 void DescriptorHeap::DisposeDescriptor(Descriptor* pValue)
-{ m_Pool.Free(pValue); }
+{
+    LockGuard locker(&m_SpinLock);
+    return m_FreeList.PushBack(pValue);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      ディスクリプタヒープを取得します.
@@ -121,19 +121,19 @@ ID3D12DescriptorHeap* DescriptorHeap::GetD3D12DescriptorHeap() const
 //      割り当て済みハンドル数を取得します.
 //-------------------------------------------------------------------------------------------------
 uint32_t DescriptorHeap::GetAllocatedHandleCount() const
-{ return m_Pool.GetUsedCount(); }
+{ return uint32_t(m_TotalHandleCount - m_FreeList.GetCount()); }
 
 //-------------------------------------------------------------------------------------------------
 //      割り当て可能なハンドル数を取得します.
 //-------------------------------------------------------------------------------------------------
 uint32_t DescriptorHeap::GetAvailableHandleCount() const
-{ return m_Pool.GetAvailableCount(); }
+{ return uint32_t(m_FreeList.GetCount()); }
 
 //-------------------------------------------------------------------------------------------------
 //      ハンドル数を取得します.
 //-------------------------------------------------------------------------------------------------
 uint32_t DescriptorHeap::GetHandleCount() const
-{ return m_Pool.GetSize(); }
+{ return m_TotalHandleCount; }
  
 
 } // namespace a3d

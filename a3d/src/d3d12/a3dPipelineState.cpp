@@ -332,15 +332,6 @@ void ToNativeSampleDesc( const a3d::MultiSampleState& state, DXGI_SAMPLE_DESC& r
     result.Quality = 0;
 }
 
-//-------------------------------------------------------------------------------------------------
-//      パイプラインステートキャッシュをネイティブ形式に変換します.
-//-------------------------------------------------------------------------------------------------
-void ToNativePipelieStateCache( const a3d::IBlob* pBlob, D3D12_CACHED_PIPELINE_STATE& state )
-{
-    state.CachedBlobSizeInBytes = (pBlob != nullptr) ? SIZE_T(pBlob->GetBufferSize()) : 0;
-    state.pCachedBlob           = (pBlob != nullptr) ? pBlob->GetBufferPointer() : nullptr;
-}
-
 } // namespace /* anonymous */
 
 namespace a3d {
@@ -404,32 +395,6 @@ void PipelineState::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 PIPELINE_STATE_TYPE PipelineState::GetType() const
 { return m_Type; }
-
-//-------------------------------------------------------------------------------------------------
-//      キャッシュデータを取得します.
-//-------------------------------------------------------------------------------------------------
-bool PipelineState::GetCachedBlob(IBlob** ppBlob)
-{
-    ID3DBlob* pD3DBlob;
-    auto hr = m_pPipelineState->GetCachedBlob(&pD3DBlob);
-    if ( FAILED(hr) )
-    {
-        SafeRelease(pD3DBlob);
-        return false;
-    }
-
-    if (!Blob::Create(pD3DBlob->GetBufferSize(), ppBlob))
-    {
-        SafeRelease(pD3DBlob);
-        return false;
-    }
-
-    auto ptr = (*ppBlob)->GetBufferPointer();
-    memcpy( ptr, pD3DBlob->GetBufferPointer(), pD3DBlob->GetBufferSize() );
-
-    SafeRelease(pD3DBlob);
-    return true;
-}
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドを発行します.
@@ -511,7 +476,6 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
     desc.IBStripCutValue                 = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
     desc.PrimitiveTopologyType           = a3d::ToNativePrimitiveTopology( pDesc->PrimitiveTopology );
     desc.NumRenderTargets                = pDesc->RenderTargetCount;
-    ToNativePipelieStateCache( pDesc->pCachedPSO, desc.CachedPSO );
 
     for (auto i=0u; i<pDesc->RenderTargetCount; ++i)
     { desc.RTVFormats[i] = a3d::ToNativeFormat(pDesc->RenderTarget[i]); }
@@ -561,7 +525,6 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
     D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
     desc.pRootSignature = pWrapDescriptorLayout->GetD3D12RootSignature();
     ToNativeShaderByteCode   ( pDesc->CS, desc.CS );
-    ToNativePipelieStateCache( pDesc->pCachedPSO, desc.CachedPSO );
 
     auto hr = pNativeDevice->CreateComputePipelineState(&desc, IID_PPV_ARGS(&m_pPipelineState));
     if ( FAILED(hr) )
@@ -610,13 +573,6 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
     auto pWrapDescriptorLayout = static_cast<DescriptorSetLayout*>(pDesc->pLayout);
     A3D_ASSERT(pWrapDescriptorLayout != nullptr);
 
-    D3D12_CACHED_PIPELINE_STATE cachedPSO = {};
-    if (pDesc->pCachedPSO != nullptr)
-    {
-        cachedPSO.pCachedBlob           = pDesc->pCachedPSO->GetBufferPointer();
-        cachedPSO.CachedBlobSizeInBytes = pDesc->pCachedPSO->GetBufferSize();
-    }
-
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
     rtvFormats.NumRenderTargets = pDesc->RenderTargetCount;
     for (auto i=0u; i<pDesc->RenderTargetCount; ++i)
@@ -635,7 +591,6 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
     psoDesc.RTVFormats    = rtvFormats;
     psoDesc.DSVFormat     = a3d::ToNativeFormat(pDesc->DepthTarget);
     psoDesc.SampleMask    = UINT32_MAX;
-    psoDesc.CachedPSO     = cachedPSO;
 
     D3D12_PIPELINE_STATE_STREAM_DESC pssDesc = {};
     pssDesc.SizeInBytes                     = sizeof(psoDesc);

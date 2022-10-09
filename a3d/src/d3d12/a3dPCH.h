@@ -19,16 +19,18 @@
 //-------------------------------------------------------------------------------------------------
 // Includes
 //-------------------------------------------------------------------------------------------------
-#include <allocator/a3dBaseAllocator.h>
-#include <allocator/a3dStdAllocator.h>
-#include <a3d.h>
-
 #include <atomic>
-#include <container/a3dPool.h>
+
+#include "core/a3dBaseAllocator.h"
+#include "core/a3dStdAllocator.h"
+#include "core/a3dSpinLock.h"
+#include "core/a3dList.h"
+#include "core/a3dLogger.h"
+
+#include <a3d.h>
 
 #if A3D_IS_WIN
 #include <d3d12.h>
-#include <dxgi1_5.h>
 #include <dxgi1_6.h>
 
 using IDXGIFactoryA3D   = IDXGIFactory5;
@@ -41,11 +43,6 @@ using ID3D12DeviceA3D   = ID3D12Device8;
 #endif
 
 #include <D3D12MemAlloc.h>
-
-#include "misc/a3dBlob.h"
-#include "misc/a3dLogger.h"
-#include "misc/a3dSpinLock.h"
-#include "misc/a3dInlines.h"
 
 #include "a3dUtil.h"
 #include "a3dDescriptor.h"

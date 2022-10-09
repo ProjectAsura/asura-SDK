@@ -8,8 +8,6 @@
 // Includes
 //-------------------------------------------------------------------------------------------------
 #include <vector>
-#include <allocator/a3dStdAllocator.h>
-#include <allocator/a3dBaseAllocator.h>
 #include <renderdoc_app.h>
 
 
@@ -593,7 +591,7 @@ bool Device::Init(const DeviceDesc* pDesc)
             info.flags          = flags;
 
             // vkCreateDebugReportCallback()で何故か2回メモリ確保がされてリークするので，カウンターを無効化.
-            a3d_enable_counter(false);
+            //a3d_enable_counter(false);
 
             auto ret = vkCreateDebugReportCallback( 
                 m_Instance,
@@ -602,7 +600,7 @@ bool Device::Init(const DeviceDesc* pDesc)
                 &vkDebugReportCallback );
 
             // 無効にしたカウンターを元に戻す.
-            a3d_enable_counter(true);
+            //a3d_enable_counter(true);
 
             if ( ret != VK_SUCCESS )
             {
@@ -1146,7 +1144,7 @@ void Device::Term()
         {
             // vkDestroyDebugReportCallback()では，
             // 2回確保されたメモリーが1つしか解放されずリークするのでカウンターを無効化.
-            a3d_enable_counter(false);
+            //a3d_enable_counter(false);
 
             vkDestroyDebugReportCallback(
                 m_Instance,
@@ -1155,7 +1153,7 @@ void Device::Term()
             vkDebugReportCallback = null_handle;
 
             // 無効にしたカウンターを戻す.
-            a3d_enable_counter(true);
+            //a3d_enable_counter(true);
         }
 
         if (vkCreateDebugReportCallback  != nullptr &&

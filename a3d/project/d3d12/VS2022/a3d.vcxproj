@@ -93,7 +93,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp" />
-    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dLogger.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dAccelerationStructure.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dCommandList.cpp" />
@@ -121,17 +123,15 @@
     <ClCompile Include="..\..\..\src\d3d12\a3dTexture.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dUnorderedAccessView.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dUtil.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />
-    <ClInclude Include="..\..\..\src\container\a3dList.h" />
-    <ClInclude Include="..\..\..\src\container\a3dPool.h" />
+    <ClInclude Include="..\..\..\src\core\a3dBaseAllocator.h" />
+    <ClInclude Include="..\..\..\src\core\a3dList.h" />
+    <ClInclude Include="..\..\..\src\core\a3dLogger.h" />
+    <ClInclude Include="..\..\..\src\core\a3dSpinLock.h" />
+    <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dAccelerationStructure.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dCommandList.h" />
@@ -156,9 +156,6 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dTexture.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dUnorderedAccessView.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dUtil.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

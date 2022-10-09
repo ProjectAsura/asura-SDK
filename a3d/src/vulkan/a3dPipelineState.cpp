@@ -649,8 +649,6 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
         info.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
         info.pNext           = nullptr;
         info.flags           = 0;
-        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? size_t(pDesc->pCachedPSO->GetBufferSize()) : 0;
-        info.pInitialData    = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferPointer() : nullptr;
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
         if ( ret != VK_SUCCESS )
@@ -868,8 +866,6 @@ bool PipelineState::InitAsCompute(IDevice* pDevice, const ComputePipelineStateDe
         info.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
         info.pNext           = nullptr;
         info.flags           = 0;
-        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? size_t(pDesc->pCachedPSO->GetBufferSize()) : 0;
-        info.pInitialData    = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferPointer() : nullptr;
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
         if ( ret != VK_SUCCESS )
@@ -955,8 +951,6 @@ bool PipelineState::InitAsMesh(IDevice* pDevice, const MeshletPipelineStateDesc*
         info.sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
         info.pNext           = nullptr;
         info.flags           = 0;
-        info.initialDataSize = (pDesc->pCachedPSO != nullptr) ? size_t(pDesc->pCachedPSO->GetBufferSize()) : 0;
-        info.pInitialData    = (pDesc->pCachedPSO != nullptr) ? pDesc->pCachedPSO->GetBufferPointer() : nullptr;
 
         auto ret = vkCreatePipelineCache(pNativeDevice, &info, nullptr, &m_PipelineCache);
         if ( ret != VK_SUCCESS )
@@ -1331,35 +1325,6 @@ void PipelineState::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 PIPELINE_STATE_TYPE PipelineState::GetType() const
 { return m_Type; }
-
-//-------------------------------------------------------------------------------------------------
-//      キャッシュを取得します.
-//-------------------------------------------------------------------------------------------------
-bool PipelineState::GetCachedBlob(IBlob** ppBlob)
-{
-    auto pNativeDevice = m_pDevice->GetVkDevice();
-    A3D_ASSERT(pNativeDevice != null_handle);
-
-    size_t  size  = 0;
-    void*   pData = nullptr;
-    auto ret = vkGetPipelineCacheData(pNativeDevice, m_PipelineCache, &size, pData);
-    if ( ret != VK_SUCCESS )
-    {
-        A3D_LOG("Error : vkGetPipelineCacheData() Failed. VkResult = %s", ToString(ret));
-        return false;
-    }
-
-    if (!Blob::Create(size, ppBlob))
-    {
-        A3D_LOG("Error : Blob::Create() Failed.");
-        return false;
-    }
-
-    void* pPtr = (*ppBlob)->GetBufferPointer();
-    memcpy(pPtr, pData, size);
-
-    return true;
-}
 
 //-------------------------------------------------------------------------------------------------
 //      パイプラインステートを取得します.

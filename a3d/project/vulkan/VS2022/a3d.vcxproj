@@ -92,10 +92,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\allocator\a3dBaseAllocator.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dBlob.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dDescSettings.cpp" />
-    <ClCompile Include="..\..\..\src\misc\a3dLogger.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dLogger.cpp" />
+    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dAccelerationStructure.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandList.cpp" />
@@ -124,14 +123,12 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\external\VulkanMemoryAllocator\vk_mem_alloc.h" />
     <ClInclude Include="..\..\..\include\a3d.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dBaseAllocator.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dBlockAllocator.h" />
-    <ClInclude Include="..\..\..\src\allocator\a3dStdAllocator.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dBlob.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dInlines.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dLogger.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dNullHandle.h" />
-    <ClInclude Include="..\..\..\src\misc\a3dSpinLock.h" />
+    <ClInclude Include="..\..\..\src\core\a3dBaseAllocator.h" />
+    <ClInclude Include="..\..\..\src\core\a3dList.h" />
+    <ClInclude Include="..\..\..\src\core\a3dLogger.h" />
+    <ClInclude Include="..\..\..\src\core\a3dNullHandle.h" />
+    <ClInclude Include="..\..\..\src\core\a3dSpinLock.h" />
+    <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dAccelerationStructure.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandList.h" />
