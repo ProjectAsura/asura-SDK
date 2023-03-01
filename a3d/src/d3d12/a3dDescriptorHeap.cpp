@@ -64,6 +64,7 @@ bool DescriptorHeap::Init(ID3D12Device* pDevice, const D3D12_DESCRIPTOR_HEAP_DES
         m_pDescriptors[i].m_Index = i;
         m_pDescriptors[i].m_HandleCPU = m_pHeap->GetCPUDescriptorHandleForHeapStart();
         m_pDescriptors[i].m_HandleCPU.ptr += (SIZE_T)m_IncrementSize * i;
+        m_pDescriptors[i].m_pHeap = this;
 
         if (hasHandleGPU)
         {

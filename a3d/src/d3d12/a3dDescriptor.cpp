@@ -26,11 +26,7 @@ Descriptor::Descriptor()
 //      デストラクタです.
 //-------------------------------------------------------------------------------------------------
 Descriptor::~Descriptor()
-{
-    auto pHeap = m_pHeap;
-    A3D_ASSERT(pHeap != nullptr);
-    pHeap->DisposeDescriptor(this);
-}
+{ /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
 //      参照カウントを増やします.
@@ -45,7 +41,12 @@ void Descriptor::Release()
 {
     m_RefCount--;
     if (m_RefCount == 0)
-    { this->~Descriptor(); }
+    {
+        // 破棄処理.
+        auto pHeap = m_pHeap;
+        A3D_ASSERT(pHeap != nullptr);
+        pHeap->DisposeDescriptor(this);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------
