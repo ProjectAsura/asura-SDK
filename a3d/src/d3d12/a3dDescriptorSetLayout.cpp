@@ -84,7 +84,6 @@ DescriptorSetLayout::DescriptorSetLayout()
 : m_RefCount            (1)
 , m_pDevice             (nullptr)
 , m_pRootSignature      (nullptr)
-, m_Type                (PIPELINE_STATE_TYPE_GRAPHICS)
 { memset( &m_Desc, 0, sizeof(m_Desc) ); }
 
 //-------------------------------------------------------------------------------------------------
@@ -114,36 +113,15 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
 
     memcpy( &m_Desc, pDesc, sizeof(m_Desc) );
 
-    bool isCompute = false;
-    for(auto i=0u; i<pDesc->EntryCount; ++i)
-    {
-        if (pDesc->Entries[i].ShaderStage == SHADER_STAGE_CS)
-        {
-            m_Type = PIPELINE_STATE_TYPE_COMPUTE;
-            isCompute = true;
-        }
-
-        if (pDesc->Entries[i].ShaderStage == SHADER_STAGE_VS)
-        {
-            m_Type = PIPELINE_STATE_TYPE_GRAPHICS;
-            if (isCompute)
-            { return false; }
-        }
-
-        if ((pDesc->Entries[i].ShaderStage == SHADER_STAGE_AS)
-         || (pDesc->Entries[i].ShaderStage == SHADER_STAGE_MS))
-        {
-            m_Type = PIPELINE_STATE_TYPE_MESHLET;
-            if (isCompute)
-            { return false; }
-        }
-    }
+    auto entryCount = pDesc->EntryCount;
+    if (pDesc->Constant.Counts > 0)
+    { entryCount++; }
 
     {
         auto pEntries = new D3D12_DESCRIPTOR_RANGE [pDesc->EntryCount];
         A3D_ASSERT(pEntries);
 
-        auto pParams = new D3D12_ROOT_PARAMETER [pDesc->EntryCount];
+        auto pParams = new D3D12_ROOT_PARAMETER [entryCount];
         A3D_ASSERT(pParams);
 
         auto mask = 0;
@@ -187,6 +165,15 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
             }
         }
 
+        if (pDesc->Constant.Counts > 0)
+        {
+            auto idx = pDesc->EntryCount;
+            pParams[idx].Constants.ShaderRegister   = pDesc->Constant.ShaderRegister;
+            pParams[idx].Constants.RegisterSpace    = 0;
+            pParams[idx].Constants.Num32BitValues   = pDesc->Constant.Counts;
+            pParams[idx].ShaderVisibility           = ToNativeShaderVisibility(pDesc->Constant.ShaderStage);
+        }
+
         D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
         if (!(pDesc->Flags & DESCRIPTORSET_LAYOUT_FLAG_NO_INPUT_LAYOUT))
         { flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT; }
@@ -207,7 +194,7 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         { flags |= D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE; }
 
         D3D12_ROOT_SIGNATURE_DESC desc = {};
-        desc.NumParameters      = pDesc->EntryCount;
+        desc.NumParameters      = entryCount;
         desc.pParameters        = pParams;
         desc.NumStaticSamplers  = 0;
         desc.pStaticSamplers    = nullptr;
@@ -313,16 +300,16 @@ ID3D12RootSignature* DescriptorSetLayout::GetD3D12RootSignature() const
 { return m_pRootSignature; }
 
 //-------------------------------------------------------------------------------------------------
-//      パイプラインタイプを取得します.
-//-------------------------------------------------------------------------------------------------
-uint8_t DescriptorSetLayout::GetType() const
-{ return m_Type; }
-
-//-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
 //-------------------------------------------------------------------------------------------------
 const DescriptorSetLayoutDesc& DescriptorSetLayout::GetDesc() const
 { return m_Desc; }
+
+//-------------------------------------------------------------------------------------------------
+//      ルート定数パラメータ番号を取得します.
+//-------------------------------------------------------------------------------------------------
+uint32_t DescriptorSetLayout::GetRootConstantIndex() const 
+{ return (m_Desc.Constant.Counts > 0) ? m_Desc.EntryCount : UINT32_MAX; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

@@ -190,13 +190,22 @@ void Queue::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      キューを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12CommandQueue* Queue::GetD3D12Queue() const
+{ return m_pQueue; }
+
+//-------------------------------------------------------------------------------------------------
 //      コマンドリストを登録します.
 //-------------------------------------------------------------------------------------------------
-bool Queue::Submit( ICommandList* pCommandList )
+bool IQueue::Submit( ICommandList* pCommandList )
 {
-    LockGuard locker(&m_Lock);
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
-    if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
+    LockGuard locker(&pThis->m_Lock);
+
+    if (pThis->m_SubmitIndex + 1 >= pThis->m_MaxSubmitCount)
     { return false; }
 
     auto pWrapList = static_cast<CommandList*>(pCommandList);
@@ -204,8 +213,8 @@ bool Queue::Submit( ICommandList* pCommandList )
 
     auto pNativeList = pWrapList->GetD3D12GraphicsCommandList();
 
-    m_pSubmitList[m_SubmitIndex] = static_cast<ID3D12CommandList*>(pNativeList);
-    m_SubmitIndex++;
+    pThis->m_pSubmitList[pThis->m_SubmitIndex] = static_cast<ID3D12CommandList*>(pNativeList);
+    pThis->m_SubmitIndex++;
 
     return true;
 }
@@ -213,9 +222,12 @@ bool Queue::Submit( ICommandList* pCommandList )
 //-------------------------------------------------------------------------------------------------
 //      登録したコマンドリストを実行します.
 //-------------------------------------------------------------------------------------------------
-void Queue::Execute( IFence* pFence )
+void IQueue::Execute( IFence* pFence )
 {
-    m_pQueue->ExecuteCommandLists( m_SubmitIndex, m_pSubmitList );
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pQueue->ExecuteCommandLists(pThis->m_SubmitIndex, pThis->m_pSubmitList );
 
     if (pFence != nullptr)
     {
@@ -224,29 +236,32 @@ void Queue::Execute( IFence* pFence )
 
         auto pNativeFence = pWrapFence->GetD3D12Fence();
         auto fenceValue = pWrapFence->GetFenceValue();
-        m_pQueue->Signal( pNativeFence, fenceValue );
+        pThis->m_pQueue->Signal( pNativeFence, fenceValue );
 
         pWrapFence->AdvanceValue();
     }
 
-    m_SubmitIndex = 0;
+    pThis->m_SubmitIndex = 0;
 }
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドの実行が完了するまで待機します.
 //-------------------------------------------------------------------------------------------------
-void Queue::WaitIdle()
+void IQueue::WaitIdle()
 {
-    m_pFence->Signal( 0 );
-    m_pFence->SetEventOnCompletion( 1, m_Event );
-    m_pQueue->Signal( m_pFence, 1 );
-    WaitForSingleObject( m_Event, INFINITE );
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pFence->Signal( 0 );
+    pThis->m_pFence->SetEventOnCompletion( 1, pThis->m_Event );
+    pThis->m_pQueue->Signal( pThis->m_pFence, 1 );
+    WaitForSingleObject( pThis->m_Event, INFINITE );
 }
 
 //-------------------------------------------------------------------------------------------------
 //      画面に表示を行います.
 //-------------------------------------------------------------------------------------------------
-void Queue::Present( ISwapChain* pSwapChain )
+void IQueue::Present( ISwapChain* pSwapChain )
 {
     auto pWrapSwapChain = reinterpret_cast<SwapChain*>(pSwapChain);
     if (pWrapSwapChain == nullptr)
@@ -254,12 +269,6 @@ void Queue::Present( ISwapChain* pSwapChain )
 
     pWrapSwapChain->Present();
 }
-
-//-------------------------------------------------------------------------------------------------
-//      キューを取得します.
-//-------------------------------------------------------------------------------------------------
-ID3D12CommandQueue* Queue::GetD3D12Queue() const
-{ return m_pQueue; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

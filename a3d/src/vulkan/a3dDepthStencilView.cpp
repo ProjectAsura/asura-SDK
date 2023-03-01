@@ -168,12 +168,6 @@ void DepthStencilView::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      テクスチャビューの構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-TargetViewDesc DepthStencilView::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      テクスチャの構成設定を取得します.
 //-------------------------------------------------------------------------------------------------
 TextureDesc DepthStencilView::GetTextureDesc() const
@@ -205,10 +199,26 @@ VkImageView DepthStencilView::GetVkImageView() const
 { return m_ImageView; }
 
 //-------------------------------------------------------------------------------------------------
+//      テクスチャビューの構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+TargetViewDesc IDepthStencilView::GetDesc() const
+{
+    auto pThis = static_cast<const DepthStencilView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      リソースを取得します.
 //-------------------------------------------------------------------------------------------------
-ITexture* DepthStencilView::GetResource() const
-{ return m_pTexture; }
+ITexture* IDepthStencilView::GetResource() const
+{
+    auto pThis = static_cast<const DepthStencilView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_pTexture;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

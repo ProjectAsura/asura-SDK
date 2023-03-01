@@ -135,30 +135,6 @@ void Fence::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      シグナル状態かどうかチェックします.
-//-------------------------------------------------------------------------------------------------
-bool Fence::IsSignaled() const
-{ return m_pFence->GetCompletedValue() >= m_PreviousValue; }
-
-//-------------------------------------------------------------------------------------------------
-//      完了を待機します.
-//-------------------------------------------------------------------------------------------------
-bool Fence::Wait(uint32_t timeoutMsec)
-{
-    if ( m_pFence->GetCompletedValue() < m_PreviousValue )
-    {
-        auto hr = m_pFence->SetEventOnCompletion( m_PreviousValue, m_Event );
-        if (FAILED(hr))
-        { return false; }
-
-        if (WAIT_OBJECT_0 != WaitForSingleObjectEx( m_Event, timeoutMsec, FALSE ))
-        { return false; }
-    }
-
-    return true;
-}
-
-//-------------------------------------------------------------------------------------------------
 //      フェンスを取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D12Fence* Fence::GetD3D12Fence() const
@@ -183,6 +159,38 @@ void Fence::AdvanceValue()
 {
     m_PreviousValue = m_CurrentValue;
     m_CurrentValue++;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      シグナル状態かどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool IFence::IsSignaled() const
+{
+    auto pThis = static_cast<const Fence*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_pFence->GetCompletedValue() >= pThis->m_PreviousValue;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      完了を待機します.
+//-------------------------------------------------------------------------------------------------
+bool IFence::Wait(uint32_t timeoutMsec)
+{
+    auto pThis = static_cast<Fence*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if ( pThis->m_pFence->GetCompletedValue() < pThis->m_PreviousValue )
+    {
+        auto hr = pThis->m_pFence->SetEventOnCompletion( pThis->m_PreviousValue, pThis->m_Event );
+        if (FAILED(hr))
+        { return false; }
+
+        if (WAIT_OBJECT_0 != WaitForSingleObjectEx( pThis->m_Event, timeoutMsec, FALSE ))
+        { return false; }
+    }
+
+    return true;
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -135,33 +135,6 @@ D3D12_BLEND_OP ToNativeBlendOp( const a3d::BLEND_OP& operation )
 }
 
 //-------------------------------------------------------------------------------------------------
-//      論理オペレータをネイティブ形式に変換します.
-//-------------------------------------------------------------------------------------------------
-D3D12_LOGIC_OP ToNativeLogicOp( const a3d::LOGIC_OP& operation )
-{
-    D3D12_LOGIC_OP table[] = {
-        D3D12_LOGIC_OP_CLEAR,
-        D3D12_LOGIC_OP_SET,
-        D3D12_LOGIC_OP_COPY,
-        D3D12_LOGIC_OP_COPY_INVERTED,
-        D3D12_LOGIC_OP_NOOP,
-        D3D12_LOGIC_OP_INVERT,
-        D3D12_LOGIC_OP_AND,
-        D3D12_LOGIC_OP_NAND,
-        D3D12_LOGIC_OP_OR,
-        D3D12_LOGIC_OP_NOR,
-        D3D12_LOGIC_OP_XOR,
-        D3D12_LOGIC_OP_EQUIV,
-        D3D12_LOGIC_OP_AND_REVERSE,
-        D3D12_LOGIC_OP_AND_INVERTED,
-        D3D12_LOGIC_OP_OR_REVERSE,
-        D3D12_LOGIC_OP_INVERT
-    };
-
-    return table[operation];
-}
-
-//-------------------------------------------------------------------------------------------------
 //      カラーブレンドステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
 void ToNativeRanderTargetBlendDesc( const a3d::ColorBlendState& state, D3D12_RENDER_TARGET_BLEND_DESC& result )
@@ -186,12 +159,12 @@ void ToNativeRanderTargetBlendDesc( const a3d::ColorBlendState& state, D3D12_REN
 //-------------------------------------------------------------------------------------------------
 void ToNativeBlendDesc( const a3d::BlendState& state, D3D12_BLEND_DESC& result, BOOL alphaToCoverage )
 {
-    result.AlphaToCoverageEnable = alphaToCoverage;
+    result.AlphaToCoverageEnable  = alphaToCoverage;
     result.IndependentBlendEnable = (state.IndependentBlendEnable) ? TRUE : FALSE;
     for(auto i=0; i<8; ++i)
     {
-        result.RenderTarget[i].LogicOpEnable = (state.LogicOpEnable) ? TRUE : FALSE;
-        result.RenderTarget[i].LogicOp       = ToNativeLogicOp(state.LogicOp);
+        result.RenderTarget[i].LogicOpEnable = FALSE;
+        result.RenderTarget[i].LogicOp       = D3D12_LOGIC_OP_NOOP;
         ToNativeRanderTargetBlendDesc( state.RenderTarget[i], result.RenderTarget[i] );
     }
 }

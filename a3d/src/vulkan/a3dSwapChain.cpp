@@ -651,12 +651,6 @@ void SwapChain::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-SwapChainDesc SwapChain::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      画面に表示します.
 //-------------------------------------------------------------------------------------------------
 void SwapChain::Present()
@@ -710,24 +704,44 @@ void SwapChain::Present()
     }
 }
 
+
+//-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+SwapChainDesc ISwapChain::GetDesc() const
+{
+    auto pThis = static_cast<const SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
 //-------------------------------------------------------------------------------------------------
 //      現在のバッファ番号を取得します.
 //-------------------------------------------------------------------------------------------------
-uint32_t SwapChain::GetCurrentBufferIndex()
-{ return m_CurrentBufferIndex; }
+uint32_t ISwapChain::GetCurrentBufferIndex()
+{
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_CurrentBufferIndex;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
+bool ISwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 {
-    if (index >= m_Desc.BufferCount)
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (index >= pThis->m_Desc.BufferCount)
     { return false; }
 
-    *ppResource = m_pBuffers[index];
-    if (m_pBuffers[index] != nullptr)
+    *ppResource = pThis->m_pBuffers[index];
+    if (pThis->m_pBuffers[index] != nullptr)
     {
-        m_pBuffers[index]->AddRef();
+        pThis->m_pBuffers[index]->AddRef();
         return true;
     }
 
@@ -737,45 +751,48 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 //-------------------------------------------------------------------------------------------------
 //      バッファをリサイズします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
+bool ISwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 {
-    auto pNativeDevice = m_pDevice->GetVkDevice();
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    m_pQueue->WaitIdle();
+    pThis->m_pQueue->WaitIdle();
 
-    auto pNativePhysicalDevice = m_pDevice->GetVkPhysicalDevice(0);
+    auto pNativePhysicalDevice = pThis->m_pDevice->GetVkPhysicalDevice(0);
     A3D_ASSERT(pNativePhysicalDevice != null_handle);
 
-    m_Desc.Extent.Width  = width;
-    m_Desc.Extent.Height = height;
+    pThis->m_Desc.Extent.Width  = width;
+    pThis->m_Desc.Extent.Height = height;
 
     // バッファ数をチェック
     VkSurfaceCapabilitiesKHR capabilities;
-    m_PreTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    pThis->m_PreTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     {
         // 再作成時も呼ばないとバリデーションレイヤーからエラー出力されるので，呼び出し必須!!
         auto ret = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-            pNativePhysicalDevice, m_Surface, &capabilities);
+            pNativePhysicalDevice, pThis->m_Surface, &capabilities);
         if ( ret != VK_SUCCESS )
         { return false; }
 
         if (capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
-        { m_PreTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR; }
+        { pThis->m_PreTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR; }
         else
-        { m_PreTransform = capabilities.currentTransform; }
+        { pThis->m_PreTransform = capabilities.currentTransform; }
 
-        if (capabilities.maxImageCount < m_Desc.BufferCount)
+        if (capabilities.maxImageCount < pThis->m_Desc.BufferCount)
         { return false; }
 
-        if (capabilities.minImageCount > m_Desc.BufferCount)
+        if (capabilities.minImageCount > pThis->m_Desc.BufferCount)
         { return false; }
 
-        if (capabilities.maxImageExtent.width < m_Desc.Extent.Width)
-        { m_Desc.Extent.Width = capabilities.maxImageExtent.width; }
+        if (capabilities.maxImageExtent.width < pThis->m_Desc.Extent.Width)
+        { pThis->m_Desc.Extent.Width = capabilities.maxImageExtent.width; }
 
-        if (capabilities.maxImageExtent.height < m_Desc.Extent.Height)
-        { m_Desc.Extent.Height = capabilities.maxImageExtent.height; }
+        if (capabilities.maxImageExtent.height < pThis->m_Desc.Extent.Height)
+        { pThis->m_Desc.Extent.Height = capabilities.maxImageExtent.height; }
     }
 
     // スワップチェインを生成
@@ -785,103 +802,103 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         createInfo.sType                    = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.pNext                    = nullptr;
         createInfo.flags                    = 0;
-        createInfo.surface                  = m_Surface;
-        createInfo.minImageCount            = m_Desc.BufferCount;
-        createInfo.imageFormat              = m_ImageFormat;
-        createInfo.imageColorSpace          = m_ColorSpace;
+        createInfo.surface                  = pThis->m_Surface;
+        createInfo.minImageCount            = pThis->m_Desc.BufferCount;
+        createInfo.imageFormat              = pThis->m_ImageFormat;
+        createInfo.imageColorSpace          = pThis->m_ColorSpace;
         createInfo.imageExtent              = { capabilities.currentExtent.width, capabilities.currentExtent.height };
         createInfo.imageArrayLayers         = 1;
         createInfo.imageUsage               = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         createInfo.imageSharingMode         = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount    = 0;
         createInfo.pQueueFamilyIndices      = nullptr;
-        createInfo.preTransform             = m_PreTransform;
-        createInfo.compositeAlpha           = m_CompositeAlpha;
-        createInfo.presentMode              = m_PresentMode;
+        createInfo.preTransform             = pThis->m_PreTransform;
+        createInfo.compositeAlpha           = pThis->m_CompositeAlpha;
+        createInfo.presentMode              = pThis->m_PresentMode;
         createInfo.clipped                  = VK_TRUE;
-        createInfo.oldSwapchain             = m_SwapChain;
+        createInfo.oldSwapchain             = pThis->m_SwapChain;
 
         auto ret = vkCreateSwapchainKHR(pNativeDevice, &createInfo, nullptr, &swapChain);
         if ( ret != VK_SUCCESS )
         { return false; }
     }
 
-    if (m_pImageViews != nullptr)
+    if (pThis->m_pImageViews != nullptr)
     {
-        for(auto i=0u; i<m_Desc.BufferCount; ++i)
+        for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
         {
-            if (m_pImageViews[i] != null_handle)
+            if (pThis->m_pImageViews[i] != null_handle)
             {
-                vkDestroyImageView(pNativeDevice, m_pImageViews[i], nullptr);
-                m_pImageViews[i] = null_handle;
+                vkDestroyImageView(pNativeDevice, pThis->m_pImageViews[i], nullptr);
+                pThis->m_pImageViews[i] = null_handle;
             }
         }
 
-        delete [] m_pImageViews;
-        m_pImageViews = nullptr;
+        delete [] pThis->m_pImageViews;
+        pThis->m_pImageViews = nullptr;
     }
 
-    if (m_pImages != nullptr)
+    if (pThis->m_pImages != nullptr)
     {
         // リソース側で解放するので, 存在しない場合のみ解放.
-        if (m_pBuffers == nullptr)
+        if (pThis->m_pBuffers == nullptr)
         {
-            for(auto i=0u; i<m_Desc.BufferCount; ++i)
+            for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
             {
-                if (m_pImages[i] != null_handle)
+                if (pThis->m_pImages[i] != null_handle)
                 {
-                    vkDestroyImage(pNativeDevice, m_pImages[i], nullptr);
-                    m_pImages[i] = null_handle;
+                    vkDestroyImage(pNativeDevice, pThis->m_pImages[i], nullptr);
+                    pThis->m_pImages[i] = null_handle;
                 }
             }
         }
 
-        delete [] m_pImages;
-        m_pImages = nullptr;
+        delete [] pThis->m_pImages;
+        pThis->m_pImages = nullptr;
     }
 
-    if (m_pBuffers != nullptr)
+    if (pThis->m_pBuffers != nullptr)
     {
-        for(auto i=0u; i<m_Desc.BufferCount; ++i)
-        { SafeRelease(m_pBuffers[i]); }
+        for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
+        { SafeRelease(pThis->m_pBuffers[i]); }
 
-        delete[] m_pBuffers;
-        m_pBuffers = nullptr;
+        delete[] pThis->m_pBuffers;
+        pThis->m_pBuffers = nullptr;
     }
 
-    if (m_SwapChain != null_handle)
+    if (pThis->m_SwapChain != null_handle)
     {
-        vkDestroySwapchainKHR(pNativeDevice, m_SwapChain, nullptr);
+        vkDestroySwapchainKHR(pNativeDevice, pThis->m_SwapChain, nullptr);
     }
 
     // 新しく生成したものに差し替え.
-    m_SwapChain = swapChain;
+    pThis->m_SwapChain = swapChain;
 
     // イメージを取得.
     {
         uint32_t chainCount;
-        auto ret = vkGetSwapchainImagesKHR(pNativeDevice, m_SwapChain, &chainCount, nullptr);
+        auto ret = vkGetSwapchainImagesKHR(pNativeDevice, pThis->m_SwapChain, &chainCount, nullptr);
         if ( ret != VK_SUCCESS )
         { return false; }
 
-        if ( chainCount != m_Desc.BufferCount )
+        if ( chainCount != pThis->m_Desc.BufferCount )
         { return false; }
 
-        m_pImages = new VkImage [chainCount];
-        if ( m_pImages == nullptr )
-        { return false; }
-
-        for(auto i=0u; i<chainCount; ++i)
-        {  m_pImages[i] = null_handle; }
-
-        m_pImageViews = new VkImageView [chainCount];
-        if ( m_pImageViews == nullptr )
+        pThis->m_pImages = new VkImage [chainCount];
+        if ( pThis->m_pImages == nullptr )
         { return false; }
 
         for(auto i=0u; i<chainCount; ++i)
-        {  m_pImageViews[i] = null_handle; }
+        { pThis->m_pImages[i] = null_handle; }
 
-        ret = vkGetSwapchainImagesKHR(pNativeDevice, m_SwapChain, &chainCount, m_pImages);
+        pThis->m_pImageViews = new VkImageView [chainCount];
+        if ( pThis->m_pImageViews == nullptr )
+        { return false; }
+
+        for(auto i=0u; i<chainCount; ++i)
+        { pThis->m_pImageViews[i] = null_handle; }
+
+        ret = vkGetSwapchainImagesKHR(pNativeDevice, pThis->m_SwapChain, &chainCount, pThis->m_pImages);
         if ( ret != VK_SUCCESS )
         { return false; }
     }
@@ -891,24 +908,24 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         VkImageSubresourceRange range = {};
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.layerCount = 1;
-        range.levelCount = m_Desc.MipLevels;
+        range.levelCount = pThis->m_Desc.MipLevels;
 
-        for(auto i=0u; i<m_Desc.BufferCount; ++i)
+        for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
         {
             VkImageViewCreateInfo viewInfo = {};
             viewInfo.sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.pNext            = nullptr;
             viewInfo.flags            = 0;
-            viewInfo.image            = m_pImages[i];
+            viewInfo.image            = pThis->m_pImages[i];
             viewInfo.viewType         = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format           = m_ImageFormat;
+            viewInfo.format           = pThis->m_ImageFormat;
             viewInfo.components.r     = VK_COMPONENT_SWIZZLE_R;
             viewInfo.components.g     = VK_COMPONENT_SWIZZLE_G;
             viewInfo.components.b     = VK_COMPONENT_SWIZZLE_B;
             viewInfo.components.a     = VK_COMPONENT_SWIZZLE_A;
             viewInfo.subresourceRange = range;
 
-            auto ret = vkCreateImageView(pNativeDevice, &viewInfo, nullptr, &m_pImageViews[i]);
+            auto ret = vkCreateImageView(pNativeDevice, &viewInfo, nullptr, &pThis->m_pImageViews[i]);
             if ( ret != VK_SUCCESS )
             { return false; }
         }
@@ -916,18 +933,18 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 
     // リソース初期化
     {
-        m_pBuffers = new Texture* [m_Desc.BufferCount];
-        if ( m_pBuffers == nullptr )
+        pThis->m_pBuffers = new Texture* [pThis->m_Desc.BufferCount];
+        if ( pThis->m_pBuffers == nullptr )
         { return false; }
 
-        for(auto i=0u; i<m_Desc.BufferCount; ++i)
+        for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
         {
             if (!Texture::Create(
-                m_pDevice,
-                &m_Desc,
-                m_pImages[i],
-                m_pImageViews[i],
-                reinterpret_cast<ITexture**>(&m_pBuffers[i])))
+                pThis->m_pDevice,
+                &pThis->m_Desc,
+                pThis->m_pImages[i],
+                pThis->m_pImageViews[i],
+                reinterpret_cast<ITexture**>(&pThis->m_pBuffers[i])))
             { return false; }
         }
     }
@@ -938,7 +955,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         CommandListDesc desc = {};
         desc.Type = COMMANDLIST_TYPE_DIRECT;
 
-        if (!m_pDevice->CreateCommandList(&desc, &pCmdList))
+        if (!pThis->m_pDevice->CreateCommandList(&desc, &pCmdList))
         { return false; }
 
         auto pWrapCmdList = static_cast<CommandList*>(pCmdList);
@@ -946,7 +963,7 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 
         auto cmdBuffer = pWrapCmdList->GetVkCommandBuffer();
 
-        for(auto i=0u; i<m_Desc.BufferCount; ++i)
+        for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
         { 
             VkImageMemoryBarrier barrier = {};
             barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -957,13 +974,13 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
             barrier.newLayout           = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             barrier.srcQueueFamilyIndex = 0;
             barrier.dstQueueFamilyIndex = 0;
-            barrier.image               = m_pBuffers[i]->GetVkImage();
+            barrier.image               = pThis->m_pBuffers[i]->GetVkImage();
 
             barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.baseMipLevel   = 0;
-            barrier.subresourceRange.layerCount     = m_pBuffers[i]->GetDesc().DepthOrArraySize;
-            barrier.subresourceRange.levelCount     = m_pBuffers[i]->GetDesc().MipLevels;
+            barrier.subresourceRange.layerCount     = pThis->m_pBuffers[i]->GetDesc().DepthOrArraySize;
+            barrier.subresourceRange.levelCount     = pThis->m_pBuffers[i]->GetDesc().MipLevels;
 
             vkCmdPipelineBarrier(
                 cmdBuffer,
@@ -978,16 +995,16 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
     }
 
     // バッファ番号をリセット.
-    m_CurrentBufferIndex = 0;
+    pThis->m_CurrentBufferIndex = 0;
 
     // 同期オブジェクトをリセット
-    m_pQueue->ResetSyncObject();
+    pThis->m_pQueue->ResetSyncObject();
 
     // バックバッファ取得.
     {
-        auto index      = m_pQueue->GetCurrentBufferIndex();
-        auto semaphore  = m_pQueue->GetVkWaitSemaphore(index);
-        auto fence      = m_pQueue->GetVkFence(index);
+        auto index      = pThis->m_pQueue->GetCurrentBufferIndex();
+        auto semaphore  = pThis->m_pQueue->GetVkWaitSemaphore(index);
+        auto fence      = pThis->m_pQueue->GetVkFence(index);
         A3D_ASSERT(semaphore != null_handle);
         A3D_ASSERT(fence != null_handle);
 
@@ -995,11 +1012,11 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 
         auto ret = vkAcquireNextImageKHR(
             pNativeDevice,
-            m_SwapChain,
+            pThis->m_SwapChain,
             Infinite,
             semaphore, 
             fence,
-            &m_CurrentBufferIndex);
+            &pThis->m_CurrentBufferIndex);
         if ( ret != VK_SUCCESS )
         { return false; }
 
@@ -1014,10 +1031,13 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 //-------------------------------------------------------------------------------------------------
 //      メタデータを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
+bool ISwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
 {
     #if defined(VK_EXT_hdr_metadata)
-        if (!m_pDevice->IsSupportExtension(Device::EXT_HDR_METADATA))
+        auto pThis = static_cast<SwapChain*>(this);
+        A3D_ASSERT(pThis != nullptr);
+
+        if (!pThis->m_pDevice->IsSupportExtension(Device::EXT_HDR_METADATA))
         { return false; }
 
         if (type == META_DATA_HDR10 && pData != nullptr)
@@ -1037,8 +1057,8 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
             meta.maxContentLightLevel       = pWrap->MaxContentLightLevel;
             meta.maxFrameAverageLightLevel  = pWrap->MaxFrameAverageLightLevel;
 
-            auto pDevice = m_pDevice->GetVkDevice();
-            vkSetHdrMetadata( pDevice, 1, &m_SwapChain, &meta );
+            auto pDevice = pThis->m_pDevice->GetVkDevice();
+            vkSetHdrMetadata( pDevice, 1, &pThis->m_SwapChain, &meta );
 
             return true;
         }
@@ -1055,20 +1075,23 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pData)
 //-------------------------------------------------------------------------------------------------
 //      色空間がサポートされているかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
+bool ISwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 {
-    if (m_pSurfaceFormats == nullptr || m_SurfaceFormatCount == 0)
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_pSurfaceFormats == nullptr || pThis->m_SurfaceFormatCount == 0)
     { return false; }
 
     bool isFind = false;
 
-    auto nativeFormat     = ToNativeFormat(m_Desc.Format);
+    auto nativeFormat     = ToNativeFormat(pThis->m_Desc.Format);
     auto nativeColorSpace = ToNativeColorSpace(type);
 
-    for(auto i=0u; i<m_SurfaceFormatCount; ++i)
+    for(auto i=0u; i<pThis->m_SurfaceFormatCount; ++i)
     {
-        if (nativeFormat     == m_pSurfaceFormats[i].format &&
-            nativeColorSpace == m_pSurfaceFormats[i].colorSpace)
+        if (nativeFormat     == pThis->m_pSurfaceFormats[i].format &&
+            nativeColorSpace == pThis->m_pSurfaceFormats[i].colorSpace)
         {
             isFind = true;
             break;
@@ -1081,7 +1104,7 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 //-------------------------------------------------------------------------------------------------
 //      色空間を設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
+bool ISwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
 {
     // Vulkanは対応するメソッドがないため非サポートです.
     return false;
@@ -1090,8 +1113,13 @@ bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
 //-------------------------------------------------------------------------------------------------
 //      フルスクリーンモードかどうかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::IsFullScreenMode() const
-{ return m_IsFullScreen; }
+bool ISwapChain::IsFullScreenMode() const
+{
+    auto pThis = static_cast<const SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_IsFullScreen;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.
@@ -1146,26 +1174,29 @@ bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 //-------------------------------------------------------------------------------------------------
 //      Windows向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     if (enable)
     {
         // ウィンドウサイズを保存しておく.
-        GetWindowRect(m_hWnd, &m_Rect);
+        GetWindowRect(pThis->m_hWnd, &pThis->m_Rect);
 
         // 余計なものを外す.
-        auto style =  m_WindowStyle & 
+        auto style =  pThis->m_WindowStyle & 
                         ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
 
         // ウィンドウのスタイルを変更.
-        SetWindowLong(m_hWnd, GWL_STYLE, style);
+        SetWindowLong(pThis->m_hWnd, GWL_STYLE, style);
 
         DEVMODE devMode = {};
         devMode.dmSize = sizeof(DEVMODE);
         EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &devMode);
 
         SetWindowPos(
-            m_hWnd,
+            pThis->m_hWnd,
             HWND_TOPMOST,
             devMode.dmPosition.x,
             devMode.dmPosition.y,
@@ -1174,26 +1205,26 @@ bool SwapChain::SetFullScreenMode(bool enable)
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
 
         // 最大化.
-        ShowWindow(m_hWnd, SW_MAXIMIZE);
+        ShowWindow(pThis->m_hWnd, SW_MAXIMIZE);
     }
     else
     {
         // ウィンドウスタイルを元に戻す.
-        SetWindowLong(m_hWnd, GWL_STYLE, m_WindowStyle);
+        SetWindowLong(pThis->m_hWnd, GWL_STYLE, pThis->m_WindowStyle);
 
         SetWindowPos(
-            m_hWnd,
+            pThis->m_hWnd,
             HWND_NOTOPMOST,
-            m_Rect.left,
-            m_Rect.top,
-            m_Rect.right - m_Rect.left,
-            m_Rect.bottom - m_Rect.top,
+            pThis->m_Rect.left,
+            pThis->m_Rect.top,
+            pThis->m_Rect.right - pThis->m_Rect.left,
+            pThis->m_Rect.bottom - pThis->m_Rect.top,
             SWP_FRAMECHANGED | SWP_NOACTIVATE);
 
-        ShowWindow(m_hWnd, SW_NORMAL);
+        ShowWindow(pThis->m_hWnd, SW_NORMAL);
     }
 
-    m_IsFullScreen = enable;
+    pThis->m_IsFullScreen = enable;
 
     return true;
 }
@@ -1225,8 +1256,11 @@ bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 //-------------------------------------------------------------------------------------------------
 //      Linux向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     xcb_intern_atom_cookie_t wm_state_ck    = getCookieForAtom("_NET_WM_STATE");
     xcb_intern_atom_cookie_t wm_state_fs_ck = getCookieForAtom("_NET_WM_STATE_FULLSCREEN");
 
@@ -1251,7 +1285,7 @@ bool SwapChain::SetFullScreenMode(bool enable)
         XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
         reinterpret_cast<const char*>(&ev));
 
-    m_IsFullScreen = enable;
+    pThis->m_IsFullScreen = enable;
 
     return false;
 }
@@ -1281,10 +1315,13 @@ bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 //-------------------------------------------------------------------------------------------------
 //      Android向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     /* DO_NOTHING */
-    m_IsFullScreen = enable;
+    pThis->m_IsFullScreen = enable;
     return true;
 }
 
@@ -1313,10 +1350,13 @@ bool SwapChain::InitSurface(VkSurfaceKHR* pSurface)
 //-------------------------------------------------------------------------------------------------
 //      NX 向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     /* DO_NOTHING */
-    m_IsFullScreen = enable;
+    pThis->m_IsFullScreen = enable;
     return true;
 }
 
@@ -1345,10 +1385,13 @@ bool SwapChain::InitSurface(VKSurfaceKHR* pSurface)
 //-------------------------------------------------------------------------------------------------
 //      iOS 向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     /* DO_NOTHING */
-    m_IsFullScreen = enable;
+    pThis->m_IsFullScreen = enable;
     return true;
 }
 
@@ -1377,11 +1420,14 @@ bool SwapChain::InitSurface(VKSurfaceKHR* pSurface)
 //-------------------------------------------------------------------------------------------------
 //      Mac OS 向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     /* TODO : Implementation */
 
-    m_IsFullScreen = enable;
+    pThis->m_IsFullScreen = enable;
     return false;
 }
 
@@ -1410,11 +1456,14 @@ bool SwapChain::InitSurface(VKSurfaceKHR* pSurface)
 //-------------------------------------------------------------------------------------------------
 //      Google Game Platform (GGP) 向けにフルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     /* TODO : Implementation */
 
-    m_IsFullScreen = enable;
+    pThis->m_IsFullScreen = enable;
     return false;
 }
 

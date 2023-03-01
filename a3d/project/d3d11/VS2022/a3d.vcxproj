@@ -92,11 +92,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\a3dDesc.cpp" />
+    <ClCompile Include="..\..\..\src\a3dFunc.cpp" />
     <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\core\a3dLogger.cpp" />
-    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dBuffer.cpp" />
-    <ClCompile Include="..\..\..\src\d3d11\a3dCommandSet.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dConstantBufferView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDepthStencilView.cpp" />
     <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.cpp" />
@@ -128,7 +128,6 @@
     <ClInclude Include="..\..\..\src\core\a3dSpinLock.h" />
     <ClInclude Include="..\..\..\src\core\a3dStdAllocator.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dBuffer.h" />
-    <ClInclude Include="..\..\..\src\d3d11\a3dCommandSet.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dConstantBufferView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDepthStencilView.h" />
     <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.h" />

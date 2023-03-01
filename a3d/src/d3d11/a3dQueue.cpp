@@ -38,8 +38,11 @@ Queue::Queue()
 , m_pDevice         (nullptr)
 , m_MaxSubmitCount  (0)
 , m_SubmitIndex     (0)
+, m_pCommandLists   (nullptr)
+, m_pQuery          (nullptr)
 , m_Frequency       (0)
 , m_pLayoutDesc     (nullptr)
+, m_pCB             (nullptr)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -83,6 +86,23 @@ bool Queue::Init(IDevice* pDevice, COMMANDLIST_TYPE type, uint32_t maxSubmitCoun
         if ( FAILED(hr) )
         {
             A3D_LOG("Error : ID3D11Device::CreateQuery() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+    }
+
+    {
+        D3D11_BUFFER_DESC desc = {};
+        desc.ByteWidth              = sizeof(DWORD) * 64;
+        desc.Usage                  = D3D11_USAGE_DEFAULT;
+        desc.BindFlags              = D3D11_BIND_CONSTANT_BUFFER;
+        desc.CPUAccessFlags         = 0;
+        desc.MiscFlags              = 0;
+        desc.StructureByteStride    = 0;
+
+        auto hr = pD3D11Device->CreateBuffer(&desc, nullptr, &m_pCB);
+        if (FAILED(hr))
+        {
+            A3D_LOG("Error : ID3D11Device::CreateBuffer() Failed. errcode = 0x%x", hr);
             return false;
         }
     }
@@ -136,6 +156,7 @@ void Queue::Term()
         m_pCommandLists = nullptr;
     }
 
+    SafeRelease(m_pCB);
     SafeRelease(m_pQuery);
     SafeRelease(m_pDevice);
 
@@ -185,101 +206,6 @@ void Queue::GetDevice(IDevice** ppDevice)
     *ppDevice = m_pDevice;
     if (m_pDevice != nullptr)
     { m_pDevice->AddRef();}
-}
-
-//-------------------------------------------------------------------------------------------------
-//      コマンドリストを登録します.
-//-------------------------------------------------------------------------------------------------
-bool Queue::Submit( ICommandList* pCommandList )
-{
-    A3D_UNUSED(pCommandList);
-    LockGuard locker(&m_Lock);
-
-    if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
-    { return false; }
-
-    m_pCommandLists[m_SubmitIndex] = static_cast<CommandList*>(pCommandList);
-    m_SubmitIndex++;
-
-    return true;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      登録したコマンドリストを実行します.
-//-------------------------------------------------------------------------------------------------
-void Queue::Execute( IFence* pFence )
-{
-    auto pD3D11DeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pD3D11DeviceContext != nullptr);
-
-    // Freuencyを取得.
-    D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data;
-    if (pD3D11DeviceContext->GetData(m_pQuery, &data, sizeof(data), 0) != S_FALSE)
-    { m_Frequency = data.Frequency; }
-
-#ifdef A3D_FOR_WINDOWS10
-    if (pFence != nullptr)
-    {
-        auto pWrapFence = static_cast<Fence*>(pFence);
-        A3D_ASSERT(pWrapFence != nullptr);
-
-        auto pD3D11Fence = pWrapFence->GetD3D11Fence();
-        auto fenceValue  = pWrapFence->GetFenceValue();
-        pD3D11DeviceContext->Signal(pD3D11Fence, fenceValue);
-        pWrapFence->AdvanceCount();
-    }
-    ParseCmd();
-    m_SubmitIndex = 0;
-#else
-    ID3D11Query* pFecneQuery = nullptr;
-    if (pFence != nullptr)
-    {
-        auto pWrapFence = static_cast<Fence*>(pFence);
-        A3D_ASSERT(pWrapFence != nullptr);
-        pFecneQuery = pWrapFence->GetD3D11Query();
-    }
-
-    pD3D11DeviceContext->Begin(m_pQuery);
-
-    ParseCmd();
-    m_SubmitIndex = 0;
-
-    pD3D11DeviceContext->End(m_pQuery);
-
-    if (pFecneQuery != nullptr)
-    { pD3D11DeviceContext->End(pFecneQuery); }
-#endif
-
-}
-
-//-------------------------------------------------------------------------------------------------
-//      コマンドの実行が完了するまで待機します.
-//-------------------------------------------------------------------------------------------------
-void Queue::WaitIdle()
-{
-    auto pD3D11DeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pD3D11DeviceContext != nullptr);
-
-#ifdef A3D_FOR_WINDOWS10
-    m_pFence->SetEventOnCompletion(1, m_Event);
-    pD3D11DeviceContext->Signal(m_pFence, 1);
-    WaitForSingleObject(m_Event, INFINITE);
-#else
-    while(pD3D11DeviceContext->GetData(m_pQuery, nullptr, 0, 0) == S_FALSE)
-    { /* DO_NOTHING */ }
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------
-//      画面に表示を行います.
-//-------------------------------------------------------------------------------------------------
-void Queue::Present( ISwapChain* pSwapChain )
-{
-    auto pWrapSwapChain = reinterpret_cast<SwapChain*>(pSwapChain);
-    if (pWrapSwapChain == nullptr)
-    { return; }
-
-    pWrapSwapChain->Present();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -541,6 +467,36 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_SET_CONSTANTS:
+                {
+                    auto cmd = reinterpret_cast<ImCmdSetConstants*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    auto size   = cmd->Count * 4;
+                    auto offset = cmd->Offset;
+
+                    pCmd += sizeof(ImCmdSetConstants);
+
+                    auto pSrc = reinterpret_cast<const void*>(pCmd);
+                    pCmd += size;
+
+                    pDeviceContext->UpdateSubresource(
+                        m_pCB, offset, nullptr, pSrc, size, 1);
+
+                    auto slot = m_pLayoutDesc->Constant.ShaderRegister;
+
+                    switch (m_pLayoutDesc->Constant.ShaderStage)
+                    {
+                    case SHADER_STAGE_VS: { pDeviceContext->VSSetConstantBuffers(slot, 1, &m_pCB); } break;
+                    case SHADER_STAGE_DS: { pDeviceContext->DSSetConstantBuffers(slot, 1, &m_pCB); } break;
+                    case SHADER_STAGE_HS: { pDeviceContext->HSSetConstantBuffers(slot, 1, &m_pCB); } break;
+                    case SHADER_STAGE_PS: { pDeviceContext->PSSetConstantBuffers(slot, 1, &m_pCB); } break;
+                    case SHADER_STAGE_CS: { pDeviceContext->CSSetConstantBuffers(slot, 1, &m_pCB); } break;
+                    default: { /* 対応するコマンドありません. */ } break;
+                    }
+                }
+                break;
+
             case CMD_SET_CBV:
                 {
                     auto cmd = reinterpret_cast<ImCmdSetCBV*>(pCmd);
@@ -636,6 +592,24 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_DRAW_INSTANCED_INDIRECT:
+                {
+                    UpdateDescriptor(pDeviceContext);
+
+                    auto cmd = reinterpret_cast<ImCmdDrawInstancedIndirect*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    auto pWrapArgumentBuffer = static_cast<Buffer*>(cmd->pArgumentBuffer);
+                    A3D_ASSERT(pWrapArgumentBuffer != nullptr);
+
+                    pDeviceContext->DrawInstancedIndirect(
+                        pWrapArgumentBuffer->GetD3D11Buffer(),
+                        UINT(cmd->argumentBufferOffset));
+
+                    pCmd += sizeof(ImCmdDrawInstancedIndirect);
+                }
+                break;
+
             case CMD_DRAW_INDEXED_INSTANCED:
                 {
                     UpdateDescriptor(pDeviceContext);
@@ -651,6 +625,26 @@ void Queue::ParseCmd()
                         cmd->FirstInstance);
 
                     pCmd += sizeof(ImCmdDrawIndexedInstanced);
+                }
+                break;
+
+            case CMD_DRAW_INDEXED_INSTANCED_INDIRECT:
+                {
+                    UpdateDescriptor(pDeviceContext);
+
+                    auto cmd = reinterpret_cast<ImCmdDrawIndexedInstancedIndirect*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    auto pWrapArgumentBuffer = static_cast<Buffer*>(cmd->pArgumentBuffer);
+                    A3D_ASSERT(pWrapArgumentBuffer != nullptr);
+
+                    // agsDriverExtensionsDX11_MultiDrawIndexedIndirectCountIndirect().
+                    // NvAPI_D3D11_MultiDrawIndexedInstancedIndirect
+                    pDeviceContext->DrawIndexedInstancedIndirect(
+                        pWrapArgumentBuffer->GetD3D11Buffer(),
+                        UINT(cmd->argumentBufferOffset));
+
+                    pCmd += sizeof(ImCmdDrawIndexedInstancedIndirect);
                 }
                 break;
 
@@ -672,6 +666,24 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_DISPATCH_COMPUTE_INDIRECT:
+                {
+                    UpdateDescriptor(pDeviceContext);
+
+                    auto cmd = reinterpret_cast<ImCmdDispatchComputeIndirect*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    auto pWrapArgumentBuffer = static_cast<Buffer*>(cmd->pArgumentBuffer);
+                    A3D_ASSERT(pWrapArgumentBuffer != nullptr);
+
+                    pDeviceContext->DispatchIndirect(
+                        pWrapArgumentBuffer->GetD3D11Buffer(),
+                        UINT(cmd->argumentBufferOffset));
+
+                    pCmd += sizeof(ImCmdDispatchComputeIndirect);
+                }
+                break;
+
 
             case CMD_DISPATCH_MESH:
                 {
@@ -685,6 +697,18 @@ void Queue::ParseCmd()
                 }
                 break;
 
+            case CMD_DISPATCH_MESH_INDIRECT:
+                {
+                    auto cmd = reinterpret_cast<ImCmdDispatchMeshIndirect*>(pCmd);
+                    A3D_ASSERT(cmd != nullptr);
+
+                    /* 対応するコマンドはありません. */
+                    A3D_UNUSED(cmd);
+
+                    pCmd += sizeof(ImCmdDispatchMeshIndirect);
+                }
+                break;
+
             case CMD_TRACE_RAYS:
                 {
                     auto cmd = reinterpret_cast<ImCmdTraceRays*>(pCmd);
@@ -694,64 +718,6 @@ void Queue::ParseCmd()
                     A3D_UNUSED(cmd);
 
                     pCmd += sizeof(ImCmdTraceRays);
-                }
-                break;
-
-            case CMD_EXECUTE_INDIRECT:
-                {
-                    UpdateDescriptor(pDeviceContext);
-
-                    auto cmd = reinterpret_cast<ImCmdExecuteIndirect*>(pCmd);
-                    A3D_ASSERT(cmd != nullptr);
-
-                    auto pWrapCommandSet = static_cast<CommandSet*>(cmd->pCommandSet);
-                    A3D_ASSERT(pWrapCommandSet != nullptr);
-
-                    auto desc = pWrapCommandSet->GetDesc();
-
-                    auto pWrapArgumentBuffer = static_cast<Buffer*>(cmd->pArgumentBuffer);
-                    A3D_ASSERT(pWrapArgumentBuffer != nullptr);
-
-                    auto pNativeArgumentBuffer = pWrapArgumentBuffer->GetD3D11Buffer();
-                    A3D_ASSERT(pNativeArgumentBuffer != nullptr);
-
-                    uint32_t* pCounters = nullptr;
-                    if (cmd->pCounterBuffer != nullptr)
-                    { pCounters = static_cast<uint32_t*>(cmd->pCounterBuffer->Map()); }
-
-                    auto offset = static_cast<uint32_t>(cmd->ArgumentBufferOffset);
-                    for(auto i=0u; i<desc.ArgumentCount; ++i)
-                    {
-                        auto count = cmd->MaxCommandCount;
-                        if (pCounters != nullptr)
-                        { count = (pCounters[i] < cmd->MaxCommandCount ) ? pCounters[i] : cmd->MaxCommandCount; }
-
-                        switch(desc.pArguments[i])
-                        {
-                        case INDIRECT_ARGUMENT_TYPE_DRAW:
-                            { pDeviceContext->DrawInstancedIndirect(pNativeArgumentBuffer, offset); }
-                            break;
-
-                        case INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED:
-                            { pDeviceContext->DrawIndexedInstancedIndirect(pNativeArgumentBuffer, offset); }
-                            break;
-
-                        case INDIRECT_ARGUMENT_TYPE_DISPATCH_COMPUTE:
-                            {
-                                pDeviceContext->DispatchIndirect(pNativeArgumentBuffer, offset);
-                                m_DirtyView |= DIRTY_COMPUTE;
-                            }
-                            break;
-
-                        case INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH:
-                            { A3D_ASSERT(false); }
-                            break;
-                        }
-
-                        offset += desc.ByteStride;
-                    }
-
-                    pCmd += sizeof(ImCmdExecuteIndirect);
                 }
                 break;
 
@@ -1144,6 +1110,9 @@ void Queue::UpdateDescriptor(ID3D11DeviceContext2* pContext)
     { return; }
 
     auto count = m_pLayoutDesc->EntryCount;
+    if (m_pLayoutDesc->Constant.Counts > 0) {
+        count++;
+    }
 
     for(auto i=0u; i<count; ++i)
     {
@@ -1447,6 +1416,109 @@ void Queue::ResetDescriptor(ID3D11DeviceContext2* pContext)
         else if (entry.ShaderStage == SHADER_STAGE_MS)
         { /* DO_NOTHING */ }
     }
+}
+
+//-------------------------------------------------------------------------------------------------
+//      コマンドリストを登録します.
+//-------------------------------------------------------------------------------------------------
+bool IQueue::Submit( ICommandList* pCommandList )
+{
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    LockGuard locker(&pThis->m_Lock);
+
+    if (pThis->m_SubmitIndex + 1 >= pThis->m_MaxSubmitCount)
+    { return false; }
+
+    pThis->m_pCommandLists[pThis->m_SubmitIndex] = static_cast<CommandList*>(pCommandList);
+    pThis->m_SubmitIndex++;
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      登録したコマンドリストを実行します.
+//-------------------------------------------------------------------------------------------------
+void IQueue::Execute( IFence* pFence )
+{
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pD3D11DeviceContext = pThis->m_pDevice->GetD3D11DeviceContext();
+    A3D_ASSERT(pD3D11DeviceContext != nullptr);
+
+    // Freuencyを取得.
+    D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data;
+    if (pD3D11DeviceContext->GetData(pThis->m_pQuery, &data, sizeof(data), 0) != S_FALSE)
+    { pThis->m_Frequency = data.Frequency; }
+
+#ifdef A3D_FOR_WINDOWS10
+    if (pFence != nullptr)
+    {
+        auto pWrapFence = static_cast<Fence*>(pFence);
+        A3D_ASSERT(pWrapFence != nullptr);
+
+        auto pD3D11Fence = pWrapFence->GetD3D11Fence();
+        auto fenceValue  = pWrapFence->GetFenceValue();
+        pD3D11DeviceContext->Signal(pD3D11Fence, fenceValue);
+        pWrapFence->AdvanceCount();
+    }
+    pThis->ParseCmd();
+    pThis->m_SubmitIndex = 0;
+#else
+    ID3D11Query* pFecneQuery = nullptr;
+    if (pFence != nullptr)
+    {
+        auto pWrapFence = static_cast<Fence*>(pFence);
+        A3D_ASSERT(pWrapFence != nullptr);
+        pFecneQuery = pWrapFence->GetD3D11Query();
+    }
+
+    pD3D11DeviceContext->Begin(pThis->m_pQuery);
+
+    pThis->ParseCmd();
+    pThis->m_SubmitIndex = 0;
+
+    pD3D11DeviceContext->End(pThis->m_pQuery);
+
+    if (pFecneQuery != nullptr)
+    { pD3D11DeviceContext->End(pFecneQuery); }
+#endif
+
+}
+
+//-------------------------------------------------------------------------------------------------
+//      コマンドの実行が完了するまで待機します.
+//-------------------------------------------------------------------------------------------------
+void IQueue::WaitIdle()
+{
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pD3D11DeviceContext = pThis->m_pDevice->GetD3D11DeviceContext();
+    A3D_ASSERT(pD3D11DeviceContext != nullptr);
+
+#ifdef A3D_FOR_WINDOWS10
+    pThis->m_pFence->SetEventOnCompletion(1, pThis->m_Event);
+    pD3D11DeviceContext->Signal(pThis->m_pFence, 1);
+    WaitForSingleObject(pThis->m_Event, INFINITE);
+#else
+    while(pD3D11DeviceContext->GetData(pThis->m_pQuery, nullptr, 0, 0) == S_FALSE)
+    { /* DO_NOTHING */ }
+#endif
+}
+
+//-------------------------------------------------------------------------------------------------
+//      画面に表示を行います.
+//-------------------------------------------------------------------------------------------------
+void IQueue::Present( ISwapChain* pSwapChain )
+{
+    auto pWrapSwapChain = reinterpret_cast<SwapChain*>(pSwapChain);
+    if (pWrapSwapChain == nullptr)
+    { return; }
+
+    pWrapSwapChain->Present();
 }
 
 //-------------------------------------------------------------------------------------------------

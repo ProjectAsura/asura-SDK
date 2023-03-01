@@ -167,17 +167,37 @@ void Texture::GetDevice(IDevice** ppDevice)
 //-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
 //-------------------------------------------------------------------------------------------------
-TextureDesc Texture::GetDesc() const
-{ return m_Desc; }
+TextureDesc ITexture::GetDesc() const
+{
+    auto pThis = static_cast<const Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      リソースを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12Resource* Texture::GetD3D12Resource() const
+{ return m_pResource; }
+
+//-------------------------------------------------------------------------------------------------
+//      リソースタイプを取得します.
+//-------------------------------------------------------------------------------------------------
+RESOURCE_KIND Texture::GetKind() const
+{ return RESOURCE_KIND_TEXTURE; }
 
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
 //-------------------------------------------------------------------------------------------------
-void* Texture::Map()
-{ 
+void* ITexture::Map()
+{
+    auto pThis = static_cast<Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     void* ptr = nullptr;
     
-    auto hr = m_pResource->Map(0, nullptr, &ptr);
+    auto hr = pThis->m_pResource->Map(0, nullptr, &ptr);
     if ( FAILED(hr) )
     { return nullptr; }
 
@@ -187,18 +207,26 @@ void* Texture::Map()
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングを解除します.
 //-------------------------------------------------------------------------------------------------
-void Texture::Unmap()
-{ m_pResource->Unmap(0, nullptr); }
+void ITexture::Unmap()
+{
+    auto pThis = static_cast<Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pResource->Unmap(0, nullptr);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      サブリソースレイアウトを取得します.
 //-------------------------------------------------------------------------------------------------
-SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
+SubresourceLayout ITexture::GetSubresourceLayout(uint32_t subresource) const
 {
-    auto pNativeDevice = m_pDevice->GetD3D12Device();
+    auto pThis = static_cast<const Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetD3D12Device();
     A3D_ASSERT(pNativeDevice != nullptr);
 
-    auto nativeDesc = m_pResource->GetDesc();
+    auto nativeDesc = pThis->m_pResource->GetDesc();
 
     uint32_t rowCount = 0;
     uint64_t rowPitch = 0;
@@ -223,18 +251,6 @@ SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
     result.Size         = size;
     return result;
 }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースを取得します.
-//-------------------------------------------------------------------------------------------------
-ID3D12Resource* Texture::GetD3D12Resource() const
-{ return m_pResource; }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースタイプを取得します.
-//-------------------------------------------------------------------------------------------------
-RESOURCE_KIND Texture::GetKind() const
-{ return RESOURCE_KIND_TEXTURE; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

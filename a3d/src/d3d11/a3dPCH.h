@@ -42,7 +42,6 @@ using ID3D11DeviceContextA3D    = ID3D11DeviceContext2;
 #include "a3dUtil.h"
 #include "a3dDevice.h"
 #include "a3dFence.h"
-#include "a3dCommandSet.h"
 #include "a3dQueue.h"
 #include "a3dSwapChain.h"
 #include "a3dBuffer.h"

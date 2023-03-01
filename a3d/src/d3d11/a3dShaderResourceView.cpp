@@ -252,22 +252,32 @@ void ShaderResourceView::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-ShaderResourceViewDesc ShaderResourceView::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      シェーダリソースビューを取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D11ShaderResourceView* ShaderResourceView::GetD3D11ShaderResourceView() const
 { return m_pSRV; }
 
 //-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+ShaderResourceViewDesc IShaderResourceView::GetDesc() const
+{
+    auto pThis = static_cast<const ShaderResourceView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      リソースを取得します.
 //-------------------------------------------------------------------------------------------------
-IResource* ShaderResourceView::GetResource() const
-{ return m_pResource; }
+IResource* IShaderResourceView::GetResource() const
+{
+    auto pThis = static_cast<const ShaderResourceView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_pResource;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

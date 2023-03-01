@@ -92,13 +92,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\a3dDesc.cpp" />
+    <ClCompile Include="..\..\..\src\a3dFunc.cpp" />
     <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\core\a3dLogger.cpp" />
-    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dAccelerationStructure.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dCommandList.cpp" />
-    <ClCompile Include="..\..\..\src\vulkan\a3dCommandSet.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dConstantBufferView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dDepthStencilView.cpp" />
     <ClCompile Include="..\..\..\src\vulkan\a3dDescriptorSetLayout.cpp" />
@@ -132,7 +132,6 @@
     <ClInclude Include="..\..\..\src\vulkan\a3dAccelerationStructure.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dCommandList.h" />
-    <ClInclude Include="..\..\..\src\vulkan\a3dCommandSet.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dConstantBufferView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dDepthStencilView.h" />
     <ClInclude Include="..\..\..\src\vulkan\a3dDescriptorSetLayout.h" />

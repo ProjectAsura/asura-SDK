@@ -16,7 +16,10 @@ namespace {
 //      交差領域を計算します.
 //-------------------------------------------------------------------------------------------------
 inline int ComputeIntersectionArea(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2)
-{ return a3d::Max(0, a3d::Min(ax2, bx2) - a3d::Max(ax1, bx1)) * a3d::Max(0, a3d::Min(ay2, by2) - a3d::Max(ay1, by1)); }
+{
+    return a3d::Max(0, a3d::Min(ax2, bx2) - a3d::Max(ax1, bx1))
+         * a3d::Max(0, a3d::Min(ay2, by2) - a3d::Max(ay1, by1));
+}
 
 //-------------------------------------------------------------------------------------------------
 //      メモリ確保のラッパー関数です.
@@ -241,6 +244,78 @@ bool Device::Init(const DeviceDesc* pDesc)
         m_Info.RayTracingShaderTableAlignment   = D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT;
     }
 
+    // DrawInstanced用コマンドシグニチャ.
+    {
+        D3D12_INDIRECT_ARGUMENT_DESC argDesc = {};
+        argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+
+        D3D12_COMMAND_SIGNATURE_DESC desc = {};
+        desc.ByteStride         = sizeof(DrawArguments);
+        desc.NumArgumentDescs   = 1;
+        desc.pArgumentDescs     = &argDesc;
+
+        auto hr = m_pDevice->CreateCommandSignature(&desc, nullptr, IID_PPV_ARGS(&m_CmdSignature[INDIRECT_TYPE_DRAW]));
+        if (FAILED(hr))
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandSignature() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+    }
+
+    // DrawIndexedInstanced用コマンドシグニチャ.
+    {
+        D3D12_INDIRECT_ARGUMENT_DESC argDesc = {};
+        argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+
+        D3D12_COMMAND_SIGNATURE_DESC desc = {};
+        desc.ByteStride         = sizeof(DrawIndexedArguments);
+        desc.NumArgumentDescs   = 1;
+        desc.pArgumentDescs     = &argDesc;
+
+        auto hr = m_pDevice->CreateCommandSignature(&desc, nullptr, IID_PPV_ARGS(&m_CmdSignature[INDIRECT_TYPE_DRAW_INDEXED]));
+        if (FAILED(hr))
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandSignature() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+    }
+
+    // DispatchCompute用コマンドシグニチャ.
+    {
+        D3D12_INDIRECT_ARGUMENT_DESC argDesc = {};
+        argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
+
+        D3D12_COMMAND_SIGNATURE_DESC desc = {};
+        desc.ByteStride         = sizeof(DispatchArguments);
+        desc.NumArgumentDescs   = 1;
+        desc.pArgumentDescs     = &argDesc;
+
+        auto hr = m_pDevice->CreateCommandSignature(&desc, nullptr, IID_PPV_ARGS(&m_CmdSignature[INDIRECT_TYPE_DISPATCH_COMPUTE]));
+        if (FAILED(hr))
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandSignature() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+    }
+
+    // DispatchMesh用コマンドシグニチャ.
+    {
+        D3D12_INDIRECT_ARGUMENT_DESC argDesc = {};
+        argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH;
+
+        D3D12_COMMAND_SIGNATURE_DESC desc = {};
+        desc.ByteStride         = sizeof(DispatchArguments);
+        desc.NumArgumentDescs   = 1;
+        desc.pArgumentDescs     = &argDesc;
+
+        auto hr = m_pDevice->CreateCommandSignature(&desc, nullptr, IID_PPV_ARGS(&m_CmdSignature[INDIRECT_TYPE_DISPATCH_MESH]));
+        if (FAILED(hr))
+        {
+            A3D_LOG("Error : ID3D12Device::CreateCommandSignature() Failed. errcode = 0x%x", hr);
+            return false;
+        }
+    }
+
     // タイムスタンプ周波数取得.
     {
         auto hr = m_pGraphicsQueue->GetD3D12Queue()->GetTimestampFrequency(&m_TimeStampFrequency);
@@ -423,6 +498,9 @@ void Device::Term()
 {
     for(auto i=0; i<4; ++i)
     { m_DescriptorHeap[i].Term(); }
+
+    for(auto i=0; i<MAX_INDIRECT_TYPE_COUNT; ++i)
+    { SafeRelease(m_CmdSignature[i]); }
 
     SafeRelease(m_pGraphicsQueue);
     SafeRelease(m_pComputeQueue);
@@ -647,12 +725,6 @@ bool Device::CreateQueryPool(const QueryPoolDesc* pDesc, IQueryPool** ppQueryPoo
 { return QueryPool::Create(this, pDesc, ppQueryPool); }
 
 //-------------------------------------------------------------------------------------------------
-//      コマンドセットを生成します.
-//-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandSet(const CommandSetDesc* pDesc, ICommandSet** ppCommandSet)
-{ return CommandSet::Create(this, pDesc, ppCommandSet); }
-
-//-------------------------------------------------------------------------------------------------
 //      フェンスを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateFence(IFence** ppFence)
@@ -788,6 +860,12 @@ bool Device::CheckDisplayHDRSupport(RECT region)
 //-------------------------------------------------------------------------------------------------
 D3D12MA::Allocator* Device::GetAllocator() const
 { return m_pAllocator; }
+
+//-------------------------------------------------------------------------------------------------
+//      コマンドシグニチャを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12CommandSignature* Device::GetCommandSignature(INDIRECT_TYPE type) const
+{ return m_CmdSignature[type]; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

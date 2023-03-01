@@ -63,6 +63,7 @@ DescriptorSetLayout::DescriptorSetLayout()
 , m_BufferCount         (0)
 , m_SamplerCount        (0)
 , m_DescriptorSet       (null_handle)
+, m_PushConstantFlags   (VK_SHADER_STAGE_ALL)
 { /* DO_NOTHING */ }
 
 //-------------------------------------------------------------------------------------------------
@@ -169,6 +170,16 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         }
     }
 
+    VkPushConstantRange constantRange = {};
+    if (pDesc->Constant.Counts > 0)
+    {
+        m_PushConstantFlags = ToNativeShaderFlags(pDesc->Constant.ShaderStage);
+
+        constantRange.offset     = 0;
+        constantRange.size       = pDesc->Constant.Counts * 4;
+        constantRange.stageFlags = m_PushConstantFlags;
+    }
+
     {
         VkPipelineLayoutCreateInfo info = {};
         info.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -176,8 +187,8 @@ bool DescriptorSetLayout::Init(IDevice* pDevice, const DescriptorSetLayoutDesc* 
         info.flags                  = 0;
         info.setLayoutCount         = 1;
         info.pSetLayouts            = &m_DescriptorSetLayout;
-        info.pushConstantRangeCount = 0;
-        info.pPushConstantRanges    = nullptr;
+        info.pushConstantRangeCount = (pDesc->Constant.Counts > 0) ? 1 : 0;
+        info.pPushConstantRanges    = (pDesc->Constant.Counts > 0) ? &constantRange : nullptr;
 
         auto ret = vkCreatePipelineLayout( pNativeDevice, &info, nullptr, &m_PipelineLayout );
         if ( ret != VK_SUCCESS )
@@ -367,6 +378,12 @@ uint32_t DescriptorSetLayout::GetSamplerCount() const
 //-------------------------------------------------------------------------------------------------
 VkDescriptorSet DescriptorSetLayout::GetVkDescriptorSet() const
 { return m_DescriptorSet; }
+
+//-------------------------------------------------------------------------------------------------
+//      プッシュ定数シェーダステージフラグを取得します.
+//-------------------------------------------------------------------------------------------------
+VkShaderStageFlags DescriptorSetLayout::GetPushConstantFlags() const
+{ return m_PushConstantFlags; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

@@ -13,6 +13,15 @@ namespace a3d {
 //-------------------------------------------------------------------------------------------------
 class Queue;
 
+enum INDIRECT_TYPE
+{
+    INDIRECT_TYPE_DRAW,
+    INDIRECT_TYPE_DRAW_INDEXED,
+    INDIRECT_TYPE_DISPATCH_COMPUTE,
+    INDIRECT_TYPE_DISPATCH_MESH,
+    MAX_INDIRECT_TYPE_COUNT,
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Device class
@@ -323,18 +332,6 @@ public:
         IQueryPool**            ppQueryPool) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      コマンドセットを生成します.
-    //!
-    //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppCommandSet    コマンドセットの格納先です.
-    //! @retval true    生成に成功.
-    //! @retval false   生成に失敗.
-    //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateCommandSet(
-        const CommandSetDesc* pDesc,
-        ICommandSet**         ppCommandSet) override;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      フェンスを生成します.
     //!
     //! @param[out]     ppFence         フェンスの格納先です.
@@ -420,6 +417,14 @@ public:
     //---------------------------------------------------------------------------------------------
     D3D12MA::Allocator* GetAllocator() const;
 
+    //---------------------------------------------------------------------------------------------
+    //! @brief      コマンドシグニチャを取得します.
+    //! 
+    //! @param[in]      type        間接コマンドタイプ.
+    //! @return     コマンドシグニチャを返却します.
+    //---------------------------------------------------------------------------------------------
+    ID3D12CommandSignature* GetCommandSignature(INDIRECT_TYPE type) const;
+
 private:
     //=============================================================================================
     // private variables.
@@ -439,6 +444,7 @@ private:
     uint64_t                m_TimeStampFrequency;   //!< GPUタイムスタンプの更新頻度(Hz単位).
     D3D12MA::Allocator*     m_pAllocator;           //!< アロケータです.
     ObjectName              m_Name;                 //!< デバッグ名です.
+    ID3D12CommandSignature* m_CmdSignature[MAX_INDIRECT_TYPE_COUNT];    //!< コマンドシグニチャです.
 
     //=============================================================================================
     // private methods.

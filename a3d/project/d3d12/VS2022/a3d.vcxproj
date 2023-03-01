@@ -93,13 +93,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\external\D3D12MemoryAllocator\D3D12MemAlloc.cpp" />
+    <ClCompile Include="..\..\..\src\a3dDesc.cpp" />
+    <ClCompile Include="..\..\..\src\a3dFunc.cpp" />
     <ClCompile Include="..\..\..\src\core\a3dBaseAllocator.cpp" />
     <ClCompile Include="..\..\..\src\core\a3dLogger.cpp" />
-    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dAccelerationStructure.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dBuffer.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dCommandList.cpp" />
-    <ClCompile Include="..\..\..\src\d3d12\a3dCommandSet.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dConstantBufferView.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dDepthStencilView.cpp" />
     <ClCompile Include="..\..\..\src\d3d12\a3dDescriptor.cpp" />
@@ -135,7 +135,6 @@
     <ClInclude Include="..\..\..\src\d3d12\a3dAccelerationStructure.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dBuffer.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dCommandList.h" />
-    <ClInclude Include="..\..\..\src\d3d12\a3dCommandSet.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dConstantBufferView.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dDepthStencilView.h" />
     <ClInclude Include="..\..\..\src\d3d12\a3dDescriptor.h" />

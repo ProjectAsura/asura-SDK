@@ -105,12 +105,6 @@ void ConstantBufferView::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-ConstantBufferViewDesc ConstantBufferView::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
 VkBuffer ConstantBufferView::GetVkBuffer() const
@@ -122,10 +116,26 @@ VkBuffer ConstantBufferView::GetVkBuffer() const
 }
 
 //-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+ConstantBufferViewDesc IConstantBufferView::GetDesc() const
+{
+    auto pThis = static_cast<const ConstantBufferView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      リソースを取得します.
 //-------------------------------------------------------------------------------------------------
-IBuffer* ConstantBufferView::GetResource() const
-{ return m_pBuffer; }
+IBuffer* IConstantBufferView::GetResource() const
+{
+    auto pThis = static_cast<const ConstantBufferView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_pBuffer;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

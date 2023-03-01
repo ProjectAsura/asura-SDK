@@ -152,55 +152,6 @@ void Fence::GetDevice(IDevice** ppDevice)
     { m_pDevice->AddRef(); }
 }
 
-//-------------------------------------------------------------------------------------------------
-//      シグナル状態かどうかチェックします.
-//-------------------------------------------------------------------------------------------------
-bool Fence::IsSignaled() const
-{
-    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pDeviceContext != nullptr);
-
-#ifdef A3D_FOR_WINDOWS10
-    return m_pFence->GetCompletedValue() >= m_PreviousValue;
-#else
-    return pDeviceContext->GetData(m_pQuery, nullptr, 0, 0) != S_FALSE;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------
-//      完了を待機します.
-//-------------------------------------------------------------------------------------------------
-bool Fence::Wait(uint32_t timeoutMsec)
-{
-    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pDeviceContext != nullptr);
-
-#ifdef A3D_FOR_WINDOWS10
-    if ( m_pFence->GetCompletedValue() < m_PreviousValue )
-    {
-        auto hr = m_pFence->SetEventOnCompletion( m_PreviousValue, m_Event );
-        if (FAILED(hr))
-        { return false; }
-
-        if (WAIT_OBJECT_0 != WaitForSingleObjectEx( m_Event, timeoutMsec, FALSE ))
-        { return false; }
-    }
-#else
-    auto time = std::chrono::system_clock::now();
-    while(pDeviceContext->GetData(m_pQuery, nullptr, 0, 0) == S_FALSE)
-    {
-        auto cur = std::chrono::system_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(cur - time).count();
-        if (elapsed >= timeoutMsec)
-        { return false; }
-
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
-    }
-#endif
-
-    return true;
-}
-
 #ifdef A3D_FOR_WINDOWS10
 //-------------------------------------------------------------------------------------------------
 //      フェンスを取得します.
@@ -235,6 +186,61 @@ void Fence::AdvanceCount()
 ID3D11Query* Fence::GetD3D11Query() const
 { return m_pQuery; }
 #endif
+
+//-------------------------------------------------------------------------------------------------
+//      シグナル状態かどうかチェックします.
+//-------------------------------------------------------------------------------------------------
+bool IFence::IsSignaled() const
+{
+    auto pThis = static_cast<const Fence*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pDeviceContext = pThis->m_pDevice->GetD3D11DeviceContext();
+    A3D_ASSERT(pDeviceContext != nullptr);
+
+#ifdef A3D_FOR_WINDOWS10
+    return pThis->m_pFence->GetCompletedValue() >= pThis->m_PreviousValue;
+#else
+    return pDeviceContext->GetData(pThis->m_pQuery, nullptr, 0, 0) != S_FALSE;
+#endif
+}
+
+//-------------------------------------------------------------------------------------------------
+//      完了を待機します.
+//-------------------------------------------------------------------------------------------------
+bool IFence::Wait(uint32_t timeoutMsec)
+{
+    auto pThis = static_cast<const Fence*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pDeviceContext = pThis->m_pDevice->GetD3D11DeviceContext();
+    A3D_ASSERT(pDeviceContext != nullptr);
+
+#ifdef A3D_FOR_WINDOWS10
+    if ( pThis->m_pFence->GetCompletedValue() < pThis->m_PreviousValue )
+    {
+        auto hr = pThis->m_pFence->SetEventOnCompletion( pThis->m_PreviousValue, pThis->m_Event );
+        if (FAILED(hr))
+        { return false; }
+
+        if (WAIT_OBJECT_0 != WaitForSingleObjectEx( pThis->m_Event, timeoutMsec, FALSE ))
+        { return false; }
+    }
+#else
+    auto time = std::chrono::system_clock::now();
+    while(pDeviceContext->GetData(pThis->m_pQuery, nullptr, 0, 0) == S_FALSE)
+    {
+        auto cur = std::chrono::system_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(cur - time).count();
+        if (elapsed >= timeoutMsec)
+        { return false; }
+
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    }
+#endif
+
+    return true;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

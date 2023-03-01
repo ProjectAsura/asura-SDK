@@ -238,12 +238,6 @@ void SwapChain::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-SwapChainDesc SwapChain::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      画面に表示します.
 //-------------------------------------------------------------------------------------------------
 void SwapChain::Present()
@@ -253,27 +247,60 @@ void SwapChain::Present()
 }
 
 //-------------------------------------------------------------------------------------------------
+//      スワップチェインを取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGISwapChain* SwapChain::GetDXGISwapChain() const
+{ return m_pSwapChain; }
+
+#if defined(A3D_FOR_WINDOWS10)
+//-------------------------------------------------------------------------------------------------
+//      スワップチェイン4を取得します.
+//-------------------------------------------------------------------------------------------------
+IDXGISwapChain4* SwapChain::GetDXGISwapChain4() const
+{ return m_pSwapChain4; }
+#endif // defined(A3D_FOR_WINDOWS10)
+
+//-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+SwapChainDesc ISwapChain::GetDesc() const
+{
+    auto pThis = static_cast<const SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      現在のバッファ番号を取得します.
 //-------------------------------------------------------------------------------------------------
-uint32_t SwapChain::GetCurrentBufferIndex()
-{ return m_BufferIndex; }
+uint32_t ISwapChain::GetCurrentBufferIndex()
+{
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_BufferIndex;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      指定バッファを取得します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
+bool ISwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 {
-    if (m_pSwapChain == nullptr || m_pBuffers == nullptr)
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_pSwapChain == nullptr || pThis->m_pBuffers == nullptr)
     { return false; }
 
-    if (index >= m_Desc.BufferCount )
+    if (index >= pThis->m_Desc.BufferCount )
     { return false; }
 
-    if (m_pBuffers[index] == nullptr)
+    if (pThis->m_pBuffers[index] == nullptr)
     { return false; }
 
-    *ppResource = m_pBuffers[index];
-    m_pBuffers[index]->AddRef();
+    *ppResource = pThis->m_pBuffers[index];
+    pThis->m_pBuffers[index]->AddRef();
 
     return true;
 }
@@ -281,14 +308,17 @@ bool SwapChain::GetBuffer(uint32_t index, ITexture** ppResource)
 //-------------------------------------------------------------------------------------------------
 //      バッファをリサイズします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
+bool ISwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 {
-    if (m_pSwapChain == nullptr)
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_pSwapChain == nullptr)
     { return false; }
 
     // 一旦テクスチャを破棄する.
-    for(auto i=0u; i<m_Desc.BufferCount; ++i)
-    { SafeRelease(m_pBuffers[i]); }
+    for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
+    { SafeRelease(pThis->m_pBuffers[i]); }
 
     {
         DXGI_MODE_DESC desc = {};
@@ -296,17 +326,17 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         desc.Height                     = height;
         desc.RefreshRate.Numerator      = 60;
         desc.RefreshRate.Denominator    = 1;
-        desc.Format                     = ToNativeFormat(m_Desc.Format);
+        desc.Format                     = ToNativeFormat(pThis->m_Desc.Format);
 
-        auto hr = m_pSwapChain->ResizeTarget(&desc);
+        auto hr = pThis->m_pSwapChain->ResizeTarget(&desc);
         if ( FAILED(hr) )
         {
             A3D_LOG("Error : IDXGISwapChain::ResizeTarget() Failed. errcode = 0x%x", hr);
             return false;
         }
 
-        hr = m_pSwapChain->ResizeBuffers(
-            m_Desc.BufferCount,
+        hr = pThis->m_pSwapChain->ResizeBuffers(
+            pThis->m_Desc.BufferCount,
             width,
             height,
             desc.Format,
@@ -318,23 +348,23 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
         }
     }
 
-    m_Desc.Extent.Width  = width;
-    m_Desc.Extent.Height = height;
+    pThis->m_Desc.Extent.Width  = width;
+    pThis->m_Desc.Extent.Height = height;
 
     // 作成し直す.
     {
         ID3D11Texture2D* pBuffer;
-        auto hr = m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
+        auto hr = pThis->m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
         if ( FAILED(hr) )
         { return false; }
 
-        for(auto i=0u; i<m_Desc.BufferCount; ++i)
+        for(auto i=0u; i<pThis->m_Desc.BufferCount; ++i)
         {
             if (!Texture::CreateFromNative(
-                m_pDevice,
+                pThis->m_pDevice,
                 pBuffer,
                 RESOURCE_USAGE_RENDER_TARGET,
-                reinterpret_cast<ITexture**>(&m_pBuffers[i])))
+                reinterpret_cast<ITexture**>(&pThis->m_pBuffers[i])))
             {
                 SafeRelease(pBuffer);
                 A3D_LOG("Error : Texture::CreateFromNative() Failed.");
@@ -351,11 +381,14 @@ bool SwapChain::ResizeBuffers(uint32_t width, uint32_t height)
 //-------------------------------------------------------------------------------------------------
 //      メタデータを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
+bool ISwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
 {
     #if defined(A3D_FOR_WINDOWS10)
     {
-        if (m_pSwapChain4 == nullptr)
+        auto pThis = static_cast<SwapChain*>(this);
+        A3D_ASSERT(pThis != nullptr);
+
+        if (pThis->m_pSwapChain4 == nullptr)
         { return false; }
 
         if (pMetaData == nullptr)
@@ -382,7 +415,7 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
                 meta.MaxContentLightLevel       = static_cast<UINT16>(pData->MaxContentLightLevel / 100000.0);
                 meta.MaxFrameAverageLightLevel  = static_cast<UINT16>(pData->MaxFrameAverageLightLevel / 100000.0);
 
-                auto hr = m_pSwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
+                auto hr = pThis->m_pSwapChain4->SetHDRMetaData(DXGI_HDR_METADATA_TYPE_HDR10, sizeof(meta), &meta);
                 if (FAILED(hr))
                 {
                     A3D_LOG("Error : IDXGISwapChain4::SetHDRMetaData() Failed. errcode = 0x%x", hr);
@@ -411,28 +444,31 @@ bool SwapChain::SetMetaData(META_DATA_TYPE type, void* pMetaData)
 //-------------------------------------------------------------------------------------------------
 //      色空間がサポートされているかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
+bool ISwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 {
     #if defined(A3D_FOR_WINDOWS10)
     {
-        if (m_pSwapChain4 == nullptr)
+        auto pThis = static_cast<SwapChain*>(this);
+        A3D_ASSERT(pThis != nullptr);
+
+        if (pThis->m_pSwapChain4 == nullptr)
         { return false; }
 
         // HDRディスプレイをサポートしているかどうかチェックする.
         if (type == COLOR_SPACE_BT2100_PQ || type == COLOR_SPACE_BT2100_HLG)
         {
             RECT region;
-            GetWindowRect(m_hWnd, &region);
+            GetWindowRect(pThis->m_hWnd, &region);
 
-            if (!m_pDevice->CheckDisplayHDRSupport(region))
+            if (!pThis->m_pDevice->CheckDisplayHDRSupport(region))
             {
                 A3D_LOG("Error : Device::CheckDisplayHDRSupport() Failed.");
                 return false;
             }
         }
 
-        uint32_t flags;
-        auto hr = m_pSwapChain4->CheckColorSpaceSupport(ToNativeColorSpace(type), &flags);
+        uint32_t flags = 0;
+        auto hr = pThis->m_pSwapChain4->CheckColorSpaceSupport(ToNativeColorSpace(type), &flags);
         if (FAILED(hr))
         {
             A3D_LOG("Error : IDXGISwapChain4::CheckColorSpraceSupport() Failed. errcode = 0x%x", hr);
@@ -456,16 +492,19 @@ bool SwapChain::CheckColorSpaceSupport(COLOR_SPACE_TYPE type)
 //-------------------------------------------------------------------------------------------------
 //      色空間を設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
+bool ISwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
 {
     #if defined(A3D_FOR_WINDOWS10)
     {
+        auto pThis = static_cast<SwapChain*>(this);
+        A3D_ASSERT(pThis != nullptr);
+
         if (type == COLOR_SPACE_BT2100_PQ || type == COLOR_SPACE_BT2100_HLG)
         {
             RECT region;
-            GetWindowRect(m_hWnd, &region);
+            GetWindowRect(pThis->m_hWnd, &region);
 
-            if (!m_pDevice->CheckDisplayHDRSupport(region))
+            if (!pThis->m_pDevice->CheckDisplayHDRSupport(region))
             {
                 A3D_LOG("Error : Device::CheckDisplayHDRSupport() Failed.");
                 return false;
@@ -473,7 +512,7 @@ bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
         }
 
         auto color_space = ToNativeColorSpace(type);
-        auto hr = m_pSwapChain4->SetColorSpace1(color_space);
+        auto hr = pThis->m_pSwapChain4->SetColorSpace1(color_space);
         if (FAILED(hr))
         {
             A3D_LOG("Error : IDXGISwapChain4::SetColorSpace1() Failed. errcode = 0x%x", hr);
@@ -492,10 +531,13 @@ bool SwapChain::SetColorSpace(COLOR_SPACE_TYPE type)
 //-------------------------------------------------------------------------------------------------
 //      フルスクリーンモードかどうかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::IsFullScreenMode() const
+bool ISwapChain::IsFullScreenMode() const
 {
+    auto pThis = static_cast<const SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     BOOL isFullScreen;
-    auto hr = m_pSwapChain->GetFullscreenState(&isFullScreen, nullptr);
+    auto hr = pThis->m_pSwapChain->GetFullscreenState(&isFullScreen, nullptr);
     A3D_ASSERT(hr == S_OK);
     A3D_UNUSED(hr);
 
@@ -505,9 +547,12 @@ bool SwapChain::IsFullScreenMode() const
 //-------------------------------------------------------------------------------------------------
 //      フルスクリーンモードを設定します.
 //-------------------------------------------------------------------------------------------------
-bool SwapChain::SetFullScreenMode(bool enable)
+bool ISwapChain::SetFullScreenMode(bool enable)
 {
-    auto hr = m_pSwapChain->SetFullscreenState(enable, nullptr);
+    auto pThis = static_cast<SwapChain*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto hr = pThis->m_pSwapChain->SetFullscreenState(enable, nullptr);
     if (FAILED(hr))
     {
         A3D_LOG("Error : IDXGISwapChain::SetFullscreenState() Failed. errcode = 0x%x", hr);
@@ -516,26 +561,11 @@ bool SwapChain::SetFullScreenMode(bool enable)
 
     if (enable)
     {
-        ResizeBuffers(m_FullScreenWidth, m_FullScreenHeight); 
+        ResizeBuffers(pThis->m_FullScreenWidth, pThis->m_FullScreenHeight);
     }
 
     return true;
 }
-
-//-------------------------------------------------------------------------------------------------
-//      スワップチェインを取得します.
-//-------------------------------------------------------------------------------------------------
-IDXGISwapChain* SwapChain::GetDXGISwapChain() const
-{ return m_pSwapChain; }
-
-#if defined(A3D_FOR_WINDOWS10)
-//-------------------------------------------------------------------------------------------------
-//      スワップチェイン4を取得します.
-//-------------------------------------------------------------------------------------------------
-IDXGISwapChain4* SwapChain::GetDXGISwapChain4() const
-{ return m_pSwapChain4; }
-
-#endif // defined(A3D_FOR_WINDOWS10)
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

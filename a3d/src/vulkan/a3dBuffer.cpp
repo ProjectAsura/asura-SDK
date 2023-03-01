@@ -206,43 +206,61 @@ void Buffer::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-BufferDesc Buffer::GetDesc() const 
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      リソースタイプを取得します.
 //-------------------------------------------------------------------------------------------------
 RESOURCE_KIND Buffer::GetKind() const
 { return RESOURCE_KIND_BUFFER; }
 
 //-------------------------------------------------------------------------------------------------
+//      バッファを取得します.
+//-------------------------------------------------------------------------------------------------
+VkBuffer Buffer::GetVkBuffer() const
+{ return m_Buffer; }
+
+
+//-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+BufferDesc IBuffer::GetDesc() const 
+{
+    auto pThis = static_cast<const Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      デバイスアドレスを取得します.
 //-------------------------------------------------------------------------------------------------
-uint64_t Buffer::GetDeviceAddress() const
+uint64_t IBuffer::GetDeviceAddress() const
 {
-    if (m_Buffer == null_handle)
+    auto pThis = static_cast<const Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_Buffer == null_handle)
     { return 0; }
 
     VkBufferDeviceAddressInfoKHR addressInfo = {};
     addressInfo.sType   = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR;
-    addressInfo.buffer  = m_Buffer;
-    return vkGetBufferDeviceAddress(m_pDevice->GetVkDevice(), &addressInfo);
+    addressInfo.buffer  = pThis->m_Buffer;
+    return vkGetBufferDeviceAddress(pThis->m_pDevice->GetVkDevice(), &addressInfo);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
 //-------------------------------------------------------------------------------------------------
-void* Buffer::Map()
+void* IBuffer::Map()
 {
-    auto pNativeDevice = m_pDevice->GetVkDevice();
+    auto pThis = static_cast<Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
     VkResult ret;
 
     void* pData;
-    ret = vmaMapMemory(m_pDevice->GetAllocator(), m_Allocation, &pData);
+    ret = vmaMapMemory(pThis->m_pDevice->GetAllocator(), pThis->m_Allocation, &pData);
     if (ret != VK_SUCCESS)
     { return nullptr; }
 
@@ -252,20 +270,16 @@ void* Buffer::Map()
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングを解除します.
 //-------------------------------------------------------------------------------------------------
-void Buffer::Unmap()
+void IBuffer::Unmap()
 {
-    auto pNativeDevice = m_pDevice->GetVkDevice();
+    auto pThis = static_cast<Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != null_handle);
 
-    vmaUnmapMemory(m_pDevice->GetAllocator(), m_Allocation);
+    vmaUnmapMemory(pThis->m_pDevice->GetAllocator(), pThis->m_Allocation);
 }
-
-//-------------------------------------------------------------------------------------------------
-//      バッファを取得します.
-//-------------------------------------------------------------------------------------------------
-VkBuffer Buffer::GetVkBuffer() const
-{ return m_Buffer; }
-
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

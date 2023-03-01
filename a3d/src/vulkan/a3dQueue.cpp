@@ -241,103 +241,6 @@ void Queue::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      コマンドリストを登録します.
-//-------------------------------------------------------------------------------------------------
-bool Queue::Submit(ICommandList* pCommandList)
-{
-    LockGuard locker(&m_Lock);
-
-    if (m_SubmitIndex + 1 >= m_MaxSubmitCount)
-    { return false; }
-
-    auto pWrapList = static_cast<CommandList*>(pCommandList);
-    A3D_ASSERT( pWrapList != nullptr );
-
-    auto pNativeCommandBuffer = pWrapList->GetVkCommandBuffer();
-
-    m_pSubmitList[m_SubmitIndex] = pNativeCommandBuffer;
-    m_SubmitIndex++;
-    return true;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      登録したコマンドリストを実行します.
-//-------------------------------------------------------------------------------------------------
-void Queue::Execute(IFence* pFence)
-{
-    VkPipelineStageFlags stageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-
-    VkFence nativeFence = VK_NULL_HANDLE;
-    VkSubmitInfo info = {};
-
-    if ( pFence != nullptr )
-    {
-        info.sType                  = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        info.pNext                  = nullptr;
-        info.pCommandBuffers        = m_pSubmitList;
-        info.commandBufferCount     = m_SubmitIndex;
-        info.waitSemaphoreCount     = 1;
-        info.pWaitSemaphores        = &m_WaitSemaphore[m_CurrentBufferIndex];
-        info.pWaitDstStageMask      = &stageMask;
-        info.signalSemaphoreCount   = 0;
-        info.pSignalSemaphores      = nullptr;
-
-        auto pWrapFence = reinterpret_cast<Fence*>(pFence);
-        A3D_ASSERT(pWrapFence != nullptr);
-
-        nativeFence = pWrapFence->GetVkFence();
-    }
-    else
-    {
-        info.sType                  = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        info.pNext                  = nullptr;
-        info.pCommandBuffers        = m_pSubmitList;
-        info.commandBufferCount     = m_SubmitIndex;
-        info.waitSemaphoreCount     = 0;
-        info.pWaitSemaphores        = nullptr;
-        info.pWaitDstStageMask      = &stageMask;
-        info.signalSemaphoreCount   = 0;
-        info.pSignalSemaphores      = nullptr;
-    }
- 
-    auto ret = vkQueueSubmit( m_Queue, 1, &info, nativeFence );
-    A3D_ASSERT( ret == VK_SUCCESS );
-    A3D_UNUSED( ret );
-
-    // 実行したら戻す.
-    m_SubmitIndex = 0;
-
-    // バッファリング.
-    m_PreviousBufferIndex = m_CurrentBufferIndex;
-    m_CurrentBufferIndex  = (m_CurrentBufferIndex + 1) % MaxBufferCount;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      コマンドの実行が完了するまで待機します.
-//-------------------------------------------------------------------------------------------------
-void Queue::WaitIdle()
-{
-    auto ret = vkQueueWaitIdle( m_Queue );
-    A3D_ASSERT( ret == VK_SUCCESS );
-    A3D_UNUSED( ret );
-
-    m_PreviousBufferIndex = m_CurrentBufferIndex;
-    m_CurrentBufferIndex  = 0;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      画面に表示を行います.
-//-------------------------------------------------------------------------------------------------
-void Queue::Present(ISwapChain* pSwapChain)
-{
-    auto pWrapSwapChain = reinterpret_cast<SwapChain*>(pSwapChain);
-    if (pWrapSwapChain == nullptr)
-    { return; }
-
-    pWrapSwapChain->Present();
-}
-
-//-------------------------------------------------------------------------------------------------
 //      コマンドキューを取得します.
 //-------------------------------------------------------------------------------------------------
 VkQueue Queue::GetVkQueue() const
@@ -476,6 +379,112 @@ bool Queue::ResetSyncObject()
     m_CurrentBufferIndex  = 0;
 
     return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      コマンドリストを登録します.
+//-------------------------------------------------------------------------------------------------
+bool IQueue::Submit(ICommandList* pCommandList)
+{
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    LockGuard locker(&pThis->m_Lock);
+
+    if (pThis->m_SubmitIndex + 1 >= pThis->m_MaxSubmitCount)
+    { return false; }
+
+    auto pWrapList = static_cast<CommandList*>(pCommandList);
+    A3D_ASSERT( pWrapList != nullptr );
+
+    auto pNativeCommandBuffer = pWrapList->GetVkCommandBuffer();
+
+    pThis->m_pSubmitList[pThis->m_SubmitIndex] = pNativeCommandBuffer;
+    pThis->m_SubmitIndex++;
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      登録したコマンドリストを実行します.
+//-------------------------------------------------------------------------------------------------
+void IQueue::Execute(IFence* pFence)
+{
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    VkPipelineStageFlags stageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+
+    VkFence nativeFence = VK_NULL_HANDLE;
+    VkSubmitInfo info = {};
+
+    if ( pFence != nullptr )
+    {
+        info.sType                  = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        info.pNext                  = nullptr;
+        info.pCommandBuffers        = pThis->m_pSubmitList;
+        info.commandBufferCount     = pThis->m_SubmitIndex;
+        info.waitSemaphoreCount     = 1;
+        info.pWaitSemaphores        = &pThis->m_WaitSemaphore[pThis->m_CurrentBufferIndex];
+        info.pWaitDstStageMask      = &stageMask;
+        info.signalSemaphoreCount   = 0;
+        info.pSignalSemaphores      = nullptr;
+
+        auto pWrapFence = reinterpret_cast<Fence*>(pFence);
+        A3D_ASSERT(pWrapFence != nullptr);
+
+        nativeFence = pWrapFence->GetVkFence();
+    }
+    else
+    {
+        info.sType                  = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        info.pNext                  = nullptr;
+        info.pCommandBuffers        = pThis->m_pSubmitList;
+        info.commandBufferCount     = pThis->m_SubmitIndex;
+        info.waitSemaphoreCount     = 0;
+        info.pWaitSemaphores        = nullptr;
+        info.pWaitDstStageMask      = &stageMask;
+        info.signalSemaphoreCount   = 0;
+        info.pSignalSemaphores      = nullptr;
+    }
+ 
+    auto ret = vkQueueSubmit( pThis->m_Queue, 1, &info, nativeFence );
+    A3D_ASSERT( ret == VK_SUCCESS );
+    A3D_UNUSED( ret );
+
+    // 実行したら戻す.
+    pThis->m_SubmitIndex = 0;
+
+    // バッファリング.
+    pThis->m_PreviousBufferIndex = pThis->m_CurrentBufferIndex;
+    pThis->m_CurrentBufferIndex  = (pThis->m_CurrentBufferIndex + 1) % pThis->MaxBufferCount;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      コマンドの実行が完了するまで待機します.
+//-------------------------------------------------------------------------------------------------
+void IQueue::WaitIdle()
+{
+    auto pThis = static_cast<Queue*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto ret = vkQueueWaitIdle( pThis->m_Queue );
+    A3D_ASSERT( ret == VK_SUCCESS );
+    A3D_UNUSED( ret );
+
+    pThis->m_PreviousBufferIndex = pThis->m_CurrentBufferIndex;
+    pThis->m_CurrentBufferIndex  = 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      画面に表示を行います.
+//-------------------------------------------------------------------------------------------------
+void IQueue::Present(ISwapChain* pSwapChain)
+{
+    auto pWrapSwapChain = reinterpret_cast<SwapChain*>(pSwapChain);
+    if (pWrapSwapChain == nullptr)
+    { return; }
+
+    pWrapSwapChain->Present();
 }
 
 //-------------------------------------------------------------------------------------------------

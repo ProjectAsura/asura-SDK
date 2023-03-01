@@ -28,7 +28,6 @@
 
 #include "a3dDevice.h"
 #include "a3dFence.h"
-#include "a3dCommandSet.h"
 #include "a3dCommandList.h"
 #include "a3dQueue.h"
 #include "a3dSwapChain.h"

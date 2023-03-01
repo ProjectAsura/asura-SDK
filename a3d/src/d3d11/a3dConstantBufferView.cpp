@@ -105,12 +105,6 @@ void ConstantBufferView::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-ConstantBufferViewDesc ConstantBufferView::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      バッファを取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D11Buffer* ConstantBufferView::GetD3D11Buffer() const
@@ -120,12 +114,6 @@ ID3D11Buffer* ConstantBufferView::GetD3D11Buffer() const
 
     return m_pBuffer->GetD3D11Buffer();
 }
-
-//-------------------------------------------------------------------------------------------------
-//      バッファを取得します.
-//-------------------------------------------------------------------------------------------------
-IBuffer* ConstantBufferView::GetResource() const
-{ return m_pBuffer; }
 
 //-------------------------------------------------------------------------------------------------
 //      サブリソースを更新します.
@@ -139,6 +127,28 @@ void ConstantBufferView::UpdateSubsource(ID3D11DeviceContext* pDeviceContext)
     ptr += m_Desc.Offset;
     auto pD3D11Buffer = m_pBuffer->GetD3D11Buffer();
     pDeviceContext->UpdateSubresource(pD3D11Buffer, 0, nullptr, ptr, uint32_t(m_Desc.Range), 1);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+ConstantBufferViewDesc IConstantBufferView::GetDesc() const
+{
+    auto pThis = static_cast<const ConstantBufferView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      バッファを取得します.
+//-------------------------------------------------------------------------------------------------
+IBuffer* IConstantBufferView::GetResource() const
+{
+    auto pThis = static_cast<const ConstantBufferView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_pBuffer;
 }
 
 //-------------------------------------------------------------------------------------------------

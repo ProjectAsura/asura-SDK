@@ -570,12 +570,6 @@ bool Device::CreateQueryPool(const QueryPoolDesc* pDesc, IQueryPool** ppQueryPoo
 { return QueryPool::Create(this, pDesc, ppQueryPool); }
 
 //-------------------------------------------------------------------------------------------------
-//      コマンドセットを生成します.
-//-------------------------------------------------------------------------------------------------
-bool Device::CreateCommandSet(const CommandSetDesc* pDesc, ICommandSet** ppCommandSet)
-{ return CommandSet::Create(this, pDesc, ppCommandSet); }
-
-//-------------------------------------------------------------------------------------------------
 //      フェンスを生成します.
 //-------------------------------------------------------------------------------------------------
 bool Device::CreateFence(IFence** ppFence)

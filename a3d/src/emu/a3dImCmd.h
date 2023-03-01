@@ -26,6 +26,7 @@ enum CMD_ID
     CMD_SET_PIPELINESTATE,              //!< ICommandList::SetPipelineState()
     CMD_SET_VERTEX_BUFFERS,             //!< ICommandList::SetVertexBuffers()
     CMD_SET_INDEX_BUFFER,               //!< ICommandList::SetIndexBuffer()
+    CMD_SET_CONSTANTS,                  //!< ICommandList::SetConstants()
     CMD_SET_CBV,                        //!< ICommandList::SetView()
     CMD_SET_SRV,                        //!< ICommandList::SetView()
     CMD_SET_UAV,                        //!< ICommandList::SetView()
@@ -33,9 +34,13 @@ enum CMD_ID
     CMD_TEXTURE_BARRIER,                //!< ICommandList::TextureBarrier()
     CMD_BUFFER_BARRIER,                 //!< ICommandList::BufferBarrier()
     CMD_DRAW_INSTANCED,                 //!< ICommandList::DrawInstanced()
+    CMD_DRAW_INSTANCED_INDIRECT,        //!< ICommandLIst::DrawinstancedIndirect()
     CMD_DRAW_INDEXED_INSTANCED,         //!< ICommandList::DrawIndexedInstanced()
+    CMD_DRAW_INDEXED_INSTANCED_INDIRECT,//!< ICommandList::DrawIndexedInstancedIndirect()
     CMD_DISPATCH_COMPUTE,               //!< ICommandList::DispatchCompute()
+    CMD_DISPATCH_COMPUTE_INDIRECT,      //!< ICommandList::DispatchComputeIndirect()
     CMD_DISPATCH_MESH,                  //!< ICommandList::DispatchMesh()
+    CMD_DISPATCH_MESH_INDIRECT,         //!< ICommandList::DispatchMeshIndirect()
     CMD_TRACE_RAYS,                     //!< ICommandList::TraceRays()
     CMD_EXECUTE_INDIRECT,               //!< ICommandList::ExecuteIndirect()
     CMD_BEGIN_QUERY,                    //!< ICommandList::BeginQuery()
@@ -133,6 +138,15 @@ struct ImCmdSetScissors : ImCmdBase
 struct ImCmdSetPipelineState : ImCmdBase
 {
     IPipelineState* pPipelineState;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ImCmdSetConstants structure
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ImCmdSetConstants : ImCmdBase
+{
+    uint32_t    Count;
+    uint32_t    Offset;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -253,17 +267,40 @@ struct ImCmdTraceRays : ImCmdBase
     TraceRayArguments Args;
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// ImCmdExecuteIndirect structure
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct ImCmdExecuteIndirect : ImCmdBase
+struct ImCmdDrawInstancedIndirect : ImCmdBase
 {
-    ICommandSet*    pCommandSet;
-    uint32_t        MaxCommandCount;
-    IBuffer*        pArgumentBuffer;
-    uint64_t        ArgumentBufferOffset;
-    IBuffer*        pCounterBuffer;
-    uint64_t        CounterBufferOffset;
+    uint32_t maxCommandCount;
+    IBuffer* pArgumentBuffer;
+    uint64_t argumentBufferOffset;
+    IBuffer* pCounterBuffer;
+    uint64_t counterBufferOffset;
+};
+
+struct ImCmdDrawIndexedInstancedIndirect : ImCmdBase
+{
+    uint32_t maxCommandCount;
+    IBuffer* pArgumentBuffer;
+    uint64_t argumentBufferOffset;
+    IBuffer* pCounterBuffer;
+    uint64_t counterBufferOffset;
+};
+
+struct ImCmdDispatchComputeIndirect : ImCmdBase
+{
+    uint32_t maxCommandCount;
+    IBuffer* pArgumentBuffer;
+    uint64_t argumentBufferOffset;
+    IBuffer* pCounterBuffer;
+    uint64_t counterBufferOffset;
+};
+
+struct ImCmdDispatchMeshIndirect : ImCmdBase
+{
+    uint32_t maxCommandCount;
+    IBuffer* pArgumentBuffer;
+    uint64_t argumentBufferOffset;
+    IBuffer* pCounterBuffer;
+    uint64_t counterBufferOffset;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

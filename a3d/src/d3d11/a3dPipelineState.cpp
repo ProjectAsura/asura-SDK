@@ -51,33 +51,6 @@ D3D11_BLEND_OP ToNativeBlendOp( const a3d::BLEND_OP& operation )
 }
 
 //-------------------------------------------------------------------------------------------------
-//      論理オペレータをネイティブ形式に変換します.
-//-------------------------------------------------------------------------------------------------
-D3D11_LOGIC_OP ToNativeLogicOp( const a3d::LOGIC_OP& operation )
-{
-    D3D11_LOGIC_OP table[] = {
-        D3D11_LOGIC_OP_CLEAR,
-        D3D11_LOGIC_OP_SET,
-        D3D11_LOGIC_OP_COPY,
-        D3D11_LOGIC_OP_COPY_INVERTED,
-        D3D11_LOGIC_OP_NOOP,
-        D3D11_LOGIC_OP_INVERT,
-        D3D11_LOGIC_OP_AND,
-        D3D11_LOGIC_OP_NAND,
-        D3D11_LOGIC_OP_OR,
-        D3D11_LOGIC_OP_NOR,
-        D3D11_LOGIC_OP_XOR,
-        D3D11_LOGIC_OP_EQUIV,
-        D3D11_LOGIC_OP_AND_REVERSE,
-        D3D11_LOGIC_OP_AND_INVERTED,
-        D3D11_LOGIC_OP_OR_REVERSE,
-        D3D11_LOGIC_OP_INVERT
-    };
-
-    return table[operation];
-}
-
-//-------------------------------------------------------------------------------------------------
 //      カラーブレンドステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
 void ToNativeRanderTargetBlendDesc( const a3d::ColorBlendState& state, D3D11_RENDER_TARGET_BLEND_DESC& result )
@@ -100,16 +73,12 @@ void ToNativeRanderTargetBlendDesc( const a3d::ColorBlendState& state, D3D11_REN
 //-------------------------------------------------------------------------------------------------
 //      ブレンドステートをネイティブ形式に変換します.
 //-------------------------------------------------------------------------------------------------
-void ToNativeBlendDesc( const a3d::BlendState& state, D3D11_BLEND_DESC& result )
+void ToNativeBlendDesc( const a3d::BlendState& state, D3D11_BLEND_DESC& result, BOOL alphaToCoverage )
 {
-    result.AlphaToCoverageEnable = FALSE;
+    result.AlphaToCoverageEnable  = alphaToCoverage;
     result.IndependentBlendEnable = (state.IndependentBlendEnable) ? TRUE : FALSE;
     for(auto i=0; i<8; ++i)
     {
-    #if 0 // 低スペックPCでも動くようにしたいので非サポート.
-        //result.RenderTarget[i].LogicOpEnable = (state.LogicOpEnable) ? TRUE : FALSE;
-        //result.RenderTarget[i].LogicOp       = ToNativeLogicOp(state.LogicOp);
-    #endif
         ToNativeRanderTargetBlendDesc( state.RenderTarget[i], result.RenderTarget[i] );
     }
 }
@@ -480,9 +449,10 @@ bool PipelineState::InitAsGraphics(IDevice* pDevice, const GraphicsPipelineState
 
     // ブレンドステート.
     {
+        BOOL alphaToCoverage = (pDesc->MultiSampleState.EnableAlphaToCoverage) ? TRUE : FALSE;
+
         D3D11_BLEND_DESC desc = {};
-        ToNativeBlendDesc(pDesc->BlendState, desc);
-        desc.AlphaToCoverageEnable = (pDesc->MultiSampleState.EnableAlphaToCoverage) ? TRUE : FALSE;
+        ToNativeBlendDesc(pDesc->BlendState, desc, alphaToCoverage);
 
         auto hr = pD3D11Device->CreateBlendState(&desc, &m_pBS);
         if (FAILED(hr))

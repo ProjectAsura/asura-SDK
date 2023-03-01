@@ -135,16 +135,25 @@ void Fence::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      フェンスを取得します.
+//-------------------------------------------------------------------------------------------------
+VkFence Fence::GetVkFence() const
+{ return m_Fence; }
+
+//-------------------------------------------------------------------------------------------------
 //      シグナル状態かどうかチェックします.
 //-------------------------------------------------------------------------------------------------
-bool Fence::IsSignaled() const
+bool IFence::IsSignaled() const
 {
-    auto pNativeDevice = m_pDevice->GetVkDevice();
+    auto pThis = static_cast<const Fence*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
-    auto ret = vkGetFenceStatus(pNativeDevice, m_Fence);
+    auto ret = vkGetFenceStatus(pNativeDevice, pThis->m_Fence);
     if (ret == VK_SUCCESS)
-    { vkResetFences(pNativeDevice, 1, &m_Fence);  }
+    { vkResetFences(pNativeDevice, 1, &pThis->m_Fence); }
 
     return ret == VK_SUCCESS;
 }
@@ -152,23 +161,20 @@ bool Fence::IsSignaled() const
 //-------------------------------------------------------------------------------------------------
 //      完了を待機します.
 //-------------------------------------------------------------------------------------------------
-bool Fence::Wait(uint32_t timeoutMsec)
+bool IFence::Wait(uint32_t timeoutMsec)
 {
-    auto pNativeDevice = m_pDevice->GetVkDevice();
+    auto pThis = static_cast<Fence*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
     A3D_ASSERT(pNativeDevice != VK_NULL_HANDLE);
 
     const uint32_t MilliSecToNanoSec = 1000 * 1000;
 
-    auto ret = vkWaitForFences(pNativeDevice, 1, &m_Fence, VK_TRUE, timeoutMsec * MilliSecToNanoSec);
-    vkResetFences(pNativeDevice, 1, &m_Fence);
+    auto ret = vkWaitForFences(pNativeDevice, 1, &pThis->m_Fence, VK_TRUE, timeoutMsec * MilliSecToNanoSec);
+    vkResetFences(pNativeDevice, 1, &pThis->m_Fence);
     return ( ret == VK_SUCCESS );
 }
-
-//-------------------------------------------------------------------------------------------------
-//      フェンスを取得します.
-//-------------------------------------------------------------------------------------------------
-VkFence Fence::GetVkFence() const
-{ return m_Fence; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

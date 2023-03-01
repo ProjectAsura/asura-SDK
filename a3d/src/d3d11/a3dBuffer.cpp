@@ -179,57 +179,6 @@ void Buffer::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-BufferDesc Buffer::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
-//      デバイスアドレスを取得します.
-//-------------------------------------------------------------------------------------------------
-uint64_t Buffer::GetDeviceAddress() const
-{
-    if (m_pBuffer == nullptr)
-    { return 0; }
-
-    // API的にサポートされていないのでユニークIDを返す.
-    return m_UniqueId;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      メモリマッピングします.
-//-------------------------------------------------------------------------------------------------
-void* Buffer::Map()
-{
-    if (m_pSubresource != nullptr)
-    { return m_pSubresource; }
-
-    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pDeviceContext != nullptr);
-
-    D3D11_MAPPED_SUBRESOURCE subresource;
-    auto hr = pDeviceContext->Map(m_pBuffer, 0, m_MapType, 0, &subresource);
-    if ( FAILED(hr) )
-    { return nullptr; }
-
-    return subresource.pData;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      メモリマッピングを解除します.
-//-------------------------------------------------------------------------------------------------
-void Buffer::Unmap()
-{
-    if (m_pSubresource != nullptr)
-    { return; }
-
-    auto pDeviceContext = m_pDevice->GetD3D11DeviceContext();
-    A3D_ASSERT(pDeviceContext != nullptr);
-
-    pDeviceContext->Unmap(m_pBuffer, 0);
-}
-
-//-------------------------------------------------------------------------------------------------
 //      リソース種別を取得します.
 //-------------------------------------------------------------------------------------------------
 RESOURCE_KIND Buffer::GetKind() const
@@ -246,6 +195,71 @@ ID3D11Buffer* Buffer::GetD3D11Buffer() const
 //-------------------------------------------------------------------------------------------------
 void* Buffer::GetSubresourcePointer() const
 { return m_pSubresource; }
+
+//-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+BufferDesc IBuffer::GetDesc() const
+{
+    auto pThis = static_cast<const Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバイスアドレスを取得します.
+//-------------------------------------------------------------------------------------------------
+uint64_t IBuffer::GetDeviceAddress() const
+{
+    auto pThis = static_cast<const Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_pBuffer == nullptr)
+    { return 0; }
+
+    // API的にサポートされていないのでユニークIDを返す.
+    return pThis->m_UniqueId;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      メモリマッピングします.
+//-------------------------------------------------------------------------------------------------
+void* IBuffer::Map()
+{
+    auto pThis = static_cast<Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_pSubresource != nullptr)
+    { return pThis->m_pSubresource; }
+
+    auto pDeviceContext = pThis->m_pDevice->GetD3D11DeviceContext();
+    A3D_ASSERT(pDeviceContext != nullptr);
+
+    D3D11_MAPPED_SUBRESOURCE subresource;
+    auto hr = pDeviceContext->Map(pThis->m_pBuffer, 0, pThis->m_MapType, 0, &subresource);
+    if ( FAILED(hr) )
+    { return nullptr; }
+
+    return subresource.pData;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      メモリマッピングを解除します.
+//-------------------------------------------------------------------------------------------------
+void IBuffer::Unmap()
+{
+    auto pThis = static_cast<Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_pSubresource != nullptr)
+    { return; }
+
+    auto pDeviceContext = pThis->m_pDevice->GetD3D11DeviceContext();
+    A3D_ASSERT(pDeviceContext != nullptr);
+
+    pDeviceContext->Unmap(pThis->m_pBuffer, 0);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

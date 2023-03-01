@@ -456,33 +456,6 @@ void ToNativeColorBlendAttachmentState
 }
 
 //-------------------------------------------------------------------------------------------------
-//      論理操作に変換します.
-//-------------------------------------------------------------------------------------------------
-VkLogicOp ToNativeLogicOp(a3d::LOGIC_OP value)
-{
-    VkLogicOp table[] = {
-        VK_LOGIC_OP_CLEAR,
-        VK_LOGIC_OP_SET,
-        VK_LOGIC_OP_COPY,
-        VK_LOGIC_OP_COPY_INVERTED,
-        VK_LOGIC_OP_NO_OP,
-        VK_LOGIC_OP_INVERT,
-        VK_LOGIC_OP_AND,
-        VK_LOGIC_OP_NAND,
-        VK_LOGIC_OP_OR,
-        VK_LOGIC_OP_NOR,
-        VK_LOGIC_OP_XOR,
-        VK_LOGIC_OP_EQUIVALENT,
-        VK_LOGIC_OP_AND_REVERSE,
-        VK_LOGIC_OP_AND_INVERTED,
-        VK_LOGIC_OP_OR_REVERSE,
-        VK_LOGIC_OP_OR_INVERTED
-    };
-
-    return table[value];
-}
-
-//-------------------------------------------------------------------------------------------------
 //      カラーブレンドステートを設定します.
 //-------------------------------------------------------------------------------------------------
 void ToNativeColorBlendState
@@ -499,8 +472,8 @@ void ToNativeColorBlendState
     pInfo->sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     pInfo->pNext             = nullptr;
     pInfo->flags             = 0;
-    pInfo->logicOpEnable     = (state.LogicOpEnable) ? VK_TRUE : VK_FALSE;
-    pInfo->logicOp           = ToNativeLogicOp(state.LogicOp);
+    pInfo->logicOpEnable     = VK_FALSE;
+    pInfo->logicOp           = VK_LOGIC_OP_NO_OP;
     pInfo->attachmentCount   = colorTargetCount;
     pInfo->pAttachments      = pAttachments;
     pInfo->blendConstants[0] = 0.0f;
@@ -509,68 +482,6 @@ void ToNativeColorBlendState
     pInfo->blendConstants[3] = 0.0f;
 }
 
-//-------------------------------------------------------------------------------------------------
-//      シェーダステージフラグに変換します.
-//-------------------------------------------------------------------------------------------------
-VkShaderStageFlagBits ToNativeShaderStageFlag(a3d::SHADER_STAGE stage)
-{
-    uint32_t result = 0;
-    switch(stage)
-    {
-    case a3d::SHADER_STAGE_VS:
-        result |= VK_SHADER_STAGE_VERTEX_BIT;
-        break;
-
-    case a3d::SHADER_STAGE_DS:
-        result |= VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-        break;
-
-    case a3d::SHADER_STAGE_HS:
-        result |= VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-        break;
-
-    case a3d::SHADER_STAGE_PS:
-        result |= VK_SHADER_STAGE_FRAGMENT_BIT;
-        break;
-
-    case a3d::SHADER_STAGE_CS:
-        result |= VK_SHADER_STAGE_COMPUTE_BIT;
-        break;
-
-    case a3d::SHADER_STAGE_AS:
-        result |= VK_SHADER_STAGE_TASK_BIT_NV;
-        break;
-
-    case a3d::SHADER_STAGE_MS:
-        result |= VK_SHADER_STAGE_MESH_BIT_NV;
-        break;
-
-    case a3d::SHADER_STAGE_RAYGEN:
-        result |= VK_SHADER_STAGE_RAYGEN_BIT_KHR;
-        break;
-
-    case a3d::SHADER_STAGE_MISS:
-        result |= VK_SHADER_STAGE_MISS_BIT_KHR;
-        break;
-
-    case a3d::SHADER_STAGE_INTERSECTION:
-        result |= VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
-        break;
-
-    case a3d::SHADER_STAGE_CLOSEST_HIT:
-        result |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-        break;
-
-    case a3d::SHADER_STAGE_ANY_HIT:
-        result |= VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
-        break;
-
-    case a3d::SHADER_STAGE_CALLABLE:
-        result |= VK_SHADER_STAGE_CALLABLE_BIT_KHR;
-        break;
-    }
-    return VkShaderStageFlagBits(result);
-}
 
 //-------------------------------------------------------------------------------------------------
 //      レイトレーシングシェーダグループタイプに変換します.

@@ -499,19 +499,6 @@ void AccelerationStructure::GetDevice(IDevice** ppDevice)
     { m_pDevice->AddRef(); }
 }
 
-//-------------------------------------------------------------------------------------------------
-//      デバイスアドレスを取得します.
-//-------------------------------------------------------------------------------------------------
-uint64_t AccelerationStructure::GetDeviceAddress() const
-{
-    if (m_Structure.Buffer == null_handle)
-    { return 0; }
-
-    VkBufferDeviceAddressInfoKHR addressInfo = {};
-    addressInfo.sType   = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR;
-    addressInfo.buffer  = m_Structure.Buffer;
-    return vkGetBufferDeviceAddress(m_pDevice->GetVkDevice(), &addressInfo);
-}
 
 //-------------------------------------------------------------------------------------------------
 //      高速化機構を取得します.
@@ -569,6 +556,23 @@ bool AccelerationStructure::CreateScratchBuffer(size_t size)
     }
 
     return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      デバイスアドレスを取得します.
+//-------------------------------------------------------------------------------------------------
+uint64_t IAccelerationStructure::GetDeviceAddress() const
+{
+    auto pThis = static_cast<const AccelerationStructure*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_Structure.Buffer == null_handle)
+    { return 0; }
+
+    VkBufferDeviceAddressInfoKHR addressInfo = {};
+    addressInfo.sType   = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR;
+    addressInfo.buffer  = pThis->m_Structure.Buffer;
+    return vkGetBufferDeviceAddress(pThis->m_pDevice->GetVkDevice(), &addressInfo);
 }
 
 //-------------------------------------------------------------------------------------------------

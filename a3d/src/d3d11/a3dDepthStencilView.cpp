@@ -200,22 +200,32 @@ void DepthStencilView::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-TargetViewDesc DepthStencilView::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      深度ステンシルビューを取得します.
 //-------------------------------------------------------------------------------------------------
 ID3D11DepthStencilView* DepthStencilView::GetD3D11DepthStencilView() const
 { return m_pDSV; }
 
 //-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+TargetViewDesc IDepthStencilView::GetDesc() const
+{
+    auto pThis = static_cast<const DepthStencilView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      リソースを取得します.
 //-------------------------------------------------------------------------------------------------
-ITexture* DepthStencilView::GetResource() const
-{ return m_pTexture; }
+ITexture* IDepthStencilView::GetResource() const
+{
+    auto pThis = static_cast<const DepthStencilView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_pTexture;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

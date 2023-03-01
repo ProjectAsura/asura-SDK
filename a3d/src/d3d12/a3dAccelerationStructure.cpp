@@ -278,17 +278,6 @@ void AccelerationStructure::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      デバイスアドレスを取得します.
-//-------------------------------------------------------------------------------------------------
-uint64_t AccelerationStructure::GetDeviceAddress() const
-{
-    if (m_Structure.pResource == nullptr)
-    { return 0; }
-
-    return m_Structure.pResource->GetGPUVirtualAddress();
-}
-
-//-------------------------------------------------------------------------------------------------
 //      ビルドします.
 //-------------------------------------------------------------------------------------------------
 void AccelerationStructure::Build(ID3D12GraphicsCommandList6* pCommandList)
@@ -311,6 +300,20 @@ void AccelerationStructure::Build(ID3D12GraphicsCommandList6* pCommandList)
 //-------------------------------------------------------------------------------------------------
 ID3D12Resource* AccelerationStructure::GetD3D12Resource() const
 { return m_Structure.pResource; }
+
+//-------------------------------------------------------------------------------------------------
+//      デバイスアドレスを取得します.
+//-------------------------------------------------------------------------------------------------
+uint64_t IAccelerationStructure::GetDeviceAddress() const
+{
+    auto pThis = static_cast<const AccelerationStructure*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_Structure.pResource == nullptr)
+    { return 0; }
+
+    return pThis->m_Structure.pResource->GetGPUVirtualAddress();
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

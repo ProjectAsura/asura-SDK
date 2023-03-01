@@ -318,18 +318,6 @@ public:
         IQueryPool**            ppQueryPool) override;
 
     //---------------------------------------------------------------------------------------------
-    //! @brief      コマンドセットを生成します.
-    //!
-    //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppCommandSet    コマンドセットの格納先です.
-    //! @retval true    生成に成功.
-    //! @retval false   生成に失敗.
-    //---------------------------------------------------------------------------------------------
-    bool A3D_APIENTRY CreateCommandSet(
-        const CommandSetDesc* pDesc,
-        ICommandSet**         ppCommandSet) override;
-
-    //---------------------------------------------------------------------------------------------
     //! @brief      フェンスを生成します.
     //!
     //! @param[out]     ppFence         フェンスの格納先です.

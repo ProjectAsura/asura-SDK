@@ -24,9 +24,6 @@
     <ClCompile Include="..\..\..\src\d3d11\a3dBuffer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\d3d11\a3dCommandSet.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -87,15 +84,15 @@
     <ClCompile Include="..\..\..\src\core\a3dLogger.cpp">
       <Filter>ソース ファイル\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\core\a3dPresetDesc.cpp">
-      <Filter>ソース ファイル\core</Filter>
+    <ClCompile Include="..\..\..\src\a3dDesc.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\a3dFunc.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\d3d11\a3dBuffer.h">
-      <Filter>ソース ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\d3d11\a3dCommandSet.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\d3d11\a3dDescriptorSetLayout.h">

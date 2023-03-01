@@ -399,96 +399,6 @@ void Texture::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-TextureDesc Texture::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
-//      メモリマッピングします.
-//-------------------------------------------------------------------------------------------------
-void* Texture::Map()
-{
-    auto pNativeDevice = m_pDevice->GetVkDevice();
-    A3D_ASSERT(pNativeDevice != null_handle);
-
-    void* pData;
-    auto ret = vmaMapMemory(m_pDevice->GetAllocator(), m_Allocation, &pData);
-    if (ret != VK_SUCCESS)
-    { return nullptr; }
-
-    return pData;
-}
-
-//-------------------------------------------------------------------------------------------------
-//      メモリマッピングを解除します.
-//-------------------------------------------------------------------------------------------------
-void Texture::Unmap()
-{
-    auto pNativeDevice = m_pDevice->GetVkDevice();
-    A3D_ASSERT(pNativeDevice != null_handle);
-
-    vmaUnmapMemory(m_pDevice->GetAllocator(), m_Allocation);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      サブリソースレイアウトを取得します.
-//-------------------------------------------------------------------------------------------------
-SubresourceLayout Texture::GetSubresourceLayout(uint32_t subresource) const
-{
-    // Vulkanの仕様変更にVkSubresourceLayout()はLINEARモードしか呼び出しできなくなった(1.0.42あたりから).
-    if (m_Desc.Layout == RESOURCE_LAYOUT_LINEAR)
-    {
-        VkImageSubresource subres = {};
-        subres.aspectMask = m_ImageAspectFlags;
-
-        uint32_t placeSlice;
-        DecomposeSubresource(
-            subresource,
-            m_Desc.MipLevels,
-            m_Desc.DepthOrArraySize,
-            subres.mipLevel,
-            subres.arrayLayer,
-            placeSlice);
-
-        auto pNativeDevice = m_pDevice->GetVkDevice();
-        A3D_ASSERT(pNativeDevice != null_handle);
-
-        SubresourceLayout result = {};
-        
-        VkSubresourceLayout layout = {};
-        vkGetImageSubresourceLayout(pNativeDevice, m_Image, &subres, &layout);
-
-        result.Offset   = layout.offset;
-        result.Size     = layout.size;
-
-        if (m_Desc.Dimension == RESOURCE_DIMENSION_TEXTURE3D)
-        { result.SlicePitch = layout.depthPitch; }
-        else
-        { result.SlicePitch = layout.arrayPitch; }
-
-        if (layout.rowPitch != 0)
-        {
-            result.RowPitch = layout.rowPitch;
-            result.RowCount = layout.size / layout.rowPitch;
-        }
-        else
-        {
-            result.RowPitch = result.SlicePitch / m_Desc.Height;
-            result.RowCount = m_Desc.Height;
-        }
-
-        return result;
-    }
-
-    return CalcSubresourceLayout(
-        subresource,
-        m_Desc.Format,
-        m_Desc.Width,
-        m_Desc.Height);
-}
-
-//-------------------------------------------------------------------------------------------------
 //      イメージを取得します.
 //-------------------------------------------------------------------------------------------------
 VkImage Texture::GetVkImage() const
@@ -505,6 +415,110 @@ VkImageAspectFlags Texture::GetVkImageAspectFlags() const
 //-------------------------------------------------------------------------------------------------
 RESOURCE_KIND Texture::GetKind() const
 { return RESOURCE_KIND_TEXTURE; }
+
+//-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+TextureDesc ITexture::GetDesc() const
+{
+    auto pThis = static_cast<const Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      メモリマッピングします.
+//-------------------------------------------------------------------------------------------------
+void* ITexture::Map()
+{
+    auto pThis = static_cast<Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+    void* pData;
+    auto ret = vmaMapMemory(pThis->m_pDevice->GetAllocator(), pThis->m_Allocation, &pData);
+    if (ret != VK_SUCCESS)
+    { return nullptr; }
+
+    return pData;
+}
+
+//-------------------------------------------------------------------------------------------------
+//      メモリマッピングを解除します.
+//-------------------------------------------------------------------------------------------------
+void ITexture::Unmap()
+{
+    auto pThis = static_cast<Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
+    A3D_ASSERT(pNativeDevice != null_handle);
+
+    vmaUnmapMemory(pThis->m_pDevice->GetAllocator(), pThis->m_Allocation);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      サブリソースレイアウトを取得します.
+//-------------------------------------------------------------------------------------------------
+SubresourceLayout ITexture::GetSubresourceLayout(uint32_t subresource) const
+{
+    auto pThis = static_cast<const Texture*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    // Vulkanの仕様変更にVkSubresourceLayout()はLINEARモードしか呼び出しできなくなった(1.0.42あたりから).
+    if (pThis->m_Desc.Layout == RESOURCE_LAYOUT_LINEAR)
+    {
+        VkImageSubresource subres = {};
+        subres.aspectMask = pThis->m_ImageAspectFlags;
+
+        uint32_t placeSlice;
+        DecomposeSubresource(
+            subresource,
+            pThis->m_Desc.MipLevels,
+            pThis->m_Desc.DepthOrArraySize,
+            subres.mipLevel,
+            subres.arrayLayer,
+            placeSlice);
+
+        auto pNativeDevice = pThis->m_pDevice->GetVkDevice();
+        A3D_ASSERT(pNativeDevice != null_handle);
+
+        SubresourceLayout result = {};
+        
+        VkSubresourceLayout layout = {};
+        vkGetImageSubresourceLayout(pNativeDevice, pThis->m_Image, &subres, &layout);
+
+        result.Offset   = layout.offset;
+        result.Size     = layout.size;
+
+        if (pThis->m_Desc.Dimension == RESOURCE_DIMENSION_TEXTURE3D)
+        { result.SlicePitch = layout.depthPitch; }
+        else
+        { result.SlicePitch = layout.arrayPitch; }
+
+        if (layout.rowPitch != 0)
+        {
+            result.RowPitch = layout.rowPitch;
+            result.RowCount = layout.size / layout.rowPitch;
+        }
+        else
+        {
+            result.RowPitch = result.SlicePitch / pThis->m_Desc.Height;
+            result.RowCount = pThis->m_Desc.Height;
+        }
+
+        return result;
+    }
+
+    return CalcSubresourceLayout(
+        subresource,
+        pThis->m_Desc.Format,
+        pThis->m_Desc.Width,
+        pThis->m_Desc.Height);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

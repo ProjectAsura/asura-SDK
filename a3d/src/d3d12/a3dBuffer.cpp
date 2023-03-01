@@ -133,31 +133,45 @@ void Buffer::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
+//      リソースを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12Resource* Buffer::GetD3D12Resource() const
+{ return m_pResource; }
+
+//-------------------------------------------------------------------------------------------------
 //      構成設定を取得します.
 //-------------------------------------------------------------------------------------------------
-BufferDesc Buffer::GetDesc() const
-{ return m_Desc; }
+BufferDesc IBuffer::GetDesc() const
+{
+    auto pThis = static_cast<const Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングします.
 //-------------------------------------------------------------------------------------------------
-void* Buffer::Map()
-{ 
+void* IBuffer::Map()
+{
+    auto pThis = static_cast<Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     void* ptr = nullptr;
 
-    if (m_Desc.HeapType == HEAP_TYPE_READBACK)
+    if (pThis->m_Desc.HeapType == HEAP_TYPE_READBACK)
     {
         D3D12_RANGE range = {};
         range.Begin = 0;
-        range.End   = SIZE_T(m_Desc.Size);
+        range.End   = SIZE_T(pThis->m_Desc.Size);
     
-        auto hr = m_pResource->Map(0, &range, &ptr);
+        auto hr = pThis->m_pResource->Map(0, &range, &ptr);
         if ( FAILED(hr) )
         { return nullptr; }
     }
     else
     {
-        auto hr = m_pResource->Map(0, nullptr, &ptr);
+        auto hr = pThis->m_pResource->Map(0, nullptr, &ptr);
         if (FAILED(hr))
         { return nullptr; }
     }
@@ -168,19 +182,22 @@ void* Buffer::Map()
 //-------------------------------------------------------------------------------------------------
 //      メモリマッピングを解除します.
 //-------------------------------------------------------------------------------------------------
-void Buffer::Unmap()
+void IBuffer::Unmap()
 {
-    if (m_Desc.HeapType == HEAP_TYPE_READBACK)
+    auto pThis = static_cast<Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_Desc.HeapType == HEAP_TYPE_READBACK)
     {
-        m_pResource->Unmap(0, nullptr);
+        pThis->m_pResource->Unmap(0, nullptr);
     }
     else
     {
         D3D12_RANGE range = {};
         range.Begin = 0;
-        range.End   = SIZE_T(m_Desc.Size);
+        range.End   = SIZE_T(pThis->m_Desc.Size);
 
-        m_pResource->Unmap(0, &range);
+        pThis->m_pResource->Unmap(0, &range);
     }
 }
 
@@ -193,19 +210,16 @@ RESOURCE_KIND Buffer::GetKind() const
 //-------------------------------------------------------------------------------------------------
 //      デバイスアドレスを取得します.
 //-------------------------------------------------------------------------------------------------
-uint64_t Buffer::GetDeviceAddress() const
+uint64_t IBuffer::GetDeviceAddress() const
 {
-    if (m_pResource == nullptr)
+    auto pThis = static_cast<const Buffer*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    if (pThis->m_pResource == nullptr)
     { return 0; }
 
-    return m_pResource->GetGPUVirtualAddress();
+    return pThis->m_pResource->GetGPUVirtualAddress();
 }
-
-//-------------------------------------------------------------------------------------------------
-//      リソースを取得します.
-//-------------------------------------------------------------------------------------------------
-ID3D12Resource* Buffer::GetD3D12Resource() const
-{ return m_pResource; }
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

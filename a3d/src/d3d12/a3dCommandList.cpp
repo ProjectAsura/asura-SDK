@@ -171,17 +171,31 @@ void CommandList::GetDevice(IDevice** ppDevice)
     { m_pDevice->AddRef(); }
 }
 
+//-------------------------------------------------------------------------------------------------
+//      コマンドアロケータを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12CommandAllocator* CommandList::GetD3D12Allocator() const
+{ return m_pCommandAllocator; }
+
+//-------------------------------------------------------------------------------------------------
+//      グラフィックスコマンドリストを取得します.
+//-------------------------------------------------------------------------------------------------
+ID3D12GraphicsCommandList6* CommandList::GetD3D12GraphicsCommandList() const
+{ return m_pCommandList; }
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を開始します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::Begin()
+void ICommandList::Begin()
 {
-    m_pCommandAllocator->Reset();
-    m_pCommandList->Reset(m_pCommandAllocator, nullptr);
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
-    auto heapBuf = m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    auto heapSmp = m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+    pThis->m_pCommandAllocator->Reset();
+    pThis->m_pCommandList->Reset(pThis->m_pCommandAllocator, nullptr);
+
+    auto heapBuf = pThis->m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    auto heapSmp = pThis->m_pDevice->GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
    
     uint32_t count = 0;
     ID3D12DescriptorHeap* pHeaps[2] = {};
@@ -202,13 +216,13 @@ void CommandList::Begin()
         return;
     }
 
-    m_pCommandList->SetDescriptorHeaps(count, pHeaps);
+    pThis->m_pCommandList->SetDescriptorHeaps(count, pHeaps);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BeginFrameBuffer
+void ICommandList::BeginFrameBuffer
 (
     uint32_t                        renderTargetViewCount,
     IRenderTargetView**             pRenderTargetViews,
@@ -218,6 +232,9 @@ void CommandList::BeginFrameBuffer
     const ClearDepthStencilValue*   pClearDepthStencil
 )
 {
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[MAX_RTV_COUNT] = {};
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
 
@@ -236,7 +253,7 @@ void CommandList::BeginFrameBuffer
         dsvHandle = pWrapperDSV->GetDescriptor()->GetHandleCPU();
     }
 
-    m_pCommandList->OMSetRenderTargets(
+    pThis->m_pCommandList->OMSetRenderTargets(
         renderTargetViewCount,
         (pRenderTargetViews != nullptr) ? rtvHandles : nullptr,
         FALSE,
@@ -253,7 +270,7 @@ void CommandList::BeginFrameBuffer
                 pClearColors[i].B,
                 pClearColors[i].A
             };
-            m_pCommandList->ClearRenderTargetView(rtvHandles[index], colors, 0, nullptr);
+            pThis->m_pCommandList->ClearRenderTargetView(rtvHandles[index], colors, 0, nullptr);
         }
     }
 
@@ -265,7 +282,7 @@ void CommandList::BeginFrameBuffer
         if (pClearDepthStencil->EnableClearStencil)
         { flags |= D3D12_CLEAR_FLAG_STENCIL; }
 
-        m_pCommandList->ClearDepthStencilView(
+        pThis->m_pCommandList->ClearDepthStencilView(
             dsvHandle,
             flags,
             pClearDepthStencil->Depth,
@@ -277,55 +294,79 @@ void CommandList::BeginFrameBuffer
 //-------------------------------------------------------------------------------------------------
 //      フレームバッファを解除します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::EndFrameBuffer()
-{ m_pCommandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr); }
+void ICommandList::EndFrameBuffer()
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pCommandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
+}
 
 //------------------------------------------------------------------------------------------------
 //      加速機構を構築します.
 //------------------------------------------------------------------------------------------------
-void CommandList::BuildAccelerationStructure(IAccelerationStructure* pAS)
+void ICommandList::BuildAccelerationStructure(IAccelerationStructure* pAS)
 {
     if (pAS == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapAS = static_cast<AccelerationStructure*>(pAS);
     A3D_ASSERT(pWrapAS != nullptr);
 
-    pWrapAS->Build(m_pCommandList);
+    pWrapAS->Build(pThis->m_pCommandList);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      ブレンド定数を設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetBlendConstant(const float blendConstant[4])
-{ m_pCommandList->OMSetBlendFactor(blendConstant); }
+void ICommandList::SetBlendConstant(const float blendConstant[4])
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pCommandList->OMSetBlendFactor(blendConstant);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      ステンシル参照値を設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetStencilReference(uint32_t stencilRef)
-{ m_pCommandList->OMSetStencilRef(stencilRef); }
+void ICommandList::SetStencilReference(uint32_t stencilRef)
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pCommandList->OMSetStencilRef(stencilRef);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      ビューポートを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetViewports(uint32_t count, Viewport* pViewports)
+void ICommandList::SetViewports(uint32_t count, Viewport* pViewports)
 {
     if (count == 0 || pViewports == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pNativeViewports = reinterpret_cast<D3D12_VIEWPORT*>(pViewports);
 
-    m_pCommandList->RSSetViewports(count, pNativeViewports);
+    pThis->m_pCommandList->RSSetViewports(count, pNativeViewports);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      シザー矩形を設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetScissors(uint32_t count, Rect* pScissors)
+void ICommandList::SetScissors(uint32_t count, Rect* pScissors)
 {
     if (count == 0 || pScissors == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     D3D12_RECT rects[D3D12_VIEWPORT_AND_SCISSORRECT_MAX_INDEX] = {};
     for(auto i=0u; i<count; ++i)
@@ -336,16 +377,19 @@ void CommandList::SetScissors(uint32_t count, Rect* pScissors)
         rects[i].bottom = pScissors[i].Offset.Y + pScissors[i].Extent.Height;
     }
 
-    m_pCommandList->RSSetScissorRects(count, rects);
+    pThis->m_pCommandList->RSSetScissorRects(count, rects);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      パイプラインステートを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetPipelineState(IPipelineState* pPipelineState)
+void ICommandList::SetPipelineState(IPipelineState* pPipelineState)
 {
     if (pPipelineState == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     if (pPipelineState->GetType() == PIPELINE_STATE_TYPE_RAYTRACING)
     {
@@ -353,10 +397,8 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
         A3D_ASSERT(pWrapPipelineState != nullptr);
 
         pWrapPipelineState->Issue(this);
-        m_IsGraphics = false;
-
-        m_HandleCount = pWrapPipelineState->GetDescriptorSetLayout()->GetDesc().EntryCount;
-        m_DirtyDescriptor = true;
+        pThis->m_IsGraphics = false;
+        pThis->m_ConstantIndex = pWrapPipelineState->GetDescriptorSetLayout()->GetRootConstantIndex();
     }
     else
     {
@@ -364,17 +406,15 @@ void CommandList::SetPipelineState(IPipelineState* pPipelineState)
         A3D_ASSERT(pWrapPipelineState != nullptr);
 
         pWrapPipelineState->Issue(this);
-        m_IsGraphics = pWrapPipelineState->IsGraphics();
-
-        m_HandleCount = pWrapPipelineState->GetDescriptorSetLayout()->GetDesc().EntryCount;
-        m_DirtyDescriptor = true;
+        pThis->m_IsGraphics = pWrapPipelineState->IsGraphics();
+        pThis->m_ConstantIndex = pWrapPipelineState->GetDescriptorSetLayout()->GetRootConstantIndex();
     }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      頂点バッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetVertexBuffers
+void ICommandList::SetVertexBuffers
 (
     uint32_t    startSlot,
     uint32_t    count,
@@ -382,10 +422,13 @@ void CommandList::SetVertexBuffers
     uint64_t*   pOffsets
 )
 {
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     if (count == 0 || ppResources == nullptr)
     {
         D3D12_VERTEX_BUFFER_VIEW views[D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
-        m_pCommandList->IASetVertexBuffers(0, D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT, views);
+        pThis->m_pCommandList->IASetVertexBuffers(0, D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT, views);
         return;
     }
 
@@ -410,22 +453,25 @@ void CommandList::SetVertexBuffers
         views[i].StrideInBytes  = desc.Stride;
     }
 
-    m_pCommandList->IASetVertexBuffers(startSlot, count, views);
+    pThis->m_pCommandList->IASetVertexBuffers(startSlot, count, views);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      インデックスバッファを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetIndexBuffer
+void ICommandList::SetIndexBuffer
 (
     IBuffer*   pResource,
     uint64_t   offset
 )
 {
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     if (pResource == nullptr)
     {
         D3D12_INDEX_BUFFER_VIEW view = {};
-        m_pCommandList->IASetIndexBuffer(&view);
+        pThis->m_pCommandList->IASetIndexBuffer(&view);
         return;
     }
 
@@ -442,73 +488,118 @@ void CommandList::SetIndexBuffer
                           : DXGI_FORMAT_R32_UINT;
     view.SizeInBytes    = static_cast<uint32_t>(pWrapResource->GetDesc().Size);
 
-    m_pCommandList->IASetIndexBuffer( &view );
+    pThis->m_pCommandList->IASetIndexBuffer( &view );
+}
+
+//-------------------------------------------------------------------------------------------------
+//      32bit定数を設定します.
+//-------------------------------------------------------------------------------------------------
+void ICommandList::SetConstants(uint32_t count, const void* pValues, uint32_t offset)
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    A3D_ASSERT(count !=0);
+    A3D_ASSERT(pValues != nullptr);
+
+    if (pThis->m_IsGraphics)
+    { pThis->m_pCommandList->SetGraphicsRoot32BitConstants(pThis->m_ConstantIndex, count, pValues, offset); }
+    else
+    { pThis->m_pCommandList->SetComputeRoot32BitConstants(pThis->m_ConstantIndex, count, pValues, offset); }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      定数バッファビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
+void ICommandList::SetView(uint32_t index, IConstantBufferView* const pResource)
 {
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
     if (pResource == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapView = static_cast<ConstantBufferView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
-    m_Handles[index] = pWrapView->GetDescriptor()->GetHandleGPU();
-    m_DirtyDescriptor = true;
+    auto handle = pWrapView->GetDescriptor()->GetHandleGPU();
+    if (pThis->m_IsGraphics)
+    { pThis->m_pCommandList->SetGraphicsRootDescriptorTable(index, handle); }
+    else
+    { pThis->m_pCommandList->SetComputeRootDescriptorTable(index, handle); }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      シェーダリソースビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
+void ICommandList::SetView(uint32_t index, IShaderResourceView* const pResource)
 {
-    if (pResource == nullptr || index >= MAX_DESCRIPTOR_COUNT)
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
+    if (pResource == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapView = static_cast<ShaderResourceView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
-    m_Handles[index]    = pWrapView->GetDescriptor()->GetHandleGPU();
-    m_DirtyDescriptor   = true;
+    auto handle = pWrapView->GetDescriptor()->GetHandleGPU();
+    if (pThis->m_IsGraphics)
+    { pThis->m_pCommandList->SetGraphicsRootDescriptorTable(index, handle); }
+    else
+    { pThis->m_pCommandList->SetComputeRootDescriptorTable(index, handle); }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      アンオーダードアクセスビューを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
+void ICommandList::SetView(uint32_t index, IUnorderedAccessView* const pResource)
 {
-    if (pResource == nullptr || index >= MAX_DESCRIPTOR_COUNT)
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
+    if (pResource == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapView = static_cast<UnorderedAccessView*>(pResource);
     A3D_ASSERT(pWrapView != nullptr);
 
-    m_Handles[index]    = pWrapView->GetDescriptor()->GetHandleGPU();
-    m_DirtyDescriptor   = true;
+    auto handle = pWrapView->GetDescriptor()->GetHandleGPU();
+    if (pThis->m_IsGraphics)
+    { pThis->m_pCommandList->SetGraphicsRootDescriptorTable(index, handle); }
+    else
+    { pThis->m_pCommandList->SetComputeRootDescriptorTable(index, handle); }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      サンプラーを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::SetSampler(uint32_t index, ISampler* const pSampler)
+void ICommandList::SetSampler(uint32_t index, ISampler* const pSampler)
 {
-    if (pSampler == nullptr || index >= MAX_DESCRIPTOR_COUNT)
+    A3D_ASSERT(index < MAX_DESCRIPTOR_COUNT);
+    if (pSampler == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapSmp = static_cast<Sampler*>(pSampler);
     A3D_ASSERT(pWrapSmp != nullptr);
 
-    m_Handles[index]    = pWrapSmp->GetDescriptor()->GetHandleGPU();
-    m_DirtyDescriptor   = true;
+    auto handle = pWrapSmp->GetDescriptor()->GetHandleGPU();
+    if (pThis->m_IsGraphics)
+    { pThis->m_pCommandList->SetGraphicsRootDescriptorTable(index, handle); }
+    else
+    { pThis->m_pCommandList->SetComputeRootDescriptorTable(index, handle); }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::TextureBarrier
+void ICommandList::TextureBarrier
 (
     ITexture*       pResource,
     RESOURCE_STATE  prevState,
@@ -518,10 +609,13 @@ void CommandList::TextureBarrier
     if (pResource == nullptr || prevState == nextState)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapResource = static_cast<Texture*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
 
-    if (m_Type == COMMANDLIST_TYPE_COMPUTE)
+    if (pThis->m_Type == COMMANDLIST_TYPE_COMPUTE)
     {
         if (prevState == RESOURCE_STATE_UNORDERED_ACCESS)
         {
@@ -529,7 +623,7 @@ void CommandList::TextureBarrier
             barrier.Type            = D3D12_RESOURCE_BARRIER_TYPE_UAV;
             barrier.UAV.pResource   = pWrapResource->GetD3D12Resource();
 
-            m_pCommandList->ResourceBarrier(1, &barrier);
+            pThis->m_pCommandList->ResourceBarrier(1, &barrier);
         }
     }
     else
@@ -541,14 +635,14 @@ void CommandList::TextureBarrier
         barrier.Transition.StateAfter  = ToNativeState(nextState);
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-        m_pCommandList->ResourceBarrier(1, &barrier);
+        pThis->m_pCommandList->ResourceBarrier(1, &barrier);
     }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      リソースバリアを設定します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BufferBarrier
+void ICommandList::BufferBarrier
 (
     IBuffer*        pResource,
     RESOURCE_STATE  prevState,
@@ -557,6 +651,9 @@ void CommandList::BufferBarrier
 {
     if (pResource == nullptr || prevState == nextState)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapResource = static_cast<Buffer*>(pResource);
     A3D_ASSERT(pWrapResource != nullptr);
@@ -568,7 +665,7 @@ void CommandList::BufferBarrier
     if (heapType == HEAP_TYPE_UPLOAD || heapType == HEAP_TYPE_READBACK)
     { return;}
 
-    if (m_Type == COMMANDLIST_TYPE_COMPUTE)
+    if (pThis->m_Type == COMMANDLIST_TYPE_COMPUTE)
     {
         if (prevState == RESOURCE_STATE_UNORDERED_ACCESS)
         {
@@ -586,14 +683,14 @@ void CommandList::BufferBarrier
         barrier.Transition.StateAfter  = ToNativeState(nextState);
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-        m_pCommandList->ResourceBarrier(1, &barrier);
+        pThis->m_pCommandList->ResourceBarrier(1, &barrier);
     }
 }
 
 //-------------------------------------------------------------------------------------------------
 //      インスタンス描画します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::DrawInstanced
+void ICommandList::DrawInstanced
 (
     uint32_t vertexCount,
     uint32_t instanceCount,
@@ -601,14 +698,51 @@ void CommandList::DrawInstanced
     uint32_t firstInstance
 )
 {
-    UpdateDescriptor();
-    m_pCommandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pCommandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      インスタンスを間接描画します.
+//-------------------------------------------------------------------------------------------------
+void ICommandList::DrawInstancedIndirect
+(
+    uint32_t maxCommandCount,
+    IBuffer* pArgumentBuffer,
+    uint64_t argumentBufferOffset,
+    IBuffer* pCounterBuffer,
+    uint64_t counterBufferOffset
+)
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pArgumentWrapBuffer = static_cast<Buffer*>(pArgumentBuffer);
+    A3D_ASSERT(pArgumentWrapBuffer != nullptr);
+
+    ID3D12Resource* pNativeCounterBuffer = nullptr;
+    if (pCounterBuffer != nullptr)
+    {
+        auto pWrapCounterBuffer = static_cast<Buffer*>(pCounterBuffer);
+        A3D_ASSERT(pWrapCounterBuffer != nullptr);
+        pNativeCounterBuffer = pWrapCounterBuffer->GetD3D12Resource();
+    }
+
+    pThis->m_pCommandList->ExecuteIndirect(
+        pThis->m_pDevice->GetCommandSignature(INDIRECT_TYPE_DRAW),
+        maxCommandCount,
+        pArgumentWrapBuffer->GetD3D12Resource(),
+        argumentBufferOffset,
+        pNativeCounterBuffer,
+        counterBufferOffset);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      インデックスバッファを用いてインスタンス描画します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::DrawIndexedInstanced
+void ICommandList::DrawIndexedInstanced
 (
     uint32_t indexCount,
     uint32_t instanceCount,
@@ -617,36 +751,150 @@ void CommandList::DrawIndexedInstanced
     uint32_t firstInstance
 )
 {
-    UpdateDescriptor();
-    m_pCommandList->DrawIndexedInstanced(
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pCommandList->DrawIndexedInstanced(
         indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      インデックスバッファを用いてインスタンスを間接描画します.
+//-------------------------------------------------------------------------------------------------
+void ICommandList::DrawIndexedInstancedIndirect
+(
+    uint32_t maxCommandCount,
+    IBuffer* pArgumentBuffer,
+    uint64_t argumentBufferOffset,
+    IBuffer* pCounterBuffer,
+    uint64_t counterBufferOffset
+)
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pArgumentWrapBuffer = static_cast<Buffer*>(pArgumentBuffer);
+    A3D_ASSERT(pArgumentWrapBuffer != nullptr);
+
+    ID3D12Resource* pNativeCounterBuffer = nullptr;
+    if (pCounterBuffer != nullptr)
+    {
+        auto pWrapCounterBuffer = static_cast<Buffer*>(pCounterBuffer);
+        A3D_ASSERT(pWrapCounterBuffer != nullptr);
+        pNativeCounterBuffer = pWrapCounterBuffer->GetD3D12Resource();
+    }
+
+    pThis->m_pCommandList->ExecuteIndirect(
+        pThis->m_pDevice->GetCommandSignature(INDIRECT_TYPE_DRAW_INDEXED),
+        maxCommandCount,
+        pArgumentWrapBuffer->GetD3D12Resource(),
+        argumentBufferOffset,
+        pNativeCounterBuffer,
+        counterBufferOffset);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      コンピュートシェーダを起動します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
+void ICommandList::DispatchCompute(uint32_t x, uint32_t y, uint32_t z)
 {
-    UpdateDescriptor();
-    m_pCommandList->Dispatch(x, y, z);
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pCommandList->Dispatch(x, y, z);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      コンピュートシェーダを間接起動します.
+//-------------------------------------------------------------------------------------------------
+void ICommandList::DispatchComputeIndirect
+(
+    uint32_t maxCommandCount,
+    IBuffer* pArgumentBuffer,
+    uint64_t argumentBufferOffset,
+    IBuffer* pCounterBuffer,
+    uint64_t counterBufferOffset
+)
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pWrapArgumentBuffer = static_cast<Buffer*>(pArgumentBuffer);
+    A3D_ASSERT(pWrapArgumentBuffer != nullptr);
+
+    ID3D12Resource* pNativeCounterBuffer = nullptr;
+    if (pCounterBuffer != nullptr)
+    {
+        auto pWrapCounterBuffer = static_cast<Buffer*>(pCounterBuffer);
+        A3D_ASSERT(pWrapCounterBuffer != nullptr);
+        pNativeCounterBuffer = pWrapCounterBuffer->GetD3D12Resource();
+    }
+
+    pThis->m_pCommandList->ExecuteIndirect(
+        pThis->m_pDevice->GetCommandSignature(INDIRECT_TYPE_DISPATCH_COMPUTE),
+        maxCommandCount,
+        pWrapArgumentBuffer->GetD3D12Resource(),
+        argumentBufferOffset,
+        pNativeCounterBuffer,
+        counterBufferOffset);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      メッシュシェーダ(あるいは増幅シェーダ)を起動します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
+void ICommandList::DispatchMesh(uint32_t x, uint32_t y, uint32_t z)
 {
-    UpdateDescriptor();
-    m_pCommandList->DispatchMesh(x, y, z);
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    pThis->m_pCommandList->DispatchMesh(x, y, z);
+}
+
+//-------------------------------------------------------------------------------------------------
+//      メッシュシェーダを間接起動します.
+//-------------------------------------------------------------------------------------------------
+void ICommandList::DispatchMeshIndirect
+(
+    uint32_t maxCommandCount,
+    IBuffer* pArgumentBuffer,
+    uint64_t argumentBufferOffset,
+    IBuffer* pCounterBuffer,
+    uint64_t counterBufferOffset
+)
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    auto pWrapArgumentBuffer = static_cast<Buffer*>(pArgumentBuffer);
+    A3D_ASSERT(pWrapArgumentBuffer != nullptr);
+
+    ID3D12Resource* pNativeCounterBuffer = nullptr;
+    if (pCounterBuffer != nullptr)
+    {
+        auto pWrapCounterBuffer = static_cast<Buffer*>(pCounterBuffer);
+        A3D_ASSERT(pWrapCounterBuffer != nullptr);
+        pNativeCounterBuffer = pWrapCounterBuffer->GetD3D12Resource();
+    }
+
+    pThis->m_pCommandList->ExecuteIndirect(
+        pThis->m_pDevice->GetCommandSignature(INDIRECT_TYPE_DISPATCH_MESH),
+        maxCommandCount,
+        pWrapArgumentBuffer->GetD3D12Resource(),
+        argumentBufferOffset,
+        pNativeCounterBuffer,
+        counterBufferOffset);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      レイトレーシングを行います.
 //-------------------------------------------------------------------------------------------------
-void CommandList::TraceRays(const TraceRayArguments* pArgs)
+void ICommandList::TraceRays(const TraceRayArguments* pArgs)
 {
     if (pArgs == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     D3D12_DISPATCH_RAYS_DESC desc = {};
     desc.RayGenerationShaderRecord.StartAddress = pArgs->RayGeneration.StartAddress;
@@ -668,70 +916,24 @@ void CommandList::TraceRays(const TraceRayArguments* pArgs)
     desc.Height = pArgs->Height;
     desc.Depth  = pArgs->Depth;
 
-    m_pCommandList->DispatchRays(&desc);
-}
-
-//-------------------------------------------------------------------------------------------------
-//      インダイレクトコマンドを実行します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::ExecuteIndirect
-(
-    ICommandSet*    pCommandSet,
-    uint32_t        maxCommandCount,
-    IBuffer*        pArgumentBuffer,
-    uint64_t        argumentBufferOffset,
-    IBuffer*        pCounterBuffer,
-    uint64_t        counterBufferOffset
-)
-{
-    if (pCommandSet == nullptr || maxCommandCount == 0 || pArgumentBuffer == nullptr)
-    { return; }
-
-    auto pWrapCommandSet = static_cast<CommandSet*>(pCommandSet);
-    A3D_ASSERT(pWrapCommandSet != nullptr);
-
-    auto pNativeCommandSignature = pWrapCommandSet->GetD3D12CommandSignature();
-    A3D_ASSERT(pNativeCommandSignature != nullptr);
-
-    auto pWrapArgumentBuffer = static_cast<Buffer*>(pArgumentBuffer);
-    A3D_ASSERT(pWrapArgumentBuffer != nullptr);
-
-    auto pNativeArgumentResource = pWrapArgumentBuffer->GetD3D12Resource();
-    A3D_ASSERT(pNativeArgumentResource != nullptr);
-
-    ID3D12Resource* pNativeCounterResource = nullptr;
-    if (pCounterBuffer != nullptr)
-    {
-        auto pWrapCouterBuffer = static_cast<Buffer*>(pCounterBuffer);
-        A3D_ASSERT(pWrapCouterBuffer != nullptr);
-
-        pNativeCounterResource = pWrapCouterBuffer->GetD3D12Resource();
-        A3D_ASSERT(pNativeCounterResource != nullptr);
-    }
-
-    UpdateDescriptor();
-
-    m_pCommandList->ExecuteIndirect(
-        pNativeCommandSignature,
-        maxCommandCount,
-        pNativeArgumentResource,
-        argumentBufferOffset,
-        pNativeCounterResource, 
-        counterBufferOffset);
+    pThis->m_pCommandList->DispatchRays(&desc);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      クエリを開始します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::BeginQuery(IQueryPool* pQuery, uint32_t index)
+void ICommandList::BeginQuery(IQueryPool* pQuery, uint32_t index)
 {
     if (pQuery == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
-    m_pCommandList->BeginQuery(
+    pThis->m_pCommandList->BeginQuery(
         pWrapQueryPool->GetD3D12QueryHeap(),
         pWrapQueryPool->GetD3D12QueryType(),
         index);
@@ -740,15 +942,18 @@ void CommandList::BeginQuery(IQueryPool* pQuery, uint32_t index)
 //-------------------------------------------------------------------------------------------------
 //      クエリを終了します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::EndQuery(IQueryPool* pQuery, uint32_t index)
+void ICommandList::EndQuery(IQueryPool* pQuery, uint32_t index)
 {
     if (pQuery == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
 
-    m_pCommandList->EndQuery(
+    pThis->m_pCommandList->EndQuery(
         pWrapQueryPool->GetD3D12QueryHeap(),
         pWrapQueryPool->GetD3D12QueryType(),
         index);
@@ -757,7 +962,7 @@ void CommandList::EndQuery(IQueryPool* pQuery, uint32_t index)
 //-------------------------------------------------------------------------------------------------
 //      クエリを解決します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::ResolveQuery
+void ICommandList::ResolveQuery
 (
     IQueryPool* pQuery,
     uint32_t    startIndex,
@@ -768,6 +973,9 @@ void CommandList::ResolveQuery
 {
     if (pQuery == nullptr || queryCount == 0 || pDstBuffer == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapQueryPool = static_cast<QueryPool*>(pQuery);
     A3D_ASSERT(pWrapQueryPool != nullptr);
@@ -783,7 +991,7 @@ void CommandList::ResolveQuery
     auto pNativeResource = pWrapBuffer->GetD3D12Resource();
     A3D_ASSERT(pNativeResource != nullptr);
 
-    m_pCommandList->ResolveQueryData(
+    pThis->m_pCommandList->ResolveQueryData(
         pNativeQueryPool,
         type,
         startIndex,
@@ -795,7 +1003,7 @@ void CommandList::ResolveQuery
 //-------------------------------------------------------------------------------------------------
 //      クエリをリセットします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::ResetQuery(IQueryPool* pQuery)
+void ICommandList::ResetQuery(IQueryPool* pQuery)
 {
     A3D_UNUSED(pQuery);
     /* DO_NOTHING */
@@ -804,23 +1012,26 @@ void CommandList::ResetQuery(IQueryPool* pQuery)
 //-------------------------------------------------------------------------------------------------
 //      バッファをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyBuffer(IBuffer* pDst, IBuffer* pSrc)
+void ICommandList::CopyBuffer(IBuffer* pDst, IBuffer* pSrc)
 {
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapDst = static_cast<Buffer*>(pDst);
     auto pWrapSrc = static_cast<Buffer*>(pSrc);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
-    m_pCommandList->CopyResource(pWrapDst->GetD3D12Resource(), pWrapSrc->GetD3D12Resource());
+    pThis->m_pCommandList->CopyResource(pWrapDst->GetD3D12Resource(), pWrapSrc->GetD3D12Resource());
 }
 
 //-------------------------------------------------------------------------------------------------
 //      テクスチャをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyTexture
+void ICommandList::CopyTexture
 (
     ITexture*       pDst,
     ITexture*       pSrc
@@ -829,18 +1040,21 @@ void CommandList::CopyTexture
     if (pDst == nullptr || pSrc == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapDst = static_cast<Texture*>(pDst);
     auto pWrapSrc = static_cast<Texture*>(pSrc);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
-    m_pCommandList->CopyResource(pWrapDst->GetD3D12Resource(), pWrapSrc->GetD3D12Resource());
+    pThis->m_pCommandList->CopyResource(pWrapDst->GetD3D12Resource(), pWrapSrc->GetD3D12Resource());
 }
 
 //-------------------------------------------------------------------------------------------------
 //      領域を指定してテクスチャをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyTextureRegion
+void ICommandList::CopyTextureRegion
 (
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
@@ -853,6 +1067,9 @@ void CommandList::CopyTextureRegion
 {
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapDst = static_cast<Texture*>(pDstResource);
     auto pWrapSrc = static_cast<Texture*>(pSrcResource);
@@ -877,7 +1094,7 @@ void CommandList::CopyTextureRegion
     box.bottom = srcExtent.Height;
     box.back   = srcExtent.Depth;
 
-    m_pCommandList->CopyTextureRegion(
+    pThis->m_pCommandList->CopyTextureRegion(
         &dst, dstOffset.X, dstOffset.Y, dstOffset.Z,
         &src, &box);
 }
@@ -885,7 +1102,7 @@ void CommandList::CopyTextureRegion
 //-------------------------------------------------------------------------------------------------
 //      領域を指定してバッファをコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyBufferRegion
+void ICommandList::CopyBufferRegion
 (
     IBuffer*    pDstBuffer,
     uint64_t    dstOffset,
@@ -897,12 +1114,15 @@ void CommandList::CopyBufferRegion
     if (pDstBuffer == nullptr || pSrcBuffer == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapDst = static_cast<Buffer*>(pDstBuffer);
     auto pWrapSrc = static_cast<Buffer*>(pSrcBuffer);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
-    m_pCommandList->CopyBufferRegion(
+    pThis->m_pCommandList->CopyBufferRegion(
         pWrapDst->GetD3D12Resource(),
         dstOffset,
         pWrapSrc->GetD3D12Resource(),
@@ -913,7 +1133,7 @@ void CommandList::CopyBufferRegion
 //-------------------------------------------------------------------------------------------------
 //      バッファからテクスチャにコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyBufferToTexture
+void ICommandList::CopyBufferToTexture
 (
     ITexture*       pDstTexture,
     uint32_t        dstSubresource,
@@ -925,12 +1145,15 @@ void CommandList::CopyBufferToTexture
     if (pDstTexture == nullptr || pSrcBuffer == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapDst = static_cast<Texture*>(pDstTexture);
     auto pWrapSrc = static_cast<Buffer*>(pSrcBuffer);
     A3D_ASSERT(pWrapDst != nullptr);
     A3D_ASSERT(pWrapSrc != nullptr);
 
-    auto pWrapDevice = static_cast<Device*>(m_pDevice);
+    auto pWrapDevice = static_cast<Device*>(pThis->m_pDevice);
     A3D_ASSERT(pWrapDevice != nullptr);
 
     auto pNativeDevice = pWrapDevice->GetD3D12Device();
@@ -959,13 +1182,13 @@ void CommandList::CopyBufferToTexture
     dst.Type             = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
     dst.SubresourceIndex = dstSubresource;
 
-    m_pCommandList->CopyTextureRegion(&dst, dstOffset.X, dstOffset.Y, dstOffset.Z, &src, nullptr);
+    pThis->m_pCommandList->CopyTextureRegion(&dst, dstOffset.X, dstOffset.Y, dstOffset.Z, &src, nullptr);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      テクスチャからバッファにコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyTextureToBuffer
+void ICommandList::CopyTextureToBuffer
 (
     IBuffer*        pDstBuffer,
     uint64_t        dstOffset,
@@ -979,6 +1202,9 @@ void CommandList::CopyTextureToBuffer
 
     if (pDstBuffer == nullptr || pSrcTexture == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapDst = static_cast<Buffer*>(pDstBuffer);
     auto pWrapSrc = static_cast<Texture*>(pSrcTexture);
@@ -997,7 +1223,7 @@ void CommandList::CopyTextureToBuffer
                    + rowBytes * srcExtent.Height
                    + rowBytes * srcExtent.Height * srcExtent.Depth;
 
-    m_pCommandList->CopyBufferRegion(
+    pThis->m_pCommandList->CopyBufferRegion(
         pWrapDst->GetD3D12Resource(),
         dstOffset,
         pWrapSrc->GetD3D12Resource(),
@@ -1008,7 +1234,7 @@ void CommandList::CopyTextureToBuffer
 //-------------------------------------------------------------------------------------------------
 //      加速機構をコピーします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::CopyAccelerationStructure
+void ICommandList::CopyAccelerationStructure
 (
     IAccelerationStructure*             pDstAS,
     IAccelerationStructure*             pSrcAS,
@@ -1018,6 +1244,9 @@ void CommandList::CopyAccelerationStructure
     if (pDstAS == nullptr || pSrcAS == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapDstAS = static_cast<AccelerationStructure*>(pDstAS);
     auto pWrapSrcAS = static_cast<AccelerationStructure*>(pSrcAS);
     A3D_ASSERT(pWrapDstAS != nullptr);
@@ -1026,7 +1255,7 @@ void CommandList::CopyAccelerationStructure
     auto dstAddress = pWrapDstAS->GetD3D12Resource()->GetGPUVirtualAddress();
     auto srcAddress = pWrapSrcAS->GetD3D12Resource()->GetGPUVirtualAddress();
 
-    m_pCommandList->CopyRaytracingAccelerationStructure(
+    pThis->m_pCommandList->CopyRaytracingAccelerationStructure(
         dstAddress,
         srcAddress,
         ToNativeCopyMode(mode));
@@ -1035,7 +1264,7 @@ void CommandList::CopyAccelerationStructure
 //-------------------------------------------------------------------------------------------------
 //      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
 //-------------------------------------------------------------------------------------------------
-void CommandList::ResolveSubresource
+void ICommandList::ResolveSubresource
 (
     ITexture*       pDstResource,
     uint32_t        dstSubresource,
@@ -1046,6 +1275,9 @@ void CommandList::ResolveSubresource
     if (pDstResource == nullptr || pSrcResource == nullptr)
     { return; }
 
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
     auto pWrapDst = static_cast<Texture*>(pDstResource);
     auto pWrapSrc = static_cast<Texture*>(pSrcResource);
     A3D_ASSERT(pWrapDst != nullptr);
@@ -1054,7 +1286,7 @@ void CommandList::ResolveSubresource
     auto desc = pWrapDst->GetDesc();
     auto dstFormat = ToNativeFormat(desc.Format);
 
-    m_pCommandList->ResolveSubresource(
+    pThis->m_pCommandList->ResolveSubresource(
         pWrapDst->GetD3D12Resource(),
         dstSubresource,
         pWrapSrc->GetD3D12Resource(),
@@ -1066,10 +1298,13 @@ void CommandList::ResolveSubresource
 //-------------------------------------------------------------------------------------------------
 //      バンドルを実行します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::ExecuteBundle(ICommandList* pCommandList)
+void ICommandList::ExecuteBundle(ICommandList* pCommandList)
 {
     if (pCommandList == nullptr)
     { return; }
+
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
     auto pWrapCommandList = static_cast<CommandList*>(pCommandList);
     A3D_ASSERT(pWrapCommandList != nullptr);
@@ -1077,63 +1312,35 @@ void CommandList::ExecuteBundle(ICommandList* pCommandList)
     auto pNativeCommandList = pWrapCommandList->GetD3D12GraphicsCommandList();
     A3D_ASSERT(pNativeCommandList != nullptr);
 
-    m_pCommandList->ExecuteBundle(pNativeCommandList);
+    pThis->m_pCommandList->ExecuteBundle(pNativeCommandList);
 }
 
 //-------------------------------------------------------------------------------------------------
 //      デバッグマーカーをプッシュします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::PushMarker(const char* tag)
-{ PIXBeginEvent(m_pCommandList, 0, tag); }
+void ICommandList::PushMarker(const char* tag)
+{
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    PIXBeginEvent(pThis->m_pCommandList, 0, tag);
+}
 
 //-------------------------------------------------------------------------------------------------
 //      デバッグマーカーをポップします.
 //-------------------------------------------------------------------------------------------------
-void CommandList::PopMarker()
+void ICommandList::PopMarker()
 { PIXEndEvent(); }
 
 //-------------------------------------------------------------------------------------------------
 //      コマンドリストの記録を終了します.
 //-------------------------------------------------------------------------------------------------
-void CommandList::End()
+void ICommandList::End()
 {
-    m_pCommandList->Close();
-    m_HandleCount       = 0;
-    m_DirtyDescriptor   = false;
-}
+    auto pThis = static_cast<CommandList*>(this);
+    A3D_ASSERT(pThis != nullptr);
 
-//-------------------------------------------------------------------------------------------------
-//      コマンドアロケータを取得します.
-//-------------------------------------------------------------------------------------------------
-ID3D12CommandAllocator* CommandList::GetD3D12Allocator() const
-{ return m_pCommandAllocator; }
-
-//-------------------------------------------------------------------------------------------------
-//      グラフィックスコマンドリストを取得します.
-//-------------------------------------------------------------------------------------------------
-ID3D12GraphicsCommandList6* CommandList::GetD3D12GraphicsCommandList() const
-{ return m_pCommandList; }
-
-//-------------------------------------------------------------------------------------------------
-//      ディスクリプタを更新します.
-//-------------------------------------------------------------------------------------------------
-void CommandList::UpdateDescriptor()
-{
-    if (!m_DirtyDescriptor)
-    { return; }
-
-    if (m_IsGraphics)
-    {
-        for(auto i=0u; i<m_HandleCount; ++i)
-        { m_pCommandList->SetGraphicsRootDescriptorTable(i, m_Handles[i]); }
-    }
-    else
-    {
-        for(auto i=0u; i<m_HandleCount; ++i)
-        { m_pCommandList->SetComputeRootDescriptorTable(i, m_Handles[i]); }
-    }
-
-    m_DirtyDescriptor = false;
+    pThis->m_pCommandList->Close();
 }
 
 //-------------------------------------------------------------------------------------------------

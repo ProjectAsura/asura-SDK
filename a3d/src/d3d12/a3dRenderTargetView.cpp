@@ -193,22 +193,32 @@ void RenderTargetView::GetDevice(IDevice** ppDevice)
 }
 
 //-------------------------------------------------------------------------------------------------
-//      構成設定を取得します.
-//-------------------------------------------------------------------------------------------------
-TargetViewDesc RenderTargetView::GetDesc() const
-{ return m_Desc; }
-
-//-------------------------------------------------------------------------------------------------
 //      ディスクリプタを取得します.
 //-------------------------------------------------------------------------------------------------
 const Descriptor* RenderTargetView::GetDescriptor() const
 { return m_pDescriptor; }
 
 //-------------------------------------------------------------------------------------------------
+//      構成設定を取得します.
+//-------------------------------------------------------------------------------------------------
+TargetViewDesc IRenderTargetView::GetDesc() const
+{
+    auto pThis = static_cast<const RenderTargetView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_Desc;
+}
+
+//-------------------------------------------------------------------------------------------------
 //      リソースを取得します,
 //-------------------------------------------------------------------------------------------------
-ITexture* RenderTargetView::GetResource() const
-{ return m_pTexture; }
+ITexture* IRenderTargetView::GetResource() const
+{
+    auto pThis = static_cast<const RenderTargetView*>(this);
+    A3D_ASSERT(pThis != nullptr);
+
+    return pThis->m_pTexture;
+}
 
 //-------------------------------------------------------------------------------------------------
 //      生成処理を行います.

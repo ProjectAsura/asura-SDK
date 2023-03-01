@@ -505,8 +505,6 @@ BlendState BlendState::Default()
 {
     BlendState result = {};
     result.IndependentBlendEnable   = false;
-    result.LogicOp                  = LOGIC_OP_NOOP;
-    result.LogicOpEnable            = false;
     for(auto i=0; i<8; ++i)
     { result.RenderTarget[i] = ColorBlendState::Opaque(); }
     return result;

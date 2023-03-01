@@ -95,18 +95,6 @@ constexpr uint32_t      SHADER_UNUSED           = ~0;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//! @enum   INDIRECT_ARGUMENT_TYPE
-//! @brief  インダイレクト引数タイプです.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-enum INDIRECT_ARGUMENT_TYPE
-{
-    INDIRECT_ARGUMENT_TYPE_DRAW             = 0,    //!< 描画用引数です.
-    INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED     = 1,    //!< インデックス付き描画用引数です.
-    INDIRECT_ARGUMENT_TYPE_DISPATCH_COMPUTE = 2,    //!< コンピュートディスパッチ用引数です.
-    INDIRECT_ARGUMENT_TYPE_DISPATCH_MESH    = 3,    //!< メッシュディスパッチ用引数です.
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 //! @enum   RESOURCE_KIND
 //! @brief  リソースタイプです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -458,30 +446,6 @@ enum BLEND_OP
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//! @enum   LOGIC_OP
-//! @brief  レンダーターゲットの論理操作タイプです.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-enum LOGIC_OP
-{
-    LOGIC_OP_CLEAR      = 0,    //!< レンダーターゲットをクリアします.
-    LOGIC_OP_SET        = 1,    //!< レンダーターゲットを設定します.
-    LOGIC_OP_COPY       = 2,    //!< レンダーターゲットをコピーします.
-    LOGIC_OP_COPY_INV   = 3,    //!< レンダーターゲットを反転してコピーを行います.
-    LOGIC_OP_NOOP       = 4,    //!< レンダーターゲット上で操作は行われません.
-    LOGIC_OP_INV        = 5,    //!< レンダーターゲットを反転します.
-    LOGIC_OP_AND        = 6,    //!< レンダーターゲット上でAND演算を実行します.
-    LOGIC_OP_NAND       = 7,    //!< レンダーターゲット上でNAND演算を実行します.
-    LOGIC_OP_OR         = 8,    //!< レンダーターゲット上でOR演算を実行します.
-    LOGIC_OP_NOR        = 9,    //!< レンダーターゲット上でNOR演算を実行します.
-    LOGIC_OP_XOR        = 10,   //!< レンダーターゲット上でXOR演算を実行します.
-    LOGIC_OP_EQUIV      = 11,   //!< レンダーターゲット上で等価演算を実行します.
-    LOGIC_OP_AND_REV    = 12,   //!< レンダーターゲット上で，AND演算と逆操作を行います.
-    LOGIC_OP_AND_INV    = 13,   //!< レンダーターゲット上で，AND演算と反転操作を行います.
-    LOGIC_OP_OR_REV     = 14,   //!< レンダーターゲット上で，OR演算と逆操作を行います.
-    LOGIC_OP_OR_INV     = 15,   //!< レンダーターゲット上で，OR演算と反転操作を行います.
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 //! @enum   FILTER_MODE
 //! @brief  テクスチャフィルタモードです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -553,10 +517,10 @@ enum INPUT_CLASSIFICATION
 //////////////////////////////////////////////////////////////////////////////////////////////////
 enum PIPELINE_STATE_TYPE
 {
-    PIPELINE_STATE_TYPE_GRAPHICS    = 0,
-    PIPELINE_STATE_TYPE_COMPUTE     = 1,
-    PIPELINE_STATE_TYPE_MESHLET     = 2,
-    PIPELINE_STATE_TYPE_RAYTRACING  = 3,
+    PIPELINE_STATE_TYPE_GRAPHICS    = 0,    //!< グラフィックスパイプラインステートです.
+    PIPELINE_STATE_TYPE_COMPUTE     = 1,    //!< コンピュートパイプラインステートです.
+    PIPELINE_STATE_TYPE_MESHLET     = 2,    //!< メッシュレットパイプラインステートです.
+    PIPELINE_STATE_TYPE_RAYTRACING  = 3,    //!< レイトレーシングパイプラインステートです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -598,8 +562,8 @@ enum DESCRIPTORSET_LAYOUT_FLAGS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 enum GEOMETRY_TYPE
 {
-    GEOMETRY_TYPE_TRIANGLES = 0,
-    GEOMETRY_TYPE_AABBS,
+    GEOMETRY_TYPE_TRIANGLES = 0,    //!< 三角形です.
+    GEOMETRY_TYPE_AABBS,            //!< 軸平行バウンディングボックスです.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -796,12 +760,6 @@ struct DispatchArguments
     uint32_t    ThreadGroupCountZ;  //!< z 方向の発行するスレッドグループの数です.
 };
 
-//! @brief  コンピュートシェーダディスパッチの引数です.
-using DispatchComputeArguments = DispatchArguments;
-
-//! @brief  メッシュシェーダディスパッチの引数です.
-using DispatchMeshArguments = DispatchArguments;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // CommandListDesc structure
 //! @brief  コマンドリストの構成設定です.
@@ -810,17 +768,6 @@ struct CommandListDesc
 {
     COMMANDLIST_TYPE        Type;           //!< コマンドリストタイプです.
     uint64_t                BufferSize;     //!< コマンドバッファのサイズです(D3D12, VULKANの場合はゼロで問題ありません).
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// CommandSetDesc structure
-//! @brief  コマンドセットの構成設定です.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct CommandSetDesc
-{
-    uint32_t                    ByteStride;         //!< コマンドセットの各引数のサイズをバイト単位で指定します.
-    uint32_t                    ArgumentCount;      //!< 引数タイプの数です.
-    INDIRECT_ARGUMENT_TYPE*     pArguments;         //!< 引数タイプの配列です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1045,8 +992,6 @@ struct ColorBlendState
 struct BlendState
 {
     bool            IndependentBlendEnable;         //!< RGB値とアルファ値の独立したブレンディングを有効します.
-    bool            LogicOpEnable;                  //!< 論理操作を有効にします.
-    LOGIC_OP        LogicOp;                        //!< 論理操作です.
     ColorBlendState RenderTarget[MAX_RTV_COUNT];    //!< カラーターゲットのブレンド設定です.
 
     static BlendState Default();
@@ -1108,9 +1053,20 @@ struct InputLayoutDesc
 struct DescriptorEntry
 {
     uint32_t            ShaderRegister;     //!< シェーダのレジスタ番号です.
-    SHADER_STAGE        ShaderStage;        //!< シェーダマスクです.
+    SHADER_STAGE        ShaderStage;        //!< シェーダステージです.
     uint32_t            BindLocation;       //!< バインド番号です.
     DESCRIPTOR_TYPE     Type;               //!< ディスクリプタタイプです.
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ConstantEntry structure
+//! @brief  定数エントリーです.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+struct ConstantEntry
+{
+    uint32_t        ShaderRegister;     //!< シェーダのレジスタ番号です(D3D12のみ).
+    SHADER_STAGE    ShaderStage;        //!< シェーダステージです.
+    uint32_t        Counts;             //!< 32bit定数の数です.
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1121,6 +1077,7 @@ struct DescriptorSetLayoutDesc
 {
     uint32_t            EntryCount;                     //!< エントリー数です.
     DescriptorEntry     Entries[MAX_DESCRIPTOR_COUNT];  //!< エントリー情報です.
+    ConstantEntry       Constant;                       //!< 定数エントリーです.
     uint32_t            Flags;                          //!< ディスクリプタセットレイアウトフラグです.
 };
 
@@ -1659,18 +1616,6 @@ struct A3D_API IDeviceChild : public IReference
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// ICommandSet interface
-//! @brief      コマンドセットインターフェースです.
-///////////////////////////////////////////////////////////////////////////////////////////////////
-struct A3D_API ICommandSet : public IDeviceChild
-{
-    //---------------------------------------------------------------------------------------------
-    //! @brief      デストラクタです.
-    //---------------------------------------------------------------------------------------------
-    virtual A3D_APIENTRY ~ICommandSet() = default;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // ISampler interface
 //! @brief      サンプラーインタフェースです.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1692,18 +1637,6 @@ struct A3D_API IResource : public IDeviceChild
     //! @brief      デストラクタです.
     //---------------------------------------------------------------------------------------------
     virtual A3D_APIENTRY ~IResource() = default;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      メモリマッピングを行います.
-    //!
-    //! @return     マッピングしたメモリです.
-    //---------------------------------------------------------------------------------------------
-    virtual void* A3D_APIENTRY Map() = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      メモリマッピングを解除します.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Unmap() = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソース種別を取得します.
@@ -1729,14 +1662,26 @@ struct A3D_API IBuffer : public IResource
     //!
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual BufferDesc A3D_APIENTRY GetDesc() const = 0;
+    BufferDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デバイスアドレスを取得します.
     //! 
     //! @return     デバイスアドレスを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual uint64_t A3D_APIENTRY GetDeviceAddress() const = 0;
+    uint64_t A3D_APIENTRY GetDeviceAddress() const;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      メモリマッピングを行います.
+    //!
+    //! @return     マッピングしたメモリです.
+    //---------------------------------------------------------------------------------------------
+    void* A3D_APIENTRY Map();
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      メモリマッピングを解除します.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY Unmap();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1755,7 +1700,7 @@ struct A3D_API ITexture : public IResource
     //!
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual TextureDesc A3D_APIENTRY GetDesc() const = 0;
+    TextureDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サブリソースレイアウトを取得します.
@@ -1763,7 +1708,19 @@ struct A3D_API ITexture : public IResource
     //! @param[in]      subresource     サブリソース番号です.
     //! @return     サブリソースレイアウトを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual SubresourceLayout A3D_APIENTRY GetSubresourceLayout(uint32_t subresource) const = 0;
+    SubresourceLayout A3D_APIENTRY GetSubresourceLayout(uint32_t subresource) const;
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      メモリマッピングを行います.
+    //!
+    //! @return     マッピングしたメモリです.
+    //---------------------------------------------------------------------------------------------
+    void* A3D_APIENTRY Map();
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      メモリマッピングを解除します.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY Unmap();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1782,14 +1739,14 @@ struct A3D_API IConstantBufferView : public IDeviceChild
     //! 
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual ConstantBufferViewDesc A3D_APIENTRY GetDesc() const = 0;
+    ConstantBufferViewDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファを取得します.
     //! 
     //! @return     バッファを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual IBuffer* A3D_APIENTRY GetResource() const = 0;
+    IBuffer* A3D_APIENTRY GetResource() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1808,14 +1765,14 @@ struct A3D_API IRenderTargetView : public IDeviceChild
     //! 
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual TargetViewDesc A3D_APIENTRY GetDesc() const = 0;
+    TargetViewDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      テクスチャを取得します.
     //! 
     //! @return     テクスチャを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual ITexture* A3D_APIENTRY GetResource() const = 0;
+    ITexture* A3D_APIENTRY GetResource() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1834,14 +1791,14 @@ struct A3D_API IDepthStencilView : public IDeviceChild
     //! 
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual TargetViewDesc A3D_APIENTRY GetDesc() const = 0;
+    TargetViewDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      テクスチャを取得します.
     //! 
     //! @return     テクスチャを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual ITexture* A3D_APIENTRY GetResource() const = 0;
+    ITexture* A3D_APIENTRY GetResource() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1860,14 +1817,14 @@ struct A3D_API IShaderResourceView  : public IDeviceChild
     //! 
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual ShaderResourceViewDesc A3D_APIENTRY GetDesc() const = 0;
+    ShaderResourceViewDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースを取得します
     //! 
     //! @return     リソースを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual IResource* A3D_APIENTRY GetResource() const = 0;
+    IResource* A3D_APIENTRY GetResource() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1886,14 +1843,14 @@ struct A3D_API IUnorderedAccessView : public IDeviceChild
     //!
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual UnorderedAccessViewDesc A3D_APIENTRY GetDesc() const = 0;
+    UnorderedAccessViewDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースを取得します.
     //!
     //! @return     リソースを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual IResource* A3D_APIENTRY GetResource() const = 0;
+    IResource* A3D_APIENTRY GetResource() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1941,7 +1898,7 @@ struct A3D_API IQueryPool : public IDeviceChild
     //!
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual QueryPoolDesc A3D_APIENTRY GetDesc() const = 0;
+    QueryPoolDesc A3D_APIENTRY GetDesc() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1961,7 +1918,7 @@ struct A3D_API IFence : public IDeviceChild
     //! @retval true    シグナル状態です.
     //! @retval false   非シグナル状態です.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY IsSignaled() const = 0;
+    bool A3D_APIENTRY IsSignaled() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      完了を待機します.
@@ -1970,7 +1927,7 @@ struct A3D_API IFence : public IDeviceChild
     //! @retval true    処理完了です.
     //! @retval false   処理未完了です.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY Wait(uint32_t timeoutMsec) = 0;
+    bool A3D_APIENTRY Wait(uint32_t timeoutMsec);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1989,7 +1946,7 @@ struct A3D_API IAccelerationStructure : public IDeviceChild
     //! 
     //! @return     デバイスアドレスを返却します.
     //---------------------------------------------------------------------------------------------
-    virtual uint64_t A3D_APIENTRY GetDeviceAddress() const = 0;
+    uint64_t A3D_APIENTRY GetDeviceAddress() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2006,7 +1963,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストへの記録を開始します.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Begin() = 0;
+    void A3D_APIENTRY Begin();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを設定します.
@@ -2018,39 +1975,39 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pClearColors            カラークリア値の指定です(nullptr可).
     //! @param[in]      pClearDepthStencil      深度ステンシルビューのクリア値です(nullptr可).
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY BeginFrameBuffer(
+    void A3D_APIENTRY BeginFrameBuffer(
         uint32_t                        renderTargetViewCount,
         IRenderTargetView**             pRenderTargetViews,
         IDepthStencilView*              pDepthStencilView,
         uint32_t                        clearColorCount,
         const ClearColorValue*          pClearColors,
-        const ClearDepthStencilValue*   pClearDepthStencil) = 0;
+        const ClearDepthStencilValue*   pClearDepthStencil);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フレームバッファを解除します.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY EndFrameBuffer() = 0;
+    void A3D_APIENTRY EndFrameBuffer();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      高速化機構を構築します.
     //! 
     //! @param[in]      pAS         構築したい加速機構.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY BuildAccelerationStructure(IAccelerationStructure* pAS) = 0;
+    void A3D_APIENTRY BuildAccelerationStructure(IAccelerationStructure* pAS);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ブレンド定数を設定します.
     //!
     //! @param[in]      blendConstant       ブレンド定数です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetBlendConstant(const float blendConstant[4]) = 0;
+    void A3D_APIENTRY SetBlendConstant(const float blendConstant[4]);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ステンシル参照値を設定します.
     //!
     //! @param[in]      stencilRef          ステンシル参照値です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetStencilReference(uint32_t stencilRef) = 0;
+    void A3D_APIENTRY SetStencilReference(uint32_t stencilRef);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      ビューポートを設定します.
@@ -2058,7 +2015,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      count       設定するビューポート数です.
     //! @param[in]      pViewports  設定するビューポートの配列です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetViewports(uint32_t count, Viewport* pViewports) = 0;
+    void A3D_APIENTRY SetViewports(uint32_t count, Viewport* pViewports);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      シザー矩形を設定します.
@@ -2066,14 +2023,14 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      count       設定するシザー矩形の数です.
     //! @param[in]      pScissors   設定するシザー矩形の配列です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetScissors(uint32_t count, Rect* pScissors) = 0;
+    void A3D_APIENTRY SetScissors(uint32_t count, Rect* pScissors);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      パイプラインステートを設定します.
     //!
     //! @param[in]      pPipelineState      設定するパイプラインステートです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState) = 0;
+    void A3D_APIENTRY SetPipelineState(IPipelineState* pPipelineState);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      頂点バッファを設定します.
@@ -2083,11 +2040,11 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      ppResources     頂点バッファの配列です.
     //! @param[in]      pOffsets        頂点オフセットの配列です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetVertexBuffers(
+    void A3D_APIENTRY SetVertexBuffers(
         uint32_t    startSlot,
         uint32_t    count,
         IBuffer**   ppResources,
-        uint64_t*   pOffsets) = 0;
+        uint64_t*   pOffsets);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      インデックスバッファを設定します.
@@ -2095,41 +2052,60 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pResource       設定するインデックスバッファです.
     //! @param[in]      offset          インデックスオフセットです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetIndexBuffer(
+    void A3D_APIENTRY SetIndexBuffer(
         IBuffer*    pResource,
-        uint64_t    offset) = 0;
+        uint64_t    offset);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      32bit定数を設定します.
+    //! 
+    //! @param[in]      count       設定する32bit定数の数.
+    //! @param[in]      pValues     設定する値.
+    //! @param[in]      offset      オフセット(バイト単位).
+    //! @remark     この関数はSetPipelineState()を呼び出した後にコールしてください.
+    //!             SetPipelineState()呼び出し前にコールした場合，未規定の動作になります.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY SetConstants(uint32_t count, const void* pValues, uint32_t offset);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      定数バッファバッファビューを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pView       設定するビューです.
+    //! @remark     この関数はSetPipelineState()を呼び出した後にコールしてください.
+    //!             SetPipelineState()呼び出し前にコールした場合，未規定の動作になります.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetView(uint32_t index, IConstantBufferView* const pView) = 0;
+    void A3D_APIENTRY SetView(uint32_t index, IConstantBufferView* const pView);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      シェーダリソースビューを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pView       設定するビューです.
+    //! @remark     この関数はSetPipelineState()を呼び出した後にコールしてください.
+    //!             SetPipelineState()呼び出し前にコールした場合，未規定の動作になります.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetView(uint32_t index, IShaderResourceView* const pView) = 0;
+    void A3D_APIENTRY SetView(uint32_t index, IShaderResourceView* const pView);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      アンオーダードアクセスビューを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pView       設定するビューです.
+    //! @remark     この関数はSetPipelineState()を呼び出した後にコールしてください.
+    //!             SetPipelineState()呼び出し前にコールした場合，未規定の動作になります.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetView(uint32_t index, IUnorderedAccessView* const pView) = 0;
+    void A3D_APIENTRY SetView(uint32_t index, IUnorderedAccessView* const pView);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      サンプラーを設定します.
     //!
     //! @param[in]      index       レイアウト番号です.
     //! @param[in]      pSampler    設定するサンプラーです.
+    //! @remark     この関数はSetPipelineState()を呼び出した後にコールしてください.
+    //!             SetPipelineState()呼び出し前にコールした場合，未規定の動作になります.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY SetSampler(uint32_t index, ISampler* const pSampler) = 0;
+    void A3D_APIENTRY SetSampler(uint32_t index, ISampler* const pSampler);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースバリアを設定します.
@@ -2138,10 +2114,10 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      prevState       変更前の状態です.
     //! @param[in]      nextState       変更後の状態です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY TextureBarrier(
+    void A3D_APIENTRY TextureBarrier(
         ITexture*       pResource,
         RESOURCE_STATE  prevState,
-        RESOURCE_STATE  nextState) = 0;
+        RESOURCE_STATE  nextState);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      リソースバリアを設定します.
@@ -2150,10 +2126,10 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      prevState       変更前の状態です.
     //! @param[in]      nextState       変更後の状態です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY BufferBarrier(
+    void A3D_APIENTRY BufferBarrier(
         IBuffer*        pResource,
         RESOURCE_STATE  prevState,
-        RESOURCE_STATE  nextState) = 0;
+        RESOURCE_STATE  nextState);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      インスタンス描画します.
@@ -2163,11 +2139,27 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      firstVertex     最初に描画する頂点へのオフセットです.
     //! @param[in]      firstInstance   最初に描画するインスタンスへのオフセットです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY DrawInstanced(
+    void A3D_APIENTRY DrawInstanced(
         uint32_t vertexCount,
         uint32_t instanceCount, 
         uint32_t firstVertex, 
-        uint32_t firstInstance) = 0;
+        uint32_t firstInstance);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      インスタンスを間接描画します.
+    //! 
+    //! @param[in]      maxCommandCount         実行する最大コマンド数です.
+    //! @param[in]      pArgumentBuffer         引数バッファです.
+    //! @param[in]      argumentBufferOffset    引数バッファオフセットです.
+    //! @param[in]      pCounterBuffer          カウンターバッファです.
+    //! @param[in]      counterBufferOffset     カウンターバッファオフセットです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY DrawInstancedIndirect(
+        uint32_t maxCommandCount,
+        IBuffer* pArgumentBuffer,
+        uint64_t argumentBufferOffset,
+        IBuffer* pCounterBuffer,
+        uint64_t counterBufferOffset);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      インデックスバッファを用いてインスタンス描画します.
@@ -2178,12 +2170,28 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      vertexOffset    最初に描画する頂点へのオフセットです.
     //! @param[in]      firstInstance   最初に描画するインスタンスへのオフセットです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY DrawIndexedInstanced(
+    void A3D_APIENTRY DrawIndexedInstanced(
         uint32_t indexCount,
         uint32_t instanceCount,
         uint32_t firstIndex,
         int      vertexOffset,
-        uint32_t firstInstance) = 0;
+        uint32_t firstInstance);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      インデックスバッファを用いてインスタンスを間接描画します.
+    //! 
+    //! @param[in]      maxCommandCount         実行する最大コマンド数です.
+    //! @param[in]      pArgumentBuffer         引数バッファです.
+    //! @param[in]      argumentBufferOffset    引数バッファオフセットです.
+    //! @param[in]      pCounterBuffer          カウンターバッファです.
+    //! @param[in]      counterBufferOffset     カウンターバッファオフセットです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY DrawIndexedInstancedIndirect(
+        uint32_t maxCommandCount,
+        IBuffer* pArgumentBuffer,
+        uint64_t argumentBufferOffset,
+        IBuffer* pCounterBuffer,
+        uint64_t counterBufferOffset);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コンピュートシェーダを起動します.
@@ -2192,7 +2200,20 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      y       y 方向にディスパッチしたグループの数
     //! @param[in]      z       z 方向にディスパッチしたグループの数
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY DispatchCompute(uint32_t x, uint32_t y, uint32_t z) = 0;
+    void A3D_APIENTRY DispatchCompute(uint32_t x, uint32_t y, uint32_t z);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      コンピュートシェーダを間接起動します.
+    //! 
+    //! @param[in]      pArgumentBuffer         引数バッファです.
+    //! @param[in]      argumentBufferOffset    引数バッファオフセットです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY DispatchComputeIndirect(
+        uint32_t maxCommandCount,
+        IBuffer* pArgumentBuffer,
+        uint64_t argumentBufferOffset,
+        IBuffer* pCounterBuffer,
+        uint64_t counterBufferOffset);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      メッシュシェーダを起動します.
@@ -2201,32 +2222,30 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      y       y 方向にディスパッチしたグループの数
     //! @param[in]      z       z 方向にディスパッチしたグループの数
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY DispatchMesh(uint32_t x, uint32_t y, uint32_t z) = 0;
+    void A3D_APIENTRY DispatchMesh(uint32_t x, uint32_t y, uint32_t z);
+
+    //---------------------------------------------------------------------------------------------
+    //! @brief      メッシュシェーダを間接起動します.
+    //! 
+    //! @param[in]      maxCommandCount         実行する最大コマンド数です.
+    //! @param[in]      pArgumentBuffer         引数バッファです.
+    //! @param[in]      argumentBufferOffset    引数バッファオフセットです.
+    //! @param[in]      pCounterBuffer          カウンターバッファです.
+    //! @param[in]      counterBufferOffset     カウンターバッファオフセットです.
+    //---------------------------------------------------------------------------------------------
+    void A3D_APIENTRY DispatchMeshIndirect(
+        uint32_t maxCommandCount,
+        IBuffer* pArgumentBuffer,
+        uint64_t argumentBufferOffset,
+        IBuffer* pCounterBuffer,
+        uint64_t counterBufferOffset);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      レイトレーシングパイプラインを起動します.
     //! 
     //! @param[in]      pArgs   起動引数.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY TraceRays(const TraceRayArguments* pArgs) = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      インダイレクトコマンドを実行します.
-    //!
-    //! @param[in]      pCommandSet             インダイレクトコマンドセットです.
-    //! @param[in]      maxCommandCount         コマンドの最大実行回数です.
-    //! @param[in]      pArgumentBuffer         引数バッファです.
-    //! @param[in]      argumentBufferOffset    引数バッファのオフセットです.
-    //! @param[in]      pCounterBuffer          カウンタバッファです.
-    //! @param[in]      counterBufferOffset     カウンタバッファのオフセットです.
-    //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY ExecuteIndirect(
-        ICommandSet*    pCommandSet,
-        uint32_t        maxCommandCount,
-        IBuffer*        pArgumentBuffer,
-        uint64_t        argumentBufferOffset,
-        IBuffer*        pCounterBuffer,
-        uint64_t        counterBufferOffset) = 0;
+    void A3D_APIENTRY TraceRays(const TraceRayArguments* pArgs);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      クエリを開始します.
@@ -2234,7 +2253,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pQuery      設定するクエリプールです.
     //! @param[in]      index       クエリ番号です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY BeginQuery(IQueryPool* pQuery, uint32_t index) = 0;
+    void A3D_APIENTRY BeginQuery(IQueryPool* pQuery, uint32_t index);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      クエリを終了します.
@@ -2242,7 +2261,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pQuery      設定するクエリプールです.
     //! @param[in]      index       クエリ番号です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY EndQuery(IQueryPool* pQuery, uint32_t index) = 0;
+    void A3D_APIENTRY EndQuery(IQueryPool* pQuery, uint32_t index);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      クエリを解決します.
@@ -2253,12 +2272,12 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pDstBuffer      書き込み先のバッファです.
     //! @param[in]      dstOffset       書き込み先のバッファのオフセットです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY ResolveQuery(
+    void A3D_APIENTRY ResolveQuery(
         IQueryPool* pQuery,
         uint32_t    startIndex,
         uint32_t    queryCount,
         IBuffer*    pDstBuffer,
-        uint64_t    dstOffset ) = 0;
+        uint64_t    dstOffset );
 
     //---------------------------------------------------------------------------------------------
     //! @brief      クエリをリセットします.
@@ -2267,7 +2286,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @remark     このコマンドはフレームバッファを設定する前に呼び出す必要があり，
     //!             フレームバッファ設定中には呼び出すことが出来ません
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY ResetQuery(IQueryPool* pQuery) = 0;
+    void A3D_APIENTRY ResetQuery(IQueryPool* pQuery);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      テクスチャをコピーします.
@@ -2275,7 +2294,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pDstResource        コピー先のリソースです.
     //! @param[in]      pSrcResource        コピー元のリソースです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyTexture(ITexture* pDstResource, ITexture* pSrcResource) = 0;
+    void A3D_APIENTRY CopyTexture(ITexture* pDstResource, ITexture* pSrcResource);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファをコピーします.
@@ -2283,7 +2302,7 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pDstResource        コピー先のリソースです.
     //! @param[in]      pSrcResource        コピー元のリソースです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyBuffer(IBuffer* pDstResource, IBuffer* pSrcResource) = 0;
+    void A3D_APIENTRY CopyBuffer(IBuffer* pDstResource, IBuffer* pSrcResource);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してテクスチャをコピーします.
@@ -2295,14 +2314,14 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      srcSubresource      コピー元のサブリソースです.
     //! @param[in]      srcOffset           コピー元の領域です.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyTextureRegion(
+    void A3D_APIENTRY CopyTextureRegion(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
         ITexture*       pSrcResource,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent) = 0;
+        Extent3D        srcExtent);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してバッファをコピーします.
@@ -2313,12 +2332,12 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      srcOffset       コピー元のバッファオフセットです.
     //! @param[in]      byteCount       コピーするバイト数です.
     //--------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyBufferRegion(
+    void A3D_APIENTRY CopyBufferRegion(
         IBuffer*    pDstBuffer,
         uint64_t    dstOffset,
         IBuffer*    pSrcBuffer,
         uint64_t    srcOffset,
-        uint64_t    byteCount ) = 0;
+        uint64_t    byteCount);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してバッファからテクスチャにコピーします.
@@ -2329,12 +2348,12 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pSrcBuffer          コピー元のバッファです.
     //! @param[in]      srcOffset           コピー元のオフセットです
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyBufferToTexture(
+    void A3D_APIENTRY CopyBufferToTexture(
         ITexture*       pDstTexture,
         uint32_t        dstSubresource,
         Offset3D        dstOffset,
         IBuffer*        pSrcBuffer,
-        uint64_t        srcOffset) = 0;
+        uint64_t        srcOffset);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      領域を指定してテクスチャからバッファにコピーします.
@@ -2347,13 +2366,13 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      srcExtent           コピー元の大きさです
     //! @param[in]      srcState            コピー元のリソースステートです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyTextureToBuffer(
+    void A3D_APIENTRY CopyTextureToBuffer(
         IBuffer*        pDstBuffer,
         uint64_t        dstOffset,
         ITexture*       pSrcTexture,
         uint32_t        srcSubresource,
         Offset3D        srcOffset,
-        Extent3D        srcExtent) = 0;
+        Extent3D        srcExtent);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      高速化機構をコピーします.
@@ -2362,10 +2381,10 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pSrcAS      コピー元の高速化機構.
     //! @param[in]      mode        コピーモード.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY CopyAccelerationStructure(
+    void A3D_APIENTRY CopyAccelerationStructure(
         IAccelerationStructure*             pDstAS,
         IAccelerationStructure*             pSrcAS,
-        ACCELERATION_STRUCTURE_COPY_MODE    mode) = 0;
+        ACCELERATION_STRUCTURE_COPY_MODE    mode);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      マルチサンプリングされたリソースをマルチサンプリングされていないリソースにコピーします
@@ -2375,35 +2394,35 @@ struct A3D_API ICommandList : public IDeviceChild
     //! @param[in]      pSrcResource        コピー元のリソースです。マルチサンプリングされている必要があります.
     //! @param[in]      srcSubresource      コピー元リソース内のコピー元サブリソースです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY ResolveSubresource(
+    void A3D_APIENTRY ResolveSubresource(
         ITexture*       pDstResource,
         uint32_t        dstSubresource,
         ITexture*       pSrcResource,
-        uint32_t        srcSubresource) = 0;
+        uint32_t        srcSubresource);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バンドルを実行します.
     //!
     //! @param[in]      pCommandList        実行するバンドルです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY ExecuteBundle(ICommandList* pCommandList) = 0;
+    void A3D_APIENTRY ExecuteBundle(ICommandList* pCommandList);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デバッグマーカーをプッシュします.
     //!
     //! @param[in]          tag         タグです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY PushMarker(const char* tag) = 0;
+    void A3D_APIENTRY PushMarker(const char* tag);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      デバッグマーカーをポップします.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY PopMarker() = 0;
+    void A3D_APIENTRY PopMarker();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの記録を終了します.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY End() = 0;
+    void A3D_APIENTRY End();
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2424,26 +2443,26 @@ struct A3D_API IQueue : IDeviceChild
     //! @retval true    登録に成功.
     //! @retval false   登録に失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY Submit( ICommandList* pCommandList ) = 0;
+    bool A3D_APIENTRY Submit(ICommandList* pCommandList);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      登録したコマンドリストを実行します.
     //!
     //! @param[in]      pFence          フェンスです.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Execute( IFence* pFence ) = 0;
+    void A3D_APIENTRY Execute(IFence* pFence);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      コマンドリストの実行完了を待機します.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY WaitIdle() = 0;
+    void A3D_APIENTRY WaitIdle();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      画面表示を行います.
     //!
     //! @param[in]      pSwapChain      スワップチェイン.
     //---------------------------------------------------------------------------------------------
-    virtual void A3D_APIENTRY Present( ISwapChain* pSwapChain ) = 0;
+    void A3D_APIENTRY Present(ISwapChain* pSwapChain);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2462,14 +2481,14 @@ struct A3D_API ISwapChain : public IDeviceChild
     //!
     //! @return     構成設定を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual SwapChainDesc A3D_APIENTRY GetDesc() const = 0;
+    SwapChainDesc A3D_APIENTRY GetDesc() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      現在のバッファ番号を取得します.
     //!
     //! @return     現在のバッファ番号を返却します.
     //---------------------------------------------------------------------------------------------
-    virtual uint32_t A3D_APIENTRY GetCurrentBufferIndex() = 0;
+    uint32_t A3D_APIENTRY GetCurrentBufferIndex();
 
     //---------------------------------------------------------------------------------------------
     //! @brief      指定されたバッファを取得します.
@@ -2479,7 +2498,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @retval true    バッファの取得に成功.
     //! @retval false   バッファの取得に失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY GetBuffer(uint32_t index, ITexture** ppResource) = 0;
+    bool A3D_APIENTRY GetBuffer(uint32_t index, ITexture** ppResource);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      バッファをリサイズします.
@@ -2489,7 +2508,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @retval true    リサイズに成功.
     //! @retval false   リサイズに失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY ResizeBuffers(uint32_t width, uint32_t height) = 0;
+    bool A3D_APIENTRY ResizeBuffers(uint32_t width, uint32_t height);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      メタデータを設定します.
@@ -2499,7 +2518,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @retval true    メタデータの設定に成功.
     //! @retval false   メタデータの設定に失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY SetMetaData(META_DATA_TYPE type, void* pData) = 0;
+    bool A3D_APIENTRY SetMetaData(META_DATA_TYPE type, void* pData);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フルスクリーンモードかどうかチェックします.
@@ -2507,7 +2526,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @retval true    フルスクリーンモードです.
     //! @retval false   ウィンドウモードです.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY IsFullScreenMode() const = 0;
+    bool A3D_APIENTRY IsFullScreenMode() const;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フルスクリーンモードを設定します.
@@ -2516,7 +2535,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @retval true    設定に成功.
     //! @retval false   設定に失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY SetFullScreenMode(bool enable) = 0;
+    bool A3D_APIENTRY SetFullScreenMode(bool enable);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      色空間がサポートされているかチェックします.
@@ -2525,7 +2544,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @retval true    チェックに成功.
     //! @retval false   チェックに失敗.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type) = 0;
+    bool A3D_APIENTRY CheckColorSpaceSupport(COLOR_SPACE_TYPE type);
 
     //---------------------------------------------------------------------------------------------
     //! @brief      色空間を設定します.
@@ -2535,7 +2554,7 @@ struct A3D_API ISwapChain : public IDeviceChild
     //! @retval false   設定に失敗.
     //! @note       この関数は D3D11(Windows10), D3D12のみサポートされます.
     //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY SetColorSpace(COLOR_SPACE_TYPE type) = 0;
+    bool A3D_APIENTRY SetColorSpace(COLOR_SPACE_TYPE type);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2792,18 +2811,6 @@ struct A3D_API IDevice : public IReference
     virtual bool A3D_APIENTRY CreateQueryPool(
         const QueryPoolDesc*    pDesc,
         IQueryPool**            ppQueryPool ) = 0;
-
-    //---------------------------------------------------------------------------------------------
-    //! @brief      コマンドセットを生成します.
-    //!
-    //! @param[in]      pDesc           構成設定です.
-    //! @param[out]     ppCommandSet    コマンドセットの格納先です.
-    //! @retval true    生成に成功.
-    //! @retval false   生成に失敗.
-    //---------------------------------------------------------------------------------------------
-    virtual bool A3D_APIENTRY CreateCommandSet(
-        const CommandSetDesc* pDesc,
-        ICommandSet**         ppCommandSet) = 0;
 
     //---------------------------------------------------------------------------------------------
     //! @brief      フェンスを生成します.
